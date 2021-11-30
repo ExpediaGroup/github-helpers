@@ -1,0 +1,23 @@
+name: Add PR Approval Label
+
+on:
+  pull_request_review:
+    types: [ submitted ]
+    paths:
+      - 'src/helpers/add-pr-approval-label.ts'
+
+jobs:
+  test:
+    if: github.event.review.state == 'approved'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: ./
+        with:
+          helper: add-pr-approval-label
+          teams: Repo-Maintainers
+          login: ${{ github.event.review.user.login }}
+          pull_number: ${{ github.event.pull_request.number }}
+          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # must have read:org permission

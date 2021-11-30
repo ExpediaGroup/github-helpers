@@ -1,0 +1,20 @@
+name: Set Latest Pipeline Status
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/helpers/set-latest-pipeline-status.ts'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: ./
+        with:
+          helper: set-latest-pipeline-status
+          sha: ${{ github.event.pull_request.head.sha }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,21 @@
+name: Create PR Comment
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/helpers/create-pr-comment.ts'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: ./
+        with:
+          helper: create-pr-comment
+          body: Test Comment
+          pull_number: ${{ github.event.pull_request.number }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}

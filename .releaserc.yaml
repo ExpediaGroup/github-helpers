@@ -1,0 +1,32 @@
+name: semantic-versioning
+version: 1.0.0
+description: Semantic release support for tagging `github-helpers` with semantic versioning.
+repository:
+  type: git
+  url: https://github.com/ExpediaGroup/github-helpers
+keywords: []
+author: ""
+license: ISC
+devDependencies:
+  semantic-release: ^17.1.1
+plugins:
+  - - "@semantic-release/commit-analyzer"
+    - preset: angular
+      releaseRules:
+        - breaking: true
+          release: major
+        - type: breaking
+          release: major
+        - type: docs
+          release: patch
+        - type: refactor
+          release: patch
+        - scope: no-release
+          release: false
+  - "@semantic-release/release-notes-generator"
+  - "@semantic-release/github"
+release:
+  branches:
+    - main
+branches:
+  - main

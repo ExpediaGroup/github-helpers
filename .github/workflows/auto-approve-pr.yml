@@ -1,0 +1,22 @@
+name: Auto Approve PR
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/helpers/auto-approve-pr.ts'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: ./
+        with:
+          helper: auto-approve-pr
+          auto_approved_user: 'renovate[bot]'
+          login: ${{ github.event.pull_request.user.login }}
+          pull_number: ${{ github.event.pull_request.number }}
+          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # must have write:repo permission
