@@ -65,4 +65,4 @@ const findNextPrToMerge = (pullRequestsResponse: PullRequestListResponse) =>
   pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [READY_FOR_MERGE_PR_LABEL, FIRST_QUEUED_PR_LABEL]));
 
 const hasRequiredLabels = (pr: PullRequest, requiredLabels: string[]) =>
-  requiredLabels.every(mergeQueueLabel => pr.labels.some((label: { name: string }) => label.name === mergeQueueLabel));
+  requiredLabels.every(mergeQueueLabel => pr.labels.some(label => label.name === mergeQueueLabel));

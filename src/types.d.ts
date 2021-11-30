@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { components, operations } from '@octokit/openapi-types/dist-types/generated/types';
+import { components, operations } from '@octokit/openapi-types/types';
 import { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types';
 
 export type PipelineState = operations['repos/create-commit-status']['requestBody']['content']['application/json']['state'];
