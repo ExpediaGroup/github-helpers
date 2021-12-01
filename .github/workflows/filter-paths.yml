@@ -1,0 +1,28 @@
+name: Filter Paths
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/helpers/filter-paths.ts'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: ./
+        id: paths
+        with:
+          helper: filter-paths
+          paths: |
+            src
+            package.json
+            yarn.lock
+          pull_number: ${{ github.event.pull_request.number }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - if: steps.paths.outputs.output == 'true'
+        run: echo "One of those file paths changed!"

@@ -1,0 +1,24 @@
+name: Release
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'dist/**'
+      - 'action.yml'
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Create Release
+        run: npx semantic-release --debug --no-ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

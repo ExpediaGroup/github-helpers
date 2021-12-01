@@ -1,0 +1,23 @@
+name: Set Commit Status
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/helpers/set-commit-status.ts'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: ./
+        with:
+          helper: set-commit-status
+          sha: ${{ github.event.pull_request.head.sha }}
+          context: Commit Status Test
+          state: success
+          description: set-commit-status is working!
+          github_token: ${{ secrets.GITHUB_TOKEN }}

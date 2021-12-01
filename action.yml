@@ -1,0 +1,87 @@
+name: Github Helpers
+description: 'A suite of Github helper actions'
+inputs:
+  helper:
+    description: 'The github helper to invoke'
+    required: true
+  github_token:
+    description: 'The github token'
+    required: true
+  body:
+    description: 'The comment body'
+    required: false
+  pull_number:
+    description: 'The pull request number'
+    required: false
+  sha:
+    description: 'The commit hash'
+    required: false
+  context:
+    description: 'The status context or contexts for updating commit status. Multiple contexts must be newline separated'
+    required: false
+  state:
+    description: 'The state for updating commit status. Can be pending, success, or failure'
+    required: false
+  description:
+    description: 'A description'
+    required: false
+  target_url:
+    description: 'The target url for updating commit status'
+    required: false
+  environment:
+    description: 'The environment for updating deployment status'
+    required: false
+  environment_url:
+    description: 'The environment url for updating deployment status'
+    required: false
+  default_branch:
+    description: 'The default branch of the repo'
+    required: false
+  label:
+    description: 'The singular label name used only for removing a label'
+    required: false
+  labels:
+    description: 'A list of labels used only for adding labels (new line separated)'
+    required: false
+  paths:
+    description: 'A list of file paths (newline/comma separated)'
+    required: false
+  extensions:
+    description: 'A list of file extensions (new line separated)'
+    required: false
+  override_filter_paths:
+    description: 'A list of file paths to trigger an override of the filter (newline/comma separated)'
+    required: false
+  batches:
+    description: 'A number of batches to split a matrix into'
+    required: false
+  pattern:
+    description: 'A regex pattern to match (must be wrapped in singlequotes)'
+    required: false
+  prevent_merge_conflicts:
+    description: 'Set to "true" if you want the prepare-queued-pr-for-merge helper to remove PRs with merge conflicts from the queue'
+    required: false
+  teams:
+    description: 'A list of github teams (newline separated)'
+    required: false
+  login:
+    description: 'A github user login'
+    required: false
+  paths_no_filter:
+    description: 'A list of file paths to be included regardless of the filter (newline/comma separated)'
+    required: false
+  auto_approved_user:
+    description: 'User login whose request should be auto approved'
+    required: false
+  slack_webhook_url:
+    description: 'A Slack webhook URL'
+    required: false
+  number_of_assignees:
+    description: 'Number of people to assign a PR to'
+    required: false
+outputs:
+  output:
+    description: 'The output of the helper'
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
