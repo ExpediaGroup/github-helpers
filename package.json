@@ -20,7 +20,7 @@
         "@types/axios": "0.14.0",
         "@types/bluebird": "3.5.33",
         "@types/jest": "26.0.14",
-        "@types/js-yaml": "4.0.3",
+        "@types/js-yaml": "4.0.5",
         "@types/lodash.camelcase": "4.3.6",
         "@types/lodash.chunk": "4.2.6",
         "@types/lodash.samplesize": "4.2.6",
