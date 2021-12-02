@@ -5,8 +5,8 @@ on:
     branches: [ main ]
 
 jobs:
-  unit:
-    name: Unit Tests
+  test:
+    name: Build and Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -20,17 +20,11 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Run Unit Tests
-        run: npm run test
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Install Dependencies
-        run: npm ci
-
       - name: Run Lint
         run: npm run lint
+
+      - name: Run Unit Tests
+        run: npm run test
+
+      - name: Package
+        run: npm run package
