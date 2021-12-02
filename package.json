@@ -26,7 +26,7 @@
         "@types/lodash.samplesize": "4.2.6",
         "@types/lodash.union": "4.6.6",
         "@typescript-eslint/eslint-plugin": "4.5.0",
-        "@typescript-eslint/parser": "4.5.0",
+        "@typescript-eslint/parser": "4.33.0",
         "@vercel/ncc": "0.28.6",
         "eslint": "7.23.0",
         "eslint-plugin-github": "4.1.3",
