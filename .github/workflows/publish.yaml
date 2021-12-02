@@ -15,12 +15,3 @@ jobs:
           echo "New version: ${MAJOR_VERSION}"
           git tag ${MAJOR_VERSION}
           git push --tags -f
-  build: # make sure build/ci work properly
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-      - run: npm ci
-      - run: npm run test
-      - run: npm run package
