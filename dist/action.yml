@@ -87,3 +87,4 @@ runs:
   main: 'dist/index.js'
 branding:
   icon: user-check
+  color: purple
