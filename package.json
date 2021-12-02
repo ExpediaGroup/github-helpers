@@ -19,7 +19,7 @@
         "@octokit/types": "6.34.0",
         "@types/axios": "0.14.0",
         "@types/bluebird": "3.5.33",
-        "@types/jest": "26.0.14",
+        "@types/jest": "27.0.3",
         "@types/js-yaml": "4.0.3",
         "@types/lodash.camelcase": "4.3.6",
         "@types/lodash.chunk": "4.2.6",
