@@ -3,10 +3,6 @@ name: Release
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'src/**'
-      - 'dist/**'
-      - 'action.yml'
 
 jobs:
   release:
