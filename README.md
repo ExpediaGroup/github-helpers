@@ -15,6 +15,8 @@ Each of the following helpers are defined in a file of the same name in `src/hel
   * You can also pass a `slack_webhook_url` to notify the assignees that they are assigned to the PR!
 ### [**auto-approve-pr**](.github/workflows/auto-approve-pr.yml)
   * Automatically approves a PR if the reviewer's login matches the provided login
+### [**check-labels**](.github/workflows/check-labels.yml)
+  * Checks if PR has required labels
 ### [**check-pr-title**](.github/workflows/check-pr-title.yml)
   * Checks whether PR title matches a certain regular expression
 ### [**create-pr-comment**](.github/workflows/create-pr-comment.yml)

@@ -1,0 +1,25 @@
+name: Check Labels
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
+    paths:
+      - 'src/helpers/check-labels.ts'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: ./
+        with:
+          helper: check-labels
+          contains_all_labels: test-label
+          github_token: ${{ secrets.GITHUB_TOKEN }}

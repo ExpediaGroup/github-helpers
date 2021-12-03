@@ -79,6 +79,9 @@ inputs:
   number_of_assignees:
     description: 'Number of people to assign a PR to'
     required: false
+    contains_all_labels:
+    description: 'A comma seperated list of labels used to check if all of them are present on a pull request'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'
