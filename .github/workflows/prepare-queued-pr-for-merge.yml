@@ -16,4 +16,4 @@ jobs:
       - uses: ./
         with:
           helper: prepare-queued-pr-for-merge
-          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # must have repo:write permission
+          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }} # must have repo:write permission
