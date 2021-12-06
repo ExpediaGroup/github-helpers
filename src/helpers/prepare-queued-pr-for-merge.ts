@@ -11,13 +11,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { DEFAULT_BRANCH, FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../constants';
-import { octokit } from '../octokit';
 import * as core from '@actions/core';
-import { context } from '@actions/github';
-import { removeLabel } from './remove-label';
-import { createPrComment } from './create-pr-comment';
+import { DEFAULT_BRANCH, FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../constants';
 import { PullRequest, PullRequestListResponse } from '../types';
+import { context } from '@actions/github';
+import { createPrComment } from './create-pr-comment';
+import { octokit } from '../octokit';
+import { removeLabel } from './remove-label';
 
 interface PrepareQueuedPrForMerge {
   prevent_merge_conflicts?: string;

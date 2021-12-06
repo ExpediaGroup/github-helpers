@@ -11,10 +11,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { ActionInputs } from '../types';
+import { getInput } from '@actions/core';
 import { getInputsFromFile } from './get-inputs-from-file';
 import { readFileSync } from 'fs';
-import { getInput } from '@actions/core';
-import { ActionInputs } from '../types';
 
 export const getActionInputs = (): ActionInputs =>
   getInputsFromFile(readFileSync(`${__dirname}/action.yml`).toString())

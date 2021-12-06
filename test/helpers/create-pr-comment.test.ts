@@ -11,9 +11,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { octokit } from '../../src/octokit';
-import { createPrComment } from '../../src/helpers/create-pr-comment';
 import { context } from '@actions/github';
+import { createPrComment } from '../../src/helpers/create-pr-comment';
+import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({

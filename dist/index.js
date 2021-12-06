@@ -22928,8 +22928,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = void 0;
 const core = __importStar(__nccwpck_require__(186));
-const get_action_inputs_1 = __nccwpck_require__(535);
 const lodash_1 = __nccwpck_require__(250);
+const get_action_inputs_1 = __nccwpck_require__(535);
 exports.run = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const helper = core.getInput('helper', { required: true });
@@ -22967,9 +22967,9 @@ limitations under the License.
 */
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getActionInputs = void 0;
+const core_1 = __nccwpck_require__(186);
 const get_inputs_from_file_1 = __nccwpck_require__(584);
 const fs_1 = __nccwpck_require__(147);
-const core_1 = __nccwpck_require__(186);
 exports.getActionInputs = () => get_inputs_from_file_1.getInputsFromFile(fs_1.readFileSync(`${__dirname}/action.yml`).toString())
     .filter(core_1.getInput)
     .reduce((acc, current) => (Object.assign(Object.assign({}, acc), { [current]: core_1.getInput(current) })), {});

@@ -11,9 +11,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { octokit } from '../octokit';
-import { map } from 'bluebird';
 import { context } from '@actions/github';
+import { map } from 'bluebird';
+import { octokit } from '../octokit';
 import { union } from 'lodash';
 
 export const getCoreMemberLogins = async (teams: string[]) => {

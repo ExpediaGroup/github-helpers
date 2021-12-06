@@ -11,13 +11,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { octokit } from '../octokit';
-import { context } from '@actions/github';
 import * as core from '@actions/core';
-import { sampleSize } from 'lodash';
+import { context } from '@actions/github';
 import { getCoreMemberLogins } from '../utils/get-core-member-logins';
 import { map } from 'bluebird';
 import { notifyReviewer } from '../utils/notify-reviewer';
+import { octokit } from '../octokit';
+import { sampleSize } from 'lodash';
 
 interface AssignPrReviewer {
   teams: string;

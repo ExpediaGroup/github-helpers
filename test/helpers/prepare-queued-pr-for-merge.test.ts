@@ -11,12 +11,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { octokit } from '../../src/octokit';
 import { DEFAULT_BRANCH, FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
+import { context } from '@actions/github';
+import { createPrComment } from '../../src/helpers/create-pr-comment';
+import { octokit } from '../../src/octokit';
 import { prepareQueuedPrForMerge } from '../../src/helpers/prepare-queued-pr-for-merge';
 import { removeLabel } from '../../src/helpers/remove-label';
-import { createPrComment } from '../../src/helpers/create-pr-comment';
-import { context } from '@actions/github';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
