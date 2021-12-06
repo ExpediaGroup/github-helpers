@@ -4,7 +4,9 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - 'src/helpers/set-commit-status.ts'
+      - 'src/**'
+      - 'dist/**'
+      - 'action.yml'
 
 jobs:
   test:
