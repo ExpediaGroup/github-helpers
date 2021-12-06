@@ -10,9 +10,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "getChangedFiles": () => (/* binding */ getChangedFiles)
 /* harmony export */ });
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6161);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +27,7 @@ limitations under the License.
 */
 
 
-const getChangedFiles = ({ pull_number }) => _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number: Number(pull_number), per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
+const getChangedFiles = ({ pull_number }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number: Number(pull_number), per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo))
     .then(listFilesResponse => listFilesResponse.data.map(file => file.filename).join(','));
 
 

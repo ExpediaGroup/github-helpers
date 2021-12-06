@@ -11,10 +11,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { setLatestPipelineStatus } from '../../src/helpers/set-latest-pipeline-status';
 import { DEFAULT_PIPELINE_STATUS, GITHUB_OPTIONS, PRODUCTION_ENVIRONMENT } from '../../src/constants';
-import { octokit } from '../../src/octokit';
 import { context } from '@actions/github';
+import { octokit } from '../../src/octokit';
+import { setLatestPipelineStatus } from '../../src/helpers/set-latest-pipeline-status';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({

@@ -19264,6 +19264,8 @@ __nccwpck_require__.d(__webpack_exports__, {
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(2186);
+// EXTERNAL MODULE: ./node_modules/lodash/lodash.js
+var lodash = __nccwpck_require__(250);
 ;// CONCATENATED MODULE: ./node_modules/js-yaml/dist/js-yaml.mjs
 
 /*! js-yaml 4.1.0 https://github.com/nodeca/js-yaml @license MIT */
@@ -23155,8 +23157,6 @@ const getActionInputs = () => getInputsFromFile((0,external_fs_.readFileSync)(`$
     .filter(core.getInput)
     .reduce((acc, current) => (Object.assign(Object.assign({}, acc), { [current]: (0,core.getInput)(current) })), {});
 
-// EXTERNAL MODULE: ./node_modules/lodash/lodash.js
-var lodash = __nccwpck_require__(250);
 ;// CONCATENATED MODULE: ./src/main.ts
 /*
 Copyright 2021 Expedia, Inc.

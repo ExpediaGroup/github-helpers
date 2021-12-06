@@ -11,9 +11,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { octokit } from '../octokit';
 import * as core from '@actions/core';
 import { context } from '@actions/github';
+import { octokit } from '../octokit';
 
 interface RemoveLabel {
   label: string;

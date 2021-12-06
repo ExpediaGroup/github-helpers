@@ -12,8 +12,8 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { getActionInputs } from './utils/get-action-inputs';
 import { camelCase } from 'lodash';
+import { getActionInputs } from './utils/get-action-inputs';
 
 export const run = async () => {
   try {

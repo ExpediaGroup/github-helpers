@@ -10,9 +10,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "autoApprovePr": () => (/* binding */ autoApprovePr)
 /* harmony export */ });
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6161);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +29,7 @@ limitations under the License.
 
 const autoApprovePr = ({ pull_number, login, auto_approved_user }) => {
     if (login === auto_approved_user) {
-        _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.createReview */ .K.pulls.createReview(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), { pull_number: Number(pull_number), body: 'Approved by bot', event: 'APPROVE' }));
+        _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.createReview */ .K.pulls.createReview(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { pull_number: Number(pull_number), body: 'Approved by bot', event: 'APPROVE' }));
     }
 };
 

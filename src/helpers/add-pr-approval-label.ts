@@ -12,8 +12,8 @@ limitations under the License.
 */
 
 import { CORE_APPROVED_PR_LABEL, PEER_APPROVED_PR_LABEL } from '../constants';
-import { context } from '@actions/github';
 import { addLabels } from './add-labels';
+import { context } from '@actions/github';
 import { getCoreMemberLogins } from '../utils/get-core-member-logins';
 
 interface AddPrApprovalLabel {

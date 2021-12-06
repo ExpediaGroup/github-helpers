@@ -11,10 +11,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { octokit } from '../../src/octokit';
 import { GITHUB_OPTIONS } from '../../src/constants';
-import { setDeploymentStatus } from '../../src/helpers/set-deployment-status';
 import { context } from '@actions/github';
+import { octokit } from '../../src/octokit';
+import { setDeploymentStatus } from '../../src/helpers/set-deployment-status';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({

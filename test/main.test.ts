@@ -11,11 +11,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { run } from '../src/main';
 import * as core from '@actions/core';
-import { getActionInputs } from '../src/utils/get-action-inputs';
 import { createPrComment } from '../src/helpers/create-pr-comment';
+import { getActionInputs } from '../src/utils/get-action-inputs';
 import { getInput } from '@actions/core';
+import { run } from '../src/main';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({

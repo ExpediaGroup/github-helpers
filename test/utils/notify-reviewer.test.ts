@@ -11,10 +11,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { notifyReviewer } from '../../src/utils/notify-reviewer';
-import { octokit } from '../../src/octokit';
 import axios from 'axios';
 import { context } from '@actions/github';
+import { notifyReviewer } from '../../src/utils/notify-reviewer';
+import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({

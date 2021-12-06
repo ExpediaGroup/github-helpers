@@ -11,9 +11,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { addPrApprovalLabel } from '../../src/helpers/add-pr-approval-label';
 import { CORE_APPROVED_PR_LABEL, PEER_APPROVED_PR_LABEL } from '../../src/constants';
 import { addLabels } from '../../src/helpers/add-labels';
+import { addPrApprovalLabel } from '../../src/helpers/add-pr-approval-label';
 import { context } from '@actions/github';
 import { getCoreMemberLogins } from '../../src/utils/get-core-member-logins';
 

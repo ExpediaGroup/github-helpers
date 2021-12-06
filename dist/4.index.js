@@ -61,9 +61,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "createPrComment": () => (/* binding */ createPrComment)
 /* harmony export */ });
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6161);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -78,7 +78,7 @@ limitations under the License.
 */
 
 
-const createPrComment = ({ body, pull_number }) => _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+const createPrComment = ({ body, pull_number }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
 
 
 /***/ }),
@@ -91,14 +91,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "prepareQueuedPrForMerge": () => (/* binding */ prepareQueuedPrForMerge)
 /* harmony export */ });
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(2186);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _remove_label__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(61);
-/* harmony import */ var _create_pr_comment__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(3461);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9042);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _create_pr_comment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3461);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6161);
+/* harmony import */ var _remove_label__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(61);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -117,23 +117,23 @@ limitations under the License.
 
 
 
-const prepareQueuedPrForMerge = ({ prevent_merge_conflicts, default_branch = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_BRANCH */ .mj }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo))
+const prepareQueuedPrForMerge = ({ prevent_merge_conflicts, default_branch = _constants__WEBPACK_IMPORTED_MODULE_1__/* .DEFAULT_BRANCH */ .mj }) => _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
     .then(findNextPrToMerge)
     .then(pullRequest => {
     if (pullRequest) {
-        return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.merge */ .K.repos.merge(Object.assign({ base: pullRequest.head.ref, head: default_branch }, _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo))
+        return _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.repos.merge */ .K.repos.merge(Object.assign({ base: pullRequest.head.ref, head: default_branch }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
             .catch(error => {
             if (error.status === 409 && Boolean(prevent_merge_conflicts)) {
-                _actions_core__WEBPACK_IMPORTED_MODULE_2__.info('The next PR to merge has a conflict. Removing this PR from merge queue.');
+                _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('The next PR to merge has a conflict. Removing this PR from merge queue.');
                 return Promise.all([
-                    (0,_create_pr_comment__WEBPACK_IMPORTED_MODULE_5__.createPrComment)(Object.assign({ body: 'This PR has a merge conflict, so it is being removed from the merge queue.', pull_number: String(pullRequest.number) }, _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo)),
-                    (0,_remove_label__WEBPACK_IMPORTED_MODULE_4__.removeLabel)(Object.assign({ label: _constants__WEBPACK_IMPORTED_MODULE_0__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, pull_number: String(pullRequest.number) }, _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo))
+                    (0,_create_pr_comment__WEBPACK_IMPORTED_MODULE_3__.createPrComment)(Object.assign({ body: 'This PR has a merge conflict, so it is being removed from the merge queue.', pull_number: String(pullRequest.number) }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo)),
+                    (0,_remove_label__WEBPACK_IMPORTED_MODULE_5__.removeLabel)(Object.assign({ label: _constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, pull_number: String(pullRequest.number) }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
                 ]);
             }
         });
     }
 });
-const findNextPrToMerge = (pullRequestsResponse) => { var _a; return (_a = pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_0__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_0__/* .JUMP_THE_QUEUE_PR_LABEL */ .nJ]))) !== null && _a !== void 0 ? _a : pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_0__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_0__/* .FIRST_QUEUED_PR_LABEL */ .IH])); };
+const findNextPrToMerge = (pullRequestsResponse) => { var _a; return (_a = pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_1__/* .JUMP_THE_QUEUE_PR_LABEL */ .nJ]))) !== null && _a !== void 0 ? _a : pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_1__/* .FIRST_QUEUED_PR_LABEL */ .IH])); };
 const hasRequiredLabels = (pr, requiredLabels) => requiredLabels.every(mergeQueueLabel => pr.labels.some(label => label.name === mergeQueueLabel));
 
 
@@ -147,11 +147,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "removeLabel": () => (/* binding */ removeLabel)
 /* harmony export */ });
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6161);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2186);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -167,10 +167,10 @@ limitations under the License.
 
 
 
-const removeLabel = ({ label, pull_number }) => _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.issues.removeLabel */ .K.issues.removeLabel(Object.assign({ name: label, issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
+const removeLabel = ({ label, pull_number }) => _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel(Object.assign({ name: label, issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
     .catch(error => {
     if (error.status === 404) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_1__.info('Label is not present on PR.');
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Label is not present on PR.');
     }
 });
 
