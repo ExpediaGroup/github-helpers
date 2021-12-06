@@ -23,7 +23,7 @@ export const run = async () => {
     const actionInputs = getActionInputs();
     const output = await method(actionInputs);
     core.setOutput('output', output);
-  } catch (error) {
+  } catch (error: any) {
     core.setFailed(error.message);
   }
 };
