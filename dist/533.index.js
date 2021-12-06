@@ -10,11 +10,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "generatePathMatrix": () => (/* binding */ generatePathMatrix)
 /* harmony export */ });
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6161);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(250);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(250);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +30,7 @@ limitations under the License.
 
 
 
-const generatePathMatrix = ({ pull_number, paths, override_filter_paths, paths_no_filter, batches }) => _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number: Number(pull_number), per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
+const generatePathMatrix = ({ pull_number, paths, override_filter_paths, paths_no_filter, batches }) => _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number: Number(pull_number), per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
     .then(listFilesResponse => {
     const changedFiles = listFilesResponse.data.map(file => file.filename);
     const shouldOverrideFilter = changedFiles.some(changedFile => override_filter_paths === null || override_filter_paths === void 0 ? void 0 : override_filter_paths.split(/[\n,]/).includes(changedFile));
@@ -47,7 +47,7 @@ const generatePathMatrix = ({ pull_number, paths, override_filter_paths, paths_n
     }
     if (batches) {
         return {
-            include: (0,lodash__WEBPACK_IMPORTED_MODULE_2__.chunk)(matrixValues, Math.ceil(matrixValues.length / Number(batches))).map(chunk => ({ path: chunk.join(',') }))
+            include: (0,lodash__WEBPACK_IMPORTED_MODULE_0__.chunk)(matrixValues, Math.ceil(matrixValues.length / Number(batches))).map(chunk => ({ path: chunk.join(',') }))
         };
     }
     return {
