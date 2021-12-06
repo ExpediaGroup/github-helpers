@@ -3,10 +3,6 @@ name: Set Commit Status
 on:
   pull_request:
     branches: [ main ]
-    paths:
-      - 'src/**'
-      - 'dist/**'
-      - 'action.yml'
 
 jobs:
   test:
