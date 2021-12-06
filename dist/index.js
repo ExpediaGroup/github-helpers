@@ -22934,8 +22934,8 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const helper = core.getInput('helper', { required: true });
         const helperModule = yield Promise.resolve().then(() => __importStar(require(`./helpers/${helper}`)));
-        const method = helperModule[(0, lodash_1.camelCase)(helper)];
-        const actionInputs = (0, get_action_inputs_1.getActionInputs)();
+        const method = helperModule[lodash_1.camelCase(helper)];
+        const actionInputs = get_action_inputs_1.getActionInputs();
         const output = yield method(actionInputs);
         core.setOutput('output', output);
     }
@@ -22944,7 +22944,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.run = run;
-(0, exports.run)();
+exports.run();
 
 
 /***/ }),
@@ -22971,9 +22971,9 @@ exports.getActionInputs = void 0;
 const core_1 = __nccwpck_require__(186);
 const get_inputs_from_file_1 = __nccwpck_require__(584);
 const fs_1 = __nccwpck_require__(147);
-const getActionInputs = () => (0, get_inputs_from_file_1.getInputsFromFile)((0, fs_1.readFileSync)(`${__dirname}/action.yml`).toString())
+const getActionInputs = () => get_inputs_from_file_1.getInputsFromFile(fs_1.readFileSync(`${__dirname}/action.yml`).toString())
     .filter(core_1.getInput)
-    .reduce((acc, current) => (Object.assign(Object.assign({}, acc), { [current]: (0, core_1.getInput)(current) })), {});
+    .reduce((acc, current) => (Object.assign(Object.assign({}, acc), { [current]: core_1.getInput(current) })), {});
 exports.getActionInputs = getActionInputs;
 
 
