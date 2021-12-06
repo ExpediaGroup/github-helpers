@@ -20,4 +20,4 @@ jobs:
           teams: Repo-Maintainers
           login: ${{ github.event.review.user.login }}
           pull_number: ${{ github.event.pull_request.number }}
-          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # must have read:org permission
+          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }} # must have read:org permission
