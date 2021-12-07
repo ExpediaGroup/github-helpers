@@ -1,0 +1,21 @@
+name: Add A Project Card
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'src/helpers/add-project-card.ts'
+
+jobs:
+  test:
+    runs-on: eg-default
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: ./
+        with:
+          helper: add-project-card
+          labels: Test-project-card
+          pull_number: ${{ github.event.pull_request.number }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}

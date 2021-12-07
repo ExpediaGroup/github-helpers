@@ -1,0 +1,19 @@
+name: Move Project Card To In Review
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'src/helpers/move-project-card-to-in-review.ts'
+
+jobs:
+  test:
+    runs-on: eg-default
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: ./
+        with:
+          helper: move-project-card-to-in-review
+          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # must have repo:write permission
