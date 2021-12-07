@@ -18852,6 +18852,16 @@ var map = {
 		438,
 		461
 	],
+	"./create-project-card": [
+		6124,
+		438,
+		124
+	],
+	"./create-project-card.ts": [
+		6124,
+		438,
+		124
+	],
 	"./filter-paths": [
 		9794,
 		438,
@@ -18893,9 +18903,9 @@ var map = {
 		420
 	],
 	"./move-project-card": [
-		136,
+		7263,
 		438,
-		136
+		263
 	],
 	"./move-project-card-to-approved": [
 		8940,
@@ -18928,9 +18938,9 @@ var map = {
 		118
 	],
 	"./move-project-card.ts": [
-		136,
+		7263,
 		438,
-		136
+		263
 	],
 	"./notify-pipeline-complete": [
 		8101,
