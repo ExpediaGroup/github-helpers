@@ -31,7 +31,7 @@ jest.mock('@actions/github', () => ({
   }))
 }));
 
-describe('createProjectCard', () => {
+describe('createProjectCard without note', () => {
   const pull_number = 123;
   const project_name = 'test project';
   const project_destination_column_name = 'test column 1';
@@ -109,5 +109,83 @@ describe('createProjectCard', () => {
 
     expect(octokit.projects.createCard).toHaveBeenCalledTimes(1);
     expect(octokit.projects.moveCard).toHaveBeenCalledTimes(1);
+  });
+  afterAll(() => {
+    jest.clearAllMocks();
+  });
+});
+
+describe('createProjectCard with a note', () => {
+  const pull_number = 123;
+  const project_name = 'test project';
+  const project_destination_column_name = 'test column 1';
+
+  beforeEach(() => {
+    (octokit.pulls.get as any).mockImplementation(async () => ({
+      data: {
+        owner_url: 'example owner url',
+        url: 'another mock url',
+        html_url: 'one more url',
+        columns_url: 'column url',
+        id: 123,
+        node_id: 'some id',
+        name: 'Mock PullRequest',
+        body: 'A big text explaining what this mock PR does'
+      }
+    }));
+    (octokit.projects.listForRepo as any).mockImplementation(async () => ({
+      data: [
+        {
+          owner_url: 'example owner url',
+          url: 'another mock url',
+          html_url: 'one more url',
+          columns_url: 'column url',
+          id: 123,
+          node_id: 'some id',
+          name: 'test project',
+          body: 'A big text explaining what this mock PR does'
+        }
+      ]
+    }));
+    (octokit.projects.listColumns as any).mockImplementation(async () => ({
+      data: [
+        {
+          url: 'a mock url',
+          project_url: 'the project url',
+          cards_url: 'a mock card_url',
+          id: 1234,
+          node_id: 'a node id',
+          name: 'test column 1',
+          created_at: '2021-12-16',
+          updated_at: '2021-12-16'
+        }
+      ]
+    }));
+    (octokit.projects.createCard as any).mockImplementation(async () => ({
+      data: {
+        url: 'card url',
+        id: 12345,
+        node_id: 'card node_id',
+        note: null,
+        project_url: 'mock project url'
+      }
+    }));
+    createProjectCard({
+      project_name,
+      project_destination_column_name,
+      pull_number,
+      note: 'This PR is adding an extra note due that we want to not add the PRs information'
+    });
+  });
+
+  it('should associate the note information provided into the card', () => {
+    expect(octokit.projects.createCard).toHaveBeenCalledWith({
+      column_id: 1234,
+      note: 'This PR is adding an extra note due that we want to not add the PRs information',
+      ...context.repo
+    });
+
+    expect(octokit.projects.createCard).toHaveBeenCalledTimes(1);
+    expect(octokit.projects.moveCard).not.toHaveBeenCalledTimes(1);
   });
 });
