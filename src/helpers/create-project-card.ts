@@ -54,8 +54,8 @@ export const createProjectCard = async ({ pull_number, project_name, project_des
                     octokit.projects
                       .createCard({
                         column_id: filteredColumn.id,
-                        content_id: pullRequest.id,
-                        content_type: note ? 'Issue' : 'PullRequest',
+                        content_id: note ? null : pullRequest.id,
+                        content_type: note ? null : 'PullRequest',
                         note,
                         ...context.repo
                       })
