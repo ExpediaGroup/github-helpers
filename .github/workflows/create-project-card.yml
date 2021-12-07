@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: eg-default
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -16,4 +16,5 @@ jobs:
       - uses: ./
         with:
           helper: create-project-card
+          project_name: "PR-Review-queue"
           github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # must 
