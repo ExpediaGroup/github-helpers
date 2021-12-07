@@ -18798,16 +18798,6 @@ var map = {
 		710,
 		905
 	],
-	"./add-project-card": [
-		9747,
-		438,
-		747
-	],
-	"./add-project-card.ts": [
-		9747,
-		438,
-		747
-	],
 	"./assign-pr-reviewers": [
 		3154,
 		438,
