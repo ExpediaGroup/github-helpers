@@ -24,10 +24,10 @@ interface CreateProjectCardProps {
   pull_number: number;
   login?: string;
   project_name: string;
-  destination_column_name: string;
+  project_destination_column_name: string;
 }
 
-export const createProjectCard = async ({ pull_number, project_name, destination_column_name }: CreateProjectCardProps) => {
+export const createProjectCard = async ({ pull_number, project_name, project_destination_column_name }: CreateProjectCardProps) => {
   console.log('project name: ', project_name);
   console.log('si entre');
   return octokit.pulls
@@ -54,7 +54,7 @@ export const createProjectCard = async ({ pull_number, project_name, destination
                   per_page: 100
                 })
                 .then(response => {
-                  const filteredColumn = filterDestinationColumn(response, destination_column_name);
+                  const filteredColumn = filterDestinationColumn(response, project_destination_column_name);
                   if (filteredColumn) {
                     return addProjectCard({
                       column_id: filteredColumn.id,

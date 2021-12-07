@@ -74,7 +74,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-const createProjectCard = ({ pull_number, project_name, destination_column_name }) => __awaiter(void 0, void 0, void 0, function* () {
+const createProjectCard = ({ pull_number, project_name, project_destination_column_name }) => __awaiter(void 0, void 0, void 0, function* () {
     console.log('project name: ', project_name);
     console.log('si entre');
     return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
@@ -91,7 +91,7 @@ const createProjectCard = ({ pull_number, project_name, destination_column_name 
                         per_page: 100
                     })
                         .then(response => {
-                        const filteredColumn = filterDestinationColumn(response, destination_column_name);
+                        const filteredColumn = filterDestinationColumn(response, project_destination_column_name);
                         if (filteredColumn) {
                             return (0,_add_project_card__WEBPACK_IMPORTED_MODULE_1__.addProjectCard)({
                                 column_id: filteredColumn.id,
