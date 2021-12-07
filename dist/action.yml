@@ -20,7 +20,7 @@ inputs:
     description: 'The name of the column that the card should be created or moved to'
     required: false
   project_origin_column_name: 
-    description: 'The name of the column from where the card should taken'
+    description: 'The name of the column from where the card should be taken'
     required: false
   sha:
     description: 'The commit hash'

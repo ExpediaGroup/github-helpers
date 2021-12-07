@@ -17,15 +17,9 @@ exports.modules = {
 /* harmony export */   "Ak": () => (/* binding */ READY_FOR_MERGE_PR_LABEL),
 /* harmony export */   "IH": () => (/* binding */ FIRST_QUEUED_PR_LABEL),
 /* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL),
-/* harmony export */   "ak": () => (/* binding */ QUEUED_FOR_REVIEW),
-/* harmony export */   "HW": () => (/* binding */ DEFAULT_PR_TITLE_REGEX),
-/* harmony export */   "ju": () => (/* binding */ WAITING_FOR_PEER_APPROVAL),
-/* harmony export */   "vt": () => (/* binding */ IN_REVIEW_COLUMN),
-/* harmony export */   "wM": () => (/* binding */ READY_FOR_REVIEW_COLUMN),
-/* harmony export */   "ne": () => (/* binding */ CORE_REVIEW_APPROVED_COLUMN),
-/* harmony export */   "Te": () => (/* binding */ ProjectNamesByRepo)
+/* harmony export */   "HW": () => (/* binding */ DEFAULT_PR_TITLE_REGEX)
 /* harmony export */ });
-/* unused harmony export DEFAULT_EXEMPT_DESCRIPTION */
+/* unused harmony exports DEFAULT_EXEMPT_DESCRIPTION, QUEUED_FOR_REVIEW, WAITING_FOR_PEER_APPROVAL, IN_REVIEW_COLUMN, READY_FOR_REVIEW_COLUMN, CORE_REVIEW_APPROVED_COLUMN, ProjectNamesByRepo */
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");

@@ -14,18 +14,21 @@ limitations under the License.
 import * as core from '@actions/core';
 import { CardListResponse, ColumnListResponse, ProjectListResponse, PullRequest, PullRequestGetResponse } from '../types';
 import { context } from '@actions/github';
-import { getProjectName } from '../utils/get-project-name';
 import { octokit } from '../octokit';
 
 interface MoveProjectCardProps {
-  originColumn: string;
-  destinationColumn: string;
+  project_destination_column_name: string;
   pull_number: number;
+  project_name: string;
+  project_origin_column_name: string;
 }
 
-export const moveProjectCard = async ({ pull_number, destinationColumn, originColumn }: MoveProjectCardProps) => {
-  const repositoryName = context.repo.repo;
-  const projectName = getProjectName({ repo: repositoryName });
+export const moveProjectCard = async ({
+  pull_number,
+  project_destination_column_name,
+  project_origin_column_name,
+  project_name
+}: MoveProjectCardProps) => {
   return octokit.pulls
     .get({
       pull_number,
@@ -42,7 +45,7 @@ export const moveProjectCard = async ({ pull_number, destinationColumn, originCo
             ...context.repo
           })
           .then(projects => {
-            const project = findProjectToModify(projects, projectName);
+            const project = findProjectToModify(projects, project_name);
             if (project) {
               octokit.projects
                 .listColumns({
@@ -50,8 +53,8 @@ export const moveProjectCard = async ({ pull_number, destinationColumn, originCo
                   per_page: 100
                 })
                 .then(response => {
-                  const coreReviewColumn = filterDestinationColumn(response, destinationColumn);
-                  const filteredColumn = getOriginColumn(response, originColumn);
+                  const coreReviewColumn = filterDestinationColumn(response, project_destination_column_name);
+                  const filteredColumn = getOriginColumn(response, project_origin_column_name);
                   if (filteredColumn) {
                     octokit.projects
                       .listCards({
@@ -80,12 +83,13 @@ export const moveProjectCard = async ({ pull_number, destinationColumn, originCo
     });
 };
 
-const findProjectToModify = (projectsResponse: ProjectListResponse, projectName: string) =>
-  projectsResponse.data.find(project => project.name === projectName);
+const findProjectToModify = (projectsResponse: ProjectListResponse, project_name: string) =>
+  projectsResponse.data.find(project => project.name === project_name);
 
-const filterDestinationColumn = (columns: ColumnListResponse, destinationColumn: string) =>
-  columns.data.find(column => column.name === destinationColumn);
+const filterDestinationColumn = (columns: ColumnListResponse, project_destination_column_name: string) =>
+  columns.data.find(column => column.name === project_destination_column_name);
 
-const getOriginColumn = (columns: ColumnListResponse, originColumn: string) => columns.data.find(column => column.name === originColumn);
+const getOriginColumn = (columns: ColumnListResponse, project_origin_column_name: string) =>
+  columns.data.find(column => column.name === project_origin_column_name);
 
 const getCardToMove = (cardsResponse: CardListResponse, issueUrl: string) => cardsResponse.data.find(card => card.content_url === issueUrl);
