@@ -17,4 +17,5 @@ jobs:
         with:
           helper: create-project-card
           project_name: "PR-Review-queue"
-          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # must 
+          pull_number: ${{ github.event.pull_request.number }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
