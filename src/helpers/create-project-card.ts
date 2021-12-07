@@ -22,9 +22,10 @@ interface CreateProjectCardProps {
   login?: string;
   project_name: string;
   project_destination_column_name: string;
+  note?: string;
 }
 
-export const createProjectCard = async ({ pull_number, project_name, project_destination_column_name }: CreateProjectCardProps) => {
+export const createProjectCard = async ({ pull_number, project_name, project_destination_column_name, note }: CreateProjectCardProps) => {
   return octokit.pulls
     .get({
       pull_number,
@@ -54,7 +55,8 @@ export const createProjectCard = async ({ pull_number, project_name, project_des
                       .createCard({
                         column_id: filteredColumn.id,
                         content_id: pullRequest.id,
-                        content_type: 'PullRequest',
+                        content_type: note ? '' : 'PullRequest',
+                        note,
                         ...context.repo
                       })
                       .then(response => {

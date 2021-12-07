@@ -39,7 +39,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-const createProjectCard = ({ pull_number, project_name, project_destination_column_name }) => __awaiter(void 0, void 0, void 0, function* () {
+const createProjectCard = ({ pull_number, project_name, project_destination_column_name, note }) => __awaiter(void 0, void 0, void 0, function* () {
     return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
         .then((getResponse) => {
         const pullRequest = getResponse.data;
@@ -55,7 +55,7 @@ const createProjectCard = ({ pull_number, project_name, project_destination_colu
                         .then(response => {
                         const filteredColumn = filterDestinationColumn(response, project_destination_column_name);
                         if (filteredColumn) {
-                            _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.createCard */ .K.projects.createCard(Object.assign({ column_id: filteredColumn.id, content_id: pullRequest.id, content_type: 'PullRequest' }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
+                            _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.createCard */ .K.projects.createCard(Object.assign({ column_id: filteredColumn.id, content_id: pullRequest.id, content_type: note ? '' : 'PullRequest', note }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
                                 .then(response => {
                                 // move the card to the coulmn's bottom after created
                                 _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.moveCard */ .K.projects.moveCard({
