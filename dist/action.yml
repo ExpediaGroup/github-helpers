@@ -14,7 +14,7 @@ inputs:
     description: 'The pull request number'
     required: false
   project_name:
-    description: 'The GitHub Project's name'
+    description: 'The GitHub Projects name'
     required: false
   sha:
     description: 'The commit hash'
