@@ -18798,6 +18798,16 @@ var map = {
 		710,
 		905
 	],
+	"./add-project-card": [
+		9747,
+		438,
+		747
+	],
+	"./add-project-card.ts": [
+		9747,
+		438,
+		747
+	],
 	"./assign-pr-reviewers": [
 		3154,
 		438,
@@ -18881,6 +18891,46 @@ var map = {
 		420,
 		438,
 		420
+	],
+	"./move-project-card": [
+		136,
+		438,
+		136
+	],
+	"./move-project-card-to-approved": [
+		8940,
+		438,
+		940
+	],
+	"./move-project-card-to-approved.ts": [
+		8940,
+		438,
+		940
+	],
+	"./move-project-card-to-in-review": [
+		2680,
+		438,
+		680
+	],
+	"./move-project-card-to-in-review.ts": [
+		2680,
+		438,
+		680
+	],
+	"./move-project-card-to-ready-for-review": [
+		5118,
+		438,
+		118
+	],
+	"./move-project-card-to-ready-for-review.ts": [
+		5118,
+		438,
+		118
+	],
+	"./move-project-card.ts": [
+		136,
+		438,
+		136
 	],
 	"./notify-pipeline-complete": [
 		8101,

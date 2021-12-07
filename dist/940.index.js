@@ -1,5 +1,5 @@
-exports.id = 4;
-exports.ids = [4,461,61];
+exports.id = 940;
+exports.ids = [940,136,61];
 exports.modules = {
 
 /***/ 9042:
@@ -70,17 +70,17 @@ const ProjectNamesByRepo = [
 
 /***/ }),
 
-/***/ 3461:
+/***/ 8940:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "createPrComment": () => (/* binding */ createPrComment)
+/* harmony export */   "moveProjectCardToApproved": () => (/* binding */ moveProjectCardToApproved)
 /* harmony export */ });
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
+/* harmony import */ var _move_project_card__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(136);
+/* harmony import */ var _remove_label__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(61);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -93,29 +93,48 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 
 
-const createPrComment = ({ body, pull_number }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+
+const moveProjectCardToApproved = ({ pull_number }) => __awaiter(void 0, void 0, void 0, function* () {
+    const originColumn = _constants__WEBPACK_IMPORTED_MODULE_0__/* .IN_REVIEW_COLUMN */ .vt;
+    const destinationColumn = _constants__WEBPACK_IMPORTED_MODULE_0__/* .CORE_REVIEW_APPROVED_COLUMN */ .ne;
+    (0,_move_project_card__WEBPACK_IMPORTED_MODULE_1__.moveProjectCard)({ pull_number, originColumn, destinationColumn }).then(() => {
+        (0,_remove_label__WEBPACK_IMPORTED_MODULE_2__.removeLabel)({ pull_number: String(pull_number), label: _constants__WEBPACK_IMPORTED_MODULE_0__/* .QUEUED_FOR_REVIEW */ .ak });
+    });
+});
 
 
 /***/ }),
 
-/***/ 1004:
+/***/ 136:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+// ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "prepareQueuedPrForMerge": () => (/* binding */ prepareQueuedPrForMerge)
-/* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9042);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _create_pr_comment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3461);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6161);
-/* harmony import */ var _remove_label__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(61);
+
+// EXPORTS
+__webpack_require__.d(__webpack_exports__, {
+  "moveProjectCard": () => (/* binding */ moveProjectCard)
+});
+
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
+var core = __webpack_require__(2186);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
+var github = __webpack_require__(5438);
+// EXTERNAL MODULE: ./src/constants.ts
+var constants = __webpack_require__(9042);
+;// CONCATENATED MODULE: ./src/utils/get-project-name.ts
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -129,32 +148,88 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
-
-
-
-
-const prepareQueuedPrForMerge = ({ prevent_merge_conflicts, default_branch = _constants__WEBPACK_IMPORTED_MODULE_1__/* .DEFAULT_BRANCH */ .mj }) => _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
-    .then(findNextPrToMerge)
-    .then(pullRequest => {
-    if (pullRequest) {
-        return _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.repos.merge */ .K.repos.merge(Object.assign({ base: pullRequest.head.ref, head: default_branch }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
-            .catch(error => {
-            if (error.status === 409 && Boolean(prevent_merge_conflicts)) {
-                _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('The next PR to merge has a conflict. Removing this PR from merge queue.');
-                return Promise.all([
-                    (0,_create_pr_comment__WEBPACK_IMPORTED_MODULE_3__.createPrComment)(Object.assign({ body: 'This PR has a merge conflict, so it is being removed from the merge queue.', pull_number: String(pullRequest.number) }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo)),
-                    (0,_remove_label__WEBPACK_IMPORTED_MODULE_5__.removeLabel)(Object.assign({ label: _constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, pull_number: String(pullRequest.number) }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
-                ]);
-            }
-        });
-    }
-});
-const findNextPrToMerge = (pullRequestsResponse) => {
-    var _a;
-    return (_a = pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_1__/* .JUMP_THE_QUEUE_PR_LABEL */ .nJ]))) !== null && _a !== void 0 ? _a : pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_1__/* .FIRST_QUEUED_PR_LABEL */ .IH]));
+const getProjectName = ({ repo }) => {
+    const repos = constants/* ProjectNamesByRepo.find */.Te.find((item) => item[repo]);
+    const [projectName] = Object.values(repos || {});
+    return projectName;
 };
-const hasRequiredLabels = (pr, requiredLabels) => requiredLabels.every(mergeQueueLabel => pr.labels.some(label => label.name === mergeQueueLabel));
+
+// EXTERNAL MODULE: ./src/octokit.ts
+var octokit = __webpack_require__(6161);
+;// CONCATENATED MODULE: ./src/helpers/move-project-card.ts
+/*
+Copyright 2021 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+
+
+const moveProjectCard = ({ pull_number, destinationColumn, originColumn }) => __awaiter(void 0, void 0, void 0, function* () {
+    const repositoryName = github.context.repo.repo;
+    const projectName = getProjectName({ repo: repositoryName });
+    return octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number }, github.context.repo))
+        .then((getResponse) => {
+        const pullRequest = getResponse.data;
+        if (pullRequest) {
+            octokit/* octokit.projects.listForRepo */.K.projects.listForRepo(Object.assign({ state: 'open', per_page: 100 }, github.context.repo))
+                .then(projects => {
+                const project = findProjectToModify(projects, projectName);
+                if (project) {
+                    octokit/* octokit.projects.listColumns */.K.projects.listColumns({
+                        project_id: project.id,
+                        per_page: 100
+                    })
+                        .then(response => {
+                        const coreReviewColumn = filterDestinationColumn(response, destinationColumn);
+                        const filteredColumn = getOriginColumn(response, originColumn);
+                        if (filteredColumn) {
+                            octokit/* octokit.projects.listCards */.K.projects.listCards({
+                                column_id: filteredColumn.id
+                            })
+                                .then(cards => {
+                                const cardToMove = getCardToMove(cards, pullRequest.issue_url);
+                                if (cardToMove && coreReviewColumn) {
+                                    octokit/* octokit.projects.moveCard */.K.projects.moveCard({
+                                        card_id: cardToMove.id,
+                                        column_id: coreReviewColumn.id,
+                                        position: 'top'
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    })
+        .catch(error => {
+        if (error.status === 409) {
+            core.info('There was an error moving the project card.');
+        }
+    });
+});
+const findProjectToModify = (projectsResponse, projectName) => projectsResponse.data.find(project => project.name === projectName);
+const filterDestinationColumn = (columns, destinationColumn) => columns.data.find(column => column.name === destinationColumn);
+const getOriginColumn = (columns, originColumn) => columns.data.find(column => column.name === originColumn);
+const getCardToMove = (cardsResponse, issueUrl) => cardsResponse.data.find(card => card.content_url === issueUrl);
 
 
 /***/ }),
@@ -229,4 +304,4 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_act
 
 };
 ;
-//# sourceMappingURL=4.index.js.map
+//# sourceMappingURL=940.index.js.map

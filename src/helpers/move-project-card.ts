@@ -11,11 +11,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { octokit } from '../octokit';
 import * as core from '@actions/core';
+import { CardListResponse, ColumnListResponse, ProjectListResponse, PullRequest, PullRequestGetResponse } from '../types';
 import { context } from '@actions/github';
-import { PullRequest, PullRequestGetResponse, ProjectListResponse, ColumnListResponse, CardListResponse } from '../types';
 import { getProjectName } from '../utils/get-project-name';
+import { octokit } from '../octokit';
 
 interface MoveProjectCardProps {
   originColumn: string;

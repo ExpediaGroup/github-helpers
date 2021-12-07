@@ -1,0 +1,19 @@
+name: Create Project Card
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'src/helpers/create-project-card.ts'
+
+jobs:
+  test:
+    runs-on: eg-default
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: ./
+        with:
+          helper: create-project-card
+          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # must 

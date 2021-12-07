@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { WAITING_FOR_PEER_APPROVAL, READY_FOR_REVIEW_COLUMN } from '../constants';
+import { READY_FOR_REVIEW_COLUMN, WAITING_FOR_PEER_APPROVAL } from '../constants';
 import { moveProjectCard } from './move-project-card';
 
 interface moveProjectCardToReadyForReviewProps {

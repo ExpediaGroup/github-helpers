@@ -11,8 +11,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { CORE_REVIEW_APPROVED_COLUMN, IN_REVIEW_COLUMN, QUEUED_FOR_REVIEW } from '../constants';
 import { moveProjectCard } from './move-project-card';
-import { IN_REVIEW_COLUMN, CORE_REVIEW_APPROVED_COLUMN, QUEUED_FOR_REVIEW } from '../constants';
 import { removeLabel } from './remove-label';
 interface MoveProjectCardProps {
   pull_number: number;

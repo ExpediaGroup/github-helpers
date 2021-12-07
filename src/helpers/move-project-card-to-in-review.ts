@@ -11,8 +11,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { moveProjectCard } from './move-project-card';
 import { IN_REVIEW_COLUMN, READY_FOR_REVIEW_COLUMN } from '../constants';
+import { moveProjectCard } from './move-project-card';
 
 interface MoveProjectCardProps {
   pull_number: number;
