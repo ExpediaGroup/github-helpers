@@ -13,10 +13,8 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { ColumnListResponse, ProjectListResponse, PullRequest, PullRequestGetResponse } from '../types';
-import { WAITING_FOR_PEER_APPROVAL } from '../constants';
 import { addProjectCard } from './add-project-card';
 import { context } from '@actions/github';
-import { getProjectName } from '../utils/get-project-name';
 import { octokit } from '../octokit';
 
 // import { addLabels } from './add-labels';
@@ -25,15 +23,13 @@ interface CreateProjectCardProps {
   teams?: string;
   pull_number: number;
   login?: string;
-  project_name?: string;
+  project_name: string;
+  destination_column_name: string;
 }
 
-export const createProjectCard = async ({ pull_number, project_name }: CreateProjectCardProps) => {
+export const createProjectCard = async ({ pull_number, project_name, destination_column_name }: CreateProjectCardProps) => {
   console.log('project name: ', project_name);
-  const repositoryName = context.repo.repo;
-  const projectName = getProjectName({ repo: repositoryName });
   console.log('si entre');
-  const destinationColumn = WAITING_FOR_PEER_APPROVAL;
   return octokit.pulls
     .get({
       pull_number,
@@ -49,7 +45,7 @@ export const createProjectCard = async ({ pull_number, project_name }: CreatePro
             ...context.repo
           })
           .then(projects => {
-            const project = findProjectToModify(projects, projectName);
+            const project = findProjectToModify(projects, project_name);
             console.log('project');
             if (project) {
               octokit.projects
@@ -58,7 +54,7 @@ export const createProjectCard = async ({ pull_number, project_name }: CreatePro
                   per_page: 100
                 })
                 .then(response => {
-                  const filteredColumn = filterDestinationColumn(response, destinationColumn);
+                  const filteredColumn = filterDestinationColumn(response, destination_column_name);
                   if (filteredColumn) {
                     return addProjectCard({
                       column_id: filteredColumn.id,

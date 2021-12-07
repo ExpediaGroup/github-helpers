@@ -1,5 +1,5 @@
 exports.id = 940;
-exports.ids = [940,263,61];
+exports.ids = [940,136,61];
 exports.modules = {
 
 /***/ 9042:
@@ -79,7 +79,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "moveProjectCardToApproved": () => (/* binding */ moveProjectCardToApproved)
 /* harmony export */ });
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
-/* harmony import */ var _move_project_card__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(7263);
+/* harmony import */ var _move_project_card__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(136);
 /* harmony import */ var _remove_label__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(61);
 /*
 Copyright 2021 Expedia, Inc.
@@ -116,20 +116,47 @@ const moveProjectCardToApproved = ({ pull_number }) => __awaiter(void 0, void 0,
 
 /***/ }),
 
-/***/ 7263:
+/***/ 136:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+// ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "moveProjectCard": () => (/* binding */ moveProjectCard)
-/* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _utils_get_project_name__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3231);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6161);
+
+// EXPORTS
+__webpack_require__.d(__webpack_exports__, {
+  "moveProjectCard": () => (/* binding */ moveProjectCard)
+});
+
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
+var core = __webpack_require__(2186);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
+var github = __webpack_require__(5438);
+// EXTERNAL MODULE: ./src/constants.ts
+var constants = __webpack_require__(9042);
+;// CONCATENATED MODULE: ./src/utils/get-project-name.ts
+/*
+Copyright 2021 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+const getProjectName = ({ repo }) => {
+    const repos = constants/* ProjectNamesByRepo.find */.Te.find((item) => item[repo]);
+    const [projectName] = Object.values(repos || {});
+    return projectName;
+};
+
+// EXTERNAL MODULE: ./src/octokit.ts
+var octokit = __webpack_require__(6161);
+;// CONCATENATED MODULE: ./src/helpers/move-project-card.ts
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -156,17 +183,17 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const moveProjectCard = ({ pull_number, destinationColumn, originColumn }) => __awaiter(void 0, void 0, void 0, function* () {
-    const repositoryName = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo;
-    const projectName = (0,_utils_get_project_name__WEBPACK_IMPORTED_MODULE_2__/* .getProjectName */ .s)({ repo: repositoryName });
-    return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
+    const repositoryName = github.context.repo.repo;
+    const projectName = getProjectName({ repo: repositoryName });
+    return octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number }, github.context.repo))
         .then((getResponse) => {
         const pullRequest = getResponse.data;
         if (pullRequest) {
-            _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.projects.listForRepo */ .K.projects.listForRepo(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
+            octokit/* octokit.projects.listForRepo */.K.projects.listForRepo(Object.assign({ state: 'open', per_page: 100 }, github.context.repo))
                 .then(projects => {
                 const project = findProjectToModify(projects, projectName);
                 if (project) {
-                    _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.projects.listColumns */ .K.projects.listColumns({
+                    octokit/* octokit.projects.listColumns */.K.projects.listColumns({
                         project_id: project.id,
                         per_page: 100
                     })
@@ -174,13 +201,13 @@ const moveProjectCard = ({ pull_number, destinationColumn, originColumn }) => __
                         const coreReviewColumn = filterDestinationColumn(response, destinationColumn);
                         const filteredColumn = getOriginColumn(response, originColumn);
                         if (filteredColumn) {
-                            _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.projects.listCards */ .K.projects.listCards({
+                            octokit/* octokit.projects.listCards */.K.projects.listCards({
                                 column_id: filteredColumn.id
                             })
                                 .then(cards => {
                                 const cardToMove = getCardToMove(cards, pullRequest.issue_url);
                                 if (cardToMove && coreReviewColumn) {
-                                    _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.projects.moveCard */ .K.projects.moveCard({
+                                    octokit/* octokit.projects.moveCard */.K.projects.moveCard({
                                         card_id: cardToMove.id,
                                         column_id: coreReviewColumn.id,
                                         position: 'top'
@@ -195,7 +222,7 @@ const moveProjectCard = ({ pull_number, destinationColumn, originColumn }) => __
     })
         .catch(error => {
         if (error.status === 409) {
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('There was an error moving the project card.');
+            core.info('There was an error moving the project card.');
         }
     });
 });
@@ -271,36 +298,6 @@ limitations under the License.
 
 
 const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true })).rest;
-
-
-/***/ }),
-
-/***/ 3231:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "s": () => (/* binding */ getProjectName)
-/* harmony export */ });
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
-/*
-Copyright 2021 Expedia, Inc.
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-    https://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-const getProjectName = ({ repo }) => {
-    const repos = _constants__WEBPACK_IMPORTED_MODULE_0__/* .ProjectNamesByRepo.find */ .Te.find((item) => item[repo]);
-    const [projectName] = Object.values(repos || {});
-    return projectName;
-};
 
 
 /***/ })

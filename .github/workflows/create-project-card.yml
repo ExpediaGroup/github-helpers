@@ -16,6 +16,7 @@ jobs:
       - uses: ./
         with:
           helper: create-project-card
-          project_name: "PR-Review-queue"
+          project_name: 'PR-Review-queue'
+          destination_column_name: 'Waiting for Peer Approval'
           pull_number: ${{ github.event.pull_request.number }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
