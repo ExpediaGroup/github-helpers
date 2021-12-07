@@ -12,10 +12,10 @@ limitations under the License.
 */
 
 import { DEFAULT_PIPELINE_DESCRIPTION, DEFAULT_PIPELINE_STATUS, PRODUCTION_ENVIRONMENT } from '../constants';
-import { octokit } from '../octokit';
-import { map } from 'bluebird';
-import { setDeploymentStatus } from './set-deployment-status';
 import { context as githubContext } from '@actions/github';
+import { map } from 'bluebird';
+import { octokit } from '../octokit';
+import { setDeploymentStatus } from './set-deployment-status';
 
 interface NotifyPipelineComplete {
   context?: string;

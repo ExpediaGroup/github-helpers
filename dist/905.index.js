@@ -61,9 +61,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "addLabels": () => (/* binding */ addLabels)
 /* harmony export */ });
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6161);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -78,7 +78,7 @@ limitations under the License.
 */
 
 
-const addLabels = ({ pull_number, labels }) => _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: labels.split('\n'), issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+const addLabels = ({ pull_number, labels }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: labels.split('\n'), issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
 
 
 /***/ }),
@@ -92,9 +92,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "addPrApprovalLabel": () => (/* binding */ addPrApprovalLabel)
 /* harmony export */ });
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _add_labels__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(1939);
+/* harmony import */ var _add_labels__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1939);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(7290);
 /*
 Copyright 2021 Expedia, Inc.
@@ -124,7 +124,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 const addPrApprovalLabel = ({ teams, login, pull_number }) => __awaiter(void 0, void 0, void 0, function* () {
     const coreMemberLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_3__/* .getCoreMemberLogins */ .c)(teams.split('\n'));
     const approvalLabel = coreMemberLogins.includes(login) ? _constants__WEBPACK_IMPORTED_MODULE_0__/* .CORE_APPROVED_PR_LABEL */ ._d : _constants__WEBPACK_IMPORTED_MODULE_0__/* .PEER_APPROVED_PR_LABEL */ .Xt;
-    return (0,_add_labels__WEBPACK_IMPORTED_MODULE_2__.addLabels)(Object.assign({ labels: approvalLabel, pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    return (0,_add_labels__WEBPACK_IMPORTED_MODULE_1__.addLabels)(Object.assign({ labels: approvalLabel, pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
 });
 
 
@@ -167,11 +167,11 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_act
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "c": () => (/* binding */ getCoreMemberLogins)
 /* harmony export */ });
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6161);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(8710);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(250);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_3__);
 /*
@@ -200,8 +200,8 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const getCoreMemberLogins = (teams) => __awaiter(void 0, void 0, void 0, function* () {
-    const adminLogins = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_1__.map)(teams, team => _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
-        org: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.owner,
+    const adminLogins = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_1__.map)(teams, team => _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
+        org: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner,
         team_slug: team,
         per_page: 100
     })

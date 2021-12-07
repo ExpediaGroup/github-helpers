@@ -61,12 +61,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "checkPrTitle": () => (/* binding */ checkPrTitle)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(9042);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(2186);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_3__);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -83,14 +83,14 @@ limitations under the License.
 
 
 
-const checkPrTitle = ({ pull_number, pattern = _constants__WEBPACK_IMPORTED_MODULE_3__/* .DEFAULT_PR_TITLE_REGEX */ .HW }) => {
+const checkPrTitle = ({ pull_number, pattern = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PR_TITLE_REGEX */ .HW }) => {
     const regex = new RegExp(pattern);
     return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
         .then(prResponse => {
         if (regex.test(prResponse.data.title)) {
             return true;
         }
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed)('Pull request title does not meet requirements.');
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.setFailed)('Pull request title does not meet requirements.');
         return false;
     });
 };

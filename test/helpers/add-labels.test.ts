@@ -12,8 +12,8 @@ limitations under the License.
 */
 
 import { addLabels } from '../../src/helpers/add-labels';
-import { octokit } from '../../src/octokit';
 import { context } from '@actions/github';
+import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({

@@ -14,14 +14,10 @@ __webpack_require__.d(__webpack_exports__, {
   "assignPrReviewers": () => (/* binding */ assignPrReviewers)
 });
 
-// EXTERNAL MODULE: ./src/octokit.ts
-var octokit = __webpack_require__(6161);
-// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
-var github = __webpack_require__(5438);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __webpack_require__(2186);
-// EXTERNAL MODULE: ./node_modules/lodash/lodash.js
-var lodash = __webpack_require__(250);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
+var github = __webpack_require__(5438);
 // EXTERNAL MODULE: ./src/utils/get-core-member-logins.ts
 var get_core_member_logins = __webpack_require__(7290);
 // EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
@@ -29,6 +25,8 @@ var bluebird = __webpack_require__(8710);
 // EXTERNAL MODULE: ./node_modules/axios/index.js
 var axios = __webpack_require__(6545);
 var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
+// EXTERNAL MODULE: ./src/octokit.ts
+var octokit = __webpack_require__(6161);
 ;// CONCATENATED MODULE: ./src/utils/notify-reviewer.ts
 /*
 Copyright 2021 Expedia, Inc.
@@ -73,6 +71,8 @@ const notifyReviewer = ({ login, pull_number, slack_webhook_url }) => __awaiter(
     return slackResponse.data;
 });
 
+// EXTERNAL MODULE: ./node_modules/lodash/lodash.js
+var lodash = __webpack_require__(250);
 ;// CONCATENATED MODULE: ./src/helpers/assign-pr-reviewers.ts
 /*
 Copyright 2021 Expedia, Inc.
@@ -157,11 +157,11 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_act
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "c": () => (/* binding */ getCoreMemberLogins)
 /* harmony export */ });
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6161);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(8710);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(250);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_3__);
 /*
@@ -190,8 +190,8 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const getCoreMemberLogins = (teams) => __awaiter(void 0, void 0, void 0, function* () {
-    const adminLogins = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_1__.map)(teams, team => _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
-        org: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.owner,
+    const adminLogins = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_1__.map)(teams, team => _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
+        org: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner,
         team_slug: team,
         per_page: 100
     })

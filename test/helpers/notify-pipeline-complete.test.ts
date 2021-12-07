@@ -11,11 +11,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { notifyPipelineComplete } from '../../src/helpers/notify-pipeline-complete';
 import { DEFAULT_PIPELINE_DESCRIPTION, DEFAULT_PIPELINE_STATUS, PRODUCTION_ENVIRONMENT } from '../../src/constants';
+import { context } from '@actions/github';
+import { notifyPipelineComplete } from '../../src/helpers/notify-pipeline-complete';
 import { octokit } from '../../src/octokit';
 import { setDeploymentStatus } from '../../src/helpers/set-deployment-status';
-import { context } from '@actions/github';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
@@ -36,8 +36,8 @@ jest.mock('../../src/helpers/set-deployment-status');
 describe('setOpenPullRequestStatus', () => {
   const description = 'Pipeline clear.';
 
-  beforeEach(() => {
-    notifyPipelineComplete({});
+  beforeEach(async () => {
+    await notifyPipelineComplete({});
   });
 
   it('should call list with correct params', () => {

@@ -11,11 +11,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { octokit } from '../octokit';
-import { context as githubContext } from '@actions/github';
 import * as core from '@actions/core';
 import { DEFAULT_PIPELINE_STATUS, GITHUB_OPTIONS, PRODUCTION_ENVIRONMENT } from '../constants';
 import { PipelineState } from '../types';
+import { context as githubContext } from '@actions/github';
+import { octokit } from '../octokit';
 
 interface SetLatestPipelineStatus {
   sha: string;
