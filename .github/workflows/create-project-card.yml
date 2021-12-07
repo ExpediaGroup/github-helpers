@@ -17,7 +17,6 @@ jobs:
         with:
           helper: create-project-card
           project_name: 'test project'
-          note: 'This PR is adding this note cause it needs it. You should not place notes too frequent, but it is what it is.'
           project_destination_column_name: 'test column 1'
           pull_number: ${{ github.event.pull_request.number }}
           github_token: ${{ secrets.GITHUB_TOKEN }}

@@ -58,15 +58,17 @@ const createProjectCard = ({ pull_number, project_name, project_destination_colu
                             if (note) {
                                 _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.createCard */ .K.projects.createCard(Object.assign({ column_id: filteredColumn.id, note }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
                             }
-                            _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.createCard */ .K.projects.createCard(Object.assign({ column_id: filteredColumn.id, content_id: pullRequest.id, content_type: 'PullRequest', note }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
-                                .then(response => {
-                                // move the card to the coulmn's bottom after created
-                                _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.moveCard */ .K.projects.moveCard({
-                                    card_id: response.data.id,
-                                    position: 'bottom',
-                                    column_id: filteredColumn.id
+                            else {
+                                _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.createCard */ .K.projects.createCard(Object.assign({ column_id: filteredColumn.id, content_id: pullRequest.id, content_type: 'PullRequest', note }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
+                                    .then(response => {
+                                    // move the card to the coulmn's bottom after created
+                                    _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.moveCard */ .K.projects.moveCard({
+                                        card_id: response.data.id,
+                                        position: 'bottom',
+                                        column_id: filteredColumn.id
+                                    });
                                 });
-                            });
+                            }
                         }
                     });
                 }

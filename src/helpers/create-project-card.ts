@@ -57,23 +57,24 @@ export const createProjectCard = async ({ pull_number, project_name, project_des
                         note,
                         ...context.repo
                       });
-                    }
-                    octokit.projects
-                      .createCard({
-                        column_id: filteredColumn.id,
-                        content_id: pullRequest.id,
-                        content_type: 'PullRequest',
-                        note,
-                        ...context.repo
-                      })
-                      .then(response => {
-                        // move the card to the coulmn's bottom after created
-                        octokit.projects.moveCard({
-                          card_id: response.data.id,
-                          position: 'bottom',
-                          column_id: filteredColumn.id
+                    } else {
+                      octokit.projects
+                        .createCard({
+                          column_id: filteredColumn.id,
+                          content_id: pullRequest.id,
+                          content_type: 'PullRequest',
+                          note,
+                          ...context.repo
+                        })
+                        .then(response => {
+                          // move the card to the coulmn's bottom after created
+                          octokit.projects.moveCard({
+                            card_id: response.data.id,
+                            position: 'bottom',
+                            column_id: filteredColumn.id
+                          });
                         });
-                      });
+                    }
                   }
                 });
             }
