@@ -55,7 +55,7 @@ export const createProjectCard = async ({ pull_number, project_name, project_des
                       .createCard({
                         column_id: filteredColumn.id,
                         content_id: pullRequest.id,
-                        content_type: note ? '' : 'PullRequest',
+                        content_type: note ? 'Issue' : 'PullRequest',
                         note,
                         ...context.repo
                       })
