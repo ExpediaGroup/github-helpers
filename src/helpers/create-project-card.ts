@@ -25,9 +25,11 @@ interface CreateProjectCardProps {
   teams?: string;
   pull_number: number;
   login?: string;
+  project_name?: string;
 }
 
-export const createProjectCard = async ({ pull_number }: CreateProjectCardProps) => {
+export const createProjectCard = async ({ pull_number, project_name }: CreateProjectCardProps) => {
+  console.log('project name: ', project_name);
   const repositoryName = context.repo.repo;
   const projectName = getProjectName({ repo: repositoryName });
   console.log('si entre');

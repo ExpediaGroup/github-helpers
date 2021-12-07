@@ -146,7 +146,8 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-const createProjectCard = ({ pull_number }) => __awaiter(void 0, void 0, void 0, function* () {
+const createProjectCard = ({ pull_number, project_name }) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('project name: ', project_name);
     const repositoryName = _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo.repo;
     const projectName = (0,_utils_get_project_name__WEBPACK_IMPORTED_MODULE_4__/* .getProjectName */ .s)({ repo: repositoryName });
     console.log('si entre');
