@@ -47,7 +47,6 @@ const createProjectCard = ({ pull_number, project_name, project_destination_colu
             _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.listForRepo */ .K.projects.listForRepo(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
                 .then(projects => {
                 const project = findProjectToModify(projects, project_name);
-                console.log('project');
                 if (project) {
                     _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.listColumns */ .K.projects.listColumns({
                         project_id: project.id,

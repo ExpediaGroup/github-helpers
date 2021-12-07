@@ -40,7 +40,6 @@ export const createProjectCard = async ({ pull_number, project_name, project_des
           })
           .then(projects => {
             const project = findProjectToModify(projects, project_name);
-            console.log('project');
             if (project) {
               octokit.projects
                 .listColumns({

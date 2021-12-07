@@ -19,7 +19,7 @@ exports.modules = {
 /* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL),
 /* harmony export */   "HW": () => (/* binding */ DEFAULT_PR_TITLE_REGEX)
 /* harmony export */ });
-/* unused harmony exports DEFAULT_EXEMPT_DESCRIPTION, QUEUED_FOR_REVIEW, WAITING_FOR_PEER_APPROVAL, IN_REVIEW_COLUMN, READY_FOR_REVIEW_COLUMN, CORE_REVIEW_APPROVED_COLUMN, ProjectNamesByRepo */
+/* unused harmony export DEFAULT_EXEMPT_DESCRIPTION */
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,18 +48,7 @@ const PEER_APPROVED_PR_LABEL = 'PEER APPROVED';
 const READY_FOR_MERGE_PR_LABEL = 'READY FOR MERGE';
 const FIRST_QUEUED_PR_LABEL = 'QUEUED FOR MERGE #1';
 const JUMP_THE_QUEUE_PR_LABEL = 'JUMP THE QUEUE';
-const QUEUED_FOR_REVIEW = 'QUEUED FOR REVIEW :pencil2:';
 const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|style|test|revert|Revert)((.*))?: .+$';
-// GitHub Projects
-const WAITING_FOR_PEER_APPROVAL = 'Waiting for Peer Approval';
-const IN_REVIEW_COLUMN = 'Core Review In Progress';
-const READY_FOR_REVIEW_COLUMN = 'Ready for Core Review QUEUE';
-const CORE_REVIEW_APPROVED_COLUMN = 'Core Review Approved';
-const ProjectNamesByRepo = [
-    {
-        'blossom-flex-ui': 'Blossom-PR-Review-Project'
-    }
-];
 
 
 /***/ }),

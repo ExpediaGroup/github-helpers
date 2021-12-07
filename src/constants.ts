@@ -28,16 +28,4 @@ export const PEER_APPROVED_PR_LABEL = 'PEER APPROVED';
 export const READY_FOR_MERGE_PR_LABEL = 'READY FOR MERGE';
 export const FIRST_QUEUED_PR_LABEL = 'QUEUED FOR MERGE #1';
 export const JUMP_THE_QUEUE_PR_LABEL = 'JUMP THE QUEUE';
-export const QUEUED_FOR_REVIEW = 'QUEUED FOR REVIEW :pencil2:';
 export const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|style|test|revert|Revert)((.*))?: .+$';
-
-// GitHub Projects
-export const WAITING_FOR_PEER_APPROVAL = 'Waiting for Peer Approval';
-export const IN_REVIEW_COLUMN = 'Core Review In Progress';
-export const READY_FOR_REVIEW_COLUMN = 'Ready for Core Review QUEUE';
-export const CORE_REVIEW_APPROVED_COLUMN = 'Core Review Approved';
-export const ProjectNamesByRepo = [
-  {
-    'blossom-flex-ui': 'Blossom-PR-Review-Project'
-  }
-];
