@@ -53,7 +53,7 @@ const moveProjectCard = ({ pull_number, project_destination_column_name, project
                         per_page: 100
                     })
                         .then(response => {
-                        const coreReviewColumn = filterDestinationColumn(response, project_destination_column_name);
+                        const destinationColumn = filterDestinationColumn(response, project_destination_column_name);
                         const filteredColumn = getOriginColumn(response, project_origin_column_name);
                         if (filteredColumn) {
                             _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.listCards */ .K.projects.listCards({
@@ -61,10 +61,10 @@ const moveProjectCard = ({ pull_number, project_destination_column_name, project
                             })
                                 .then(cards => {
                                 const cardToMove = getCardToMove(cards, pullRequest.issue_url);
-                                if (cardToMove && coreReviewColumn) {
+                                if (cardToMove && destinationColumn) {
                                     _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.moveCard */ .K.projects.moveCard({
                                         card_id: cardToMove.id,
-                                        column_id: coreReviewColumn.id,
+                                        column_id: destinationColumn.id,
                                         position: 'top'
                                     });
                                 }

@@ -53,7 +53,7 @@ export const moveProjectCard = async ({
                   per_page: 100
                 })
                 .then(response => {
-                  const coreReviewColumn = filterDestinationColumn(response, project_destination_column_name);
+                  const destinationColumn = filterDestinationColumn(response, project_destination_column_name);
                   const filteredColumn = getOriginColumn(response, project_origin_column_name);
                   if (filteredColumn) {
                     octokit.projects
@@ -62,10 +62,10 @@ export const moveProjectCard = async ({
                       })
                       .then(cards => {
                         const cardToMove = getCardToMove(cards, pullRequest.issue_url);
-                        if (cardToMove && coreReviewColumn) {
+                        if (cardToMove && destinationColumn) {
                           octokit.projects.moveCard({
                             card_id: cardToMove.id,
-                            column_id: coreReviewColumn.id,
+                            column_id: destinationColumn.id,
                             position: 'top'
                           });
                         }
