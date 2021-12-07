@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - 'src/helpers/create-project-card.ts'
+      - 'src/helpers/move-project-card.ts'
 
 jobs:
   test:
@@ -15,7 +15,7 @@ jobs:
 
       - uses: ./
         with:
-          helper: create-project-card
+          helper: move-project-card
           project_name: 'PR-Review-queue'
           project_destination_column_name: 'Ready for Core Review QUEUE'
           project_origin_column_name: 'Waiting for Peer Approval'
