@@ -11,10 +11,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { octokit } from '../octokit';
-import { context } from '@actions/github';
 import { DeploymentState } from '../types';
 import { GITHUB_OPTIONS } from '../constants';
+import { context } from '@actions/github';
+import { octokit } from '../octokit';
 
 interface SetDeploymentStatus {
   state: DeploymentState;

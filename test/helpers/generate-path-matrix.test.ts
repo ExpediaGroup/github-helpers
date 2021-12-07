@@ -11,9 +11,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { context } from '@actions/github';
 import { generatePathMatrix } from '../../src/helpers/generate-path-matrix';
 import { octokit } from '../../src/octokit';
-import { context } from '@actions/github';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({

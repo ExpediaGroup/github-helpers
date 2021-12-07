@@ -12,8 +12,8 @@ limitations under the License.
 */
 
 import { autoApprovePr } from '../../src/helpers/auto-approve-pr';
-import { octokit } from '../../src/octokit';
 import { context } from '@actions/github';
+import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({

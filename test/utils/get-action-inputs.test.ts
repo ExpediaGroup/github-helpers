@@ -12,8 +12,8 @@ limitations under the License.
 */
 
 import { getActionInputs } from '../../src/utils/get-action-inputs';
-import { getInputsFromFile } from '../../src/utils/get-inputs-from-file';
 import { getInput } from '@actions/core';
+import { getInputsFromFile } from '../../src/utils/get-inputs-from-file';
 import { readFileSync } from 'fs';
 
 jest.mock('../../src/utils/get-inputs-from-file');

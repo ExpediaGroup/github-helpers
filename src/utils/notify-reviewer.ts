@@ -11,10 +11,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { octokit } from '../octokit';
-import axios from 'axios';
 import * as core from '@actions/core';
+import axios from 'axios';
 import { context } from '@actions/github';
+import { octokit } from '../octokit';
 
 interface NotifyReviewer {
   login: string;

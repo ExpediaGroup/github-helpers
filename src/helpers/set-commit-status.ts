@@ -11,10 +11,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { octokit } from '../octokit';
 import { PipelineState } from '../types';
-import { map } from 'bluebird';
 import { context as githubContext } from '@actions/github';
+import { map } from 'bluebird';
+import { octokit } from '../octokit';
 
 interface SetCommitStatus {
   sha: string;

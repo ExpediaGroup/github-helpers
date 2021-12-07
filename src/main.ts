@@ -12,8 +12,8 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { getActionInputs } from './utils/get-action-inputs';
 import { camelCase } from 'lodash';
+import { getActionInputs } from './utils/get-action-inputs';
 
 export const run = async () => {
   try {
@@ -23,7 +23,7 @@ export const run = async () => {
     const actionInputs = getActionInputs();
     const output = await method(actionInputs);
     core.setOutput('output', output);
-  } catch (error) {
+  } catch (error: any) {
     core.setFailed(error.message);
   }
 };

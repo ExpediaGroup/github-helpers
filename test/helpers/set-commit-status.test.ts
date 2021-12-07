@@ -11,9 +11,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { context as githubContext } from '@actions/github';
 import { octokit } from '../../src/octokit';
 import { setCommitStatus } from '../../src/helpers/set-commit-status';
-import { context as githubContext } from '@actions/github';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
@@ -30,8 +30,8 @@ describe('setCommitStatus', () => {
   describe('single context', () => {
     const context = 'context';
 
-    beforeEach(() => {
-      setCommitStatus({
+    beforeEach(async () => {
+      await setCommitStatus({
         sha,
         context,
         state,
@@ -55,8 +55,8 @@ describe('setCommitStatus', () => {
   describe('multiple contexts', () => {
     const context = 'context1\ncontext2';
 
-    beforeEach(() => {
-      setCommitStatus({
+    beforeEach(async () => {
+      await setCommitStatus({
         sha,
         context,
         state,

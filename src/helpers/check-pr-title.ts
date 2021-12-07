@@ -11,10 +11,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { setFailed } from '@actions/core';
+import { DEFAULT_PR_TITLE_REGEX } from '../constants';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
-import { DEFAULT_PR_TITLE_REGEX } from '../constants';
+import { setFailed } from '@actions/core';
 
 interface CheckPrTitle {
   pull_number: string;

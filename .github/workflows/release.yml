@@ -17,4 +17,4 @@ jobs:
       - name: Create Release
         run: npx semantic-release --debug --no-ci
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}

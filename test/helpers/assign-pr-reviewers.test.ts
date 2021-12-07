@@ -11,12 +11,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { octokit } from '../../src/octokit';
 import { assignPrReviewers } from '../../src/helpers/assign-pr-reviewers';
-import { sampleSize } from 'lodash';
 import { context } from '@actions/github';
 import { getCoreMemberLogins } from '../../src/utils/get-core-member-logins';
 import { notifyReviewer } from '../../src/utils/notify-reviewer';
+import { octokit } from '../../src/octokit';
+import { sampleSize } from 'lodash';
 
 jest.mock('../../src/utils/get-core-member-logins');
 jest.mock('../../src/utils/notify-reviewer');
