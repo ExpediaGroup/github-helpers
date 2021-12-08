@@ -12,6 +12,7 @@ limitations under the License.
 */
 
 import { DEFAULT_BRANCH, FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
+import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { createPrComment } from '../../src/helpers/create-pr-comment';
 import { octokit } from '../../src/octokit';
@@ -30,14 +31,14 @@ jest.mock('@actions/github', () => ({
 }));
 jest.mock('../../src/helpers/remove-label');
 jest.mock('../../src/helpers/create-pr-comment');
-(octokit.repos.merge as any).mockImplementation(async () => ({ some: 'response' }));
+(octokit.repos.merge as unknown as Mocktokit).mockImplementation(async () => ({ some: 'response' }));
 
 describe('prepareQueuedPrForMerge', () => {
   const ref = 'branch name';
 
   describe('top queued pr exists', () => {
     beforeEach(() => {
-      (octokit.pulls.list as any).mockImplementation(async () => ({
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
         data: [
           {
             head: {
@@ -89,7 +90,7 @@ describe('prepareQueuedPrForMerge', () => {
   describe('pr jumped the queue', () => {
     const jumpQueueBranch = 'jump queue';
     beforeEach(() => {
-      (octokit.pulls.list as any).mockImplementation(async () => ({
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
         data: [
           {
             head: {
@@ -154,7 +155,7 @@ describe('prepareQueuedPrForMerge', () => {
 
   describe('no queued prs exist', () => {
     beforeEach(() => {
-      (octokit.pulls.list as any).mockImplementation(async () => ({
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
         data: [
           {
             head: {
@@ -187,7 +188,7 @@ describe('prepareQueuedPrForMerge', () => {
 
   describe('merge conflict case with prevent_merge_conflicts option', () => {
     beforeEach(() => {
-      (octokit.pulls.list as any).mockImplementation(async () => ({
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
         data: [
           {
             head: {
@@ -217,7 +218,7 @@ describe('prepareQueuedPrForMerge', () => {
           }
         ]
       }));
-      (octokit.repos.merge as any).mockRejectedValue({ status: 409 } as any);
+      (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 } as unknown as Mocktokit);
       prepareQueuedPrForMerge({ prevent_merge_conflicts: 'true' });
     });
 
@@ -237,7 +238,7 @@ describe('prepareQueuedPrForMerge', () => {
 
   describe('merge conflict case without prevent_merge_conflicts option', () => {
     beforeEach(() => {
-      (octokit.pulls.list as any).mockImplementation(async () => ({
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
         data: [
           {
             head: {
@@ -267,7 +268,7 @@ describe('prepareQueuedPrForMerge', () => {
           }
         ]
       }));
-      (octokit.repos.merge as any).mockRejectedValue({ status: 409 } as any);
+      (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
       prepareQueuedPrForMerge({});
     });
 

@@ -11,6 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { Mocktokit } from '../types';
 import { getChangedFiles } from '../../src/helpers/get-changed-files';
 import { octokit } from '../../src/octokit';
 
@@ -46,19 +47,16 @@ const mock_data = [
     patch: '@@ -132,7 +132,7 @@ module Test @@ -1000,7 +1000,7 @@ module Test'
   }
 ];
-(octokit.pulls.listFiles as any).mockImplementation(async () => ({
+(octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
   data: mock_data
 }));
 
 describe('getChangedFiles', () => {
-  let result: any;
   const pull_number = '123';
 
-  beforeEach(async () => {
-    result = await getChangedFiles({ pull_number });
-  });
+  it('should return true if one of the file paths match the file paths that octokit returns', async () => {
+    const result = await getChangedFiles({ pull_number });
 
-  it('should return true if one of the file paths match the file paths that octokit returns', () => {
     expect(result).toEqual(`${mock_data[0].filename},${mock_data[1].filename}`);
   });
 });

@@ -27,14 +27,8 @@ jest.mock('fs');
 }));
 
 describe('getActionInputs', () => {
-  let result: any;
-
-  beforeEach(() => {
-    result = getActionInputs();
-  });
-
   it('should return expected inputs', () => {
-    expect(result).toEqual({
+    expect(getActionInputs()).toEqual({
       input1: 'input1',
       input3: 'input3'
     });

@@ -53,6 +53,7 @@
     "@typescript-eslint/require-array-sort-compare": "error",
     "@typescript-eslint/restrict-plus-operands": "error",
     "@typescript-eslint/type-annotation-spacing": "error",
+    "@typescript-eslint/no-explicit-any": "error",
     "github/array-foreach": "off",
     "github/no-then": "off",
     "i18n-text/no-en": "off",
