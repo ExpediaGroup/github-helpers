@@ -11,6 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { createProjectCard } from '../../src/helpers/create-project-card';
 import { octokit } from '../../src/octokit';
@@ -36,7 +37,7 @@ describe('createProjectCard without note', () => {
   const project_destination_column_name = 'test column 1';
 
   beforeEach(() => {
-    (octokit.pulls.get as any).mockImplementation(async () => ({
+    (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
       data: {
         owner_url: 'example owner url',
         url: 'another mock url',
@@ -48,7 +49,7 @@ describe('createProjectCard without note', () => {
         body: 'A big text explaining what this mock PR does'
       }
     }));
-    (octokit.projects.listForRepo as any).mockImplementation(async () => ({
+    (octokit.projects.listForRepo as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
         {
           owner_url: 'example owner url',
@@ -62,7 +63,7 @@ describe('createProjectCard without note', () => {
         }
       ]
     }));
-    (octokit.projects.listColumns as any).mockImplementation(async () => ({
+    (octokit.projects.listColumns as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
         {
           url: 'a mock url',
@@ -76,7 +77,7 @@ describe('createProjectCard without note', () => {
         }
       ]
     }));
-    (octokit.projects.createCard as any).mockImplementation(async () => ({
+    (octokit.projects.createCard as unknown as Mocktokit).mockImplementation(async () => ({
       data: {
         url: 'card url',
         id: 12345,
@@ -113,7 +114,7 @@ describe('createProjectCard with a note', () => {
   const project_destination_column_name = 'test column 1';
 
   beforeEach(() => {
-    (octokit.pulls.get as any).mockImplementation(async () => ({
+    (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
       data: {
         owner_url: 'example owner url',
         url: 'another mock url',
@@ -125,7 +126,7 @@ describe('createProjectCard with a note', () => {
         body: 'A big text explaining what this mock PR does'
       }
     }));
-    (octokit.projects.listForRepo as any).mockImplementation(async () => ({
+    (octokit.projects.listForRepo as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
         {
           owner_url: 'example owner url',
@@ -139,7 +140,7 @@ describe('createProjectCard with a note', () => {
         }
       ]
     }));
-    (octokit.projects.listColumns as any).mockImplementation(async () => ({
+    (octokit.projects.listColumns as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
         {
           url: 'a mock url',
@@ -153,7 +154,7 @@ describe('createProjectCard with a note', () => {
         }
       ]
     }));
-    (octokit.projects.createCard as any).mockImplementation(async () => ({
+    (octokit.projects.createCard as unknown as Mocktokit).mockImplementation(async () => ({
       data: {
         url: 'card url',
         id: 12345,

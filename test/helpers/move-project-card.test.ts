@@ -11,6 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { Mocktokit } from '../types';
 import { moveProjectCard } from '../../src/helpers/move-project-card';
 import { octokit } from '../../src/octokit';
 
@@ -37,7 +38,7 @@ describe('moveProjectCard', () => {
   const project_origin_column_name = 'test column 1';
 
   beforeEach(() => {
-    (octokit.pulls.get as any).mockImplementation(async () => ({
+    (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
       data: {
         owner_url: 'example owner url',
         url: 'another mock url',
@@ -49,7 +50,7 @@ describe('moveProjectCard', () => {
         body: 'A big text explaining what this mock PR does'
       }
     }));
-    (octokit.projects.listForRepo as any).mockImplementation(async () => ({
+    (octokit.projects.listForRepo as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
         {
           owner_url: 'example owner url',
@@ -63,7 +64,7 @@ describe('moveProjectCard', () => {
         }
       ]
     }));
-    (octokit.projects.listColumns as any).mockImplementation(async () => ({
+    (octokit.projects.listColumns as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
         {
           url: 'a mock url',
@@ -87,7 +88,7 @@ describe('moveProjectCard', () => {
         }
       ]
     }));
-    (octokit.projects.listCards as any).mockImplementation(async () => ({
+    (octokit.projects.listCards as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
         {
           note: null,

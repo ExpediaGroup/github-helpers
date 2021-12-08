@@ -12,6 +12,7 @@ limitations under the License.
 */
 
 import { GITHUB_OPTIONS } from '../../src/constants';
+import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
 import { setDeploymentStatus } from '../../src/helpers/set-deployment-status';
@@ -40,7 +41,7 @@ describe('setDeploymentStatus', () => {
 
   describe('deployment exists', () => {
     beforeEach(() => {
-      (octokit.repos.listDeployments as any).mockImplementation(async () => ({
+      (octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
         data: [
           {
             id: deployment_id
@@ -84,7 +85,7 @@ describe('setDeploymentStatus', () => {
 
   describe('deployment does not exist', () => {
     beforeEach(() => {
-      (octokit.repos.listDeployments as any).mockImplementation(async () => ({
+      (octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
         data: []
       }));
       setDeploymentStatus({
@@ -113,7 +114,7 @@ describe('setDeploymentStatus', () => {
 
   describe('update production deployment', () => {
     beforeEach(() => {
-      (octokit.repos.listDeployments as any).mockImplementation(async () => ({
+      (octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
         data: [
           {
             id: deployment_id

@@ -11,6 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { Mocktokit } from '../types';
 import { checkPrTitle } from '../../src/helpers/check-pr-title';
 import { octokit } from '../../src/octokit';
 
@@ -28,7 +29,7 @@ describe('checkPrTitle', () => {
   });
 
   it('should pass as the PR title conforms to the regex', async () => {
-    (octokit.pulls.get as any).mockImplementation(async () => ({
+    (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
       data: {
         id: 1,
         number: 123,
@@ -45,7 +46,7 @@ describe('checkPrTitle', () => {
   });
 
   it('should fail as the PR title does not conform to the regex', async () => {
-    (octokit.pulls.get as any).mockImplementation(async () => ({
+    (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
       data: {
         id: 1,
         number: 123,
