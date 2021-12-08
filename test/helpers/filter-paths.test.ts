@@ -11,6 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { Mocktokit } from '../types';
 import { filterPaths } from '../../src/helpers/filter-paths';
 import { octokit } from '../../src/octokit';
 
@@ -29,7 +30,7 @@ describe('filterPaths', () => {
   });
 
   it('should return true if one of the file paths match the file paths that octokit returns', async () => {
-    (octokit.pulls.listFiles as any).mockImplementation(async () => ({
+    (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
         {
           sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
@@ -66,7 +67,7 @@ describe('filterPaths', () => {
   });
 
   it('should return false if none of the file paths match the file paths that octokit returns', async () => {
-    (octokit.pulls.listFiles as any).mockImplementation(async () => ({
+    (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
         {
           sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
@@ -104,7 +105,7 @@ describe('filterPaths', () => {
 
   it('should return false when data is an empty array', async () => {
     const exactFilePath = 'exact/file/path';
-    (octokit.pulls.listFiles as any).mockImplementation(async () => ({
+    (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
       data: []
     }));
     const result = await filterPaths({
@@ -117,7 +118,7 @@ describe('filterPaths', () => {
 
   it('exact file path case', async () => {
     const exactFilePath = 'exact/file/path';
-    (octokit.pulls.listFiles as any).mockImplementation(async () => ({
+    (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
         {
           sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',

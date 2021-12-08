@@ -12,6 +12,7 @@ limitations under the License.
 */
 
 import { DEFAULT_PIPELINE_DESCRIPTION, DEFAULT_PIPELINE_STATUS, PRODUCTION_ENVIRONMENT } from '../../src/constants';
+import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { notifyPipelineComplete } from '../../src/helpers/notify-pipeline-complete';
 import { octokit } from '../../src/octokit';
@@ -29,7 +30,7 @@ jest.mock('@actions/github', () => ({
 }));
 jest.mock('../../src/helpers/set-deployment-status');
 
-(octokit.pulls.list as any).mockImplementation(async () => ({
+(octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
   data: [{ head: { sha: 'sha 1' } }, { head: { sha: 'sha 2' } }, { head: { sha: 'sha 3' } }]
 }));
 

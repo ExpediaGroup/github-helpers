@@ -13,4 +13,5 @@ limitations under the License.
 
 import * as yaml from 'js-yaml';
 
-export const getInputsFromFile = (yamlContents: string) => Object.keys((yaml.load(yamlContents) as any).inputs);
+export const getInputsFromFile = (yamlContents: string) =>
+  Object.keys((yaml.load(yamlContents) as { inputs: Record<string, string> }).inputs);

@@ -12,6 +12,7 @@ limitations under the License.
 */
 
 import { GITHUB_OPTIONS } from '../../src/constants';
+import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { initiateDeployment } from '../../src/helpers/initiate-deployment';
 import { octokit } from '../../src/octokit';
@@ -30,7 +31,7 @@ jest.mock('@actions/github', () => ({
 }));
 
 const deployment_id = 123;
-(octokit.repos.createDeployment as any).mockImplementation(async () => ({
+(octokit.repos.createDeployment as unknown as Mocktokit).mockImplementation(async () => ({
   data: {
     id: deployment_id
   }

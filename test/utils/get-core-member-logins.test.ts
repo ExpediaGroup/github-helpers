@@ -11,6 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { context } from '@actions/github';
 import { getCoreMemberLogins } from '../../src/utils/get-core-member-logins';
 import { octokit } from '../../src/octokit';
@@ -34,13 +35,9 @@ jest.mock('@actions/github', () => ({
 const teams = ['team1', 'team2'];
 
 describe('getCoreMemberLogins', () => {
-  let result: any;
+  it.each(teams)('should call listMembersInOrg with correct params', async (team: string) => {
+    await getCoreMemberLogins(teams);
 
-  beforeEach(async () => {
-    result = await getCoreMemberLogins(teams);
-  });
-
-  it.each(teams)('should call listMembersInOrg with correct params', (team: string) => {
     expect(octokit.teams.listMembersInOrg).toHaveBeenCalledWith({
       org: context.repo.owner,
       team_slug: team,
@@ -48,7 +45,9 @@ describe('getCoreMemberLogins', () => {
     });
   });
 
-  it('should return expected result', () => {
+  it('should return expected result', async () => {
+    const result = await getCoreMemberLogins(teams);
+
     expect(result).toEqual(['user1', 'user2', 'user3', 'user4', 'user5']);
   });
 });

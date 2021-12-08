@@ -14,7 +14,6 @@ limitations under the License.
 import { getInputsFromFile } from '../../src/utils/get-inputs-from-file';
 
 describe('getInputsFromFile', () => {
-  let result: any;
   const yamlContents = `
 name: Create PR Comment
 description: 'Creates a new issue comment for a pull request'
@@ -30,11 +29,7 @@ runs:
   main: 'dist/index.js'
 `;
 
-  beforeEach(() => {
-    result = getInputsFromFile(yamlContents);
-  });
-
   it('should return expected inputs', () => {
-    expect(result).toEqual(['input1', 'input2']);
+    expect(getInputsFromFile(yamlContents)).toEqual(['input1', 'input2']);
   });
 });

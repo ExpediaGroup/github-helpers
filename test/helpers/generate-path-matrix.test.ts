@@ -11,6 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { generatePathMatrix } from '../../src/helpers/generate-path-matrix';
 import { octokit } from '../../src/octokit';
@@ -27,7 +28,7 @@ const file3 = 'something/totally/crazy/file1.txt';
 const file4 = 'something/totally/not/crazy/file1.md';
 const file5 = 'something/totally/crazy/file1.js';
 const pkg = 'package.json';
-(octokit.pulls.listFiles as any).mockImplementation(async () => ({
+(octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
   data: [
     {
       filename: file1
@@ -58,16 +59,11 @@ describe('generatePathMatrix', () => {
   const paths = `${filePath1},${filePath2},${filePath3}`;
 
   describe('no override filter paths case', () => {
-    let result: any;
-
-    beforeEach(async () => {
-      result = await generatePathMatrix({
+    it('should call listFiles with correct params', async () => {
+      await generatePathMatrix({
         paths,
         pull_number
       });
-    });
-
-    it('should call listFiles with correct params', () => {
       expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
         pull_number: 123,
         per_page: 100,
@@ -75,7 +71,11 @@ describe('generatePathMatrix', () => {
       });
     });
 
-    it('should return expected result', () => {
+    it('should return expected result', async () => {
+      const result = await generatePathMatrix({
+        paths,
+        pull_number
+      });
       expect(result).toEqual({
         include: [
           {
@@ -90,18 +90,14 @@ describe('generatePathMatrix', () => {
   });
 
   describe('override filter paths case', () => {
-    let result: any;
     const override_filter_paths = 'package.json\npackage-lock.json';
 
-    beforeEach(async () => {
-      result = await generatePathMatrix({
+    it('should call listFiles with correct params', async () => {
+      await generatePathMatrix({
         paths,
         pull_number,
         override_filter_paths
       });
-    });
-
-    it('should call listFiles with correct params', () => {
       expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
         pull_number: 123,
         per_page: 100,
@@ -109,7 +105,12 @@ describe('generatePathMatrix', () => {
       });
     });
 
-    it('should return expected result', () => {
+    it('should return expected result', async () => {
+      const result = await generatePathMatrix({
+        paths,
+        pull_number,
+        override_filter_paths
+      });
       expect(result).toEqual({
         include: [
           {
@@ -127,18 +128,14 @@ describe('generatePathMatrix', () => {
   });
 
   describe('additional no-filter paths case', () => {
-    let result: any;
     const extraPath = 'an/extra/path';
 
-    beforeEach(async () => {
-      result = await generatePathMatrix({
+    it('should call listFiles with correct params', async () => {
+      await generatePathMatrix({
         paths: `${paths},${extraPath}`,
         pull_number,
         paths_no_filter: `${extraPath},${filePath1}`
       });
-    });
-
-    it('should call listFiles with correct params', () => {
       expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
         pull_number: 123,
         per_page: 100,
@@ -146,7 +143,12 @@ describe('generatePathMatrix', () => {
       });
     });
 
-    it('should return expected result', () => {
+    it('should return expected result', async () => {
+      const result = await generatePathMatrix({
+        paths: `${paths},${extraPath}`,
+        pull_number,
+        paths_no_filter: `${extraPath},${filePath1}`
+      });
       expect(result).toEqual({
         include: [
           {
@@ -164,19 +166,16 @@ describe('generatePathMatrix', () => {
   });
 
   describe('batches case', () => {
-    let result: any;
     const override_filter_paths = 'package.json\npackage-lock.json';
 
-    beforeEach(async () => {
-      result = await generatePathMatrix({
+    it('should call listFiles with correct params', async () => {
+      await generatePathMatrix({
         paths,
         pull_number,
         override_filter_paths,
         batches: '2'
       });
-    });
 
-    it('should call listFiles with correct params', () => {
       expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
         pull_number: 123,
         per_page: 100,
@@ -184,7 +183,14 @@ describe('generatePathMatrix', () => {
       });
     });
 
-    it('should return expected result', () => {
+    it('should return expected result', async () => {
+      const result = await generatePathMatrix({
+        paths,
+        pull_number,
+        override_filter_paths,
+        batches: '2'
+      });
+
       expect(result).toEqual({
         include: [
           {
