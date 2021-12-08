@@ -34,8 +34,8 @@ export const moveProjectCard = async ({
   const pullRequest = getResponse.data as PullRequest;
   const columnsList = await getProjectColumns({ project_name });
 
-  if (!columnsList || columnsList.data.length === 0) {
-    core.info(`There are no columns associated to ${project_name} project.`);
+  if (!columnsList?.data?.length) {
+    core.error(`There are no columns associated to ${project_name} project.`);
     return;
   }
 

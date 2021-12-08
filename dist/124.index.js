@@ -42,15 +42,16 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const createProjectCard = ({ pull_number, project_name, project_destination_column_name, note }) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const getResponse = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
     const pullRequest = getResponse.data;
     const columnsList = yield (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__/* .getProjectColumns */ .N)({ project_name });
-    if (!columnsList || columnsList.data.length === 0) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`There are no columns associated to ${project_name} project.`);
+    if (!((_a = columnsList === null || columnsList === void 0 ? void 0 : columnsList.data) === null || _a === void 0 ? void 0 : _a.length)) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(`There are no columns associated to ${project_name} project.`);
         return;
     }
     const destinationColumn = (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__/* .getDestinationColumn */ .Y)(columnsList, project_destination_column_name);
-    const cardParams = generateCardParams(note, destinationColumn, pullRequest);
+    const cardParams = generateCardParams(destinationColumn, pullRequest, note);
     if (destinationColumn) {
         return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.projects.createCard */ .K.projects.createCard(cardParams);
     }
@@ -59,7 +60,7 @@ const createProjectCard = ({ pull_number, project_name, project_destination_colu
         return;
     }
 });
-const generateCardParams = (note, filteredColumn, pullRequest) => {
+const generateCardParams = (filteredColumn, pullRequest, note) => {
     if (note) {
         return Object.assign({ column_id: filteredColumn === null || filteredColumn === void 0 ? void 0 : filteredColumn.id, note }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo);
     }

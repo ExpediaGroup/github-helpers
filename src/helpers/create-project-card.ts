@@ -29,13 +29,13 @@ export const createProjectCard = async ({ pull_number, project_name, project_des
   const pullRequest = getResponse.data as PullRequest;
   const columnsList = await getProjectColumns({ project_name });
 
-  if (!columnsList || columnsList.data.length === 0) {
-    core.info(`There are no columns associated to ${project_name} project.`);
+  if (!columnsList?.data?.length) {
+    core.error(`There are no columns associated to ${project_name} project.`);
     return;
   }
 
   const destinationColumn = getDestinationColumn(columnsList, project_destination_column_name);
-  const cardParams = generateCardParams(note, destinationColumn, pullRequest);
+  const cardParams = generateCardParams(destinationColumn, pullRequest, note);
 
   if (destinationColumn) {
     return octokit.projects.createCard(cardParams);
@@ -45,7 +45,7 @@ export const createProjectCard = async ({ pull_number, project_name, project_des
   }
 };
 
-const generateCardParams = (note: string | undefined, filteredColumn: any, pullRequest: PullRequest) => {
+const generateCardParams = (filteredColumn: any, pullRequest: PullRequest, note?: string) => {
   if (note) {
     return {
       column_id: filteredColumn?.id,
