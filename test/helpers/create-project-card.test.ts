@@ -23,8 +23,7 @@ jest.mock('@actions/github', () => ({
       projects: {
         createCard: jest.fn(),
         listForRepo: jest.fn(),
-        listColumns: jest.fn(),
-        moveCard: jest.fn()
+        listColumns: jest.fn()
       },
       pulls: { get: jest.fn() }
     }
@@ -101,14 +100,7 @@ describe('createProjectCard without note', () => {
       ...context.repo
     });
 
-    expect(octokit.projects.moveCard).toHaveBeenCalledWith({
-      card_id: 12345,
-      position: 'bottom',
-      column_id: 1234
-    });
-
     expect(octokit.projects.createCard).toHaveBeenCalledTimes(1);
-    expect(octokit.projects.moveCard).toHaveBeenCalledTimes(1);
   });
   afterAll(() => {
     jest.clearAllMocks();
@@ -186,6 +178,5 @@ describe('createProjectCard with a note', () => {
     });
 
     expect(octokit.projects.createCard).toHaveBeenCalledTimes(1);
-    expect(octokit.projects.moveCard).not.toHaveBeenCalledTimes(1);
   });
 });

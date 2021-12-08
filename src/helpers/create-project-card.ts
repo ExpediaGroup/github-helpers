@@ -11,8 +11,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import * as core from '@actions/core';
-import { ColumnListResponse, ProjectListResponse, PullRequest, PullRequestGetResponse } from '../types';
+import { getDestinationColumn, getProjectColumns } from '../utils/get-project-columns';
+import { PullRequest } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
@@ -26,70 +26,35 @@ interface CreateProjectCardProps {
 }
 
 export const createProjectCard = async ({ pull_number, project_name, project_destination_column_name, note }: CreateProjectCardProps) => {
-  return octokit.pulls
-    .get({
-      pull_number,
-      ...context.repo
-    })
-    .then((getResponse: PullRequestGetResponse) => {
-      const pullRequest = getResponse.data as PullRequest;
-      if (pullRequest) {
-        octokit.projects
-          .listForRepo({
-            state: 'open',
-            per_page: 100,
-            ...context.repo
-          })
-          .then(projects => {
-            const project = findProjectToModify(projects, project_name);
-            if (project) {
-              octokit.projects
-                .listColumns({
-                  project_id: project.id,
-                  per_page: 100
-                })
-                .then(response => {
-                  const filteredColumn = filterDestinationColumn(response, project_destination_column_name);
-                  if (filteredColumn) {
-                    if (note) {
-                      octokit.projects.createCard({
-                        column_id: filteredColumn.id,
-                        note,
-                        ...context.repo
-                      });
-                    } else {
-                      octokit.projects
-                        .createCard({
-                          column_id: filteredColumn.id,
-                          content_id: pullRequest.id,
-                          content_type: 'PullRequest',
-                          note,
-                          ...context.repo
-                        })
-                        .then(response => {
-                          // move the card to the coulmn's bottom after created
-                          octokit.projects.moveCard({
-                            card_id: response.data.id,
-                            position: 'bottom',
-                            column_id: filteredColumn.id
-                          });
-                        });
-                    }
-                  }
-                });
-            }
-          });
-      }
-    })
-    .catch(error => {
-      if (error.status === 409) {
-        core.info('There was an error creating the project card.');
-      }
-    });
+  const getResponse = await octokit.pulls.get({ pull_number, ...context.repo });
+  const pullRequest = getResponse.data as PullRequest;
+  const columnsList = await getProjectColumns({ project_name });
+
+  if (!columnsList) {
+    return null;
+  }
+
+  const destinationColumn = getDestinationColumn(columnsList, project_destination_column_name);
+  const cardParams = generateCardParams(note, destinationColumn, pullRequest);
+  if (destinationColumn) {
+    return octokit.projects.createCard(cardParams);
+  }
 };
 
-const findProjectToModify = (projectsResponse: ProjectListResponse, projectName: string) =>
-  projectsResponse.data.find(project => project.name === projectName);
+const generateCardParams = (note: string | undefined, filteredColumn: any, pullRequest: PullRequest) => {
+  if (note) {
+    return {
+      column_id: filteredColumn?.id,
+      note,
+      ...context.repo
+    };
+  }
 
-const filterDestinationColumn = (columns: ColumnListResponse, destinationColumn: string) =>
-  columns.data.find(column => column.name === destinationColumn);
+  return {
+    column_id: filteredColumn?.id,
+    content_id: pullRequest.id,
+    content_type: 'PullRequest',
+    note,
+    ...context.repo
+  };
+};
