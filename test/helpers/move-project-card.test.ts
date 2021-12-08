@@ -109,7 +109,7 @@ describe('moveProjectCard', () => {
     });
   });
 
-  it('should call createProjectCard with correct params and move the card to the bottom after created', () => {
+  it('should call moveProjectCard with the proper arguments', () => {
     expect(octokit.projects.moveCard).toHaveBeenCalledWith({
       card_id: 1234,
       column_id: 12345,
