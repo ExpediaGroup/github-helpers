@@ -32,9 +32,9 @@ jobs:
       - name: Compare the expected and actual dist/ directories
         id: diff
         run: |
-          if [ -n "$(git diff-index --exit-code --ignore-submodules HEAD)" ]; then
+          if [ `git status --porcelain` ]; then
             echo "Detected uncommitted changes after build.  See status below:"
-            git diff
+            git status
             exit 1
           fi
 
