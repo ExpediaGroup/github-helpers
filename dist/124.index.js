@@ -65,7 +65,7 @@ const generateCardParams = (note, filteredColumn, pull_number) => {
     if (note) {
         return Object.assign({ column_id: filteredColumn === null || filteredColumn === void 0 ? void 0 : filteredColumn.id, note }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo);
     }
-    return Object.assign({ column_id: filteredColumn === null || filteredColumn === void 0 ? void 0 : filteredColumn.id, content_id: pull_number, content_type: 'PullRequest', note }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo);
+    return Object.assign({ column_id: filteredColumn === null || filteredColumn === void 0 ? void 0 : filteredColumn.id, content_id: Number(pull_number), content_type: 'PullRequest', note }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo);
 };
 
 

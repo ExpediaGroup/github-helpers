@@ -59,7 +59,7 @@ const generateCardParams = (note: string | undefined, filteredColumn: any, pull_
 
   return {
     column_id: filteredColumn?.id,
-    content_id: pull_number,
+    content_id: Number(pull_number),
     content_type: 'PullRequest',
     note,
     ...context.repo
