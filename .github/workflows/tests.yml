@@ -28,3 +28,19 @@ jobs:
 
       - name: Package
         run: npm run package
+
+      - name: Compare the expected and actual dist/ directories
+        id: diff
+        run: |
+          if [ "$(git diff --ignore-space-at-eol dist/ | wc -l)" -gt "0" ]; then
+            echo "Detected uncommitted changes after build.  See status below:"
+            git diff
+            exit 1
+          fi
+
+      # If dist/ was different than expected, upload the expected version as an artifact
+      - uses: actions/upload-artifact@v2
+        if: ${{ failure() && steps.diff.conclusion == 'failure' }}
+        with:
+          name: dist
+          path: dist/
