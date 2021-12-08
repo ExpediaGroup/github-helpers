@@ -38,7 +38,7 @@ export const createProjectCard = async ({ pull_number, project_name, project_des
   }
 
   const destinationColumn = getDestinationColumn(columnsList, project_destination_column_name);
-  const cardParams = generateCardParams(note, destinationColumn, pullRequest);
+  const cardParams = generateCardParams(note, destinationColumn, pull_number);
 
   if (destinationColumn) {
     return octokit.projects.createCard(cardParams);
@@ -48,7 +48,7 @@ export const createProjectCard = async ({ pull_number, project_name, project_des
   }
 };
 
-const generateCardParams = (note: string | undefined, filteredColumn: any, pullRequest: PullRequest) => {
+const generateCardParams = (note: string | undefined, filteredColumn: any, pull_number: number) => {
   if (note) {
     return {
       column_id: filteredColumn?.id,
@@ -59,7 +59,7 @@ const generateCardParams = (note: string | undefined, filteredColumn: any, pullR
 
   return {
     column_id: filteredColumn?.id,
-    content_id: pullRequest.id,
+    content_id: pull_number,
     content_type: 'PullRequest',
     note,
     ...context.repo

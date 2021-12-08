@@ -52,7 +52,7 @@ const createProjectCard = ({ pull_number, project_name, project_destination_colu
         return;
     }
     const destinationColumn = (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__/* .getDestinationColumn */ .Y)(columnsList, project_destination_column_name);
-    const cardParams = generateCardParams(note, destinationColumn, pullRequest);
+    const cardParams = generateCardParams(note, destinationColumn, pull_number);
     if (destinationColumn) {
         return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.projects.createCard */ .K.projects.createCard(cardParams);
     }
@@ -61,11 +61,11 @@ const createProjectCard = ({ pull_number, project_name, project_destination_colu
         return;
     }
 });
-const generateCardParams = (note, filteredColumn, pullRequest) => {
+const generateCardParams = (note, filteredColumn, pull_number) => {
     if (note) {
         return Object.assign({ column_id: filteredColumn === null || filteredColumn === void 0 ? void 0 : filteredColumn.id, note }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo);
     }
-    return Object.assign({ column_id: filteredColumn === null || filteredColumn === void 0 ? void 0 : filteredColumn.id, content_id: pullRequest.id, content_type: 'PullRequest', note }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo);
+    return Object.assign({ column_id: filteredColumn === null || filteredColumn === void 0 ? void 0 : filteredColumn.id, content_id: pull_number, content_type: 'PullRequest', note }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo);
 };
 
 
