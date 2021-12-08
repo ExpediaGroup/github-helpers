@@ -11,8 +11,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { CardListResponse, PullRequest } from '../types';
-import { getDestinationColumn, getOriginColumn, getProjectColumns } from '../utils/get-project-columns';
+import * as core from '@actions/core';
+import { CardListResponse, ColumnListResponse, PullRequest } from '../types';
+import { getDestinationColumn, getProjectColumns } from '../utils/get-project-columns';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
@@ -33,15 +34,17 @@ export const moveProjectCard = async ({
   const pullRequest = getResponse.data as PullRequest;
   const columnsList = await getProjectColumns({ project_name });
 
-  if (!columnsList) {
-    return null;
+  if (!columnsList || columnsList.data.length === 0) {
+    core.info(`There are no columns associated to ${project_name} project.`);
+    return;
   }
 
   const destinationColumn = getDestinationColumn(columnsList, project_destination_column_name);
   const originColumn = getOriginColumn(columnsList, project_origin_column_name);
 
   if (!originColumn) {
-    return null;
+    core.info(`No origin column was found for the name ${project_origin_column_name}`);
+    return;
   }
 
   const cardList = await octokit.projects.listCards({ column_id: originColumn.id });
@@ -49,7 +52,13 @@ export const moveProjectCard = async ({
 
   if (cardToMove && destinationColumn) {
     return octokit.projects.moveCard({ card_id: cardToMove.id, column_id: destinationColumn.id, position: 'top' });
+  } else {
+    core.info(`No destination column or card to move was found`);
+    return;
   }
 };
 
 const getCardToMove = (cardsResponse: CardListResponse, issueUrl: string) => cardsResponse.data.find(card => card.content_url === issueUrl);
+
+const getOriginColumn = (columns: ColumnListResponse, project_origin_column_name: string) =>
+  columns.data.find(column => column.name === project_origin_column_name);

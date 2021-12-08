@@ -10,10 +10,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "moveProjectCard": () => (/* binding */ moveProjectCard)
 /* harmony export */ });
-/* harmony import */ var _utils_get_project_columns__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3041);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3041);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6161);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,25 +40,33 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+
 const moveProjectCard = ({ pull_number, project_destination_column_name, project_origin_column_name, project_name }) => __awaiter(void 0, void 0, void 0, function* () {
-    const getResponse = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    const getResponse = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
     const pullRequest = getResponse.data;
-    const columnsList = yield (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_0__/* .getProjectColumns */ .N1)({ project_name });
-    if (!columnsList) {
-        return null;
+    const columnsList = yield (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__/* .getProjectColumns */ .N)({ project_name });
+    if (!columnsList || columnsList.data.length === 0) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`There are no columns associated to ${project_name} project.`);
+        return;
     }
-    const destinationColumn = (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_0__/* .getDestinationColumn */ .Yk)(columnsList, project_destination_column_name);
-    const originColumn = (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_0__/* .getOriginColumn */ .mF)(columnsList, project_origin_column_name);
+    const destinationColumn = (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__/* .getDestinationColumn */ .Y)(columnsList, project_destination_column_name);
+    const originColumn = getOriginColumn(columnsList, project_origin_column_name);
     if (!originColumn) {
-        return null;
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`No origin column was found for the name ${project_origin_column_name}`);
+        return;
     }
-    const cardList = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.listCards */ .K.projects.listCards({ column_id: originColumn.id });
+    const cardList = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.projects.listCards */ .K.projects.listCards({ column_id: originColumn.id });
     const cardToMove = getCardToMove(cardList, pullRequest.issue_url);
     if (cardToMove && destinationColumn) {
-        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.moveCard */ .K.projects.moveCard({ card_id: cardToMove.id, column_id: destinationColumn.id, position: 'top' });
+        return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.projects.moveCard */ .K.projects.moveCard({ card_id: cardToMove.id, column_id: destinationColumn.id, position: 'top' });
+    }
+    else {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`No destination column or card to move was found`);
+        return;
     }
 });
 const getCardToMove = (cardsResponse, issueUrl) => cardsResponse.data.find(card => card.content_url === issueUrl);
+const getOriginColumn = (columns, project_origin_column_name) => columns.data.find(column => column.name === project_origin_column_name);
 
 
 /***/ }),
@@ -96,9 +106,8 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_act
 
 "use strict";
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "N1": () => (/* binding */ getProjectColumns),
-/* harmony export */   "Yk": () => (/* binding */ getDestinationColumn),
-/* harmony export */   "mF": () => (/* binding */ getOriginColumn)
+/* harmony export */   "N": () => (/* binding */ getProjectColumns),
+/* harmony export */   "Y": () => (/* binding */ getDestinationColumn)
 /* harmony export */ });
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
@@ -136,7 +145,6 @@ const getProjectColumns = ({ project_name }) => __awaiter(void 0, void 0, void 0
 });
 const findProjectToModify = (projectsResponse, project_name) => projectsResponse.data.find(project => project.name === project_name);
 const getDestinationColumn = (columns, project_destination_column_name) => columns.data.find(column => column.name === project_destination_column_name);
-const getOriginColumn = (columns, project_origin_column_name) => columns.data.find(column => column.name === project_origin_column_name);
 
 
 /***/ })

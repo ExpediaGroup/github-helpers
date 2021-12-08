@@ -35,6 +35,3 @@ const findProjectToModify = (projectsResponse: ProjectListResponse, project_name
 
 export const getDestinationColumn = (columns: ColumnListResponse, project_destination_column_name: string) =>
   columns.data.find(column => column.name === project_destination_column_name);
-
-export const getOriginColumn = (columns: ColumnListResponse, project_origin_column_name: string) =>
-  columns.data.find(column => column.name === project_origin_column_name);

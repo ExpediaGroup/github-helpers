@@ -11,15 +11,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import * as core from '@actions/core';
 import { getDestinationColumn, getProjectColumns } from '../utils/get-project-columns';
 import { PullRequest } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
 interface CreateProjectCardProps {
-  teams?: string;
   pull_number: number;
-  login?: string;
   project_name: string;
   project_destination_column_name: string;
   note?: string;
@@ -30,14 +29,19 @@ export const createProjectCard = async ({ pull_number, project_name, project_des
   const pullRequest = getResponse.data as PullRequest;
   const columnsList = await getProjectColumns({ project_name });
 
-  if (!columnsList) {
-    return null;
+  if (!columnsList || columnsList.data.length === 0) {
+    core.info(`There are no columns associated to ${project_name} project.`);
+    return;
   }
 
   const destinationColumn = getDestinationColumn(columnsList, project_destination_column_name);
   const cardParams = generateCardParams(note, destinationColumn, pullRequest);
+
   if (destinationColumn) {
     return octokit.projects.createCard(cardParams);
+  } else {
+    core.info('No destination column was found');
+    return;
   }
 };
 
@@ -45,8 +49,6 @@ const generateCardParams = (note: string | undefined, filteredColumn: any, pullR
   if (note) {
     return {
       column_id: filteredColumn?.id,
-      content_id: pullRequest.id,
-      content_type: 'PullRequest',
       note,
       ...context.repo
     };
