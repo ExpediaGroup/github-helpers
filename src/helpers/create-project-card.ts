@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { getDestinationColumn, getProjectColumns } from '../utils/get-project-columns';
+import { SingleColumn, getDestinationColumn, getProjectColumns } from '../utils/get-project-columns';
 import { PullRequest } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
@@ -35,17 +35,19 @@ export const createProjectCard = async ({ pull_number, project_name, project_des
   }
 
   const destinationColumn = getDestinationColumn(columnsList, project_destination_column_name);
-  const cardParams = generateCardParams(destinationColumn, pullRequest, note);
 
-  if (destinationColumn) {
-    return octokit.projects.createCard(cardParams);
-  } else {
+  if (!destinationColumn) {
     core.info('No destination column was found');
     return;
   }
+  const cardParams = generateCardParams(pullRequest, destinationColumn, note);
+
+  if (cardParams) {
+    return octokit.projects.createCard(cardParams);
+  }
 };
 
-const generateCardParams = (filteredColumn: any, pullRequest: PullRequest, note?: string) => {
+const generateCardParams = (pullRequest: PullRequest, filteredColumn: SingleColumn, note?: string) => {
   if (note) {
     return {
       column_id: filteredColumn?.id,
@@ -55,7 +57,7 @@ const generateCardParams = (filteredColumn: any, pullRequest: PullRequest, note?
   }
 
   return {
-    column_id: filteredColumn?.id,
+    column_id: filteredColumn.id,
     content_id: pullRequest.id,
     content_type: 'PullRequest',
     note,

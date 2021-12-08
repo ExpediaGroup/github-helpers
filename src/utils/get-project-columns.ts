@@ -19,6 +19,17 @@ interface GetProjectColumns {
   project_name: string;
 }
 
+export interface SingleColumn {
+  url: string;
+  project_url: string;
+  cards_url: string;
+  id: number;
+  node_id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export const getProjectColumns = async ({ project_name }: GetProjectColumns) => {
   const projectList = await octokit.projects.listForRepo({ state: 'open', per_page: 100, ...context.repo });
   const project = findProjectToModify(projectList, project_name);
