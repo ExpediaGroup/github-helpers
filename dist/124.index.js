@@ -45,6 +45,8 @@ const createProjectCard = ({ pull_number, project_name, project_destination_colu
     const getResponse = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
     const pullRequest = getResponse.data;
     const columnsList = yield (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__/* .getProjectColumns */ .N)({ project_name });
+    console.log('pull number: ', pull_number);
+    console.log('pull id', pullRequest.id);
     if (!columnsList || columnsList.data.length === 0) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`There are no columns associated to ${project_name} project.`);
         return;

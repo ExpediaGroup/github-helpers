@@ -29,6 +29,9 @@ export const createProjectCard = async ({ pull_number, project_name, project_des
   const pullRequest = getResponse.data as PullRequest;
   const columnsList = await getProjectColumns({ project_name });
 
+  console.log('pull number: ', pull_number);
+  console.log('pull id', pullRequest.id);
+
   if (!columnsList || columnsList.data.length === 0) {
     core.info(`There are no columns associated to ${project_name} project.`);
     return;
