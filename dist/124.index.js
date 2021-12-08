@@ -53,7 +53,7 @@ const createProjectCard = ({ pull_number, project_name, project_destination_colu
 });
 const generateCardParams = (note, filteredColumn, pullRequest) => {
     if (note) {
-        return Object.assign({ column_id: filteredColumn === null || filteredColumn === void 0 ? void 0 : filteredColumn.id, note }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo);
+        return Object.assign({ column_id: filteredColumn === null || filteredColumn === void 0 ? void 0 : filteredColumn.id, content_id: pullRequest.id, content_type: 'PullRequest', note }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo);
     }
     return Object.assign({ column_id: filteredColumn === null || filteredColumn === void 0 ? void 0 : filteredColumn.id, content_id: pullRequest.id, content_type: 'PullRequest', note }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo);
 };

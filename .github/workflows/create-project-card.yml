@@ -17,6 +17,7 @@ jobs:
         with:
           helper: create-project-card
           project_name: 'test project'
+          note: 'Adding some plain text as example of how this will look like vs of a PullRequest content type'
           project_destination_column_name: 'test column 1'
           pull_number: ${{ github.event.pull_request.number }}
           github_token: ${{ secrets.GITHUB_TOKEN }}

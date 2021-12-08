@@ -45,6 +45,8 @@ const generateCardParams = (note: string | undefined, filteredColumn: any, pullR
   if (note) {
     return {
       column_id: filteredColumn?.id,
+      content_id: pullRequest.id,
+      content_type: 'PullRequest',
       note,
       ...context.repo
     };
