@@ -32,7 +32,6 @@ jobs:
       - name: Compare the expected and actual dist/ directories
         id: diff
         run: |
-          git diff
           if [ -n "$(git diff-index --exit-code --ignore-submodules HEAD)" ]; then
             echo "Detected uncommitted changes after build.  See status below:"
             git diff
