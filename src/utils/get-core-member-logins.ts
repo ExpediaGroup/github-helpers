@@ -11,13 +11,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import * as core from '@actions/core';
+import { CodeOwnersEntry, loadOwners, matchFile } from 'codeowners-utils';
 import { context } from '@actions/github';
+import { getChangedFilepaths } from './get-changed-filepaths';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
 import { union } from 'lodash';
 
-export const getCoreMemberLogins = async (teams: string[]) => {
-  const adminLogins = await map(teams, team =>
+export const getCoreMemberLogins = async (pull_number: string, teams?: string[]) => {
+  const codeOwners = teams ?? (await getCodeOwners(pull_number));
+  if (!codeOwners?.length) {
+    core.setFailed('No code owners found.');
+    throw new Error();
+  }
+
+  const adminLogins = await map(codeOwners, team =>
     octokit.teams
       .listMembersInOrg({
         org: context.repo.owner,
@@ -27,4 +36,14 @@ export const getCoreMemberLogins = async (teams: string[]) => {
       .then(listMembersResponse => listMembersResponse.data.map(member => member.login))
   );
   return union(...adminLogins);
+};
+
+const getCodeOwners = async (pull_number: string) => {
+  const codeOwners = (await loadOwners(process.cwd())) ?? [];
+  const changedFilePaths = await getChangedFilepaths(pull_number);
+  const matchingCodeOwners = changedFilePaths.map(filePath => matchFile(filePath, codeOwners) ?? ({} as CodeOwnersEntry));
+  return matchingCodeOwners
+    .map(owner => owner.owners)
+    .flat()
+    .filter(Boolean);
 };

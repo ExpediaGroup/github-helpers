@@ -62,7 +62,7 @@ const moveProjectCard = ({ pull_number, project_destination_column_name, project
         return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.projects.moveCard */ .K.projects.moveCard({ card_id: cardToMove.id, column_id: destinationColumn.id, position: 'top' });
     }
     else {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`No destination column or card to move was found`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('No destination column or card to move was found');
         return;
     }
 });

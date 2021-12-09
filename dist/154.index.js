@@ -103,7 +103,7 @@ var assign_pr_reviewers_awaiter = (undefined && undefined.__awaiter) || function
 
 
 const assignPrReviewers = ({ teams, pull_number, login, number_of_assignees = '1', slack_webhook_url }) => assign_pr_reviewers_awaiter(void 0, void 0, void 0, function* () {
-    const coreMemberLogins = yield (0,get_core_member_logins/* getCoreMemberLogins */.c)(teams.split('\n'));
+    const coreMemberLogins = yield (0,get_core_member_logins/* getCoreMemberLogins */.c)(pull_number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
     if (login && coreMemberLogins.includes(login)) {
         core.info('Already a core member, no need to assign.');
         return;
@@ -150,6 +150,24 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_act
 
 /***/ }),
 
+/***/ 9180:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "s": () => (/* binding */ getChangedFilepaths)
+/* harmony export */ });
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
+
+
+const getChangedFilepaths = (pull_number) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number: Number(pull_number), per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo))
+    .then(listFilesResponse => listFilesResponse.data.map(file => file.filename));
+
+
+/***/ }),
+
 /***/ 7290:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
@@ -157,13 +175,18 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_act
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "c": () => (/* binding */ getCoreMemberLogins)
 /* harmony export */ });
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(8710);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(250);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var codeowners_utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4445);
+/* harmony import */ var codeowners_utils__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(codeowners_utils__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _get_changed_filepaths__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(9180);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(8710);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(6161);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(250);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_6__);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -189,14 +212,32 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-const getCoreMemberLogins = (teams) => __awaiter(void 0, void 0, void 0, function* () {
-    const adminLogins = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_1__.map)(teams, team => _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
-        org: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner,
+
+
+
+const getCoreMemberLogins = (pull_number, teams) => __awaiter(void 0, void 0, void 0, function* () {
+    const codeOwners = teams !== null && teams !== void 0 ? teams : (yield getCodeOwners(pull_number));
+    if (!(codeOwners === null || codeOwners === void 0 ? void 0 : codeOwners.length)) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No code owners found.');
+        throw new Error();
+    }
+    const adminLogins = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(codeOwners, team => _octokit__WEBPACK_IMPORTED_MODULE_5__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
+        org: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.owner,
         team_slug: team,
         per_page: 100
     })
         .then(listMembersResponse => listMembersResponse.data.map(member => member.login)));
-    return (0,lodash__WEBPACK_IMPORTED_MODULE_3__.union)(...adminLogins);
+    return (0,lodash__WEBPACK_IMPORTED_MODULE_6__.union)(...adminLogins);
+});
+const getCodeOwners = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const codeOwners = (_a = (yield (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd()))) !== null && _a !== void 0 ? _a : [];
+    const changedFilePaths = yield (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_3__/* .getChangedFilepaths */ .s)(pull_number);
+    const matchingCodeOwners = changedFilePaths.map(filePath => { var _a; return (_a = (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.matchFile)(filePath, codeOwners)) !== null && _a !== void 0 ? _a : {}; });
+    return matchingCodeOwners
+        .map(owner => owner.owners)
+        .flat()
+        .filter(Boolean);
 });
 
 

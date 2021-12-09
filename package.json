@@ -8,6 +8,7 @@
     "@octokit/rest": "18.12.0",
     "axios": "0.24.0",
     "bluebird": "3.7.2",
+    "codeowners-utils": "1.0.2",
     "js-yaml": "4.1.0",
     "lodash.camelcase": "4.3.0",
     "lodash.chunk": "4.2.0",

@@ -53,7 +53,7 @@ export const moveProjectCard = async ({
   if (cardToMove && destinationColumn) {
     return octokit.projects.moveCard({ card_id: cardToMove.id, column_id: destinationColumn.id, position: 'top' });
   } else {
-    core.info(`No destination column or card to move was found`);
+    core.info('No destination column or card to move was found');
     return;
   }
 };
