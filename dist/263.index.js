@@ -47,14 +47,14 @@ const moveProjectCard = ({ pull_number, project_destination_column_name, project
     const pullRequest = getResponse.data;
     const columnsList = yield (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__/* .getProjectColumns */ .N)({ project_name });
     if (!((_a = columnsList === null || columnsList === void 0 ? void 0 : columnsList.data) === null || _a === void 0 ? void 0 : _a.length)) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(`There are no columns associated to ${project_name} project.`);
-        throw new Error();
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(`There are no columns associated to ${project_name} project.`);
+        return;
     }
     const destinationColumn = (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__/* .getDestinationColumn */ .Y)(columnsList, project_destination_column_name);
     const originColumn = getOriginColumn(columnsList, project_origin_column_name);
     if (!originColumn) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(`No origin column was found for the name ${project_origin_column_name}`);
-        throw new Error();
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`No origin column was found for the name ${project_origin_column_name}`);
+        return;
     }
     const cardList = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.projects.listCards */ .K.projects.listCards({ column_id: originColumn.id });
     const cardToMove = getCardToMove(cardList, pullRequest.issue_url);

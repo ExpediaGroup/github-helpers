@@ -35,16 +35,16 @@ export const moveProjectCard = async ({
   const columnsList = await getProjectColumns({ project_name });
 
   if (!columnsList?.data?.length) {
-    core.setFailed(`There are no columns associated to ${project_name} project.`);
-    throw new Error();
+    core.error(`There are no columns associated to ${project_name} project.`);
+    return;
   }
 
   const destinationColumn = getDestinationColumn(columnsList, project_destination_column_name);
   const originColumn = getOriginColumn(columnsList, project_origin_column_name);
 
   if (!originColumn) {
-    core.setFailed(`No origin column was found for the name ${project_origin_column_name}`);
-    throw new Error();
+    core.info(`No origin column was found for the name ${project_origin_column_name}`);
+    return;
   }
 
   const cardList = await octokit.projects.listCards({ column_id: originColumn.id });

@@ -30,15 +30,15 @@ export const createProjectCard = async ({ pull_number, project_name, project_des
   const columnsList = await getProjectColumns({ project_name });
 
   if (!columnsList?.data?.length) {
-    core.setFailed(`There are no columns associated to ${project_name} project.`);
-    throw new Error();
+    core.error(`There are no columns associated to ${project_name} project.`);
+    return;
   }
 
   const destinationColumn = getDestinationColumn(columnsList, project_destination_column_name);
 
   if (!destinationColumn) {
-    core.setFailed('No destination column was found');
-    throw new Error();
+    core.info('No destination column was found');
+    return;
   }
   const cardParams = generateCardParams(pullRequest, destinationColumn, note);
 
