@@ -4,5 +4,5 @@
 
 *   @ExpediaGroup/github-helpers-committers
 
-/package/number/1                     test-owners-1
-/package/number/2                     test-owners-2
+/file/path/1                  test-owners-1
+/file/path/2                  test-owners-2

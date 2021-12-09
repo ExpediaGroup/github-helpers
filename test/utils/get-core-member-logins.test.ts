@@ -32,8 +32,8 @@ jest.mock('@actions/github', () => ({
     }
   }))
 }));
-const file1 = 'package/number/1/file1.txt';
-const file2 = 'package/number/2/file2.ts';
+const file1 = 'file/path/1/file1.txt';
+const file2 = 'file/path/2/file2.ts';
 const file3 = 'something/totally/different/file1.txt';
 const pkg = 'package.json';
 
