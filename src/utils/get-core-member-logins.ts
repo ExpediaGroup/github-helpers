@@ -21,6 +21,8 @@ import { union } from 'lodash';
 
 export const getCoreMemberLogins = async (pull_number: string, teams?: string[]) => {
   const codeOwners = teams ?? (await getCodeOwners(pull_number));
+  core.info(`codeOwners: ${codeOwners}`);
+
   if (!codeOwners?.length) {
     core.setFailed('No code owners found.');
     throw new Error();
@@ -40,6 +42,7 @@ export const getCoreMemberLogins = async (pull_number: string, teams?: string[])
 
 const getCodeOwners = async (pull_number: string) => {
   const codeOwners = (await loadOwners(process.cwd())) ?? [];
+  core.info(`codeOwners: ${codeOwners}`);
   const changedFilePaths = await getChangedFilepaths(pull_number);
   const matchingCodeOwners = changedFilePaths.map(filePath => matchFile(filePath, codeOwners) ?? ({} as CodeOwnersEntry));
   return matchingCodeOwners
