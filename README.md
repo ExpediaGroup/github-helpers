@@ -68,7 +68,7 @@ Additionally, the following parameters can be used for additional control over t
 ## Usage
 ### General
 ```yaml
-uses: actions/github-helpers@v1
+uses: ExpediaGroup/github-helpers@v1
 with:
   helper: < HELPER NAME >
   ...
@@ -90,7 +90,7 @@ interface SetCommitStatus {
 ```
 Github Actions workflow invocation:
 ```yaml
-uses: actions/github-helpers@v1
+uses: ExpediaGroup/github-helpers@v1
 with:
   helper: set-commit-status
   sha: ${{ github.event.pull_request.head.sha }}
