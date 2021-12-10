@@ -48,7 +48,7 @@ const PEER_APPROVED_PR_LABEL = 'PEER APPROVED';
 const READY_FOR_MERGE_PR_LABEL = 'READY FOR MERGE';
 const FIRST_QUEUED_PR_LABEL = 'QUEUED FOR MERGE #1';
 const JUMP_THE_QUEUE_PR_LABEL = 'JUMP THE QUEUE';
-const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|style|test|revert|Revert)((.*))?: .+$';
+const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|style|test|revert|Revert|BREAKING CHANGE)((.*))?: .+$';
 
 
 /***/ }),
