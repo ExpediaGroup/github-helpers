@@ -39,7 +39,7 @@ const filterPaths = ({ paths, globs, pull_number }) => _octokit__WEBPACK_IMPORTE
     if (globs) {
         if (paths)
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('`paths` and `globs` inputs found, defaulting to use `globs` for filtering');
-        return micromatch__WEBPACK_IMPORTED_MODULE_2___default()(fileNames, globs.split('\n'));
+        return micromatch__WEBPACK_IMPORTED_MODULE_2___default()(fileNames, globs.split('\n')).length > 0;
     }
     else if (paths) {
         const filePaths = paths.split('\n');

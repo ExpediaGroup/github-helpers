@@ -33,7 +33,7 @@ export const filterPaths = ({ paths, globs, pull_number }: FilterPaths) =>
       const fileNames = listFilesResponse.data.map(file => file.filename);
       if (globs) {
         if (paths) core.info('`paths` and `globs` inputs found, defaulting to use `globs` for filtering');
-        return micromatch(fileNames, globs.split('\n'));
+        return micromatch(fileNames, globs.split('\n')).length > 0;
       } else if (paths) {
         const filePaths = paths.split('\n');
         return fileNames.some(changedFile => filePaths.some(filePath => changedFile.startsWith(filePath)));
