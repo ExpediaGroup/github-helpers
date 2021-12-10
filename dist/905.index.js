@@ -248,7 +248,8 @@ const getCodeOwners = (pull_number) => __awaiter(void 0, void 0, void 0, functio
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(matchingCodeOwners
         .map(owner => owner.owners)
         .flat()
-        .filter(Boolean));
+        .filter(Boolean)
+        .map(owner => owner.split('/')[1]));
 });
 
 

@@ -19,7 +19,7 @@ jest.mock('@actions/core');
 const ownerMap: { [key: string]: Object } = {
   'test-owners-1': { data: [{ login: 'user1' }, { login: 'user2' }] },
   'test-owners-2': { data: [{ login: 'user2' }, { login: 'user3' }] },
-  '@ExpediaGroup/github-helpers-committers': { data: [{ login: 'user4' }] }
+  'github-helpers-committers': { data: [{ login: 'user4' }] }
 };
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' } },

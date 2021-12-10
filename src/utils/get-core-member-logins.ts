@@ -49,5 +49,6 @@ const getCodeOwners = async (pull_number: string) => {
       .map(owner => owner.owners)
       .flat()
       .filter(Boolean)
+      .map(owner => owner.split('/')[1])
   );
 };
