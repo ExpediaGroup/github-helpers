@@ -12,6 +12,7 @@ limitations under the License.
 */
 
 import { DEFAULT_PIPELINE_STATUS, GITHUB_OPTIONS, PRODUCTION_ENVIRONMENT } from '../../src/constants';
+import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
 import { setLatestPipelineStatus } from '../../src/helpers/set-latest-pipeline-status';
@@ -32,7 +33,7 @@ jest.mock('@actions/github', () => ({
 
 const deployment_id = 123;
 
-(octokit.repos.listDeploymentStatuses as any).mockImplementation(async () => ({
+(octokit.repos.listDeploymentStatuses as unknown as Mocktokit).mockImplementation(async () => ({
   data: [
     {
       state: 'success',
@@ -50,7 +51,7 @@ describe('setLatestDeploymentStatus', () => {
   const sha = 'sha';
 
   beforeEach(() => {
-    (octokit.repos.listDeployments as any).mockImplementation(async () => ({
+    (octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
         {
           id: deployment_id

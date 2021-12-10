@@ -13,6 +13,13 @@ Each of the following helpers are defined in a file of the same name in `src/hel
 ### [**assign-pr-reviewers**](.github/workflows/assign-pr-reviewers.yml)
   * Randomly assigns members of a github team to review a PR. If `login` is provided, it does nothing if that user is already part of the team
   * You can also pass a `slack_webhook_url` to notify the assignees that they are assigned to the PR!
+### [**create-project-card**](.github/workflows/create-project-card.yml)
+  * Creates a Project card into your GitHub Project repository by providing a `project_name` and `project_destination_column_name` in which the card should be created.
+  * If `note` is provided, it will add that information into the card. If it is not provided, it will use the PR information details to populate it.
+  * Useful when opening a pull request and want to track its information details into a GitHub Project.
+### [**move-project-card**](.github/workflows/move-project-card.yml)
+  * Moves a GitHub Project card to a new column, using the `project_origin_column_name` and`project_destination_column_name` you provide.
+  * In order to move a card from one place to another, it must already exist.
 ### [**auto-approve-pr**](.github/workflows/auto-approve-pr.yml)
   * Automatically approves a PR if the reviewer's login matches the provided login
 ### [**check-pr-title**](.github/workflows/check-pr-title.yml)

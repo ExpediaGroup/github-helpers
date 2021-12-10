@@ -53,11 +53,13 @@
     "@typescript-eslint/require-array-sort-compare": "error",
     "@typescript-eslint/restrict-plus-operands": "error",
     "@typescript-eslint/type-annotation-spacing": "error",
+    "@typescript-eslint/no-explicit-any": "error",
     "github/array-foreach": "off",
     "github/no-then": "off",
     "i18n-text/no-en": "off",
     "import/no-unresolved": "off",
-    "filenames/match-regex": [2, "(^[a-z-]+$)|(^[a-z-]+\\.test$)"]
+    "filenames/match-regex": [2, "(^[a-z-]+$)|(^[a-z-]+\\.test$)"],
+    "quotes": ["error", "single"]
   },
   "env": {
     "node": true,
