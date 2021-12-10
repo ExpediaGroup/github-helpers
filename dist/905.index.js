@@ -189,14 +189,14 @@ const getChangedFilepaths = (pull_number) => _octokit__WEBPACK_IMPORTED_MODULE_1
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var codeowners_utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4445);
 /* harmony import */ var codeowners_utils__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(codeowners_utils__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _get_changed_filepaths__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(9180);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(8710);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(6161);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(250);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(250);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(9180);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(8710);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(6161);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -232,24 +232,23 @@ const getCoreMemberLogins = (pull_number, teams) => __awaiter(void 0, void 0, vo
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No code owners found.');
         throw new Error();
     }
-    const adminLogins = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(codeOwners, team => _octokit__WEBPACK_IMPORTED_MODULE_5__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
-        org: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.owner,
+    const adminLogins = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(codeOwners, team => _octokit__WEBPACK_IMPORTED_MODULE_6__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
+        org: _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo.owner,
         team_slug: team,
         per_page: 100
     })
         .then(listMembersResponse => listMembersResponse.data.map(member => member.login)));
-    return (0,lodash__WEBPACK_IMPORTED_MODULE_6__.union)(...adminLogins);
+    return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.union)(...adminLogins);
 });
 const getCodeOwners = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const codeOwners = (_a = (yield (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd()))) !== null && _a !== void 0 ? _a : [];
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`codeOwners: ${codeOwners}`);
-    const changedFilePaths = yield (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_3__/* .getChangedFilepaths */ .s)(pull_number);
+    const changedFilePaths = yield (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__/* .getChangedFilepaths */ .s)(pull_number);
     const matchingCodeOwners = changedFilePaths.map(filePath => { var _a; return (_a = (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.matchFile)(filePath, codeOwners)) !== null && _a !== void 0 ? _a : {}; });
-    return matchingCodeOwners
+    return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(matchingCodeOwners
         .map(owner => owner.owners)
         .flat()
-        .filter(Boolean);
+        .filter(Boolean));
 });
 
 

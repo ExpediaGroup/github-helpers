@@ -13,11 +13,11 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { CodeOwnersEntry, loadOwners, matchFile } from 'codeowners-utils';
+import { union, uniq } from 'lodash';
 import { context } from '@actions/github';
 import { getChangedFilepaths } from './get-changed-filepaths';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
-import { union } from 'lodash';
 
 export const getCoreMemberLogins = async (pull_number: string, teams?: string[]) => {
   const codeOwners = teams ?? (await getCodeOwners(pull_number));
@@ -42,11 +42,12 @@ export const getCoreMemberLogins = async (pull_number: string, teams?: string[])
 
 const getCodeOwners = async (pull_number: string) => {
   const codeOwners = (await loadOwners(process.cwd())) ?? [];
-  core.info(`codeOwners: ${codeOwners}`);
   const changedFilePaths = await getChangedFilepaths(pull_number);
   const matchingCodeOwners = changedFilePaths.map(filePath => matchFile(filePath, codeOwners) ?? ({} as CodeOwnersEntry));
-  return matchingCodeOwners
-    .map(owner => owner.owners)
-    .flat()
-    .filter(Boolean);
+  return uniq(
+    matchingCodeOwners
+      .map(owner => owner.owners)
+      .flat()
+      .filter(Boolean)
+  );
 };
