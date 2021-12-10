@@ -11,6 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
 import { removeLabel } from '../../src/helpers/remove-label';
@@ -20,7 +21,7 @@ jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' } },
   getOctokit: jest.fn(() => ({ rest: { issues: { removeLabel: jest.fn() } } }))
 }));
-(octokit.issues.removeLabel as any).mockImplementation(async () => 'label removed!');
+(octokit.issues.removeLabel as unknown as Mocktokit).mockImplementation(async () => 'label removed!');
 
 describe('removeLabel', () => {
   const label = 'Needs a11y review';

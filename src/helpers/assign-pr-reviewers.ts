@@ -20,15 +20,15 @@ import { octokit } from '../octokit';
 import { sampleSize } from 'lodash';
 
 interface AssignPrReviewer {
-  teams: string;
   pull_number: string;
+  teams?: string;
   login?: string;
   number_of_assignees?: string;
   slack_webhook_url?: string;
 }
 
 export const assignPrReviewers = async ({ teams, pull_number, login, number_of_assignees = '1', slack_webhook_url }: AssignPrReviewer) => {
-  const coreMemberLogins = await getCoreMemberLogins(teams.split('\n'));
+  const coreMemberLogins = await getCoreMemberLogins(pull_number, teams?.split('\n'));
 
   if (login && coreMemberLogins.includes(login)) {
     core.info('Already a core member, no need to assign.');

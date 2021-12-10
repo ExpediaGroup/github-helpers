@@ -1,0 +1,8 @@
+# Order is important; the last matching pattern takes the most precedence.
+# These owners will be the default owners for everything in
+# the repo. Unless a later match takes precedence
+
+*   @ExpediaGroup/github-helpers-committers
+
+/file/path/1    @ExpediaGroup/test-owners-1
+/file/path/2    @ExpediaGroup/test-owners-2

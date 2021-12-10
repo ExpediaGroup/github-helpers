@@ -11,18 +11,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { context } from '@actions/github';
-import { octokit } from '../octokit';
+import { getChangedFilepaths } from '../utils/get-changed-filepaths';
 
 interface GetChangedFiles {
   pull_number: string;
 }
 
 export const getChangedFiles = ({ pull_number }: GetChangedFiles) =>
-  octokit.pulls
-    .listFiles({
-      pull_number: Number(pull_number),
-      per_page: 100,
-      ...context.repo
-    })
-    .then(listFilesResponse => listFilesResponse.data.map(file => file.filename).join(','));
+  getChangedFilepaths(pull_number).then(filePaths => filePaths.join(','));
