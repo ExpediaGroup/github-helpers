@@ -44,12 +44,3 @@ jobs:
         with:
           name: dist
           path: dist/
-  title:
-    name: Check PR title
-    runs-on: ubuntu-latest
-    steps:
-      - uses: ExpediaGroup/github-helpers@v1
-        with:
-          helper: check-pr-title
-          pull_number: ${{ github.event.pull_request.number }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
