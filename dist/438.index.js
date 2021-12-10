@@ -2777,7 +2777,7 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 var Stream = _interopDefault(__webpack_require__(2413));
 var http = _interopDefault(__webpack_require__(8605));
 var Url = _interopDefault(__webpack_require__(8835));
-var whatwgUrl = _interopDefault(__webpack_require__(8665));
+var whatwgUrl = _interopDefault(__webpack_require__(3323));
 var https = _interopDefault(__webpack_require__(7211));
 var zlib = _interopDefault(__webpack_require__(8761));
 
@@ -4443,63 +4443,14 @@ exports.FetchError = FetchError;
 
 /***/ }),
 
-/***/ 1223:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-var wrappy = __webpack_require__(2940)
-module.exports = wrappy(once)
-module.exports.strict = wrappy(onceStrict)
-
-once.proto = once(function () {
-  Object.defineProperty(Function.prototype, 'once', {
-    value: function () {
-      return once(this)
-    },
-    configurable: true
-  })
-
-  Object.defineProperty(Function.prototype, 'onceStrict', {
-    value: function () {
-      return onceStrict(this)
-    },
-    configurable: true
-  })
-})
-
-function once (fn) {
-  var f = function () {
-    if (f.called) return f.value
-    f.called = true
-    return f.value = fn.apply(this, arguments)
-  }
-  f.called = false
-  return f
-}
-
-function onceStrict (fn) {
-  var f = function () {
-    if (f.called)
-      throw new Error(f.onceError)
-    f.called = true
-    return f.value = fn.apply(this, arguments)
-  }
-  var name = fn.name || 'Function wrapped with `once`'
-  f.onceError = name + " shouldn't be called more than once"
-  f.called = false
-  return f
-}
-
-
-/***/ }),
-
-/***/ 4256:
+/***/ 2299:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
 
 
 var punycode = __webpack_require__(4213);
-var mappingTable = __webpack_require__(68);
+var mappingTable = __webpack_require__(8661);
 
 var PROCESSING_OPTIONS = {
   TRANSITIONAL: 0,
@@ -4693,33 +4644,7 @@ module.exports.PROCESSING_OPTIONS = PROCESSING_OPTIONS;
 
 /***/ }),
 
-/***/ 5030:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-
-function getUserAgent() {
-  if (typeof navigator === "object" && "userAgent" in navigator) {
-    return navigator.userAgent;
-  }
-
-  if (typeof process === "object" && "version" in process) {
-    return `Node.js/${process.version.substr(1)} (${process.platform}; ${process.arch})`;
-  }
-
-  return "<environment undetectable>";
-}
-
-exports.getUserAgent = getUserAgent;
-//# sourceMappingURL=index.js.map
-
-
-/***/ }),
-
-/***/ 4886:
+/***/ 5871:
 /***/ ((module) => {
 
 "use strict";
@@ -4916,12 +4841,12 @@ conversions["RegExp"] = function (V, opts) {
 
 /***/ }),
 
-/***/ 7537:
+/***/ 8262:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
-const usm = __webpack_require__(2158);
+const usm = __webpack_require__(33);
 
 exports.implementation = class URLImpl {
   constructor(constructorArgs) {
@@ -5124,15 +5049,15 @@ exports.implementation = class URLImpl {
 
 /***/ }),
 
-/***/ 3394:
+/***/ 653:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
 
 
-const conversions = __webpack_require__(4886);
-const utils = __webpack_require__(3185);
-const Impl = __webpack_require__(7537);
+const conversions = __webpack_require__(5871);
+const utils = __webpack_require__(276);
+const Impl = __webpack_require__(8262);
 
 const impl = utils.implSymbol;
 
@@ -5328,32 +5253,32 @@ module.exports = {
 
 /***/ }),
 
-/***/ 8665:
+/***/ 3323:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 
-exports.URL = __webpack_require__(3394).interface;
-exports.serializeURL = __webpack_require__(2158).serializeURL;
-exports.serializeURLOrigin = __webpack_require__(2158).serializeURLOrigin;
-exports.basicURLParse = __webpack_require__(2158).basicURLParse;
-exports.setTheUsername = __webpack_require__(2158).setTheUsername;
-exports.setThePassword = __webpack_require__(2158).setThePassword;
-exports.serializeHost = __webpack_require__(2158).serializeHost;
-exports.serializeInteger = __webpack_require__(2158).serializeInteger;
-exports.parseURL = __webpack_require__(2158).parseURL;
+exports.URL = __webpack_require__(653).interface;
+exports.serializeURL = __webpack_require__(33).serializeURL;
+exports.serializeURLOrigin = __webpack_require__(33).serializeURLOrigin;
+exports.basicURLParse = __webpack_require__(33).basicURLParse;
+exports.setTheUsername = __webpack_require__(33).setTheUsername;
+exports.setThePassword = __webpack_require__(33).setThePassword;
+exports.serializeHost = __webpack_require__(33).serializeHost;
+exports.serializeInteger = __webpack_require__(33).serializeInteger;
+exports.parseURL = __webpack_require__(33).parseURL;
 
 
 /***/ }),
 
-/***/ 2158:
+/***/ 33:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
 
 const punycode = __webpack_require__(4213);
-const tr46 = __webpack_require__(4256);
+const tr46 = __webpack_require__(2299);
 
 const specialSchemes = {
   ftp: 21,
@@ -6652,7 +6577,7 @@ module.exports.parseURL = function (input, options) {
 
 /***/ }),
 
-/***/ 3185:
+/***/ 276:
 /***/ ((module) => {
 
 "use strict";
@@ -6676,6 +6601,81 @@ module.exports.implForWrapper = function (wrapper) {
   return wrapper[module.exports.implSymbol];
 };
 
+
+
+/***/ }),
+
+/***/ 1223:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var wrappy = __webpack_require__(2940)
+module.exports = wrappy(once)
+module.exports.strict = wrappy(onceStrict)
+
+once.proto = once(function () {
+  Object.defineProperty(Function.prototype, 'once', {
+    value: function () {
+      return once(this)
+    },
+    configurable: true
+  })
+
+  Object.defineProperty(Function.prototype, 'onceStrict', {
+    value: function () {
+      return onceStrict(this)
+    },
+    configurable: true
+  })
+})
+
+function once (fn) {
+  var f = function () {
+    if (f.called) return f.value
+    f.called = true
+    return f.value = fn.apply(this, arguments)
+  }
+  f.called = false
+  return f
+}
+
+function onceStrict (fn) {
+  var f = function () {
+    if (f.called)
+      throw new Error(f.onceError)
+    f.called = true
+    return f.value = fn.apply(this, arguments)
+  }
+  var name = fn.name || 'Function wrapped with `once`'
+  f.onceError = name + " shouldn't be called more than once"
+  f.called = false
+  return f
+}
+
+
+/***/ }),
+
+/***/ 5030:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+
+function getUserAgent() {
+  if (typeof navigator === "object" && "userAgent" in navigator) {
+    return navigator.userAgent;
+  }
+
+  if (typeof process === "object" && "version" in process) {
+    return `Node.js/${process.version.substr(1)} (${process.platform}; ${process.arch})`;
+  }
+
+  return "<environment undetectable>";
+}
+
+exports.getUserAgent = getUserAgent;
+//# sourceMappingURL=index.js.map
 
 
 /***/ }),
@@ -6728,7 +6728,7 @@ module.exports = eval("require")("encoding");
 
 /***/ }),
 
-/***/ 68:
+/***/ 8661:
 /***/ ((module) => {
 
 "use strict";
