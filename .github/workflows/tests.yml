@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Validate package.json
-        uses: actions/package-json-validator@v1
+        uses: ExpediaGroup/package-json-validator@v1
         with:
           rules: ranges
 
