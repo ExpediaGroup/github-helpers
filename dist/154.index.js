@@ -217,7 +217,6 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 const getCoreMemberLogins = (pull_number, teams) => __awaiter(void 0, void 0, void 0, function* () {
     const codeOwners = teams !== null && teams !== void 0 ? teams : (yield getCodeOwners(pull_number));
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`codeOwners: ${codeOwners}`);
     if (!(codeOwners === null || codeOwners === void 0 ? void 0 : codeOwners.length)) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No code owners found.');
         throw new Error();
@@ -239,7 +238,7 @@ const getCodeOwners = (pull_number) => __awaiter(void 0, void 0, void 0, functio
         .map(owner => owner.owners)
         .flat()
         .filter(Boolean)
-        .map(owner => owner.split('/')[1]));
+        .map(owner => owner.substring(owner.indexOf('/') + 1)));
 });
 
 

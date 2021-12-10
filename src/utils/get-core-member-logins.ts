@@ -21,7 +21,6 @@ import { octokit } from '../octokit';
 
 export const getCoreMemberLogins = async (pull_number: string, teams?: string[]) => {
   const codeOwners = teams ?? (await getCodeOwners(pull_number));
-  core.info(`codeOwners: ${codeOwners}`);
 
   if (!codeOwners?.length) {
     core.setFailed('No code owners found.');
@@ -49,6 +48,6 @@ const getCodeOwners = async (pull_number: string) => {
       .map(owner => owner.owners)
       .flat()
       .filter(Boolean)
-      .map(owner => owner.split('/')[1])
+      .map(owner => owner.substring(owner.indexOf('/') + 1))
   );
 };
