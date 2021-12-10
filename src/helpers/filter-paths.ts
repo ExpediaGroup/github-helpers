@@ -11,15 +11,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import * as core from '@actions/core';
 import { context } from '@actions/github';
+import micromatch from 'micromatch';
 import { octokit } from '../octokit';
 
 interface FilterPaths {
-  paths: string;
+  paths?: string;
+  globs?: string;
   pull_number: string;
 }
 
-export const filterPaths = ({ paths, pull_number }: FilterPaths) =>
+export const filterPaths = ({ paths, globs, pull_number }: FilterPaths) =>
   octokit.pulls
     .listFiles({
       per_page: 100,
@@ -27,8 +30,14 @@ export const filterPaths = ({ paths, pull_number }: FilterPaths) =>
       ...context.repo
     })
     .then(listFilesResponse => {
-      const filePaths = paths.split('\n');
-      return listFilesResponse.data
-        .map(file => file.filename)
-        .some(changedFile => filePaths.some(filePath => changedFile.startsWith(filePath)));
+      const fileNames = listFilesResponse.data.map(file => file.filename);
+      if (globs) {
+        if (paths) core.info('`paths` and `globs` inputs found, defaulting to use `globs` for filtering');
+        return micromatch(fileNames, globs.split('\n')).length > 0;
+      } else if (paths) {
+        const filePaths = paths.split('\n');
+        return fileNames.some(changedFile => filePaths.some(filePath => changedFile.startsWith(filePath)));
+      } else {
+        core.error('Must pass `globs` or `paths` for filtering');
+      }
     });

@@ -4,11 +4,10 @@ on:
   pull_request:
     branches: [ main ]
     types: [ edited, opened, reopened, synchronize ]
-    paths:
-      - 'src/helpers/check-pr-title.ts'
 
 jobs:
   test:
+    name: PR Title Check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
