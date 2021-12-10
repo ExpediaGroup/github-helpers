@@ -17,13 +17,13 @@ import { context } from '@actions/github';
 import { getCoreMemberLogins } from '../utils/get-core-member-logins';
 
 interface AddPrApprovalLabel {
-  teams: string;
   login: string;
   pull_number: string;
+  teams?: string;
 }
 
 export const addPrApprovalLabel = async ({ teams, login, pull_number }: AddPrApprovalLabel) => {
-  const coreMemberLogins = await getCoreMemberLogins(teams.split('\n'));
+  const coreMemberLogins = await getCoreMemberLogins(pull_number, teams?.split('\n'));
   const approvalLabel = coreMemberLogins.includes(login) ? CORE_APPROVED_PR_LABEL : PEER_APPROVED_PR_LABEL;
   return addLabels({
     labels: approvalLabel,
