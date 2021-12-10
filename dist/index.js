@@ -18790,18 +18790,21 @@ var map = {
 		905,
 		438,
 		710,
+		445,
 		905
 	],
 	"./add-pr-approval-label.ts": [
 		905,
 		438,
 		710,
+		445,
 		905
 	],
 	"./assign-pr-reviewers": [
 		3154,
 		438,
 		710,
+		445,
 		545,
 		154
 	],
@@ -18809,6 +18812,7 @@ var map = {
 		3154,
 		438,
 		710,
+		445,
 		545,
 		154
 	],
@@ -19002,6 +19006,14 @@ module.exports = require("assert");
 
 "use strict";
 module.exports = require("async_hooks");
+
+/***/ }),
+
+/***/ 3129:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("child_process");
 
 /***/ }),
 

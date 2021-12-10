@@ -50,7 +50,7 @@ describe('assignPrReviewer', () => {
       });
 
       it('should call getCoreMemberLogins with correct params', () => {
-        expect(getCoreMemberLogins).toHaveBeenCalledWith(['team1', 'team2']);
+        expect(getCoreMemberLogins).toHaveBeenCalledWith(pull_number, ['team1', 'team2']);
       });
 
       it('should not call addAssignees', () => {
