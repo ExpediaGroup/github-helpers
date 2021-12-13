@@ -19,9 +19,7 @@ export type DeploymentState = operations['repos/create-deployment-status']['requ
 export type PullRequest = components['schemas']['pull-request-simple'];
 export type PullRequestListResponse = RestEndpointMethodTypes['pulls']['list']['response'];
 export type CreateDeploymentResponse = components['schemas']['deployment'];
-export type PullRequestGetResponse = RestEndpointMethodTypes['pulls']['get']['response'];
 export type ProjectListResponse = RestEndpointMethodTypes['projects']['listForRepo']['response'];
-export type CardListResponse = RestEndpointMethodTypes['projects']['listCards']['response'];
 export type ColumnListResponse = RestEndpointMethodTypes['projects']['listColumns']['response'];
 
 export type ActionInputs = {
