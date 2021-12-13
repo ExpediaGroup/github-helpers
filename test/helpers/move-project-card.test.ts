@@ -11,6 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { GITHUB_OPTIONS } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { moveProjectCard } from '../../src/helpers/move-project-card';
 import { octokit } from '../../src/octokit';
@@ -114,7 +115,8 @@ describe('moveProjectCard', () => {
     expect(octokit.projects.moveCard).toHaveBeenCalledWith({
       card_id: 1234,
       column_id: 12345,
-      position: 'top'
+      position: 'top',
+      ...GITHUB_OPTIONS
     });
 
     expect(octokit.projects.moveCard).toHaveBeenCalledTimes(1);

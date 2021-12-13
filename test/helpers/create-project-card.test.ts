@@ -11,6 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { GITHUB_OPTIONS } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { createProjectCard } from '../../src/helpers/create-project-card';
@@ -98,7 +99,8 @@ describe('createProjectCard without note', () => {
       column_id: 1234,
       content_type: 'PullRequest',
       content_id: 123,
-      ...context.repo
+      ...context.repo,
+      ...GITHUB_OPTIONS
     });
 
     expect(octokit.projects.createCard).toHaveBeenCalledTimes(1);
@@ -175,7 +177,8 @@ describe('createProjectCard with a note', () => {
     expect(octokit.projects.createCard).toHaveBeenCalledWith({
       column_id: 1234,
       note: 'This PR is adding an extra note due that we want to not add the PRs information',
-      ...context.repo
+      ...context.repo,
+      ...GITHUB_OPTIONS
     });
 
     expect(octokit.projects.createCard).toHaveBeenCalledTimes(1);
