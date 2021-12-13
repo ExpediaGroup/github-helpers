@@ -12,8 +12,9 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { CardListResponse, ColumnListResponse, PullRequest } from '../types';
+import { ColumnListResponse, PullRequest } from '../types';
 import { getDestinationColumn, getProjectColumns } from '../utils/get-project-columns';
+import { GITHUB_OPTIONS } from '../constants';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
@@ -30,8 +31,6 @@ export const moveProjectCard = async ({
   project_origin_column_name,
   project_name
 }: MoveProjectCardProps) => {
-  const getResponse = await octokit.pulls.get({ pull_number, ...context.repo });
-  const pullRequest = getResponse.data as PullRequest;
   const columnsList = await getProjectColumns({ project_name });
 
   if (!columnsList?.data?.length) {
@@ -47,18 +46,27 @@ export const moveProjectCard = async ({
     return;
   }
 
-  const cardList = await octokit.projects.listCards({ column_id: originColumn.id });
-  const cardToMove = getCardToMove(cardList, pullRequest.issue_url);
+  const cardToMove = await getCardToMove(pull_number, originColumn);
 
   if (cardToMove && destinationColumn) {
-    return octokit.projects.moveCard({ card_id: cardToMove.id, column_id: destinationColumn.id, position: 'top' });
+    return octokit.projects.moveCard({ card_id: cardToMove.id, column_id: destinationColumn.id, position: 'top', ...GITHUB_OPTIONS });
   } else {
     core.info('No destination column or card to move was found');
     return;
   }
 };
 
-const getCardToMove = (cardsResponse: CardListResponse, issueUrl: string) => cardsResponse.data.find(card => card.content_url === issueUrl);
+const getCardToMove = async (pull_number: number, originColumn: OriginColumn) => {
+  const getResponse = await octokit.pulls.get({ pull_number, ...context.repo });
+  const pullRequest = getResponse.data as PullRequest;
+  const cardsResponse = await octokit.projects.listCards({ column_id: originColumn.id, ...GITHUB_OPTIONS });
+
+  return cardsResponse.data.find(card => card.content_url === pullRequest.issue_url);
+};
+
+interface OriginColumn {
+  id: number;
+}
 
 const getOriginColumn = (columns: ColumnListResponse, project_origin_column_name: string) =>
   columns.data.find(column => column.name === project_origin_column_name);

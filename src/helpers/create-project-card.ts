@@ -13,6 +13,7 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { SingleColumn, getDestinationColumn, getProjectColumns } from '../utils/get-project-columns';
+import { GITHUB_OPTIONS } from '../constants';
 import { PullRequest } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
@@ -25,8 +26,6 @@ interface CreateProjectCardProps {
 }
 
 export const createProjectCard = async ({ pull_number, project_name, project_destination_column_name, note }: CreateProjectCardProps) => {
-  const getResponse = await octokit.pulls.get({ pull_number, ...context.repo });
-  const pullRequest = getResponse.data as PullRequest;
   const columnsList = await getProjectColumns({ project_name });
 
   if (!columnsList?.data?.length) {
@@ -40,19 +39,20 @@ export const createProjectCard = async ({ pull_number, project_name, project_des
     core.info('No destination column was found');
     return;
   }
-  const cardParams = generateCardParams(pullRequest, destinationColumn, note);
+  const cardParams = await generateCardParams(pull_number, destinationColumn, note);
 
-  if (cardParams) {
-    return octokit.projects.createCard(cardParams);
-  }
+  return octokit.projects.createCard(cardParams);
 };
 
-const generateCardParams = (pullRequest: PullRequest, filteredColumn: SingleColumn, note?: string) => {
+const generateCardParams = async (pull_number: number, filteredColumn: SingleColumn, note?: string) => {
+  const getResponse = await octokit.pulls.get({ pull_number, ...context.repo });
+  const pullRequest = getResponse.data as PullRequest;
   if (note) {
     return {
       column_id: filteredColumn?.id,
       note,
-      ...context.repo
+      ...context.repo,
+      ...GITHUB_OPTIONS
     };
   }
 
@@ -61,6 +61,7 @@ const generateCardParams = (pullRequest: PullRequest, filteredColumn: SingleColu
     content_id: pullRequest.id,
     content_type: 'PullRequest',
     note,
-    ...context.repo
+    ...context.repo,
+    ...GITHUB_OPTIONS
   };
 };
