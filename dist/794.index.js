@@ -33,10 +33,14 @@ limitations under the License.
 
 
 
-const filterPaths = ({ paths, globs, pull_number }) => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ per_page: 100, pull_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
+const filterPaths = ({ paths, globs, override_filter_globs, pull_number }) => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ per_page: 100, pull_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
     .then(listFilesResponse => {
     const fileNames = listFilesResponse.data.map(file => file.filename);
-    if (globs) {
+    if (override_filter_globs) {
+        const overrideArray = override_filter_globs.split('\n');
+        return fileNames.some(changedFile => overrideArray.some(overrideTerm => changedFile.startsWith(overrideTerm)));
+    }
+    else if (globs) {
         if (paths)
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('`paths` and `globs` inputs found, defaulting to use `globs` for filtering');
         return micromatch__WEBPACK_IMPORTED_MODULE_2___default()(fileNames, globs.split('\n')).length > 0;

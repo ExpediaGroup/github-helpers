@@ -24,6 +24,7 @@ jest.mock('@actions/github', () => ({
 describe('filterPaths', () => {
   const paths = 'file/path/1\nfile/path/2';
   const globs = '**/*.md\nsomething/**/file1.txt';
+  const override_filter_globs = 'file/bogus\ntotally/different\nfoo/bar';
   const pull_number = '123';
 
   afterEach(() => {
@@ -135,6 +136,43 @@ describe('filterPaths', () => {
     }));
     const result = await filterPaths({
       globs,
+      pull_number
+    });
+
+    expect(result).toBe(true);
+  });
+
+  it('should return true if one of the override filter globs matches the file paths that octokit returns', async () => {
+    (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
+      data: [
+        {
+          sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
+          filename: 'file/bogus/1/file1.txt',
+          status: 'added',
+          additions: 103,
+          deletions: 21,
+          changes: 124,
+          blob_url: 'https://github.com/octocat/Hello-World/blob/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+          raw_url: 'https://github.com/octocat/Hello-World/raw/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+          contents_url: 'https://api.github.com/repos/octocat/Hello-World/contents/file1.txt?ref=6dcb09b5b57875f334f61aebed695e2e4193db5e',
+          patch: '@@ -132,7 +132,7 @@ module Test @@ -1000,7 +1000,7 @@ module Test'
+        },
+        {
+          sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
+          filename: 'something/totally/different/file1.txt',
+          status: 'added',
+          additions: 103,
+          deletions: 21,
+          changes: 124,
+          blob_url: 'https://github.com/octocat/Hello-World/blob/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+          raw_url: 'https://github.com/octocat/Hello-World/raw/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+          contents_url: 'https://api.github.com/repos/octocat/Hello-World/contents/file1.txt?ref=6dcb09b5b57875f334f61aebed695e2e4193db5e',
+          patch: '@@ -132,7 +132,7 @@ module Test @@ -1000,7 +1000,7 @@ module Test'
+        }
+      ]
+    }));
+    const result = await filterPaths({
+      override_filter_globs,
       pull_number
     });
 

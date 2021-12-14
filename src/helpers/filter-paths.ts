@@ -19,10 +19,11 @@ import { octokit } from '../octokit';
 interface FilterPaths {
   paths?: string;
   globs?: string;
+  override_filter_globs?: string;
   pull_number: string;
 }
 
-export const filterPaths = ({ paths, globs, pull_number }: FilterPaths) =>
+export const filterPaths = ({ paths, globs, override_filter_globs, pull_number }: FilterPaths) =>
   octokit.pulls
     .listFiles({
       per_page: 100,
@@ -31,7 +32,10 @@ export const filterPaths = ({ paths, globs, pull_number }: FilterPaths) =>
     })
     .then(listFilesResponse => {
       const fileNames = listFilesResponse.data.map(file => file.filename);
-      if (globs) {
+      if (override_filter_globs) {
+        const overrideArray = override_filter_globs.split('\n');
+        return fileNames.some(changedFile => overrideArray.some(overrideTerm => changedFile.startsWith(overrideTerm)));
+      } else if (globs) {
         if (paths) core.info('`paths` and `globs` inputs found, defaulting to use `globs` for filtering');
         return micromatch(fileNames, globs.split('\n')).length > 0;
       } else if (paths) {
