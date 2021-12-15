@@ -152,13 +152,13 @@ describe('generatePathMatrix', () => {
       expect(result).toEqual({
         include: [
           {
-            path: 'something/totally/crazy/file1.txt'
+            path: filePath1
           },
           {
-            path: 'something/totally/crazy/file1.js'
+            path: filePath2
           },
           {
-            path: 'package.json'
+            path: filePath3
           }
         ]
       });

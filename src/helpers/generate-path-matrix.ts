@@ -33,14 +33,12 @@ export const generatePathMatrix = async ({
   batches
 }: GeneratePathMatrix) => {
   const changedFiles = await getChangedFilepaths(pull_number);
+  let shouldOverrideFilter: boolean;
   if (override_filter_globs) {
-    const globsToFilter = override_filter_globs.split('\n');
-    const matches = changedFiles.filter(file => micromatch.contains(file, globsToFilter));
-    return {
-      include: matches.map(path => ({ path }))
-    };
+    shouldOverrideFilter = micromatch(changedFiles, override_filter_globs.split('\n')).length > 0;
+  } else {
+    shouldOverrideFilter = changedFiles.some(changedFile => override_filter_paths?.split(/[\n,]/).includes(changedFile));
   }
-  const shouldOverrideFilter = changedFiles.some(changedFile => override_filter_paths?.split(/[\n,]/).includes(changedFile));
   const splitPaths = paths.split(/[\n,]/);
   const matrixValues = shouldOverrideFilter
     ? splitPaths

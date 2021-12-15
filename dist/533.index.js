@@ -41,14 +41,13 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 const generatePathMatrix = ({ pull_number, paths, override_filter_paths, override_filter_globs, paths_no_filter, batches }) => __awaiter(void 0, void 0, void 0, function* () {
     const changedFiles = yield (0,_utils_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_1__/* .getChangedFilepaths */ .s)(pull_number);
+    let shouldOverrideFilter;
     if (override_filter_globs) {
-        const globsToFilter = override_filter_globs.split('\n');
-        const matches = changedFiles.filter(file => micromatch__WEBPACK_IMPORTED_MODULE_2___default().contains(file, globsToFilter));
-        return {
-            include: matches.map(path => ({ path }))
-        };
+        shouldOverrideFilter = micromatch__WEBPACK_IMPORTED_MODULE_2___default()(changedFiles, override_filter_globs.split('\n')).length > 0;
     }
-    const shouldOverrideFilter = changedFiles.some(changedFile => override_filter_paths === null || override_filter_paths === void 0 ? void 0 : override_filter_paths.split(/[\n,]/).includes(changedFile));
+    else {
+        shouldOverrideFilter = changedFiles.some(changedFile => override_filter_paths === null || override_filter_paths === void 0 ? void 0 : override_filter_paths.split(/[\n,]/).includes(changedFile));
+    }
     const splitPaths = paths.split(/[\n,]/);
     const matrixValues = shouldOverrideFilter
         ? splitPaths
