@@ -13,6 +13,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(250);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _utils_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9180);
+/* harmony import */ var micromatch__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6228);
+/* harmony import */ var micromatch__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(micromatch__WEBPACK_IMPORTED_MODULE_2__);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,8 +38,16 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 };
 
 
-const generatePathMatrix = ({ pull_number, paths, override_filter_paths, paths_no_filter, batches }) => __awaiter(void 0, void 0, void 0, function* () {
+
+const generatePathMatrix = ({ pull_number, paths, override_filter_paths, override_filter_globs, paths_no_filter, batches }) => __awaiter(void 0, void 0, void 0, function* () {
     const changedFiles = yield (0,_utils_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_1__/* .getChangedFilepaths */ .s)(pull_number);
+    if (override_filter_globs) {
+        const globsToFilter = override_filter_globs.split('\n');
+        const matches = changedFiles.filter(file => micromatch__WEBPACK_IMPORTED_MODULE_2___default().contains(file, globsToFilter));
+        return {
+            include: matches.map(path => ({ path }))
+        };
+    }
     const shouldOverrideFilter = changedFiles.some(changedFile => override_filter_paths === null || override_filter_paths === void 0 ? void 0 : override_filter_paths.split(/[\n,]/).includes(changedFile));
     const splitPaths = paths.split(/[\n,]/);
     const matrixValues = shouldOverrideFilter

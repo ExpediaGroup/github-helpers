@@ -22,7 +22,7 @@ inputs:
   note:
     description: 'The body text that should be added into a Project Card'
     required: false
-  project_origin_column_name: 
+  project_origin_column_name:
     description: 'The name of the column from where the card should be taken'
     required: false
   sha:
@@ -93,6 +93,9 @@ inputs:
     required: false
   globs:
     description: 'A list of file paths (newline/comma separated) using glob syntax'
+    required: false
+  override_filter_globs:
+    description: 'A list of file paths in glob syntax (newline/comma separated) that is used to override the filter'
     required: false
 outputs:
   output:

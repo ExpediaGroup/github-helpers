@@ -127,6 +127,44 @@ describe('generatePathMatrix', () => {
     });
   });
 
+  describe('override filter globs case', () => {
+    const override_filter_globs = 'package.json\ntotally/crazy';
+
+    it('should call listFiles with correct params', async () => {
+      await generatePathMatrix({
+        paths,
+        pull_number,
+        override_filter_globs
+      });
+      expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
+        pull_number: 123,
+        per_page: 100,
+        ...context.repo
+      });
+    });
+
+    it('should return expected result', async () => {
+      const result = await generatePathMatrix({
+        paths,
+        pull_number,
+        override_filter_globs
+      });
+      expect(result).toEqual({
+        include: [
+          {
+            path: 'something/totally/crazy/file1.txt'
+          },
+          {
+            path: 'something/totally/crazy/file1.js'
+          },
+          {
+            path: 'package.json'
+          }
+        ]
+      });
+    });
+  });
+
   describe('additional no-filter paths case', () => {
     const extraPath = 'an/extra/path';
 
