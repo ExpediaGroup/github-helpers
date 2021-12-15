@@ -33,8 +33,8 @@ export const filterPaths = ({ paths, globs, override_filter_globs, pull_number }
     .then(listFilesResponse => {
       const fileNames = listFilesResponse.data.map(file => file.filename);
       if (override_filter_globs) {
-        const overrideArray = override_filter_globs.split('\n');
-        return fileNames.some(changedFile => overrideArray.some(overrideTerm => changedFile.startsWith(overrideTerm)));
+        const globArray = override_filter_globs.split('\n');
+        return fileNames.some(changedFile => globArray.some(glob => changedFile.startsWith(glob)));
       } else if (globs) {
         if (paths) core.info('`paths` and `globs` inputs found, defaulting to use `globs` for filtering');
         return micromatch(fileNames, globs.split('\n')).length > 0;
@@ -42,6 +42,6 @@ export const filterPaths = ({ paths, globs, override_filter_globs, pull_number }
         const filePaths = paths.split('\n');
         return fileNames.some(changedFile => filePaths.some(filePath => changedFile.startsWith(filePath)));
       } else {
-        core.error('Must pass `globs` or `paths` for filtering');
+        core.error('Must pass `globs`, `paths`, or `override_filter_globs` for filtering');
       }
     });

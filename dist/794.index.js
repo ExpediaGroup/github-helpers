@@ -37,8 +37,8 @@ const filterPaths = ({ paths, globs, override_filter_globs, pull_number }) => _o
     .then(listFilesResponse => {
     const fileNames = listFilesResponse.data.map(file => file.filename);
     if (override_filter_globs) {
-        const overrideArray = override_filter_globs.split('\n');
-        return fileNames.some(changedFile => overrideArray.some(overrideTerm => changedFile.startsWith(overrideTerm)));
+        const globArray = override_filter_globs.split('\n');
+        return fileNames.some(changedFile => globArray.some(glob => changedFile.startsWith(glob)));
     }
     else if (globs) {
         if (paths)
@@ -50,7 +50,7 @@ const filterPaths = ({ paths, globs, override_filter_globs, pull_number }) => _o
         return fileNames.some(changedFile => filePaths.some(filePath => changedFile.startsWith(filePath)));
     }
     else {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error('Must pass `globs` or `paths` for filtering');
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error('Must pass `globs`, `paths`, or `override_filter_globs` for filtering');
     }
 });
 
