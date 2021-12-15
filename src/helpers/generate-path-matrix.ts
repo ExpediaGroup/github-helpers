@@ -13,18 +13,32 @@ limitations under the License.
 
 import { chunk } from 'lodash';
 import { getChangedFilepaths } from '../utils/get-changed-filepaths';
+import micromatch from 'micromatch';
 
 interface GeneratePathMatrix {
   pull_number: string;
   paths: string;
   override_filter_paths?: string;
+  override_filter_globs?: string;
   paths_no_filter?: string;
   batches?: string;
 }
 
-export const generatePathMatrix = async ({ pull_number, paths, override_filter_paths, paths_no_filter, batches }: GeneratePathMatrix) => {
+export const generatePathMatrix = async ({
+  pull_number,
+  paths,
+  override_filter_paths,
+  override_filter_globs,
+  paths_no_filter,
+  batches
+}: GeneratePathMatrix) => {
   const changedFiles = await getChangedFilepaths(pull_number);
-  const shouldOverrideFilter = changedFiles.some(changedFile => override_filter_paths?.split(/[\n,]/).includes(changedFile));
+  let shouldOverrideFilter: boolean;
+  if (override_filter_globs) {
+    shouldOverrideFilter = micromatch(changedFiles, override_filter_globs.split('\n')).length > 0;
+  } else {
+    shouldOverrideFilter = changedFiles.some(changedFile => override_filter_paths?.split(/[\n,]/).includes(changedFile));
+  }
   const splitPaths = paths.split(/[\n,]/);
   const matrixValues = shouldOverrideFilter
     ? splitPaths
