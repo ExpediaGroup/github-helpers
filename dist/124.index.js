@@ -159,9 +159,10 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_act
 /* harmony export */   "N": () => (/* binding */ getProjectColumns),
 /* harmony export */   "Y": () => (/* binding */ getDestinationColumn)
 /* harmony export */ });
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -185,13 +186,14 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 };
 
 
+
 const getProjectColumns = ({ project_name }) => __awaiter(void 0, void 0, void 0, function* () {
-    const projectList = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.projects.listForRepo */ .K.projects.listForRepo(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    const projectList = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.listForRepo */ .K.projects.listForRepo(Object.assign(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
     const project = findProjectToModify(projectList, project_name);
     if (!project) {
         return null;
     }
-    return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.projects.listColumns */ .K.projects.listColumns({ project_id: project.id, per_page: 100 });
+    return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.listColumns */ .K.projects.listColumns(Object.assign({ project_id: project.id, per_page: 100 }, _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
 });
 const findProjectToModify = (projectsResponse, project_name) => projectsResponse.data.find(project => project.name === project_name);
 const getDestinationColumn = (columns, project_destination_column_name) => columns.data.find(column => column.name === project_destination_column_name);
