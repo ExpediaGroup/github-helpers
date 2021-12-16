@@ -64,6 +64,8 @@ Additionally, the following parameters can be used for additional control over t
   * Updates a Github [deployment status](https://docs.github.com/en/rest/reference/repos#deployments)
 ### [**set-latest-pipeline-status**](.github/workflows/set-latest-pipeline-status.yml)
   * Determines whether the pipeline is clear for a PR. This means it will set the "pipeline" commit status to `pending` if there is an in-progress production deployment for the repo, and `success` otherwise.
+### [**create-pr**](.github/workflows/create-pr.yml)
+  * Opens a pull request
 
 ## Usage
 ### General
