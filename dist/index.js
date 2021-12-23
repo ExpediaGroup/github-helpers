@@ -18800,6 +18800,16 @@ var map = {
 		445,
 		905
 	],
+	"./add-pr-to-merge-queue": [
+		9597,
+		438,
+		597
+	],
+	"./add-pr-to-merge-queue.ts": [
+		9597,
+		438,
+		597
+	],
 	"./assign-pr-reviewers": [
 		3154,
 		438,
