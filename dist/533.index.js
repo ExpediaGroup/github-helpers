@@ -40,25 +40,17 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const generatePathMatrix = ({ pull_number, paths, override_filter_paths, override_filter_globs, paths_no_filter, batches }) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const changedFiles = yield (0,_utils_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_1__/* .getChangedFilepaths */ .s)(pull_number);
-    let shouldOverrideFilter;
-    if (override_filter_globs) {
-        shouldOverrideFilter = micromatch__WEBPACK_IMPORTED_MODULE_2___default()(changedFiles, override_filter_globs.split('\n')).length > 0;
-    }
-    else {
-        shouldOverrideFilter = changedFiles.some(changedFile => override_filter_paths === null || override_filter_paths === void 0 ? void 0 : override_filter_paths.split(/[\n,]/).includes(changedFile));
-    }
+    const shouldOverrideFilter = override_filter_globs
+        ? micromatch__WEBPACK_IMPORTED_MODULE_2___default()(changedFiles, override_filter_globs.split('\n')).length > 0
+        : changedFiles.some(changedFile => override_filter_paths === null || override_filter_paths === void 0 ? void 0 : override_filter_paths.split(/[\n,]/).includes(changedFile));
     const splitPaths = paths.split(/[\n,]/);
-    const matrixValues = shouldOverrideFilter
+    const basePaths = shouldOverrideFilter
         ? splitPaths
         : splitPaths.filter(path => changedFiles.some(changedFile => changedFile.startsWith(path)));
-    if (paths_no_filter) {
-        const extraPaths = paths_no_filter.split(/[\n,]/);
-        extraPaths.forEach(p => {
-            if (!matrixValues.includes(p))
-                matrixValues.push(p);
-        });
-    }
+    const extraPaths = (_a = paths_no_filter === null || paths_no_filter === void 0 ? void 0 : paths_no_filter.split(/[\n,]/)) !== null && _a !== void 0 ? _a : [];
+    const matrixValues = (0,lodash__WEBPACK_IMPORTED_MODULE_0__.uniq)(basePaths.concat(extraPaths));
     if (batches) {
         return {
             include: (0,lodash__WEBPACK_IMPORTED_MODULE_0__.chunk)(matrixValues, Math.ceil(matrixValues.length / Number(batches))).map(chunk => ({ path: chunk.join(',') }))

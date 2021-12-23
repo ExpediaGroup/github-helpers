@@ -1,7 +1,8 @@
 {
   "plugins": [
     "jest",
-    "@typescript-eslint"
+    "@typescript-eslint",
+    "functional"
   ],
   "extends": [
     "plugin:github/recommended"
@@ -59,7 +60,9 @@
     "i18n-text/no-en": "off",
     "import/no-unresolved": "off",
     "filenames/match-regex": [2, "(^[a-z-]+$)|(^[a-z-]+\\.test$)"],
-    "quotes": ["error", "single"]
+    "quotes": ["error", "single"],
+    "functional/immutable-data": "error",
+    "functional/no-let": "error"
   },
   "env": {
     "node": true,
