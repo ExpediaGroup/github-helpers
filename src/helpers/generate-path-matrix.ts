@@ -37,11 +37,11 @@ export const generatePathMatrix = async ({
     ? micromatch(changedFiles, override_filter_globs.split('\n')).length > 0
     : changedFiles.some(changedFile => override_filter_paths?.split(/[\n,]/).includes(changedFile));
   const splitPaths = paths.split(/[\n,]/);
-  const initialValues = shouldOverrideFilter
+  const basePaths = shouldOverrideFilter
     ? splitPaths
     : splitPaths.filter(path => changedFiles.some(changedFile => changedFile.startsWith(path)));
   const extraPaths: string[] = paths_no_filter?.split(/[\n,]/) ?? [];
-  const matrixValues = uniq(initialValues.concat(extraPaths));
+  const matrixValues = uniq(basePaths.concat(extraPaths));
   if (batches) {
     return {
       include: chunk(matrixValues, Math.ceil(matrixValues.length / Number(batches))).map(chunk => ({ path: chunk.join(',') }))

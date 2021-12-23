@@ -46,11 +46,11 @@ const generatePathMatrix = ({ pull_number, paths, override_filter_paths, overrid
         ? micromatch__WEBPACK_IMPORTED_MODULE_2___default()(changedFiles, override_filter_globs.split('\n')).length > 0
         : changedFiles.some(changedFile => override_filter_paths === null || override_filter_paths === void 0 ? void 0 : override_filter_paths.split(/[\n,]/).includes(changedFile));
     const splitPaths = paths.split(/[\n,]/);
-    const initialValues = shouldOverrideFilter
+    const basePaths = shouldOverrideFilter
         ? splitPaths
         : splitPaths.filter(path => changedFiles.some(changedFile => changedFile.startsWith(path)));
     const extraPaths = (_a = paths_no_filter === null || paths_no_filter === void 0 ? void 0 : paths_no_filter.split(/[\n,]/)) !== null && _a !== void 0 ? _a : [];
-    const matrixValues = (0,lodash__WEBPACK_IMPORTED_MODULE_0__.uniq)(initialValues.concat(extraPaths));
+    const matrixValues = (0,lodash__WEBPACK_IMPORTED_MODULE_0__.uniq)(basePaths.concat(extraPaths));
     if (batches) {
         return {
             include: (0,lodash__WEBPACK_IMPORTED_MODULE_0__.chunk)(matrixValues, Math.ceil(matrixValues.length / Number(batches))).map(chunk => ({ path: chunk.join(',') }))
