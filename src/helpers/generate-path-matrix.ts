@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { chunk } from 'lodash';
+import { chunk, uniq } from 'lodash';
 import { getChangedFilepaths } from '../utils/get-changed-filepaths';
 import micromatch from 'micromatch';
 
@@ -33,22 +33,15 @@ export const generatePathMatrix = async ({
   batches
 }: GeneratePathMatrix) => {
   const changedFiles = await getChangedFilepaths(pull_number);
-  let shouldOverrideFilter: boolean;
-  if (override_filter_globs) {
-    shouldOverrideFilter = micromatch(changedFiles, override_filter_globs.split('\n')).length > 0;
-  } else {
-    shouldOverrideFilter = changedFiles.some(changedFile => override_filter_paths?.split(/[\n,]/).includes(changedFile));
-  }
+  const shouldOverrideFilter = override_filter_globs
+    ? micromatch(changedFiles, override_filter_globs.split('\n')).length > 0
+    : changedFiles.some(changedFile => override_filter_paths?.split(/[\n,]/).includes(changedFile));
   const splitPaths = paths.split(/[\n,]/);
-  const matrixValues = shouldOverrideFilter
+  const initialValues = shouldOverrideFilter
     ? splitPaths
     : splitPaths.filter(path => changedFiles.some(changedFile => changedFile.startsWith(path)));
-  if (paths_no_filter) {
-    const extraPaths = paths_no_filter.split(/[\n,]/);
-    extraPaths.forEach(p => {
-      if (!matrixValues.includes(p)) matrixValues.push(p);
-    });
-  }
+  const extraPaths: string[] = paths_no_filter?.split(/[\n,]/) ?? [];
+  const matrixValues = uniq(initialValues.concat(extraPaths));
   if (batches) {
     return {
       include: chunk(matrixValues, Math.ceil(matrixValues.length / Number(batches))).map(chunk => ({ path: chunk.join(',') }))
