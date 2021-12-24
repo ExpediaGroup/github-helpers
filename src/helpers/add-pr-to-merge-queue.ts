@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
-import { READY_FOR_MERGE_PR_LABEL } from '../constants';
+import { FIRST_QUEUED_PR_LABEL, QUEUED_FOR_MERGE_PREFIX, READY_FOR_MERGE_PR_LABEL } from '../constants';
 import { context } from '@actions/github';
+import { getQueuedPrData } from '../utils/get-queued-pr-data';
 import { octokit } from '../octokit';
 import { removeLabel } from './remove-label';
 import { setCommitStatus } from './set-commit-status';
@@ -10,7 +11,6 @@ interface AddPrToMergeQueue {
 }
 
 export const addPrToMergeQueue = async ({ sha }: AddPrToMergeQueue) => {
-  const { repo, owner } = context.repo;
   const issue_number = context.issue.number;
   const { data } = await octokit.issues.listLabelsOnIssue({
     issue_number,
@@ -18,17 +18,17 @@ export const addPrToMergeQueue = async ({ sha }: AddPrToMergeQueue) => {
   });
   if (!data.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
     core.info('PR is not ready for merge.');
-    const queueLabel = data.find(label => label.name.startsWith('QUEUED FOR MERGE'))?.name;
+    const queueLabel = data.find(label => label.name.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
     if (queueLabel) {
       await removeLabel({ label: queueLabel, pull_number: String(issue_number) });
     }
     return;
   }
-  const q = encodeURIComponent(`org:${owner} repo:${repo} type:pr state:open label:"QUEUED FOR MERGE"`);
   const {
     data: { total_count }
-  } = await octokit.search.issuesAndPullRequests({ q });
-  if (total_count === 0) {
+  } = await getQueuedPrData();
+  const numberInQueue = total_count + 1;
+  if (numberInQueue === 1 || data.find(label => label.name === FIRST_QUEUED_PR_LABEL)) {
     await setCommitStatus({
       sha,
       context: 'QUEUE CHECKER',
@@ -36,7 +36,7 @@ export const addPrToMergeQueue = async ({ sha }: AddPrToMergeQueue) => {
     });
   }
   return octokit.issues.addLabels({
-    labels: [`QUEUED FOR MERGE #${total_count + 1}`],
+    labels: [`${QUEUED_FOR_MERGE_PREFIX} #${numberInQueue}`],
     issue_number,
     ...context.repo
   });

@@ -15,6 +15,7 @@ exports.modules = {
 /* harmony export */   "_d": () => (/* binding */ CORE_APPROVED_PR_LABEL),
 /* harmony export */   "Xt": () => (/* binding */ PEER_APPROVED_PR_LABEL),
 /* harmony export */   "Ak": () => (/* binding */ READY_FOR_MERGE_PR_LABEL),
+/* harmony export */   "Ee": () => (/* binding */ QUEUED_FOR_MERGE_PREFIX),
 /* harmony export */   "IH": () => (/* binding */ FIRST_QUEUED_PR_LABEL),
 /* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL),
 /* harmony export */   "HW": () => (/* binding */ DEFAULT_PR_TITLE_REGEX)
@@ -46,7 +47,8 @@ const DEFAULT_BRANCH = 'main';
 const CORE_APPROVED_PR_LABEL = 'CORE APPROVED';
 const PEER_APPROVED_PR_LABEL = 'PEER APPROVED';
 const READY_FOR_MERGE_PR_LABEL = 'READY FOR MERGE';
-const FIRST_QUEUED_PR_LABEL = 'QUEUED FOR MERGE #1';
+const QUEUED_FOR_MERGE_PREFIX = 'QUEUED FOR MERGE';
+const FIRST_QUEUED_PR_LABEL = `${QUEUED_FOR_MERGE_PREFIX} #1`;
 const JUMP_THE_QUEUE_PR_LABEL = 'JUMP THE QUEUE';
 const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|style|test|revert|Revert|BREAKING CHANGE)((.*))?: .+$';
 
@@ -66,9 +68,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9042);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6161);
-/* harmony import */ var _remove_label__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(61);
-/* harmony import */ var _set_commit_status__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(2209);
+/* harmony import */ var _utils_get_queued_pr_data__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4281);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6161);
+/* harmony import */ var _remove_label__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(61);
+/* harmony import */ var _set_commit_status__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(2209);
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -84,29 +87,29 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+
 const addPrToMergeQueue = ({ sha }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const { repo, owner } = _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo;
     const issue_number = _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.issue.number;
-    const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.issues.listLabelsOnIssue */ .K.issues.listLabelsOnIssue(Object.assign({ issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
+    const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.issues.listLabelsOnIssue */ .K.issues.listLabelsOnIssue(Object.assign({ issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
     if (!data.find(label => label.name === _constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak)) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('PR is not ready for merge.');
-        const queueLabel = (_a = data.find(label => label.name.startsWith('QUEUED FOR MERGE'))) === null || _a === void 0 ? void 0 : _a.name;
+        const queueLabel = (_a = data.find(label => label.name.startsWith(_constants__WEBPACK_IMPORTED_MODULE_1__/* .QUEUED_FOR_MERGE_PREFIX */ .Ee))) === null || _a === void 0 ? void 0 : _a.name;
         if (queueLabel) {
-            yield (0,_remove_label__WEBPACK_IMPORTED_MODULE_4__.removeLabel)({ label: queueLabel, pull_number: String(issue_number) });
+            yield (0,_remove_label__WEBPACK_IMPORTED_MODULE_5__.removeLabel)({ label: queueLabel, pull_number: String(issue_number) });
         }
         return;
     }
-    const q = encodeURIComponent(`org:${owner} repo:${repo} type:pr state:open label:"QUEUED FOR MERGE"`);
-    const { data: { total_count } } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.search.issuesAndPullRequests */ .K.search.issuesAndPullRequests({ q });
-    if (total_count === 0) {
-        yield (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_5__.setCommitStatus)({
+    const { data: { total_count } } = yield (0,_utils_get_queued_pr_data__WEBPACK_IMPORTED_MODULE_3__/* .getQueuedPrData */ .Z)();
+    const numberInQueue = total_count + 1;
+    if (numberInQueue === 1 || data.find(label => label.name === _constants__WEBPACK_IMPORTED_MODULE_1__/* .FIRST_QUEUED_PR_LABEL */ .IH)) {
+        yield (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_6__.setCommitStatus)({
             sha,
             context: 'QUEUE CHECKER',
             state: 'success'
         });
     }
-    return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: [`QUEUED FOR MERGE #${total_count + 1}`], issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
+    return _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: [`${_constants__WEBPACK_IMPORTED_MODULE_1__/* .QUEUED_FOR_MERGE_PREFIX */ .Ee} #${numberInQueue}`], issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
 });
 
 
@@ -213,6 +216,30 @@ limitations under the License.
 
 
 const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true })).rest;
+
+
+/***/ }),
+
+/***/ 4281:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Z": () => (/* binding */ getQueuedPrData)
+/* harmony export */ });
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
+
+
+
+const getQueuedPrData = () => {
+    const { repo, owner } = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo;
+    return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.search.issuesAndPullRequests */ .K.search.issuesAndPullRequests({
+        q: encodeURIComponent(`org:${owner} repo:${repo} type:pr state:open label:"${_constants__WEBPACK_IMPORTED_MODULE_0__/* .QUEUED_FOR_MERGE_PREFIX */ .Ee}"`)
+    });
+};
 
 
 /***/ })

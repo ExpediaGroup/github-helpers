@@ -15,6 +15,7 @@ exports.modules = {
 /* harmony export */   "_d": () => (/* binding */ CORE_APPROVED_PR_LABEL),
 /* harmony export */   "Xt": () => (/* binding */ PEER_APPROVED_PR_LABEL),
 /* harmony export */   "Ak": () => (/* binding */ READY_FOR_MERGE_PR_LABEL),
+/* harmony export */   "Ee": () => (/* binding */ QUEUED_FOR_MERGE_PREFIX),
 /* harmony export */   "IH": () => (/* binding */ FIRST_QUEUED_PR_LABEL),
 /* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL),
 /* harmony export */   "HW": () => (/* binding */ DEFAULT_PR_TITLE_REGEX)
@@ -46,7 +47,8 @@ const DEFAULT_BRANCH = 'main';
 const CORE_APPROVED_PR_LABEL = 'CORE APPROVED';
 const PEER_APPROVED_PR_LABEL = 'PEER APPROVED';
 const READY_FOR_MERGE_PR_LABEL = 'READY FOR MERGE';
-const FIRST_QUEUED_PR_LABEL = 'QUEUED FOR MERGE #1';
+const QUEUED_FOR_MERGE_PREFIX = 'QUEUED FOR MERGE';
+const FIRST_QUEUED_PR_LABEL = `${QUEUED_FOR_MERGE_PREFIX} #1`;
 const JUMP_THE_QUEUE_PR_LABEL = 'JUMP THE QUEUE';
 const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|style|test|revert|Revert|BREAKING CHANGE)((.*))?: .+$';
 
