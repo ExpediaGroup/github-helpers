@@ -1,12 +1,13 @@
-name: Add PR To Merge Queue
+name: Manage Merge Queue
 
 on:
   pull_request:
     branches: [ main ]
-    types: [ synchronize, labeled, unlabeled ]
+    types: [ synchronize, labeled, unlabeled, closed ]
 
 jobs:
   test:
+    if: github.event.action != 'closed' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
