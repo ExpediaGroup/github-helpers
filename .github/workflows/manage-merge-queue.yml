@@ -7,7 +7,6 @@ on:
 
 jobs:
   test:
-    if: github.event.action != 'closed' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -16,5 +15,5 @@ jobs:
       - uses: ./
         with:
           helper: manage-merge-queue
-          sha: ${{ github.event.pull_request.head.sha }}
+          event: ${{ github.event.pull_request }}
           github_token: ${{ secrets.GITHUB_TOKEN }}

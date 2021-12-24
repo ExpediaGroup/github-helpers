@@ -18,15 +18,30 @@ import { manageMergeQueue } from '../../src/helpers/manage-merge-queue';
 import { octokit } from '../../src/octokit';
 import { removeLabel } from '../../src/helpers/remove-label';
 
+jest.mock('../../src/helpers/add-labels');
+jest.mock('../../src/helpers/remove-label');
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({
     rest: {
-      issues: { addLabels: jest.fn(), listLabelsOnIssue: jest.fn() },
+      issues: {
+        addLabels: jest.fn(),
+        listLabelsOnIssue: jest.fn()
+      },
       search: { issuesAndPullRequests: jest.fn() }
     }
   }))
+}));
+(octokit.issues.listLabelsOnIssue as unknown as Mocktokit).mockImplementation(async () => ({
+  data: [
+    {
+      name: 'QUEUED FOR MERGE #2'
+    },
+    {
+      name: 'QUEUED FOR MERGE #3'
+    }
+  ]
 }));
 (octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({
   data: {
@@ -45,44 +60,52 @@ jest.mock('@actions/github', () => ({
 }));
 
 describe('addPrToMergeQueue', () => {
-  const sha = 'sha';
-  beforeEach(async () => {
-    await manageMergeQueue({ sha });
-  });
-
-  it('should call issuesAndPullRequests search with correct params', () => {
-    expect(octokit.search.issuesAndPullRequests).toHaveBeenCalledWith({
-      q: 'org%3Aowner%20repo%3Arepo%20type%3Apr%20state%3Aopen%20label%3A%22QUEUED%20FOR%20MERGE%22'
+  const event = 'sha';
+  describe('pr event case', () => {
+    beforeEach(async () => {
+      await manageMergeQueue({ event });
     });
-  });
 
-  it('should call add labels with correct params', () => {
-    expect(octokit.issues.addLabels).toHaveBeenCalledWith({
-      labels: ['QUEUED FOR MERGE #4'],
-      issue_number: 123,
-      ...context.repo
+    it('should call issuesAndPullRequests search with correct params', () => {
+      expect(octokit.search.issuesAndPullRequests).toHaveBeenCalledWith({
+        q: 'org%3Aowner%20repo%3Arepo%20type%3Apr%20state%3Aopen%20label%3A%22QUEUED%20FOR%20MERGE%22'
+      });
     });
-  });
 
-  it('should call add labels with correct params', () => {
-    expect(addLabels).toHaveBeenCalledWith({
-      pull_number: '123',
-      labels: 'QUEUED FOR MERGE #1'
-    });
-    expect(addLabels).toHaveBeenCalledWith({
-      pull_number: '456',
-      labels: 'QUEUED FOR MERGE #2'
+    it('should call add labels with correct params', () => {
+      expect(octokit.issues.addLabels).toHaveBeenCalledWith({
+        labels: ['QUEUED FOR MERGE #4'],
+        issue_number: 123,
+        ...context.repo
+      });
     });
   });
 
-  it('should call remove label with correct params', () => {
-    expect(removeLabel).toHaveBeenCalledWith({
-      pull_number: '123',
-      label: 'QUEUED FOR MERGE #2'
+  describe('pr merge case', () => {
+    beforeEach(async () => {
+      await manageMergeQueue({ event });
     });
-    expect(removeLabel).toHaveBeenCalledWith({
-      pull_number: '456',
-      label: 'QUEUED FOR MERGE #3'
+
+    it('should call add labels with correct params', () => {
+      expect(addLabels).toHaveBeenCalledWith({
+        pull_number: '123',
+        labels: 'QUEUED FOR MERGE #1'
+      });
+      expect(addLabels).toHaveBeenCalledWith({
+        pull_number: '456',
+        labels: 'QUEUED FOR MERGE #2'
+      });
+    });
+
+    it('should call remove label with correct params', () => {
+      expect(removeLabel).toHaveBeenCalledWith({
+        pull_number: '123',
+        label: 'QUEUED FOR MERGE #2'
+      });
+      expect(removeLabel).toHaveBeenCalledWith({
+        pull_number: '456',
+        label: 'QUEUED FOR MERGE #3'
+      });
     });
   });
 });

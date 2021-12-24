@@ -13,26 +13,31 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { FIRST_QUEUED_PR_LABEL, QUEUED_FOR_MERGE_PREFIX, READY_FOR_MERGE_PR_LABEL } from '../constants';
-import { IssuesAndPullRequestsResponse } from '../types';
+import { IssuesAndPullRequestsResponse, NewPullRequest } from '../types';
 import { addLabels } from './add-labels';
 import { context } from '@actions/github';
-import { getQueuedPrData } from '../utils/get-queued-pr-data';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
 import { removeLabel } from './remove-label';
 import { setCommitStatus } from './set-commit-status';
 
 interface ManageMergeQueue {
-  sha: string;
+  event: string;
 }
 
-export const manageMergeQueue = async ({ sha }: ManageMergeQueue) => {
+export const manageMergeQueue = async ({ event }: ManageMergeQueue) => {
+  const pull_request = JSON.parse(event).pull_request as NewPullRequest;
   const {
     data: { items, total_count }
   } = await getQueuedPrData();
   const issue_number = context.issue.number;
-  if (!issue_number) {
-    return updateMergeQueue(items);
+  if (pull_request.merged) {
+    const queueLabel = pull_request.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
+    if (queueLabel) {
+      await removeLabel({ label: queueLabel, pull_number: String(issue_number) });
+      await updateMergeQueue(items);
+    }
+    return;
   }
 
   const { data } = await octokit.issues.listLabelsOnIssue({
@@ -52,7 +57,7 @@ export const manageMergeQueue = async ({ sha }: ManageMergeQueue) => {
   const numberInQueue = total_count + 1;
   if (numberInQueue === 1 || data.find(label => label.name === FIRST_QUEUED_PR_LABEL)) {
     await setCommitStatus({
-      sha,
+      sha: pull_request.head.sha,
       context: 'QUEUE CHECKER',
       state: 'success'
     });
@@ -64,17 +69,24 @@ export const manageMergeQueue = async ({ sha }: ManageMergeQueue) => {
   });
 };
 
-const updateMergeQueue = async (queuedPrs: IssuesAndPullRequestsResponse['data']['items']) => {
+const updateMergeQueue = (queuedPrs: IssuesAndPullRequestsResponse['data']['items']) => {
   return map(queuedPrs, pr => {
-    const mergeLabel = pr.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
-    if (!mergeLabel) {
+    const queueLabel = pr.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
+    if (!queueLabel) {
       return;
     }
     const pull_number = String(pr.number);
-    const queueNumber = Number(mergeLabel.split('#')[1]);
+    const queueNumber = Number(queueLabel.split('#')[1]);
     return Promise.all([
       addLabels({ pull_number, labels: `${QUEUED_FOR_MERGE_PREFIX} #${queueNumber - 1}` }),
-      removeLabel({ pull_number, label: mergeLabel })
+      removeLabel({ pull_number, label: queueLabel })
     ]);
+  });
+};
+
+const getQueuedPrData = () => {
+  const { repo, owner } = context.repo;
+  return octokit.search.issuesAndPullRequests({
+    q: encodeURIComponent(`org:${owner} repo:${repo} type:pr state:open label:"${QUEUED_FOR_MERGE_PREFIX}"`)
   });
 };
