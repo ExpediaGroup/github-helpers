@@ -25,6 +25,7 @@ export const addPrToMergeQueue = async () => {
     data: { total_count }
   } = await octokit.search.issuesAndPullRequests({ q });
   if (total_count === 0) {
+    core.info(context.sha);
     await setCommitStatus({
       sha: context.sha,
       context: 'QUEUE CHECKER',
