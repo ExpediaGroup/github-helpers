@@ -86,6 +86,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 const addPrToMergeQueue = () => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(_actions_github__WEBPACK_IMPORTED_MODULE_2__.context.ref);
     const { repo, owner } = _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo;
     const issue_number = _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.issue.number;
     const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.issues.listLabelsOnIssue */ .K.issues.listLabelsOnIssue(Object.assign({ issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
@@ -100,7 +101,6 @@ const addPrToMergeQueue = () => __awaiter(void 0, void 0, void 0, function* () {
     const q = encodeURIComponent(`org:${owner} repo:${repo} type:pr state:open label:"QUEUED FOR MERGE"`);
     const { data: { total_count } } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.search.issuesAndPullRequests */ .K.search.issuesAndPullRequests({ q });
     if (total_count === 0) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(_actions_github__WEBPACK_IMPORTED_MODULE_2__.context.sha);
         yield (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_5__.setCommitStatus)({
             sha: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.sha,
             context: 'QUEUE CHECKER',

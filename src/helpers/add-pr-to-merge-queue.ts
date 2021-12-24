@@ -6,6 +6,7 @@ import { removeLabel } from './remove-label';
 import { setCommitStatus } from './set-commit-status';
 
 export const addPrToMergeQueue = async () => {
+  core.info(context.ref);
   const { repo, owner } = context.repo;
   const issue_number = context.issue.number;
   const { data } = await octokit.issues.listLabelsOnIssue({
@@ -25,7 +26,6 @@ export const addPrToMergeQueue = async () => {
     data: { total_count }
   } = await octokit.search.issuesAndPullRequests({ q });
   if (total_count === 0) {
-    core.info(context.sha);
     await setCommitStatus({
       sha: context.sha,
       context: 'QUEUE CHECKER',
