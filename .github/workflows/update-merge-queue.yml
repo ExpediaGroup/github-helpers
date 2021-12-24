@@ -1,0 +1,19 @@
+name: Update Merge Queue
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/helpers/update-merge-queue.ts'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: ./
+        with:
+          helper: update-merge-queue
+          github_token: ${{ secrets.GITHUB_TOKEN }}

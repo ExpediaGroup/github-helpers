@@ -1,0 +1,19 @@
+name: Add PR To Merge Queue
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/helpers/add-pr-to-merge-queue.ts'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: ./
+        with:
+          helper: add-pr-to-merge-queue
+          github_token: ${{ secrets.GITHUB_TOKEN }}
