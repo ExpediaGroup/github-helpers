@@ -3,6 +3,7 @@ name: Add PR To Merge Queue
 on:
   pull_request:
     branches: [ main ]
+    types: [ synchronize, labeled, unlabeled ]
     paths:
       - 'src/helpers/add-pr-to-merge-queue.ts'
 
