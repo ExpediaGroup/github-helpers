@@ -2,16 +2,14 @@ import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
 export const addPrToMergeQueue = async () => {
-  const pull_number = context.issue.number;
-  const {
-    data: { id }
-  } = await octokit.repos.get({ ...context.repo, pull_number });
+  const { repo, owner } = context.repo;
+  const q = encodeURIComponent(`org:${owner} repo:${repo} type:pr state:open label:"QUEUED FOR MERGE"`);
   const {
     data: { total_count }
-  } = await octokit.search.labels({ repository_id: id, q: 'QUEUED FOR MERGE' });
+  } = await octokit.search.issuesAndPullRequests({ q });
   return octokit.issues.addLabels({
     labels: [`QUEUED FOR MERGE #${total_count + 1}`],
-    issue_number: pull_number,
+    issue_number: context.issue.number,
     ...context.repo
   });
 };

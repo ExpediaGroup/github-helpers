@@ -25,10 +25,10 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const addPrToMergeQueue = () => __awaiter(void 0, void 0, void 0, function* () {
-    const pull_number = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number;
-    const { data: { id } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.get */ .K.repos.get(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { pull_number }));
-    const { data: { total_count } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.search.labels */ .K.search.labels({ repository_id: id, q: 'QUEUED FOR MERGE' });
-    return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: [`QUEUED FOR MERGE #${total_count + 1}`], issue_number: pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    const { repo, owner } = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo;
+    const q = encodeURIComponent(`org:${owner} repo:${repo} type:pr state:open label:"QUEUED FOR MERGE"`);
+    const { data: { total_count } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.search.issuesAndPullRequests */ .K.search.issuesAndPullRequests({ q });
+    return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: [`QUEUED FOR MERGE #${total_count + 1}`], issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
 });
 
 
