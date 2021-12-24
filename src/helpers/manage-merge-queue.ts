@@ -23,7 +23,7 @@ import { removeLabel } from './remove-label';
 import { setCommitStatus } from './set-commit-status';
 
 interface ManageMergeQueue {
-  sha?: string;
+  sha: string;
 }
 
 export const manageMergeQueue = async ({ sha }: ManageMergeQueue) => {
@@ -51,10 +51,6 @@ export const manageMergeQueue = async ({ sha }: ManageMergeQueue) => {
 
   const numberInQueue = total_count + 1;
   if (numberInQueue === 1 || data.find(label => label.name === FIRST_QUEUED_PR_LABEL)) {
-    if (!sha) {
-      core.setFailed('Commit sha not provided.');
-      throw new Error();
-    }
     await setCommitStatus({
       sha,
       context: 'QUEUE CHECKER',

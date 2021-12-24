@@ -174,10 +174,6 @@ const manageMergeQueue = ({ sha }) => __awaiter(void 0, void 0, void 0, function
     }
     const numberInQueue = total_count + 1;
     if (numberInQueue === 1 || data.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH)) {
-        if (!sha) {
-            core.setFailed('Commit sha not provided.');
-            throw new Error();
-        }
         yield (0,set_commit_status.setCommitStatus)({
             sha,
             context: 'QUEUE CHECKER',
