@@ -11,14 +11,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mocktokit } from '../types';
-import { manageMergeQueue } from '../../src/helpers/manage-merge-queue';
-import { octokit } from '../../src/octokit';
+import { IssuesAndPullRequestsResponse } from '../../src/types';
+import { addLabels } from '../../src/helpers/add-labels';
 import { removeLabel } from '../../src/helpers/remove-label';
 import { updateMergeQueue } from '../../src/utils/update-merge-queue';
 
 jest.mock('../../src/helpers/add-labels');
-jest.mock('../../src/utils/update-merge-queue');
 jest.mock('../../src/helpers/remove-label');
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
@@ -34,51 +32,43 @@ jest.mock('@actions/github', () => ({
     }
   }))
 }));
-(octokit.issues.listLabelsOnIssue as unknown as Mocktokit).mockImplementation(async () => ({
-  data: [
-    {
-      name: 'QUEUED FOR MERGE #2'
-    },
-    {
-      name: 'QUEUED FOR MERGE #3'
-    }
-  ]
-}));
-const items = ['some', 'items'];
-(octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({
-  data: {
-    total_count: 3,
-    items
+const queuedPrs = [
+  {
+    number: 123,
+    labels: [{ name: 'QUEUED FOR MERGE #2' }]
+  },
+  {
+    number: 456,
+    labels: [{ name: 'QUEUED FOR MERGE #3' }]
   }
-}));
+];
 
-describe('manageMergeQueue', () => {
-  describe('pr merged case', () => {
+describe('updateMergeQueue', () => {
+  describe('pr merge case', () => {
     beforeEach(async () => {
-      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          merged: true,
-          labels: [{ name: 'QUEUED FOR MERGE #2' }]
-        }
-      }));
-      await manageMergeQueue();
+      await updateMergeQueue(queuedPrs as IssuesAndPullRequestsResponse['data']['items']);
     });
 
-    it('should call issuesAndPullRequests search with correct params', () => {
-      expect(octokit.search.issuesAndPullRequests).toHaveBeenCalledWith({
-        q: 'org%3Aowner%20repo%3Arepo%20type%3Apr%20state%3Aopen%20label%3A%22QUEUED%20FOR%20MERGE%22'
+    it('should call add labels with correct params', () => {
+      expect(addLabels).toHaveBeenCalledWith({
+        pull_number: '123',
+        labels: 'QUEUED FOR MERGE #1'
+      });
+      expect(addLabels).toHaveBeenCalledWith({
+        pull_number: '456',
+        labels: 'QUEUED FOR MERGE #2'
       });
     });
 
     it('should call remove label with correct params', () => {
       expect(removeLabel).toHaveBeenCalledWith({
-        label: 'QUEUED FOR MERGE #2',
-        pull_number: '123'
+        pull_number: '123',
+        label: 'QUEUED FOR MERGE #2'
       });
-    });
-
-    it('should call updateMergeQueue with correct params', () => {
-      expect(updateMergeQueue).toHaveBeenCalledWith(items);
+      expect(removeLabel).toHaveBeenCalledWith({
+        pull_number: '456',
+        label: 'QUEUED FOR MERGE #3'
+      });
     });
   });
 });

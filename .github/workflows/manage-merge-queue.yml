@@ -15,5 +15,5 @@ jobs:
       - uses: ./
         with:
           helper: manage-merge-queue
-          event: ${{ fromJSON(github.event.pull_request) }}
+          sha: ${{ github.event.pull_request.head.sha }}
           github_token: ${{ secrets.GITHUB_TOKEN }}

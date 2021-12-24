@@ -13,26 +13,21 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { FIRST_QUEUED_PR_LABEL, QUEUED_FOR_MERGE_PREFIX, READY_FOR_MERGE_PR_LABEL } from '../constants';
-import { IssuesAndPullRequestsResponse, NewPullRequest } from '../types';
 import { addLabels } from './add-labels';
 import { context } from '@actions/github';
-import { map } from 'bluebird';
 import { octokit } from '../octokit';
 import { removeLabel } from './remove-label';
 import { setCommitStatus } from './set-commit-status';
+import { updateMergeQueue } from '../utils/update-merge-queue';
 
-interface ManageMergeQueue {
-  event: string;
-}
-
-export const manageMergeQueue = async ({ event }: ManageMergeQueue) => {
-  const pull_request = JSON.parse(event).pull_request as NewPullRequest;
+export const manageMergeQueue = async () => {
   const {
     data: { items, total_count }
   } = await getQueuedPrData();
   const issue_number = context.issue.number;
-  if (pull_request.merged) {
-    const queueLabel = pull_request.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
+  const { data: pullRequest } = await octokit.pulls.get({ pull_number: issue_number, ...context.repo });
+  if (pullRequest.merged) {
+    const queueLabel = pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
     if (queueLabel) {
       await removeLabel({ label: queueLabel, pull_number: String(issue_number) });
       await updateMergeQueue(items);
@@ -57,30 +52,14 @@ export const manageMergeQueue = async ({ event }: ManageMergeQueue) => {
   const numberInQueue = total_count + 1;
   if (numberInQueue === 1 || data.find(label => label.name === FIRST_QUEUED_PR_LABEL)) {
     await setCommitStatus({
-      sha: pull_request.head.sha,
+      sha: pullRequest.head.sha,
       context: 'QUEUE CHECKER',
       state: 'success'
     });
   }
-  return octokit.issues.addLabels({
-    labels: [`${QUEUED_FOR_MERGE_PREFIX} #${numberInQueue}`],
-    issue_number,
-    ...context.repo
-  });
-};
-
-const updateMergeQueue = (queuedPrs: IssuesAndPullRequestsResponse['data']['items']) => {
-  return map(queuedPrs, pr => {
-    const queueLabel = pr.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
-    if (!queueLabel) {
-      return;
-    }
-    const pull_number = String(pr.number);
-    const queueNumber = Number(queueLabel.split('#')[1]);
-    return Promise.all([
-      addLabels({ pull_number, labels: `${QUEUED_FOR_MERGE_PREFIX} #${queueNumber - 1}` }),
-      removeLabel({ pull_number, label: queueLabel })
-    ]);
+  return addLabels({
+    labels: `${QUEUED_FOR_MERGE_PREFIX} #${numberInQueue}`,
+    pull_number: String(issue_number)
   });
 };
 

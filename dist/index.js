@@ -18901,16 +18901,16 @@ var map = {
 		420
 	],
 	"./manage-merge-queue": [
-		6898,
+		7473,
 		438,
 		710,
-		898
+		473
 	],
 	"./manage-merge-queue.ts": [
-		6898,
+		7473,
 		438,
 		710,
-		898
+		473
 	],
 	"./move-project-card": [
 		7263,
