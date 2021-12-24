@@ -33,8 +33,9 @@ jest.mock('@actions/github', () => ({
 }));
 
 describe('addPrToMergeQueue', () => {
+  const sha = 'sha';
   beforeEach(async () => {
-    await addPrToMergeQueue();
+    await addPrToMergeQueue({ sha });
   });
 
   it('should call issuesAndPullRequests search with correct params', () => {

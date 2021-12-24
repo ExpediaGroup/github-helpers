@@ -17,4 +17,5 @@ jobs:
       - uses: ./
         with:
           helper: add-pr-to-merge-queue
+          sha: ${{ github.event.pull_request.head.sha }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
