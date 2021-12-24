@@ -18800,18 +18800,6 @@ var map = {
 		445,
 		905
 	],
-	"./add-pr-to-merge-queue": [
-		9597,
-		438,
-		710,
-		597
-	],
-	"./add-pr-to-merge-queue.ts": [
-		9597,
-		438,
-		710,
-		597
-	],
 	"./assign-pr-reviewers": [
 		3154,
 		438,
@@ -18912,6 +18900,18 @@ var map = {
 		438,
 		420
 	],
+	"./manage-merge-queue": [
+		1733,
+		438,
+		710,
+		733
+	],
+	"./manage-merge-queue.ts": [
+		1733,
+		438,
+		710,
+		733
+	],
 	"./move-project-card": [
 		7263,
 		438,
@@ -18985,18 +18985,6 @@ var map = {
 		2000,
 		438,
 		0
-	],
-	"./update-merge-queue": [
-		5169,
-		438,
-		710,
-		169
-	],
-	"./update-merge-queue.ts": [
-		5169,
-		438,
-		710,
-		169
 	]
 };
 function webpackAsyncContext(req) {

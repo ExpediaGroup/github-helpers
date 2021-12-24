@@ -21,6 +21,7 @@ export type PullRequestListResponse = RestEndpointMethodTypes['pulls']['list']['
 export type CreateDeploymentResponse = components['schemas']['deployment'];
 export type ProjectListResponse = RestEndpointMethodTypes['projects']['listForRepo']['response'];
 export type ColumnListResponse = RestEndpointMethodTypes['projects']['listColumns']['response'];
+export type IssuesAndPullRequestsResponse = RestEndpointMethodTypes['search']['issuesAndPullRequests']['response'];
 
 export type ActionInputs = {
   [input: string]: string;

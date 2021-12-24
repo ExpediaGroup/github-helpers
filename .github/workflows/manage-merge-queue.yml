@@ -4,8 +4,6 @@ on:
   pull_request:
     branches: [ main ]
     types: [ synchronize, labeled, unlabeled ]
-    paths:
-      - 'src/helpers/add-pr-to-merge-queue.ts'
 
 jobs:
   test:
@@ -16,6 +14,6 @@ jobs:
 
       - uses: ./
         with:
-          helper: add-pr-to-merge-queue
+          helper: manage-merge-queue
           sha: ${{ github.event.pull_request.head.sha }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
