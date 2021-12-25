@@ -17,7 +17,7 @@ import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
+  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({ rest: { pulls: { createReview: jest.fn() } } }))
 }));
 
@@ -32,7 +32,7 @@ describe('autoApprovePr', () => {
     const login = 'user';
 
     beforeEach(() => {
-      autoApprovePr({ pull_number: '123', login, auto_approved_user });
+      autoApprovePr({ login, auto_approved_user });
     });
 
     it('should not approve', () => {
@@ -42,10 +42,10 @@ describe('autoApprovePr', () => {
 
   describe('renovate pr', () => {
     const login = 'renovate';
-    const pull_number = Number(123);
+    const pull_number = 123;
 
     beforeEach(() => {
-      autoApprovePr({ pull_number: '123', login, auto_approved_user });
+      autoApprovePr({ login, auto_approved_user });
     });
 
     it('should approve', () => {

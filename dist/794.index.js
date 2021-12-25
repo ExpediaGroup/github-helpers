@@ -33,7 +33,7 @@ limitations under the License.
 
 
 
-const filterPaths = ({ paths, globs, pull_number }) => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ per_page: 100, pull_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
+const filterPaths = ({ paths, globs }) => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ per_page: 100, pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
     .then(listFilesResponse => {
     const fileNames = listFilesResponse.data.map(file => file.filename);
     if (globs) {

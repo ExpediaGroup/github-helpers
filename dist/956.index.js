@@ -83,9 +83,9 @@ limitations under the License.
 
 
 
-const checkPrTitle = ({ pull_number, pattern = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PR_TITLE_REGEX */ .HW }) => {
+const checkPrTitle = ({ pattern = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PR_TITLE_REGEX */ .HW }) => {
     const regex = new RegExp(pattern);
-    return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
+    return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
         .then(prResponse => {
         if (regex.test(prResponse.data.title)) {
             return true;

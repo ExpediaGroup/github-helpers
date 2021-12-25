@@ -17,18 +17,16 @@ import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
+  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({ rest: { issues: { createComment: jest.fn() } } }))
 }));
 
 describe('createPrComment', () => {
   const body = 'body';
-  const pull_number = '123';
 
   beforeEach(() => {
     createPrComment({
-      body,
-      pull_number
+      body
     });
   });
 

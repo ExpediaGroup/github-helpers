@@ -16,12 +16,11 @@ import { octokit } from '../octokit';
 
 interface CreatePrComment {
   body: string;
-  pull_number: string;
 }
 
-export const createPrComment = ({ body, pull_number }: CreatePrComment) =>
+export const createPrComment = ({ body }: CreatePrComment) =>
   octokit.issues.createComment({
     body,
-    issue_number: Number(pull_number),
+    issue_number: context.issue.number,
     ...context.repo
   });

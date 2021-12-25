@@ -10,9 +10,6 @@ inputs:
   body:
     description: 'The comment body'
     required: false
-  pull_number:
-    description: 'The pull request number'
-    required: false
   project_name:
     description: 'The GitHub Project name'
     required: false

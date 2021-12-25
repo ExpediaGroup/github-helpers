@@ -27,7 +27,7 @@ limitations under the License.
 */
 
 
-const createPrComment = ({ body, pull_number }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+const createPrComment = ({ body }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
 
 
 /***/ }),

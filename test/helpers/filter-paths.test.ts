@@ -17,14 +17,13 @@ import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
+  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({ rest: { pulls: { listFiles: jest.fn() } } }))
 }));
 
 describe('filterPaths', () => {
   const paths = 'file/path/1\nfile/path/2';
   const globs = '**/*.md\nsomething/**/file1.txt';
-  const pull_number = '123';
 
   afterEach(() => {
     jest.resetAllMocks();
@@ -60,8 +59,7 @@ describe('filterPaths', () => {
       ]
     }));
     const result = await filterPaths({
-      paths,
-      pull_number
+      paths
     });
 
     expect(result).toBe(true);
@@ -97,8 +95,7 @@ describe('filterPaths', () => {
       ]
     }));
     const result = await filterPaths({
-      paths,
-      pull_number
+      paths
     });
 
     expect(result).toBe(false);
@@ -134,8 +131,7 @@ describe('filterPaths', () => {
       ]
     }));
     const result = await filterPaths({
-      globs,
-      pull_number
+      globs
     });
 
     expect(result).toBe(true);
@@ -148,8 +144,7 @@ describe('filterPaths', () => {
     }));
     const result = await filterPaths({
       paths: exactFilePath,
-      globs,
-      pull_number
+      globs
     });
 
     expect(result).toBe(false);
@@ -185,8 +180,7 @@ describe('filterPaths', () => {
       ]
     }));
     const result = await filterPaths({
-      paths: exactFilePath,
-      pull_number
+      paths: exactFilePath
     });
 
     expect(result).toBe(true);

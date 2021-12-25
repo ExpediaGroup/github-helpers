@@ -17,15 +17,14 @@ import { octokit } from '../octokit';
 import { setFailed } from '@actions/core';
 
 interface CheckPrTitle {
-  pull_number: string;
   pattern?: string;
 }
 
-export const checkPrTitle = ({ pull_number, pattern = DEFAULT_PR_TITLE_REGEX }: CheckPrTitle) => {
+export const checkPrTitle = ({ pattern = DEFAULT_PR_TITLE_REGEX }: CheckPrTitle) => {
   const regex = new RegExp(pattern);
   return octokit.pulls
     .get({
-      pull_number: Number(pull_number),
+      pull_number: context.issue.number,
       ...context.repo
     })
     .then(prResponse => {

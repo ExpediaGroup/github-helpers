@@ -19,7 +19,7 @@ import { getChangedFilepaths } from './get-changed-filepaths';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
 
-export const getCoreMemberLogins = async (pull_number: string, teams?: string[]) => {
+export const getCoreMemberLogins = async (pull_number: number, teams?: string[]) => {
   const codeOwners = teams ?? (await getCodeOwners(pull_number));
 
   if (!codeOwners?.length) {
@@ -39,7 +39,7 @@ export const getCoreMemberLogins = async (pull_number: string, teams?: string[])
   return union(...adminLogins);
 };
 
-const getCodeOwners = async (pull_number: string) => {
+const getCodeOwners = async (pull_number: number) => {
   const codeOwners = (await loadOwners(process.cwd())) ?? [];
   const changedFilePaths = await getChangedFilepaths(pull_number);
   const matchingCodeOwners = changedFilePaths.map(filePath => matchFile(filePath, codeOwners) ?? ({} as CodeOwnersEntry));
