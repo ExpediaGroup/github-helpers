@@ -35,13 +35,9 @@ export const manageMergeQueue = async () => {
     return;
   }
 
-  const { data } = await octokit.issues.listLabelsOnIssue({
-    issue_number,
-    ...context.repo
-  });
-  if (!data.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
+  if (!pullRequest.labels.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
     core.info('PR is not ready for merge.');
-    const queueLabel = data.find(label => label.name.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
+    const queueLabel = pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
     if (queueLabel) {
       await removeLabel({ label: queueLabel, pull_number: String(issue_number) });
       await updateMergeQueue(items);
@@ -50,7 +46,7 @@ export const manageMergeQueue = async () => {
   }
 
   const numberInQueue = total_count + 1;
-  if (numberInQueue === 1 || data.find(label => label.name === FIRST_QUEUED_PR_LABEL)) {
+  if (numberInQueue === 1 || pullRequest.labels.find(label => label.name === FIRST_QUEUED_PR_LABEL)) {
     await setCommitStatus({
       sha: pullRequest.head.sha,
       context: 'QUEUE CHECKER',

@@ -177,10 +177,9 @@ const manageMergeQueue = () => __awaiter(void 0, void 0, void 0, function* () {
         }
         return;
     }
-    const { data } = yield octokit/* octokit.issues.listLabelsOnIssue */.K.issues.listLabelsOnIssue(Object.assign({ issue_number }, github.context.repo));
-    if (!data.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak)) {
+    if (!pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak)) {
         core.info('PR is not ready for merge.');
-        const queueLabel = (_b = data.find(label => label.name.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee))) === null || _b === void 0 ? void 0 : _b.name;
+        const queueLabel = (_b = pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _b === void 0 ? void 0 : _b.name;
         if (queueLabel) {
             yield (0,remove_label.removeLabel)({ label: queueLabel, pull_number: String(issue_number) });
             yield updateMergeQueue(items);
@@ -188,7 +187,7 @@ const manageMergeQueue = () => __awaiter(void 0, void 0, void 0, function* () {
         return;
     }
     const numberInQueue = total_count + 1;
-    if (numberInQueue === 1 || data.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH)) {
+    if (numberInQueue === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH)) {
         yield (0,set_commit_status.setCommitStatus)({
             sha: pullRequest.head.sha,
             context: 'QUEUE CHECKER',
