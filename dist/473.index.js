@@ -165,26 +165,12 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const manageMergeQueue = () => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
     const { data: { items, total_count } } = yield getQueuedPrData();
     const issue_number = github.context.issue.number;
     const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: issue_number }, github.context.repo));
-    if (pullRequest.merged) {
-        const queueLabel = (_a = pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
-        if (queueLabel) {
-            yield (0,remove_label.removeLabel)({ label: queueLabel, pull_number: String(issue_number) });
-            yield updateMergeQueue(items);
-        }
-        return;
-    }
-    if (!pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak)) {
-        core.info('PR is not ready for merge.');
-        const queueLabel = (_b = pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _b === void 0 ? void 0 : _b.name;
-        if (queueLabel) {
-            yield (0,remove_label.removeLabel)({ label: queueLabel, pull_number: String(issue_number) });
-            yield updateMergeQueue(items);
-        }
-        return;
+    if (pullRequest.merged || !pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak)) {
+        core.info('This PR is not in the merge queue.');
+        return removePRFromQueue(pullRequest, items);
     }
     const numberInQueue = total_count + 1;
     if (numberInQueue === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH)) {
@@ -198,6 +184,14 @@ const manageMergeQueue = () => __awaiter(void 0, void 0, void 0, function* () {
         labels: `${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${numberInQueue}`,
         pull_number: String(issue_number)
     });
+});
+const removePRFromQueue = (pullRequest, queuedPrs) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const queueLabel = (_a = pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
+    if (queueLabel) {
+        yield (0,remove_label.removeLabel)({ label: queueLabel, pull_number: String(pullRequest.number) });
+        yield updateMergeQueue(queuedPrs);
+    }
 });
 const getQueuedPrData = () => {
     const { repo, owner } = github.context.repo;

@@ -49,6 +49,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: {
           merged: true,
+          number: 123,
           labels: [{ name: 'QUEUED FOR MERGE #1' }]
         }
       }));
@@ -78,6 +79,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: {
           merged: false,
+          number: 123,
           labels: [{ name: 'QUEUED FOR MERGE #2' }]
         }
       }));

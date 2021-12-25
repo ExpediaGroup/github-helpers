@@ -14,7 +14,6 @@ limitations under the License.
 import * as core from '@actions/core';
 import { SingleColumn, getDestinationColumn, getProjectColumns } from '../utils/get-project-columns';
 import { GITHUB_OPTIONS } from '../constants';
-import { PullRequest } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
@@ -46,7 +45,7 @@ export const createProjectCard = async ({ pull_number, project_name, project_des
 
 const generateCardParams = async (pull_number: number, filteredColumn: SingleColumn, note?: string) => {
   const getResponse = await octokit.pulls.get({ pull_number, ...context.repo });
-  const pullRequest = getResponse.data as PullRequest;
+  const pullRequest = getResponse.data;
   if (note) {
     return {
       column_id: filteredColumn?.id,

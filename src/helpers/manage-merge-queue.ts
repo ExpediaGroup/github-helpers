@@ -13,6 +13,7 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { FIRST_QUEUED_PR_LABEL, QUEUED_FOR_MERGE_PREFIX, READY_FOR_MERGE_PR_LABEL } from '../constants';
+import { IssuesAndPullRequestsResponse, PullRequest } from '../types';
 import { addLabels } from './add-labels';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
@@ -26,23 +27,9 @@ export const manageMergeQueue = async () => {
   } = await getQueuedPrData();
   const issue_number = context.issue.number;
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: issue_number, ...context.repo });
-  if (pullRequest.merged) {
-    const queueLabel = pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
-    if (queueLabel) {
-      await removeLabel({ label: queueLabel, pull_number: String(issue_number) });
-      await updateMergeQueue(items);
-    }
-    return;
-  }
-
-  if (!pullRequest.labels.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
-    core.info('PR is not ready for merge.');
-    const queueLabel = pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
-    if (queueLabel) {
-      await removeLabel({ label: queueLabel, pull_number: String(issue_number) });
-      await updateMergeQueue(items);
-    }
-    return;
+  if (pullRequest.merged || !pullRequest.labels.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
+    core.info('This PR is not in the merge queue.');
+    return removePRFromQueue(pullRequest, items);
   }
 
   const numberInQueue = total_count + 1;
@@ -57,6 +44,14 @@ export const manageMergeQueue = async () => {
     labels: `${QUEUED_FOR_MERGE_PREFIX} #${numberInQueue}`,
     pull_number: String(issue_number)
   });
+};
+
+const removePRFromQueue = async (pullRequest: PullRequest, queuedPrs: IssuesAndPullRequestsResponse['data']['items']) => {
+  const queueLabel = pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
+  if (queueLabel) {
+    await removeLabel({ label: queueLabel, pull_number: String(pullRequest.number) });
+    await updateMergeQueue(queuedPrs);
+  }
 };
 
 const getQueuedPrData = () => {
