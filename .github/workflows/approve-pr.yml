@@ -4,8 +4,6 @@ on:
   pull_request:
     branches: [ main ]
     types: [ opened ]
-    paths:
-      - 'src/helpers/approve-pr.ts'
 
 jobs:
   test:
