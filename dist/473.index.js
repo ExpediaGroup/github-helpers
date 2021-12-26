@@ -196,7 +196,7 @@ const removePRFromQueue = (pullRequest, queuedPrs) => __awaiter(void 0, void 0, 
 const getQueuedPrData = () => {
     const { repo, owner } = github.context.repo;
     return octokit/* octokit.search.issuesAndPullRequests */.K.search.issuesAndPullRequests({
-        q: `org:${owner}+repo:${repo}+type:pr+state:open+label:"${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee}"`
+        q: `org:${owner}+repo:${repo}+type:pr+state:open+label:"${constants/* READY_FOR_MERGE_PR_LABEL */.Ak}"`
     });
 };
 

@@ -57,6 +57,6 @@ const removePRFromQueue = async (pullRequest: PullRequest, queuedPrs: IssuesAndP
 const getQueuedPrData = () => {
   const { repo, owner } = context.repo;
   return octokit.search.issuesAndPullRequests({
-    q: `org:${owner}+repo:${repo}+type:pr+state:open+label:"${QUEUED_FOR_MERGE_PREFIX}"`
+    q: `org:${owner}+repo:${repo}+type:pr+state:open+label:"${READY_FOR_MERGE_PR_LABEL}"`
   });
 };
