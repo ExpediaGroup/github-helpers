@@ -22,18 +22,16 @@ jest.mock('@actions/github', () => ({
 }));
 
 describe('approvePr', () => {
-  describe('renovate pr', () => {
-    beforeEach(() => {
-      approvePr();
-    });
+  beforeEach(() => {
+    approvePr();
+  });
 
-    it('should call createReview with correct params', () => {
-      expect(octokit.pulls.createReview).toHaveBeenCalledWith({
-        pull_number: 123,
-        body: 'Approved by bot',
-        event: 'APPROVE',
-        ...context.repo
-      });
+  it('should call createReview with correct params', () => {
+    expect(octokit.pulls.createReview).toHaveBeenCalledWith({
+      pull_number: 123,
+      body: 'Approved by bot',
+      event: 'APPROVE',
+      ...context.repo
     });
   });
 });
