@@ -138,7 +138,8 @@ describe('manageMergeQueue', () => {
       expect(setCommitStatus).toHaveBeenCalledWith({
         sha: 'sha',
         context: 'QUEUE CHECKER',
-        state: 'pending'
+        state: 'pending',
+        description: 'This PR is #2 in line to merge.'
       });
     });
 
@@ -178,7 +179,8 @@ describe('manageMergeQueue', () => {
       expect(setCommitStatus).toHaveBeenCalledWith({
         sha: 'sha',
         context: 'QUEUE CHECKER',
-        state: 'success'
+        state: 'success',
+        description: 'This PR is next to merge.'
       });
     });
 

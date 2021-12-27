@@ -32,7 +32,7 @@ export const manageMergeQueue = async () => {
     return removePRFromQueue(pullRequest, items);
   }
 
-  const state = queuePosition === 1 || pullRequest.labels.find(label => label.name === FIRST_QUEUED_PR_LABEL) ? 'success' : 'pending';
+  const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === FIRST_QUEUED_PR_LABEL);
   return Promise.all([
     addLabels({
       labels: `${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`,
@@ -41,7 +41,8 @@ export const manageMergeQueue = async () => {
     setCommitStatus({
       sha: pullRequest.head.sha,
       context: 'QUEUE CHECKER',
-      state
+      state: isFirstQueuePosition ? 'success' : 'pending',
+      description: isFirstQueuePosition ? 'This PR is next to merge.' : `This PR is #${queuePosition} in line to merge.`
     })
   ]);
 };
