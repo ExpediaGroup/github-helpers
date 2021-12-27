@@ -13,7 +13,7 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { DEFAULT_BRANCH, FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../constants';
-import { PullRequest, PullRequestListResponse } from '../types';
+import { PullRequestListResponse, SimplePullRequest } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
@@ -62,5 +62,5 @@ const findNextPrToMerge = (pullRequestsResponse: PullRequestListResponse) =>
   pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [READY_FOR_MERGE_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL])) ??
   pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [READY_FOR_MERGE_PR_LABEL, FIRST_QUEUED_PR_LABEL]));
 
-const hasRequiredLabels = (pr: PullRequest, requiredLabels: string[]) =>
+const hasRequiredLabels = (pr: SimplePullRequest, requiredLabels: string[]) =>
   requiredLabels.every(mergeQueueLabel => pr.labels.some(label => label.name === mergeQueueLabel));

@@ -12,8 +12,8 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { ColumnListResponse, PullRequest } from '../types';
 import { getDestinationColumn, getProjectColumns } from '../utils/get-project-columns';
+import { ColumnListResponse } from '../types';
 import { GITHUB_OPTIONS } from '../constants';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
@@ -56,7 +56,7 @@ export const moveProjectCard = async ({
 
 const getCardToMove = async (originColumn: OriginColumn) => {
   const getResponse = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
-  const pullRequest = getResponse.data as PullRequest;
+  const pullRequest = getResponse.data;
   const cardsResponse = await octokit.projects.listCards({ column_id: originColumn.id, ...GITHUB_OPTIONS });
 
   return cardsResponse.data.find(card => card.content_url === pullRequest.issue_url);
