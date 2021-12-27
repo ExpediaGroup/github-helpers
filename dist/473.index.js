@@ -125,14 +125,14 @@ const updateMergeQueue = (queuedPrs) => {
         const label = (_a = pr.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
         const queuePosition = Number((_b = label === null || label === void 0 ? void 0 : label.split('#')) === null || _b === void 0 ? void 0 : _b[1]);
         return {
-            number: pr.number,
+            pull_number: pr.number,
             label,
             queuePosition
         };
     })
         .sort((pr1, pr2) => pr1.queuePosition - pr2.queuePosition);
     return (0,bluebird.map)(prsSortedByQueuePosition, (pr, index) => {
-        const pull_number = String(pr.number);
+        const pull_number = String(pr.pull_number);
         const { label, queuePosition } = pr;
         const newQueuePosition = index + 1;
         if (!label || queuePosition === newQueuePosition) {
