@@ -23,7 +23,7 @@ import { updateMergeQueue } from '../utils/update-merge-queue';
 
 export const manageMergeQueue = async () => {
   const {
-    data: { items, total_count }
+    data: { items, total_count: queuePosition }
   } = await getQueuedPrData();
   const issue_number = context.issue.number;
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: issue_number, ...context.repo });
@@ -32,7 +32,6 @@ export const manageMergeQueue = async () => {
     return removePRFromQueue(pullRequest, items);
   }
 
-  const queuePosition = total_count + 1;
   const state = queuePosition === 1 || pullRequest.labels.find(label => label.name === FIRST_QUEUED_PR_LABEL) ? 'success' : 'pending';
   return Promise.all([
     addLabels({
@@ -58,6 +57,6 @@ const removePRFromQueue = async (pullRequest: PullRequest, queuedPrs: PullReques
 const getQueuedPrData = () => {
   const { repo, owner } = context.repo;
   return octokit.search.issuesAndPullRequests({
-    q: `org:${owner}+repo:${repo}+type:pr+state:open+label:"${READY_FOR_MERGE_PR_LABEL}"`
+    q: `org:${owner}+repo:${repo}+is:pr+is:open+label:"${READY_FOR_MERGE_PR_LABEL}"`
   });
 };
