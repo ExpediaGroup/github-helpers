@@ -58,7 +58,7 @@ describe('manageMergeQueue', () => {
 
     it('should call issuesAndPullRequests search with correct params', () => {
       expect(octokit.search.issuesAndPullRequests).toHaveBeenCalledWith({
-        q: 'org%3Aowner%20repo%3Arepo%20type%3Apr%20state%3Aopen%20label%3A%22QUEUED%20FOR%20MERGE%22'
+        q: `org:owner+repo:repo+type:pr+state:open+label:"${READY_FOR_MERGE_PR_LABEL}"`
       });
     });
 
@@ -88,7 +88,7 @@ describe('manageMergeQueue', () => {
 
     it('should call issuesAndPullRequests search with correct params', () => {
       expect(octokit.search.issuesAndPullRequests).toHaveBeenCalledWith({
-        q: 'org%3Aowner%20repo%3Arepo%20type%3Apr%20state%3Aopen%20label%3A%22QUEUED%20FOR%20MERGE%22'
+        q: `org:owner+repo:repo+type:pr+state:open+label:"${READY_FOR_MERGE_PR_LABEL}"`
       });
     });
 
@@ -118,7 +118,7 @@ describe('manageMergeQueue', () => {
 
     it('should call issuesAndPullRequests search with correct params', () => {
       expect(octokit.search.issuesAndPullRequests).toHaveBeenCalledWith({
-        q: 'org%3Aowner%20repo%3Arepo%20type%3Apr%20state%3Aopen%20label%3A%22QUEUED%20FOR%20MERGE%22'
+        q: `org:owner+repo:repo+type:pr+state:open+label:"${READY_FOR_MERGE_PR_LABEL}"`
       });
     });
 
@@ -154,7 +154,7 @@ describe('manageMergeQueue', () => {
 
     it('should call issuesAndPullRequests search with correct params', () => {
       expect(octokit.search.issuesAndPullRequests).toHaveBeenCalledWith({
-        q: 'org%3Aowner%20repo%3Arepo%20type%3Apr%20state%3Aopen%20label%3A%22QUEUED%20FOR%20MERGE%22'
+        q: `org:owner+repo:repo+type:pr+state:open+label:"${READY_FOR_MERGE_PR_LABEL}"`
       });
     });
 
