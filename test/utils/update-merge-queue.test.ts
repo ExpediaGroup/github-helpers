@@ -32,19 +32,19 @@ jest.mock('@actions/github', () => ({
     }
   }))
 }));
-const queuedPrs = [
-  {
-    number: 123,
-    labels: [{ name: 'QUEUED FOR MERGE #2' }]
-  },
-  {
-    number: 456,
-    labels: [{ name: 'QUEUED FOR MERGE #3' }]
-  }
-];
 
 describe('updateMergeQueue', () => {
   describe('pr merge case', () => {
+    const queuedPrs = [
+      {
+        number: 123,
+        labels: [{ name: 'QUEUED FOR MERGE #2' }]
+      },
+      {
+        number: 456,
+        labels: [{ name: 'QUEUED FOR MERGE #3' }]
+      }
+    ];
     beforeEach(async () => {
       await updateMergeQueue(queuedPrs as IssuesAndPullRequestsResponse['data']['items']);
     });
@@ -70,5 +70,47 @@ describe('updateMergeQueue', () => {
         label: 'QUEUED FOR MERGE #3'
       });
     });
+  });
+
+  describe('pr taken out of queue case', () => {
+    const queuedPrs = [
+      {
+        number: 123,
+        labels: [{ name: 'QUEUED FOR MERGE #1' }]
+      },
+      {
+        number: 456,
+        labels: [{ name: 'QUEUED FOR MERGE #3' }]
+      }
+    ];
+    beforeEach(async () => {
+      await updateMergeQueue(queuedPrs as IssuesAndPullRequestsResponse['data']['items']);
+    });
+
+    it('should call add labels with correct params', () => {
+      expect(addLabels).not.toHaveBeenCalledWith({
+        pull_number: '123',
+        labels: 'QUEUED FOR MERGE #0'
+      });
+      expect(addLabels).toHaveBeenCalledWith({
+        pull_number: '456',
+        labels: 'QUEUED FOR MERGE #2'
+      });
+    });
+
+    it('should call remove label with correct params', () => {
+      expect(removeLabel).not.toHaveBeenCalledWith({
+        pull_number: '123',
+        label: 'QUEUED FOR MERGE #1'
+      });
+      expect(removeLabel).toHaveBeenCalledWith({
+        pull_number: '456',
+        label: 'QUEUED FOR MERGE #3'
+      });
+    });
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 });

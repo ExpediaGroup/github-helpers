@@ -119,17 +119,28 @@ var bluebird = __webpack_require__(8710);
 
 
 const updateMergeQueue = (queuedPrs) => {
-    return (0,bluebird.map)(queuedPrs, pr => {
-        var _a;
-        const queueLabel = (_a = pr.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
-        if (!queueLabel) {
+    const prsSortedByQueuePosition = queuedPrs
+        .map(pr => {
+        var _a, _b;
+        const label = (_a = pr.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
+        const queuePosition = Number((_b = label === null || label === void 0 ? void 0 : label.split('#')) === null || _b === void 0 ? void 0 : _b[1]);
+        return {
+            number: pr.number,
+            label,
+            queuePosition
+        };
+    })
+        .sort((pr1, pr2) => pr1.queuePosition - pr2.queuePosition);
+    return (0,bluebird.map)(prsSortedByQueuePosition, (pr, index) => {
+        const pull_number = String(pr.number);
+        const { label, queuePosition } = pr;
+        const newQueuePosition = index + 1;
+        if (!label || queuePosition === newQueuePosition) {
             return;
         }
-        const pull_number = String(pr.number);
-        const queueNumber = Number(queueLabel.split('#')[1]);
         return Promise.all([
-            (0,add_labels.addLabels)({ pull_number, labels: `${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queueNumber - 1}` }),
-            (0,remove_label.removeLabel)({ pull_number, label: queueLabel })
+            (0,add_labels.addLabels)({ pull_number, labels: `${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${newQueuePosition}` }),
+            (0,remove_label.removeLabel)({ pull_number, label })
         ]);
     });
 };
