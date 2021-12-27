@@ -1,10 +1,10 @@
-import { IssuesAndPullRequestsResponse } from '../types';
+import { PullRequestSearchResults } from '../types';
 import { QUEUED_FOR_MERGE_PREFIX } from '../constants';
 import { addLabels } from '../helpers/add-labels';
 import { map } from 'bluebird';
 import { removeLabel } from '../helpers/remove-label';
 
-export const updateMergeQueue = (queuedPrs: IssuesAndPullRequestsResponse['data']['items']) => {
+export const updateMergeQueue = (queuedPrs: PullRequestSearchResults) => {
   const prsSortedByQueuePosition = queuedPrs
     .map(pr => {
       const label = pr.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;

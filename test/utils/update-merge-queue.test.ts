@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { IssuesAndPullRequestsResponse } from '../../src/types';
+import { PullRequestSearchResults } from '../../src/types';
 import { addLabels } from '../../src/helpers/add-labels';
 import { removeLabel } from '../../src/helpers/remove-label';
 import { updateMergeQueue } from '../../src/utils/update-merge-queue';
@@ -46,7 +46,7 @@ describe('updateMergeQueue', () => {
       }
     ];
     beforeEach(async () => {
-      await updateMergeQueue(queuedPrs as IssuesAndPullRequestsResponse['data']['items']);
+      await updateMergeQueue(queuedPrs as PullRequestSearchResults);
     });
 
     it('should call add labels with correct params', () => {
@@ -84,7 +84,7 @@ describe('updateMergeQueue', () => {
       }
     ];
     beforeEach(async () => {
-      await updateMergeQueue(queuedPrs as IssuesAndPullRequestsResponse['data']['items']);
+      await updateMergeQueue(queuedPrs as PullRequestSearchResults);
     });
 
     it('should call add labels with correct params', () => {

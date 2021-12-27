@@ -123,7 +123,11 @@ describe('manageMergeQueue', () => {
     });
 
     it('should not call setCommitStatus', () => {
-      expect(setCommitStatus).not.toHaveBeenCalled();
+      expect(setCommitStatus).toHaveBeenCalledWith({
+        sha: 'sha',
+        context: 'QUEUE CHECKER',
+        state: 'pending'
+      });
     });
 
     it('should call updateMergeQueue with correct params', () => {

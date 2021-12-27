@@ -19,10 +19,10 @@ export type DeploymentState = operations['repos/create-deployment-status']['requ
 export type PullRequest = components['schemas']['pull-request'];
 export type SimplePullRequest = components['schemas']['pull-request-simple'];
 export type PullRequestListResponse = RestEndpointMethodTypes['pulls']['list']['response'];
+export type PullRequestSearchResults = RestEndpointMethodTypes['search']['issuesAndPullRequests']['response']['data']['items'];
 export type CreateDeploymentResponse = components['schemas']['deployment'];
 export type ProjectListResponse = RestEndpointMethodTypes['projects']['listForRepo']['response'];
 export type ColumnListResponse = RestEndpointMethodTypes['projects']['listColumns']['response'];
-export type IssuesAndPullRequestsResponse = RestEndpointMethodTypes['search']['issuesAndPullRequests']['response'];
 
 export type ActionInputs = {
   [input: string]: string;

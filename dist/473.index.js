@@ -183,18 +183,19 @@ const manageMergeQueue = () => __awaiter(void 0, void 0, void 0, function* () {
         core.info('This PR is not in the merge queue.');
         return removePRFromQueue(pullRequest, items);
     }
-    const numberInQueue = total_count + 1;
-    if (numberInQueue === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH)) {
-        yield (0,set_commit_status.setCommitStatus)({
+    const queuePosition = total_count + 1;
+    const state = queuePosition === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH) ? 'success' : 'pending';
+    return Promise.all([
+        (0,add_labels.addLabels)({
+            labels: `${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`,
+            pull_number: String(issue_number)
+        }),
+        (0,set_commit_status.setCommitStatus)({
             sha: pullRequest.head.sha,
             context: 'QUEUE CHECKER',
-            state: 'success'
-        });
-    }
-    return (0,add_labels.addLabels)({
-        labels: `${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${numberInQueue}`,
-        pull_number: String(issue_number)
-    });
+            state
+        })
+    ]);
 });
 const removePRFromQueue = (pullRequest, queuedPrs) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
