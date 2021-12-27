@@ -1,5 +1,5 @@
-exports.id = 4;
-exports.ids = [4,461,61];
+exports.id = 473;
+exports.ids = [473,939,61,209];
 exports.modules = {
 
 /***/ 9042:
@@ -55,13 +55,13 @@ const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|sty
 
 /***/ }),
 
-/***/ 3461:
+/***/ 1939:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "createPrComment": () => (/* binding */ createPrComment)
+/* harmony export */   "addLabels": () => (/* binding */ addLabels)
 /* harmony export */ });
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
@@ -80,27 +80,72 @@ limitations under the License.
 */
 
 
-const createPrComment = ({ body, pull_number }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+const addLabels = ({ pull_number, labels }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: labels.split('\n'), issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
 
 
 /***/ }),
 
-/***/ 1004:
+/***/ 7473:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+// ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "prepareQueuedPrForMerge": () => (/* binding */ prepareQueuedPrForMerge)
-/* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9042);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _create_pr_comment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3461);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6161);
-/* harmony import */ var _remove_label__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(61);
+
+// EXPORTS
+__webpack_require__.d(__webpack_exports__, {
+  "manageMergeQueue": () => (/* binding */ manageMergeQueue)
+});
+
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
+var core = __webpack_require__(2186);
+// EXTERNAL MODULE: ./src/constants.ts
+var constants = __webpack_require__(9042);
+// EXTERNAL MODULE: ./src/helpers/add-labels.ts
+var add_labels = __webpack_require__(1939);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
+var github = __webpack_require__(5438);
+// EXTERNAL MODULE: ./src/octokit.ts
+var octokit = __webpack_require__(6161);
+// EXTERNAL MODULE: ./src/helpers/remove-label.ts
+var remove_label = __webpack_require__(61);
+// EXTERNAL MODULE: ./src/helpers/set-commit-status.ts
+var set_commit_status = __webpack_require__(2209);
+// EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
+var bluebird = __webpack_require__(8710);
+;// CONCATENATED MODULE: ./src/utils/update-merge-queue.ts
+
+
+
+
+const updateMergeQueue = (queuedPrs) => {
+    const prsSortedByQueuePosition = queuedPrs
+        .map(pr => {
+        var _a, _b;
+        const label = (_a = pr.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
+        const queuePosition = Number((_b = label === null || label === void 0 ? void 0 : label.split('#')) === null || _b === void 0 ? void 0 : _b[1]);
+        return {
+            pull_number: pr.number,
+            label,
+            queuePosition
+        };
+    })
+        .sort((pr1, pr2) => pr1.queuePosition - pr2.queuePosition);
+    return (0,bluebird.map)(prsSortedByQueuePosition, (pr, index) => {
+        const pull_number = String(pr.pull_number);
+        const { label, queuePosition } = pr;
+        const newQueuePosition = index + 1;
+        if (!label || queuePosition === newQueuePosition) {
+            return;
+        }
+        return Promise.all([
+            (0,add_labels.addLabels)({ pull_number, labels: `${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${newQueuePosition}` }),
+            (0,remove_label.removeLabel)({ pull_number, label })
+        ]);
+    });
+};
+
+;// CONCATENATED MODULE: ./src/helpers/manage-merge-queue.ts
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -113,33 +158,59 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 
 
 
 
 
 
-const prepareQueuedPrForMerge = ({ prevent_merge_conflicts, default_branch = _constants__WEBPACK_IMPORTED_MODULE_1__/* .DEFAULT_BRANCH */ .mj }) => _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
-    .then(findNextPrToMerge)
-    .then(pullRequest => {
-    if (pullRequest) {
-        return _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.repos.merge */ .K.repos.merge(Object.assign({ base: pullRequest.head.ref, head: default_branch }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
-            .catch(error => {
-            if (error.status === 409 && Boolean(prevent_merge_conflicts)) {
-                _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('The next PR to merge has a conflict. Removing this PR from merge queue.');
-                return Promise.all([
-                    (0,_create_pr_comment__WEBPACK_IMPORTED_MODULE_3__.createPrComment)(Object.assign({ body: 'This PR has a merge conflict, so it is being removed from the merge queue.', pull_number: String(pullRequest.number) }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo)),
-                    (0,_remove_label__WEBPACK_IMPORTED_MODULE_5__.removeLabel)(Object.assign({ label: _constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, pull_number: String(pullRequest.number) }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
-                ]);
-            }
-        });
+
+
+const manageMergeQueue = () => __awaiter(void 0, void 0, void 0, function* () {
+    const { data: { items, total_count: queuePosition } } = yield getQueuedPrData();
+    const issue_number = github.context.issue.number;
+    const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: issue_number }, github.context.repo));
+    if (pullRequest.merged || !pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak)) {
+        core.info('This PR is not in the merge queue.');
+        return removePRFromQueue(pullRequest, items);
+    }
+    const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH);
+    return Promise.all([
+        (0,add_labels.addLabels)({
+            labels: `${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`,
+            pull_number: String(issue_number)
+        }),
+        (0,set_commit_status.setCommitStatus)({
+            sha: pullRequest.head.sha,
+            context: 'QUEUE CHECKER',
+            state: isFirstQueuePosition ? 'success' : 'pending',
+            description: isFirstQueuePosition ? 'This PR is next to merge.' : `This PR is #${queuePosition} in line to merge.`
+        })
+    ]);
+});
+const removePRFromQueue = (pullRequest, queuedPrs) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const queueLabel = (_a = pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
+    if (queueLabel) {
+        yield (0,remove_label.removeLabel)({ label: queueLabel, pull_number: String(pullRequest.number) });
+        yield updateMergeQueue(queuedPrs);
     }
 });
-const findNextPrToMerge = (pullRequestsResponse) => {
-    var _a;
-    return (_a = pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_1__/* .JUMP_THE_QUEUE_PR_LABEL */ .nJ]))) !== null && _a !== void 0 ? _a : pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_1__/* .FIRST_QUEUED_PR_LABEL */ .IH]));
+const getQueuedPrData = () => {
+    const { repo, owner } = github.context.repo;
+    return octokit/* octokit.search.issuesAndPullRequests */.K.search.issuesAndPullRequests({
+        q: `org:${owner}+repo:${repo}+is:pr+is:open+label:"${constants/* READY_FOR_MERGE_PR_LABEL */.Ak}"`
+    });
 };
-const hasRequiredLabels = (pr, requiredLabels) => requiredLabels.every(mergeQueueLabel => pr.labels.some(label => label.name === mergeQueueLabel));
 
 
 /***/ }),
@@ -182,6 +253,43 @@ const removeLabel = ({ label, pull_number }) => _octokit__WEBPACK_IMPORTED_MODUL
 
 /***/ }),
 
+/***/ 2209:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "setCommitStatus": () => (/* binding */ setCommitStatus)
+/* harmony export */ });
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(8710);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
+/*
+Copyright 2021 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+
+
+const setCommitStatus = ({ sha, context, state, description, target_url }) => (0,bluebird__WEBPACK_IMPORTED_MODULE_1__.map)(context.split('\n'), context => _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
+    context,
+    state,
+    description,
+    target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo)));
+
+
+/***/ }),
+
 /***/ 6161:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
@@ -214,4 +322,4 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_act
 
 };
 ;
-//# sourceMappingURL=4.index.js.map
+//# sourceMappingURL=473.index.js.map

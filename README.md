@@ -52,6 +52,8 @@ Additionally, the following parameters can be used for additional control over t
   * Returns a comma-separated list of changed files for a PR
 ### [**initiate-deployment**](.github/workflows/initiate-deployment.yml)
   * Creates a new in-progress Github "deployment" for a commit. More information on Github deployment events can be found [here](https://docs.github.com/en/rest/reference/repos#deployments)
+### [**manage-merge-queue**](.github/workflows/manage-merge-queue.yml)
+  * Manages a queue for PRs. Can be used to build a fully automated merge queue when used in conjunction with `prepare-queued-pr-for-merge`.
 ### [**notify-pipeline-complete**](.github/workflows/notify-pipeline-complete.yml)
   * Sets a "pipeline" commit status to green for all open PRs
 ### [**prepare-queued-pr-for-merge**](.github/workflows/prepare-queued-pr-for-merge.yml)
@@ -75,7 +77,7 @@ with:
   github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-The `helper` and `github_token` inputs are required for all helpers. Additional inputs vary by helper. Each helper file in `src/helpers` contains an interface that defines which additional inputs are required or optional. 
+The `helper` and `github_token` inputs are required for all helpers. Additional inputs vary by helper. Each helper file in `src/helpers` contains an interface that defines which additional inputs are required or optional.
 
 ### Example
 Input interface in `src/helpers/set-commit-status.ts`:

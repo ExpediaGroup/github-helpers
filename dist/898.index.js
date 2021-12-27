@@ -1,5 +1,5 @@
-exports.id = 4;
-exports.ids = [4,461,61];
+exports.id = 898;
+exports.ids = [898,939,61,209];
 exports.modules = {
 
 /***/ 9042:
@@ -55,13 +55,13 @@ const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|sty
 
 /***/ }),
 
-/***/ 3461:
+/***/ 1939:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "createPrComment": () => (/* binding */ createPrComment)
+/* harmony export */   "addLabels": () => (/* binding */ addLabels)
 /* harmony export */ });
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
@@ -80,27 +80,30 @@ limitations under the License.
 */
 
 
-const createPrComment = ({ body, pull_number }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+const addLabels = ({ pull_number, labels }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: labels.split('\n'), issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
 
 
 /***/ }),
 
-/***/ 1004:
+/***/ 6898:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "prepareQueuedPrForMerge": () => (/* binding */ prepareQueuedPrForMerge)
+/* harmony export */   "manageMergeQueue": () => (/* binding */ manageMergeQueue)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9042);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _create_pr_comment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3461);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6161);
-/* harmony import */ var _remove_label__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(61);
+/* harmony import */ var _add_labels__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(1939);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(8710);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(6161);
+/* harmony import */ var _remove_label__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(61);
+/* harmony import */ var _set_commit_status__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(2209);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -113,33 +116,77 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 
 
 
 
 
 
-const prepareQueuedPrForMerge = ({ prevent_merge_conflicts, default_branch = _constants__WEBPACK_IMPORTED_MODULE_1__/* .DEFAULT_BRANCH */ .mj }) => _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
-    .then(findNextPrToMerge)
-    .then(pullRequest => {
-    if (pullRequest) {
-        return _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.repos.merge */ .K.repos.merge(Object.assign({ base: pullRequest.head.ref, head: default_branch }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
-            .catch(error => {
-            if (error.status === 409 && Boolean(prevent_merge_conflicts)) {
-                _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('The next PR to merge has a conflict. Removing this PR from merge queue.');
-                return Promise.all([
-                    (0,_create_pr_comment__WEBPACK_IMPORTED_MODULE_3__.createPrComment)(Object.assign({ body: 'This PR has a merge conflict, so it is being removed from the merge queue.', pull_number: String(pullRequest.number) }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo)),
-                    (0,_remove_label__WEBPACK_IMPORTED_MODULE_5__.removeLabel)(Object.assign({ label: _constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, pull_number: String(pullRequest.number) }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
-                ]);
-            }
+
+
+const manageMergeQueue = ({ event }) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    const pull_request = JSON.parse(event).pull_request;
+    const { data: { items, total_count } } = yield getQueuedPrData();
+    const issue_number = _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.issue.number;
+    if (pull_request.merged) {
+        const queueLabel = (_a = pull_request.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(_constants__WEBPACK_IMPORTED_MODULE_1__/* .QUEUED_FOR_MERGE_PREFIX */ .Ee); })) === null || _a === void 0 ? void 0 : _a.name;
+        if (queueLabel) {
+            yield (0,_remove_label__WEBPACK_IMPORTED_MODULE_6__.removeLabel)({ label: queueLabel, pull_number: String(issue_number) });
+            yield updateMergeQueue(items);
+        }
+        return;
+    }
+    const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_5__/* .octokit.issues.listLabelsOnIssue */ .K.issues.listLabelsOnIssue(Object.assign({ issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo));
+    if (!data.find(label => label.name === _constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak)) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('PR is not ready for merge.');
+        const queueLabel = (_b = data.find(label => label.name.startsWith(_constants__WEBPACK_IMPORTED_MODULE_1__/* .QUEUED_FOR_MERGE_PREFIX */ .Ee))) === null || _b === void 0 ? void 0 : _b.name;
+        if (queueLabel) {
+            yield (0,_remove_label__WEBPACK_IMPORTED_MODULE_6__.removeLabel)({ label: queueLabel, pull_number: String(issue_number) });
+            yield updateMergeQueue(items);
+        }
+        return;
+    }
+    const numberInQueue = total_count + 1;
+    if (numberInQueue === 1 || data.find(label => label.name === _constants__WEBPACK_IMPORTED_MODULE_1__/* .FIRST_QUEUED_PR_LABEL */ .IH)) {
+        yield (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_7__.setCommitStatus)({
+            sha: pull_request.head.sha,
+            context: 'QUEUE CHECKER',
+            state: 'success'
         });
     }
+    return _octokit__WEBPACK_IMPORTED_MODULE_5__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: [`${_constants__WEBPACK_IMPORTED_MODULE_1__/* .QUEUED_FOR_MERGE_PREFIX */ .Ee} #${numberInQueue}`], issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo));
 });
-const findNextPrToMerge = (pullRequestsResponse) => {
-    var _a;
-    return (_a = pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_1__/* .JUMP_THE_QUEUE_PR_LABEL */ .nJ]))) !== null && _a !== void 0 ? _a : pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_1__/* .FIRST_QUEUED_PR_LABEL */ .IH]));
+const updateMergeQueue = (queuedPrs) => {
+    return (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(queuedPrs, pr => {
+        var _a;
+        const queueLabel = (_a = pr.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(_constants__WEBPACK_IMPORTED_MODULE_1__/* .QUEUED_FOR_MERGE_PREFIX */ .Ee); })) === null || _a === void 0 ? void 0 : _a.name;
+        if (!queueLabel) {
+            return;
+        }
+        const pull_number = String(pr.number);
+        const queueNumber = Number(queueLabel.split('#')[1]);
+        return Promise.all([
+            (0,_add_labels__WEBPACK_IMPORTED_MODULE_2__.addLabels)({ pull_number, labels: `${_constants__WEBPACK_IMPORTED_MODULE_1__/* .QUEUED_FOR_MERGE_PREFIX */ .Ee} #${queueNumber - 1}` }),
+            (0,_remove_label__WEBPACK_IMPORTED_MODULE_6__.removeLabel)({ pull_number, label: queueLabel })
+        ]);
+    });
 };
-const hasRequiredLabels = (pr, requiredLabels) => requiredLabels.every(mergeQueueLabel => pr.labels.some(label => label.name === mergeQueueLabel));
+const getQueuedPrData = () => {
+    const { repo, owner } = _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo;
+    return _octokit__WEBPACK_IMPORTED_MODULE_5__/* .octokit.search.issuesAndPullRequests */ .K.search.issuesAndPullRequests({
+        q: encodeURIComponent(`org:${owner} repo:${repo} type:pr state:open label:"${_constants__WEBPACK_IMPORTED_MODULE_1__/* .QUEUED_FOR_MERGE_PREFIX */ .Ee}"`)
+    });
+};
 
 
 /***/ }),
@@ -182,6 +229,43 @@ const removeLabel = ({ label, pull_number }) => _octokit__WEBPACK_IMPORTED_MODUL
 
 /***/ }),
 
+/***/ 2209:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "setCommitStatus": () => (/* binding */ setCommitStatus)
+/* harmony export */ });
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(8710);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
+/*
+Copyright 2021 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+
+
+const setCommitStatus = ({ sha, context, state, description, target_url }) => (0,bluebird__WEBPACK_IMPORTED_MODULE_1__.map)(context.split('\n'), context => _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
+    context,
+    state,
+    description,
+    target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo)));
+
+
+/***/ }),
+
 /***/ 6161:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
@@ -214,4 +298,4 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_act
 
 };
 ;
-//# sourceMappingURL=4.index.js.map
+//# sourceMappingURL=898.index.js.map
