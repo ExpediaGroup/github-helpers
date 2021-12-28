@@ -140,13 +140,13 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const manageMergeQueue = () => __awaiter(void 0, void 0, void 0, function* () {
-    const { data: { items, total_count: queuePosition } } = yield getQueuedPrData();
     const issue_number = github.context.issue.number;
     const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: issue_number }, github.context.repo));
     if (pullRequest.merged || !pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak)) {
         core.info('This PR is not in the merge queue.');
-        return removePRFromQueue(pullRequest, items);
+        return removePRFromQueue(pullRequest);
     }
+    const { data: { total_count: queuePosition } } = yield getQueuedPrData();
     const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH);
     return Promise.all([
         octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`], issue_number }, github.context.repo)),
@@ -158,12 +158,13 @@ const manageMergeQueue = () => __awaiter(void 0, void 0, void 0, function* () {
         })
     ]);
 });
-const removePRFromQueue = (pullRequest, queuedPrs) => __awaiter(void 0, void 0, void 0, function* () {
+const removePRFromQueue = (pullRequest) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const queueLabel = (_a = pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
     if (queueLabel) {
         yield (0,bluebird.map)([constants/* READY_FOR_MERGE_PR_LABEL */.Ak, queueLabel], label => octokit/* octokit.issues.removeLabel */.K.issues.removeLabel(Object.assign({ name: label, issue_number: pullRequest.number }, github.context.repo)));
-        yield updateMergeQueue(queuedPrs);
+        const { data: { items } } = yield getQueuedPrData();
+        yield updateMergeQueue(items);
     }
 });
 const getQueuedPrData = () => {
