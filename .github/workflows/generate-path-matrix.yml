@@ -22,7 +22,6 @@ jobs:
             src/helpers/generate-path-matrix.ts
             package/two
             package/three
-          pull_number: ${{ github.event.pull_request.number }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
     outputs:
