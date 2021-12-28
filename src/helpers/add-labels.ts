@@ -15,13 +15,12 @@ import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
 interface AddLabels {
-  pull_number: string;
   labels: string;
 }
 
-export const addLabels = ({ pull_number, labels }: AddLabels) =>
+export const addLabels = ({ labels }: AddLabels) =>
   octokit.issues.addLabels({
     labels: labels.split('\n'),
-    issue_number: Number(pull_number),
+    issue_number: context.issue.number,
     ...context.repo
   });

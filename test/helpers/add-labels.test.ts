@@ -17,16 +17,15 @@ import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
+  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({ rest: { issues: { addLabels: jest.fn() } } }))
 }));
 
 describe('addLabels', () => {
   const labels = 'Needs a11y review\nExempt 👻';
-  const pull_number = '123';
 
   beforeEach(() => {
-    addLabels({ labels, pull_number });
+    addLabels({ labels });
   });
 
   it('should call addLabels with correct params', () => {

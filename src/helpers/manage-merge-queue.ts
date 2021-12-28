@@ -14,10 +14,8 @@ limitations under the License.
 import * as core from '@actions/core';
 import { FIRST_QUEUED_PR_LABEL, QUEUED_FOR_MERGE_PREFIX, READY_FOR_MERGE_PR_LABEL } from '../constants';
 import { PullRequest, PullRequestSearchResults } from '../types';
-import { addLabels } from './add-labels';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
-import { removeLabel } from './remove-label';
 import { setCommitStatus } from './set-commit-status';
 import { updateMergeQueue } from '../utils/update-merge-queue';
 
@@ -34,9 +32,10 @@ export const manageMergeQueue = async () => {
 
   const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === FIRST_QUEUED_PR_LABEL);
   return Promise.all([
-    addLabels({
-      labels: `${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`,
-      pull_number: String(issue_number)
+    octokit.issues.addLabels({
+      labels: [`${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`],
+      issue_number,
+      ...context.repo
     }),
     setCommitStatus({
       sha: pullRequest.head.sha,
@@ -50,7 +49,11 @@ export const manageMergeQueue = async () => {
 const removePRFromQueue = async (pullRequest: PullRequest, queuedPrs: PullRequestSearchResults) => {
   const queueLabel = pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
   if (queueLabel) {
-    await removeLabel({ label: queueLabel, pull_number: String(pullRequest.number) });
+    await octokit.issues.removeLabel({
+      name: queueLabel,
+      issue_number: pullRequest.number,
+      ...context.repo
+    });
     await updateMergeQueue(queuedPrs);
   }
 };

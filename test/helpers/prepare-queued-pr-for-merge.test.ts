@@ -14,10 +14,8 @@ limitations under the License.
 import { DEFAULT_BRANCH, FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
-import { createPrComment } from '../../src/helpers/create-pr-comment';
 import { octokit } from '../../src/octokit';
 import { prepareQueuedPrForMerge } from '../../src/helpers/prepare-queued-pr-for-merge';
-import { removeLabel } from '../../src/helpers/remove-label';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
@@ -25,12 +23,14 @@ jest.mock('@actions/github', () => ({
   getOctokit: jest.fn(() => ({
     rest: {
       pulls: { list: jest.fn() },
-      repos: { merge: jest.fn() }
+      repos: { merge: jest.fn() },
+      issues: {
+        removeLabel: jest.fn(),
+        createComment: jest.fn()
+      }
     }
   }))
 }));
-jest.mock('../../src/helpers/remove-label');
-jest.mock('../../src/helpers/create-pr-comment');
 (octokit.repos.merge as unknown as Mocktokit).mockImplementation(async () => ({ some: 'response' }));
 
 describe('prepareQueuedPrForMerge', () => {
@@ -223,14 +223,14 @@ describe('prepareQueuedPrForMerge', () => {
     });
 
     it('should call removeLabel and createPRComment with correct params', () => {
-      expect(removeLabel).toHaveBeenCalledWith({
-        label: READY_FOR_MERGE_PR_LABEL,
-        pull_number: '123',
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: READY_FOR_MERGE_PR_LABEL,
+        issue_number: 123,
         ...context.repo
       });
-      expect(createPrComment).toHaveBeenCalledWith({
+      expect(octokit.issues.createComment).toHaveBeenCalledWith({
         body: expect.any(String),
-        pull_number: '123',
+        issue_number: 123,
         ...context.repo
       });
     });
@@ -273,8 +273,8 @@ describe('prepareQueuedPrForMerge', () => {
     });
 
     it('should call removeLabel and createPRComment with correct params', () => {
-      expect(removeLabel).not.toHaveBeenCalled();
-      expect(createPrComment).not.toHaveBeenCalled();
+      expect(octokit.issues.removeLabel).not.toHaveBeenCalled();
+      expect(octokit.issues.createComment).not.toHaveBeenCalled();
     });
   });
 

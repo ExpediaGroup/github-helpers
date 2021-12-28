@@ -18,7 +18,7 @@ import { octokit } from '../octokit';
 
 interface NotifyReviewer {
   login: string;
-  pull_number: string;
+  pull_number: number;
   slack_webhook_url: string;
 }
 
@@ -31,7 +31,7 @@ export const notifyReviewer = async ({ login, pull_number, slack_webhook_url }: 
     );
     throw new Error();
   }
-  const pullRequestResponse = await octokit.pulls.get({ pull_number: Number(pull_number), ...context.repo });
+  const pullRequestResponse = await octokit.pulls.get({ pull_number, ...context.repo });
   const { title, html_url } = pullRequestResponse.data;
 
   const slackResponse = await axios.post(slack_webhook_url, {

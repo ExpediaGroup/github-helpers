@@ -96,7 +96,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-const moveProjectCard = ({ pull_number, project_destination_column_name, project_origin_column_name, project_name }) => __awaiter(void 0, void 0, void 0, function* () {
+const moveProjectCard = ({ project_destination_column_name, project_origin_column_name, project_name }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const columnsList = yield (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__/* .getProjectColumns */ .N)({ project_name });
     if (!((_a = columnsList === null || columnsList === void 0 ? void 0 : columnsList.data) === null || _a === void 0 ? void 0 : _a.length)) {
@@ -109,7 +109,7 @@ const moveProjectCard = ({ pull_number, project_destination_column_name, project
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`No origin column was found for the name ${project_origin_column_name}`);
         return;
     }
-    const cardToMove = yield getCardToMove(pull_number, originColumn);
+    const cardToMove = yield getCardToMove(originColumn);
     if (cardToMove && destinationColumn) {
         return _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.projects.moveCard */ .K.projects.moveCard(Object.assign({ card_id: cardToMove.id, column_id: destinationColumn.id, position: 'top' }, _constants__WEBPACK_IMPORTED_MODULE_2__/* .GITHUB_OPTIONS */ .Cc));
     }
@@ -118,8 +118,8 @@ const moveProjectCard = ({ pull_number, project_destination_column_name, project
         return;
     }
 });
-const getCardToMove = (pull_number, originColumn) => __awaiter(void 0, void 0, void 0, function* () {
-    const getResponse = yield _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo));
+const getCardToMove = (originColumn) => __awaiter(void 0, void 0, void 0, function* () {
+    const getResponse = yield _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo));
     const pullRequest = getResponse.data;
     const cardsResponse = yield _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.projects.listCards */ .K.projects.listCards(Object.assign({ column_id: originColumn.id }, _constants__WEBPACK_IMPORTED_MODULE_2__/* .GITHUB_OPTIONS */ .Cc));
     return cardsResponse.data.find(card => card.content_url === pullRequest.issue_url);

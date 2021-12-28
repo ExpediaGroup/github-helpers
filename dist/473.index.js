@@ -1,5 +1,5 @@
 exports.id = 473;
-exports.ids = [473,939,61,209];
+exports.ids = [473,209];
 exports.modules = {
 
 /***/ 9042:
@@ -55,36 +55,6 @@ const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|sty
 
 /***/ }),
 
-/***/ 1939:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "addLabels": () => (/* binding */ addLabels)
-/* harmony export */ });
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
-/*
-Copyright 2021 Expedia, Inc.
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-    https://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-
-const addLabels = ({ pull_number, labels }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: labels.split('\n'), issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-
-
-/***/ }),
-
 /***/ 7473:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
@@ -101,14 +71,10 @@ __webpack_require__.d(__webpack_exports__, {
 var core = __webpack_require__(2186);
 // EXTERNAL MODULE: ./src/constants.ts
 var constants = __webpack_require__(9042);
-// EXTERNAL MODULE: ./src/helpers/add-labels.ts
-var add_labels = __webpack_require__(1939);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __webpack_require__(5438);
 // EXTERNAL MODULE: ./src/octokit.ts
 var octokit = __webpack_require__(6161);
-// EXTERNAL MODULE: ./src/helpers/remove-label.ts
-var remove_label = __webpack_require__(61);
 // EXTERNAL MODULE: ./src/helpers/set-commit-status.ts
 var set_commit_status = __webpack_require__(2209);
 // EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
@@ -132,15 +98,14 @@ const updateMergeQueue = (queuedPrs) => {
     })
         .sort((pr1, pr2) => pr1.queuePosition - pr2.queuePosition);
     return (0,bluebird.map)(prsSortedByQueuePosition, (pr, index) => {
-        const pull_number = String(pr.pull_number);
-        const { label, queuePosition } = pr;
+        const { pull_number, label, queuePosition } = pr;
         const newQueuePosition = index + 1;
         if (!label || queuePosition === newQueuePosition) {
             return;
         }
         return Promise.all([
-            (0,add_labels.addLabels)({ pull_number, labels: `${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${newQueuePosition}` }),
-            (0,remove_label.removeLabel)({ pull_number, label })
+            octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${newQueuePosition}`], issue_number: pull_number }, github.context.repo)),
+            octokit/* octokit.issues.removeLabel */.K.issues.removeLabel(Object.assign({ name: label, issue_number: pull_number }, github.context.repo))
         ]);
     });
 };
@@ -173,8 +138,6 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-
-
 const manageMergeQueue = () => __awaiter(void 0, void 0, void 0, function* () {
     const { data: { items, total_count: queuePosition } } = yield getQueuedPrData();
     const issue_number = github.context.issue.number;
@@ -185,10 +148,7 @@ const manageMergeQueue = () => __awaiter(void 0, void 0, void 0, function* () {
     }
     const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH);
     return Promise.all([
-        (0,add_labels.addLabels)({
-            labels: `${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`,
-            pull_number: String(issue_number)
-        }),
+        octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`], issue_number }, github.context.repo)),
         (0,set_commit_status.setCommitStatus)({
             sha: pullRequest.head.sha,
             context: 'QUEUE CHECKER',
@@ -201,7 +161,7 @@ const removePRFromQueue = (pullRequest, queuedPrs) => __awaiter(void 0, void 0, 
     var _a;
     const queueLabel = (_a = pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
     if (queueLabel) {
-        yield (0,remove_label.removeLabel)({ label: queueLabel, pull_number: String(pullRequest.number) });
+        yield octokit/* octokit.issues.removeLabel */.K.issues.removeLabel(Object.assign({ name: queueLabel, issue_number: pullRequest.number }, github.context.repo));
         yield updateMergeQueue(queuedPrs);
     }
 });
@@ -211,44 +171,6 @@ const getQueuedPrData = () => {
         q: `org:${owner}+repo:${repo}+is:pr+is:open+label:"${constants/* READY_FOR_MERGE_PR_LABEL */.Ak}"`
     });
 };
-
-
-/***/ }),
-
-/***/ 61:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "removeLabel": () => (/* binding */ removeLabel)
-/* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
-/*
-Copyright 2021 Expedia, Inc.
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-    https://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-
-
-const removeLabel = ({ label, pull_number }) => _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel(Object.assign({ name: label, issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
-    .catch(error => {
-    if (error.status === 404) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Label is not present on PR.');
-    }
-});
 
 
 /***/ }),

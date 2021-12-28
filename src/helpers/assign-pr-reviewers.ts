@@ -20,15 +20,14 @@ import { octokit } from '../octokit';
 import { sampleSize } from 'lodash';
 
 interface AssignPrReviewer {
-  pull_number: string;
   teams?: string;
   login?: string;
   number_of_assignees?: string;
   slack_webhook_url?: string;
 }
 
-export const assignPrReviewers = async ({ teams, pull_number, login, number_of_assignees = '1', slack_webhook_url }: AssignPrReviewer) => {
-  const coreMemberLogins = await getCoreMemberLogins(pull_number, teams?.split('\n'));
+export const assignPrReviewers = async ({ teams, login, number_of_assignees = '1', slack_webhook_url }: AssignPrReviewer) => {
+  const coreMemberLogins = await getCoreMemberLogins(context.issue.number, teams?.split('\n'));
 
   if (login && coreMemberLogins.includes(login)) {
     core.info('Already a core member, no need to assign.');
@@ -39,12 +38,18 @@ export const assignPrReviewers = async ({ teams, pull_number, login, number_of_a
   return octokit.issues
     .addAssignees({
       assignees,
-      issue_number: Number(pull_number),
+      issue_number: context.issue.number,
       ...context.repo
     })
     .then(() => {
       if (slack_webhook_url) {
-        return map(assignees, assignee => notifyReviewer({ login: assignee, pull_number, slack_webhook_url }));
+        return map(assignees, assignee =>
+          notifyReviewer({
+            login: assignee,
+            pull_number: context.issue.number,
+            slack_webhook_url
+          })
+        );
       }
     });
 };

@@ -1,5 +1,5 @@
 exports.id = 905;
-exports.ids = [905,939];
+exports.ids = [905];
 exports.modules = {
 
 /***/ 9042:
@@ -55,36 +55,6 @@ const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|sty
 
 /***/ }),
 
-/***/ 1939:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "addLabels": () => (/* binding */ addLabels)
-/* harmony export */ });
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
-/*
-Copyright 2021 Expedia, Inc.
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-    https://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-
-const addLabels = ({ pull_number, labels }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: labels.split('\n'), issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-
-
-/***/ }),
-
 /***/ 905:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
@@ -94,10 +64,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "addPrApprovalLabel": () => (/* binding */ addPrApprovalLabel)
 /* harmony export */ });
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
-/* harmony import */ var _add_labels__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1939);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(7290);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(7290);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6161);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -123,10 +93,10 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-const addPrApprovalLabel = ({ teams, login, pull_number }) => __awaiter(void 0, void 0, void 0, function* () {
-    const coreMemberLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_3__/* .getCoreMemberLogins */ .c)(pull_number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
+const addPrApprovalLabel = ({ teams, login }) => __awaiter(void 0, void 0, void 0, function* () {
+    const coreMemberLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .c)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
     const approvalLabel = coreMemberLogins.includes(login) ? _constants__WEBPACK_IMPORTED_MODULE_0__/* .CORE_APPROVED_PR_LABEL */ ._d : _constants__WEBPACK_IMPORTED_MODULE_0__/* .PEER_APPROVED_PR_LABEL */ .Xt;
-    return (0,_add_labels__WEBPACK_IMPORTED_MODULE_1__.addLabels)(Object.assign({ labels: approvalLabel, pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
+    return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: [approvalLabel], issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
 });
 
 
@@ -174,7 +144,7 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_act
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
 
 
-const getChangedFilepaths = (pull_number) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number: Number(pull_number), per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo))
+const getChangedFilepaths = (pull_number) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number, per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo))
     .then(listFilesResponse => listFilesResponse.data.map(file => file.filename));
 
 

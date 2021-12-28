@@ -15,9 +15,7 @@ import * as core from '@actions/core';
 import { DEFAULT_BRANCH, FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../constants';
 import { PullRequestListResponse, SimplePullRequest } from '../types';
 import { context } from '@actions/github';
-import { createPrComment } from './create-pr-comment';
 import { octokit } from '../octokit';
-import { removeLabel } from './remove-label';
 
 interface PrepareQueuedPrForMerge {
   prevent_merge_conflicts?: string;
@@ -44,14 +42,14 @@ export const prepareQueuedPrForMerge = ({ prevent_merge_conflicts, default_branc
             if (error.status === 409 && Boolean(prevent_merge_conflicts)) {
               core.info('The next PR to merge has a conflict. Removing this PR from merge queue.');
               return Promise.all([
-                createPrComment({
+                octokit.issues.createComment({
                   body: 'This PR has a merge conflict, so it is being removed from the merge queue.',
-                  pull_number: String(pullRequest.number),
+                  issue_number: pullRequest.number,
                   ...context.repo
                 }),
-                removeLabel({
-                  label: READY_FOR_MERGE_PR_LABEL,
-                  pull_number: String(pullRequest.number),
+                octokit.issues.removeLabel({
+                  name: READY_FOR_MERGE_PR_LABEL,
+                  issue_number: pullRequest.number,
                   ...context.repo
                 })
               ]);

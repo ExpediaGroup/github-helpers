@@ -17,14 +17,13 @@ import { octokit } from '../octokit';
 
 interface RemoveLabel {
   label: string;
-  pull_number: string;
 }
 
-export const removeLabel = ({ label, pull_number }: RemoveLabel) =>
+export const removeLabel = ({ label }: RemoveLabel) =>
   octokit.issues
     .removeLabel({
       name: label,
-      issue_number: Number(pull_number),
+      issue_number: context.issue.number,
       ...context.repo
     })
     .catch(error => {
