@@ -73,12 +73,12 @@ var core = __webpack_require__(2186);
 var constants = __webpack_require__(9042);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __webpack_require__(5438);
+// EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
+var bluebird = __webpack_require__(8710);
 // EXTERNAL MODULE: ./src/octokit.ts
 var octokit = __webpack_require__(6161);
 // EXTERNAL MODULE: ./src/helpers/set-commit-status.ts
 var set_commit_status = __webpack_require__(2209);
-// EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
-var bluebird = __webpack_require__(8710);
 ;// CONCATENATED MODULE: ./src/utils/update-merge-queue.ts
 
 
@@ -138,6 +138,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+
 const manageMergeQueue = () => __awaiter(void 0, void 0, void 0, function* () {
     const { data: { items, total_count: queuePosition } } = yield getQueuedPrData();
     const issue_number = github.context.issue.number;
@@ -161,7 +162,7 @@ const removePRFromQueue = (pullRequest, queuedPrs) => __awaiter(void 0, void 0, 
     var _a;
     const queueLabel = (_a = pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
     if (queueLabel) {
-        yield octokit/* octokit.issues.removeLabel */.K.issues.removeLabel(Object.assign({ name: queueLabel, issue_number: pullRequest.number }, github.context.repo));
+        yield (0,bluebird.map)([constants/* READY_FOR_MERGE_PR_LABEL */.Ak, queueLabel], label => octokit/* octokit.issues.removeLabel */.K.issues.removeLabel(Object.assign({ name: label, issue_number: pullRequest.number }, github.context.repo)));
         yield updateMergeQueue(queuedPrs);
     }
 });
