@@ -27,7 +27,7 @@ limitations under the License.
 */
 
 
-const addLabels = ({ pull_number, labels }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: labels.split('\n'), issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+const addLabels = ({ labels }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: labels.split('\n'), issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
 
 
 /***/ }),

@@ -19,5 +19,4 @@ jobs:
           project_name: 'test project'
           project_origin_column_name: 'test column 1'
           project_destination_column_name: 'test column 2'
-          pull_number: ${{ github.event.pull_request.number }}
           github_token: ${{ secrets.GITHUB_TOKEN }}

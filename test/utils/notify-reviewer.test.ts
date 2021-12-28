@@ -44,7 +44,7 @@ const html_url = 'url';
 (axios.post as jest.Mock).mockResolvedValue({ data: 'request succeeded' });
 
 describe('notifyReviewer', () => {
-  const pull_number = '123';
+  const pull_number = 123;
   const slack_webhook_url = 'https://hooks.slack.com/workflows/1234567890';
 
   beforeEach(async () => {

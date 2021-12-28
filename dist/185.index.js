@@ -27,9 +27,9 @@ limitations under the License.
 */
 
 
-const autoApprovePr = ({ pull_number, login, auto_approved_user }) => {
+const autoApprovePr = ({ login, auto_approved_user }) => {
     if (login === auto_approved_user) {
-        _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.createReview */ .K.pulls.createReview(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { pull_number: Number(pull_number), body: 'Approved by bot', event: 'APPROVE' }));
+        _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.createReview */ .K.pulls.createReview(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number, body: 'Approved by bot', event: 'APPROVE' }));
     }
 };
 

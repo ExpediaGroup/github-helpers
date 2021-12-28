@@ -17,7 +17,7 @@ import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
+  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({ rest: { pulls: { listFiles: jest.fn() } } }))
 }));
 
@@ -52,10 +52,8 @@ const mock_data = [
 }));
 
 describe('getChangedFiles', () => {
-  const pull_number = '123';
-
   it('should return true if one of the file paths match the file paths that octokit returns', async () => {
-    const result = await getChangedFiles({ pull_number });
+    const result = await getChangedFiles();
 
     expect(result).toEqual(`${mock_data[0].filename},${mock_data[1].filename}`);
   });

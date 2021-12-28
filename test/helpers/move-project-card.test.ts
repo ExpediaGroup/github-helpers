@@ -18,7 +18,7 @@ import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
+  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({
     rest: {
       projects: {
@@ -33,7 +33,6 @@ jest.mock('@actions/github', () => ({
 }));
 
 describe('moveProjectCard', () => {
-  const pull_number = 123;
   const project_name = 'test project';
   const project_destination_column_name = 'test column 2';
   const project_origin_column_name = 'test column 1';
@@ -106,8 +105,7 @@ describe('moveProjectCard', () => {
     moveProjectCard({
       project_name,
       project_destination_column_name,
-      project_origin_column_name,
-      pull_number
+      project_origin_column_name
     });
   });
 

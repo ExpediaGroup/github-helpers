@@ -17,5 +17,4 @@ jobs:
         with:
           helper: check-pr-title
            # pattern: 'my-regex-pattern' (optional: pattern must be wrapped in single quotes)
-          pull_number: ${{ github.event.pull_request.number }}
           github_token: ${{ secrets.GITHUB_TOKEN }}

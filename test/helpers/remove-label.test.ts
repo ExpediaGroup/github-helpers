@@ -18,17 +18,16 @@ import { removeLabel } from '../../src/helpers/remove-label';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
+  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({ rest: { issues: { removeLabel: jest.fn() } } }))
 }));
 (octokit.issues.removeLabel as unknown as Mocktokit).mockImplementation(async () => 'label removed!');
 
 describe('removeLabel', () => {
   const label = 'Needs a11y review';
-  const pull_number = '123';
 
   beforeEach(() => {
-    removeLabel({ label, pull_number });
+    removeLabel({ label });
   });
 
   it('should call addLabels with correct params', () => {

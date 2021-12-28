@@ -13,24 +13,24 @@ limitations under the License.
 
 import { Mocktokit } from '../types';
 import { READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
-import { addLabels } from '../../src/helpers/add-labels';
+import { context } from '@actions/github';
 import { manageMergeQueue } from '../../src/helpers/manage-merge-queue';
 import { octokit } from '../../src/octokit';
-import { removeLabel } from '../../src/helpers/remove-label';
 import { setCommitStatus } from '../../src/helpers/set-commit-status';
 import { updateMergeQueue } from '../../src/utils/update-merge-queue';
 
-jest.mock('../../src/helpers/add-labels');
 jest.mock('../../src/helpers/set-commit-status');
 jest.mock('../../src/utils/update-merge-queue');
-jest.mock('../../src/helpers/remove-label');
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({
     rest: {
       pulls: { get: jest.fn() },
-      issues: { addLabels: jest.fn() },
+      issues: {
+        addLabels: jest.fn(),
+        removeLabel: jest.fn()
+      },
       search: { issuesAndPullRequests: jest.fn() }
     }
   }))
@@ -63,9 +63,10 @@ describe('manageMergeQueue', () => {
     });
 
     it('should call remove label with correct params', () => {
-      expect(removeLabel).toHaveBeenCalledWith({
-        label: 'QUEUED FOR MERGE #1',
-        pull_number: '123'
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: 'QUEUED FOR MERGE #1',
+        issue_number: 123,
+        ...context.repo
       });
     });
 
@@ -99,9 +100,10 @@ describe('manageMergeQueue', () => {
     });
 
     it('should call remove label with correct params', () => {
-      expect(removeLabel).toHaveBeenCalledWith({
-        label: 'QUEUED FOR MERGE #2',
-        pull_number: '123'
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: 'QUEUED FOR MERGE #2',
+        issue_number: 123,
+        ...context.repo
       });
     });
 
@@ -144,9 +146,10 @@ describe('manageMergeQueue', () => {
     });
 
     it('should call addLabels with correct params', () => {
-      expect(addLabels).toHaveBeenCalledWith({
-        labels: 'QUEUED FOR MERGE #2',
-        pull_number: '123'
+      expect(octokit.issues.addLabels).toHaveBeenCalledWith({
+        labels: ['QUEUED FOR MERGE #2'],
+        issue_number: 123,
+        ...context.repo
       });
     });
   });
@@ -185,9 +188,10 @@ describe('manageMergeQueue', () => {
     });
 
     it('should call addLabels with correct params', () => {
-      expect(addLabels).toHaveBeenCalledWith({
-        labels: 'QUEUED FOR MERGE #1',
-        pull_number: '123'
+      expect(octokit.issues.addLabels).toHaveBeenCalledWith({
+        labels: ['QUEUED FOR MERGE #1'],
+        issue_number: 123,
+        ...context.repo
       });
     });
   });

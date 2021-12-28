@@ -11,11 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { context } from '@actions/github';
 import { getChangedFilepaths } from '../utils/get-changed-filepaths';
 
-interface GetChangedFiles {
-  pull_number: string;
-}
-
-export const getChangedFiles = ({ pull_number }: GetChangedFiles) =>
-  getChangedFilepaths(pull_number).then(filePaths => filePaths.join(','));
+export const getChangedFiles = () => getChangedFilepaths(context.issue.number).then(filePaths => filePaths.join(','));

@@ -30,7 +30,7 @@ limitations under the License.
 
 
 
-const removeLabel = ({ label, pull_number }) => _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel(Object.assign({ name: label, issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
+const removeLabel = ({ label }) => _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel(Object.assign({ name: label, issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
     .catch(error => {
     if (error.status === 404) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Label is not present on PR.');

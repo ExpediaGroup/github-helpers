@@ -37,7 +37,7 @@ const file2 = 'file/path/2/file2.ts';
 const file3 = 'something/totally/different/file1.txt';
 const pkg = 'package.json';
 
-const pull_number = '123';
+const pull_number = 123;
 
 describe('getCoreMemberLogins', () => {
   describe('codeowners tests', () => {
