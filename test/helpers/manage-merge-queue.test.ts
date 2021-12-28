@@ -64,6 +64,11 @@ describe('manageMergeQueue', () => {
 
     it('should call remove label with correct params', () => {
       expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: READY_FOR_MERGE_PR_LABEL,
+        issue_number: 123,
+        ...context.repo
+      });
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
         name: 'QUEUED FOR MERGE #1',
         issue_number: 123,
         ...context.repo
@@ -100,6 +105,11 @@ describe('manageMergeQueue', () => {
     });
 
     it('should call remove label with correct params', () => {
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: READY_FOR_MERGE_PR_LABEL,
+        issue_number: 123,
+        ...context.repo
+      });
       expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
         name: 'QUEUED FOR MERGE #2',
         issue_number: 123,
