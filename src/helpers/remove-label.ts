@@ -19,11 +19,13 @@ interface RemoveLabel {
   label: string;
 }
 
-export const removeLabel = ({ label }: RemoveLabel) =>
+export const removeLabel = ({ label }: RemoveLabel) => removeLabelIfExists(label, context.issue.number);
+
+export const removeLabelIfExists = (labelName: string, issue_number: number) =>
   octokit.issues
     .removeLabel({
-      name: label,
-      issue_number: context.issue.number,
+      name: labelName,
+      issue_number,
       ...context.repo
     })
     .catch(error => {

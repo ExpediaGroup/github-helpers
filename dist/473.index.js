@@ -1,5 +1,5 @@
 exports.id = 473;
-exports.ids = [473,209];
+exports.ids = [473,61,209];
 exports.modules = {
 
 /***/ 9042:
@@ -77,9 +77,12 @@ var github = __webpack_require__(5438);
 var bluebird = __webpack_require__(8710);
 // EXTERNAL MODULE: ./src/octokit.ts
 var octokit = __webpack_require__(6161);
+// EXTERNAL MODULE: ./src/helpers/remove-label.ts
+var remove_label = __webpack_require__(61);
 // EXTERNAL MODULE: ./src/helpers/set-commit-status.ts
 var set_commit_status = __webpack_require__(2209);
 ;// CONCATENATED MODULE: ./src/utils/update-merge-queue.ts
+
 
 
 
@@ -105,7 +108,7 @@ const updateMergeQueue = (queuedPrs) => {
         }
         return Promise.all([
             octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${newQueuePosition}`], issue_number: pull_number }, github.context.repo)),
-            octokit/* octokit.issues.removeLabel */.K.issues.removeLabel(Object.assign({ name: label, issue_number: pull_number }, github.context.repo))
+            (0,remove_label.removeLabelIfExists)(label, pull_number)
         ]);
     });
 };
@@ -139,6 +142,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+
 const manageMergeQueue = () => __awaiter(void 0, void 0, void 0, function* () {
     const issue_number = github.context.issue.number;
     const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: issue_number }, github.context.repo));
@@ -162,7 +166,7 @@ const removePRFromQueue = (pullRequest) => __awaiter(void 0, void 0, void 0, fun
     var _a;
     const queueLabel = (_a = pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
     if (queueLabel) {
-        yield (0,bluebird.map)([constants/* READY_FOR_MERGE_PR_LABEL */.Ak, queueLabel], label => octokit/* octokit.issues.removeLabel */.K.issues.removeLabel(Object.assign({ name: label, issue_number: pullRequest.number }, github.context.repo)));
+        yield (0,bluebird.map)([constants/* READY_FOR_MERGE_PR_LABEL */.Ak, queueLabel], label => (0,remove_label.removeLabelIfExists)(label, pullRequest.number));
         const { data: { items } } = yield getQueuedPrData();
         yield updateMergeQueue(items);
     }
@@ -173,6 +177,46 @@ const getQueuedPrData = () => {
         q: `org:${owner}+repo:${repo}+is:pr+is:open+label:"${constants/* READY_FOR_MERGE_PR_LABEL */.Ak}"`
     });
 };
+
+
+/***/ }),
+
+/***/ 61:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "removeLabel": () => (/* binding */ removeLabel),
+/* harmony export */   "removeLabelIfExists": () => (/* binding */ removeLabelIfExists)
+/* harmony export */ });
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
+/*
+Copyright 2021 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+
+
+const removeLabel = ({ label }) => removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number);
+const removeLabelIfExists = (labelName, issue_number) => _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel(Object.assign({ name: labelName, issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
+    .catch(error => {
+    if (error.status === 404) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Label is not present on PR.');
+    }
+});
 
 
 /***/ }),

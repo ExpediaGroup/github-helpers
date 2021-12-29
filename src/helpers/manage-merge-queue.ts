@@ -17,6 +17,7 @@ import { PullRequest } from '../types';
 import { context } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
+import { removeLabelIfExists } from './remove-label';
 import { setCommitStatus } from './set-commit-status';
 import { updateMergeQueue } from '../utils/update-merge-queue';
 
@@ -50,13 +51,7 @@ export const manageMergeQueue = async () => {
 const removePRFromQueue = async (pullRequest: PullRequest) => {
   const queueLabel = pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
   if (queueLabel) {
-    await map([READY_FOR_MERGE_PR_LABEL, queueLabel], label =>
-      octokit.issues.removeLabel({
-        name: label,
-        issue_number: pullRequest.number,
-        ...context.repo
-      })
-    );
+    await map([READY_FOR_MERGE_PR_LABEL, queueLabel], label => removeLabelIfExists(label, pullRequest.number));
     const {
       data: { items }
     } = await getQueuedPrData();
