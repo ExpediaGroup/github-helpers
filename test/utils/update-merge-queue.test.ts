@@ -14,8 +14,10 @@ limitations under the License.
 import { PullRequestSearchResults } from '../../src/types';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
+import { removeLabelIfExists } from '../../src/helpers/remove-label';
 import { updateMergeQueue } from '../../src/utils/update-merge-queue';
 
+jest.mock('../../src/helpers/remove-label');
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
@@ -24,7 +26,6 @@ jest.mock('@actions/github', () => ({
       pulls: { get: jest.fn() },
       issues: {
         addLabels: jest.fn(),
-        removeLabel: jest.fn(),
         listLabelsOnIssue: jest.fn()
       },
       search: { issuesAndPullRequests: jest.fn() }
@@ -62,16 +63,8 @@ describe('updateMergeQueue', () => {
     });
 
     it('should call remove label with correct params', () => {
-      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
-        name: 'QUEUED FOR MERGE #2',
-        issue_number: 123,
-        ...context.repo
-      });
-      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
-        name: 'QUEUED FOR MERGE #3',
-        issue_number: 456,
-        ...context.repo
-      });
+      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #2', 123);
+      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #3', 456);
     });
   });
 
@@ -104,16 +97,8 @@ describe('updateMergeQueue', () => {
     });
 
     it('should call remove label with correct params', () => {
-      expect(octokit.issues.removeLabel).not.toHaveBeenCalledWith({
-        issue_number: 123,
-        name: 'QUEUED FOR MERGE #1',
-        ...context.repo
-      });
-      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
-        issue_number: 456,
-        name: 'QUEUED FOR MERGE #3',
-        ...context.repo
-      });
+      expect(removeLabelIfExists).not.toHaveBeenCalledWith('QUEUED FOR MERGE #1', 123);
+      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #3', 456);
     });
   });
 

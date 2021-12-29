@@ -16,9 +16,11 @@ import { READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
 import { context } from '@actions/github';
 import { manageMergeQueue } from '../../src/helpers/manage-merge-queue';
 import { octokit } from '../../src/octokit';
+import { removeLabelIfExists } from '../../src/helpers/remove-label';
 import { setCommitStatus } from '../../src/helpers/set-commit-status';
 import { updateMergeQueue } from '../../src/utils/update-merge-queue';
 
+jest.mock('../../src/helpers/remove-label');
 jest.mock('../../src/helpers/set-commit-status');
 jest.mock('../../src/utils/update-merge-queue');
 jest.mock('@actions/core');
@@ -28,8 +30,7 @@ jest.mock('@actions/github', () => ({
     rest: {
       pulls: { get: jest.fn() },
       issues: {
-        addLabels: jest.fn(),
-        removeLabel: jest.fn()
+        addLabels: jest.fn()
       },
       search: { issuesAndPullRequests: jest.fn() }
     }
@@ -63,16 +64,8 @@ describe('manageMergeQueue', () => {
     });
 
     it('should call remove label with correct params', () => {
-      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
-        name: READY_FOR_MERGE_PR_LABEL,
-        issue_number: 123,
-        ...context.repo
-      });
-      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
-        name: 'QUEUED FOR MERGE #1',
-        issue_number: 123,
-        ...context.repo
-      });
+      expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 123);
+      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #1', 123);
     });
 
     it('should call updateMergeQueue with correct params', () => {
@@ -105,16 +98,8 @@ describe('manageMergeQueue', () => {
     });
 
     it('should call remove label with correct params', () => {
-      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
-        name: READY_FOR_MERGE_PR_LABEL,
-        issue_number: 123,
-        ...context.repo
-      });
-      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
-        name: 'QUEUED FOR MERGE #2',
-        issue_number: 123,
-        ...context.repo
-      });
+      expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 123);
+      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #2', 123);
     });
 
     it('should call updateMergeQueue with correct params', () => {
