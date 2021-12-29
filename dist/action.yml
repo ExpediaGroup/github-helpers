@@ -79,9 +79,6 @@ inputs:
   paths_no_filter:
     description: 'A list of file paths to be included regardless of the filter (newline/comma separated)'
     required: false
-  auto_approved_user:
-    description: 'User login whose request should be auto approved'
-    required: false
   slack_webhook_url:
     description: 'A Slack webhook URL'
     required: false
