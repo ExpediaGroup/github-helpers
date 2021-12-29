@@ -3,6 +3,7 @@ import { QUEUED_FOR_MERGE_PREFIX } from '../constants';
 import { context } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
+import { removeLabelIfExists } from '../helpers/remove-label';
 
 export const updateMergeQueue = (queuedPrs: PullRequestSearchResults) => {
   const prsSortedByQueuePosition = queuedPrs
@@ -28,11 +29,7 @@ export const updateMergeQueue = (queuedPrs: PullRequestSearchResults) => {
         issue_number: pull_number,
         ...context.repo
       }),
-      octokit.issues.removeLabel({
-        name: label,
-        issue_number: pull_number,
-        ...context.repo
-      })
+      removeLabelIfExists(label, pull_number)
     ]);
   });
 };
