@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { FIRST_QUEUED_PR_LABEL, QUEUED_FOR_MERGE_PREFIX, READY_FOR_MERGE_PR_LABEL } from '../constants';
+import { FIRST_QUEUED_PR_LABEL, MERGE_QUEUE_STATUS, QUEUED_FOR_MERGE_PREFIX, READY_FOR_MERGE_PR_LABEL } from '../constants';
 import { PullRequest } from '../types';
 import { context } from '@actions/github';
 import { map } from 'bluebird';
@@ -41,9 +41,9 @@ export const manageMergeQueue = async () => {
     }),
     setCommitStatus({
       sha: pullRequest.head.sha,
-      context: 'QUEUE CHECKER',
+      context: MERGE_QUEUE_STATUS,
       state: isFirstQueuePosition ? 'success' : 'pending',
-      description: isFirstQueuePosition ? 'This PR is next to merge.' : `This PR is #${queuePosition} in line to merge.`
+      description: isFirstQueuePosition ? 'This PR is next to merge.' : 'This PR is in line to merge.'
     })
   ]);
 };

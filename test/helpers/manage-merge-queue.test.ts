@@ -11,8 +11,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { MERGE_QUEUE_STATUS, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
 import { Mocktokit } from '../types';
-import { READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
 import { context } from '@actions/github';
 import { manageMergeQueue } from '../../src/helpers/manage-merge-queue';
 import { octokit } from '../../src/octokit';
@@ -134,9 +134,9 @@ describe('manageMergeQueue', () => {
     it('should call setCommitStatus with correct params', () => {
       expect(setCommitStatus).toHaveBeenCalledWith({
         sha: 'sha',
-        context: 'QUEUE CHECKER',
+        context: MERGE_QUEUE_STATUS,
         state: 'pending',
-        description: 'This PR is #2 in line to merge.'
+        description: 'This PR is in line to merge.'
       });
     });
 
@@ -176,7 +176,7 @@ describe('manageMergeQueue', () => {
     it('should call setCommitStatus', () => {
       expect(setCommitStatus).toHaveBeenCalledWith({
         sha: 'sha',
-        context: 'QUEUE CHECKER',
+        context: MERGE_QUEUE_STATUS,
         state: 'success',
         description: 'This PR is next to merge.'
       });

@@ -15,6 +15,7 @@ exports.modules = {
 /* harmony export */   "_d": () => (/* binding */ CORE_APPROVED_PR_LABEL),
 /* harmony export */   "Xt": () => (/* binding */ PEER_APPROVED_PR_LABEL),
 /* harmony export */   "Ak": () => (/* binding */ READY_FOR_MERGE_PR_LABEL),
+/* harmony export */   "Cb": () => (/* binding */ MERGE_QUEUE_STATUS),
 /* harmony export */   "Ee": () => (/* binding */ QUEUED_FOR_MERGE_PREFIX),
 /* harmony export */   "IH": () => (/* binding */ FIRST_QUEUED_PR_LABEL),
 /* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL),
@@ -47,6 +48,7 @@ const DEFAULT_BRANCH = 'main';
 const CORE_APPROVED_PR_LABEL = 'CORE APPROVED';
 const PEER_APPROVED_PR_LABEL = 'PEER APPROVED';
 const READY_FOR_MERGE_PR_LABEL = 'READY FOR MERGE';
+const MERGE_QUEUE_STATUS = 'QUEUE CHECKER';
 const QUEUED_FOR_MERGE_PREFIX = 'QUEUED FOR MERGE';
 const FIRST_QUEUED_PR_LABEL = `${QUEUED_FOR_MERGE_PREFIX} #1`;
 const JUMP_THE_QUEUE_PR_LABEL = 'JUMP THE QUEUE';
@@ -82,6 +84,16 @@ var remove_label = __webpack_require__(61);
 // EXTERNAL MODULE: ./src/helpers/set-commit-status.ts
 var set_commit_status = __webpack_require__(2209);
 ;// CONCATENATED MODULE: ./src/utils/update-merge-queue.ts
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
 
 
 
@@ -100,17 +112,26 @@ const updateMergeQueue = (queuedPrs) => {
         };
     })
         .sort((pr1, pr2) => pr1.queuePosition - pr2.queuePosition);
-    return (0,bluebird.map)(prsSortedByQueuePosition, (pr, index) => {
+    return (0,bluebird.map)(prsSortedByQueuePosition, (pr, index) => __awaiter(void 0, void 0, void 0, function* () {
         const { pull_number, label, queuePosition } = pr;
         const newQueuePosition = index + 1;
         if (!label || queuePosition === newQueuePosition) {
             return;
         }
+        if (newQueuePosition === 1) {
+            const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number }, github.context.repo));
+            yield (0,set_commit_status.setCommitStatus)({
+                sha: pullRequest.head.sha,
+                context: constants/* MERGE_QUEUE_STATUS */.Cb,
+                state: 'success',
+                description: 'This PR is next to merge.'
+            });
+        }
         return Promise.all([
             octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${newQueuePosition}`], issue_number: pull_number }, github.context.repo)),
             (0,remove_label.removeLabelIfExists)(label, pull_number)
         ]);
-    });
+    }));
 };
 
 ;// CONCATENATED MODULE: ./src/helpers/manage-merge-queue.ts
@@ -126,7 +147,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+var manage_merge_queue_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -143,7 +164,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-const manageMergeQueue = () => __awaiter(void 0, void 0, void 0, function* () {
+const manageMergeQueue = () => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
     const issue_number = github.context.issue.number;
     const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: issue_number }, github.context.repo));
     if (pullRequest.merged || !pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak)) {
@@ -156,13 +177,13 @@ const manageMergeQueue = () => __awaiter(void 0, void 0, void 0, function* () {
         octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`], issue_number }, github.context.repo)),
         (0,set_commit_status.setCommitStatus)({
             sha: pullRequest.head.sha,
-            context: 'QUEUE CHECKER',
+            context: constants/* MERGE_QUEUE_STATUS */.Cb,
             state: isFirstQueuePosition ? 'success' : 'pending',
-            description: isFirstQueuePosition ? 'This PR is next to merge.' : `This PR is #${queuePosition} in line to merge.`
+            description: isFirstQueuePosition ? 'This PR is next to merge.' : 'This PR is in line to merge.'
         })
     ]);
 });
-const removePRFromQueue = (pullRequest) => __awaiter(void 0, void 0, void 0, function* () {
+const removePRFromQueue = (pullRequest) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const queueLabel = (_a = pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
     if (queueLabel) {
