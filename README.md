@@ -10,7 +10,7 @@ Each of the following helpers are defined in a file of the same name in `src/hel
   * Adds one or more labels to a PR
 ### [**add-pr-approval-label**](.github/workflows/add-pr-approval-label.yml)
   * Upon PR review, adds a `CORE APPROVED` label if the reviewer is a part of the provided Github team, otherwise adds the `PEER APPROVED` label
-### [**approve-pr**](.github/workflows/auto-approve-pr.yml)
+### [**approve-pr**](.github/workflows/approve-pr.yml)
 * Approves a PR
 ### [**assign-pr-reviewers**](.github/workflows/assign-pr-reviewers.yml)
   * Randomly assigns members of a github team to review a PR. If `login` is provided, it does nothing if that user is already part of the team
