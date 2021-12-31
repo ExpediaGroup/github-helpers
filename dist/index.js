@@ -18800,6 +18800,16 @@ var map = {
 		445,
 		905
 	],
+	"./approve-pr": [
+		6522,
+		438,
+		522
+	],
+	"./approve-pr.ts": [
+		6522,
+		438,
+		522
+	],
 	"./assign-pr-reviewers": [
 		3154,
 		438,
@@ -18815,16 +18825,6 @@ var map = {
 		445,
 		545,
 		154
-	],
-	"./auto-approve-pr": [
-		185,
-		438,
-		185
-	],
-	"./auto-approve-pr.ts": [
-		185,
-		438,
-		185
 	],
 	"./check-pr-title": [
 		2956,

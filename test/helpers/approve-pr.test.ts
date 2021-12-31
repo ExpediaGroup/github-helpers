@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { autoApprovePr } from '../../src/helpers/auto-approve-pr';
+import { approvePr } from '../../src/helpers/approve-pr';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
 
@@ -21,40 +21,17 @@ jest.mock('@actions/github', () => ({
   getOctokit: jest.fn(() => ({ rest: { pulls: { createReview: jest.fn() } } }))
 }));
 
-describe('autoApprovePr', () => {
-  const auto_approved_user = 'renovate';
-
-  afterEach(() => {
-    jest.clearAllMocks();
+describe('approvePr', () => {
+  beforeEach(() => {
+    approvePr();
   });
 
-  describe('non renovate user', () => {
-    const login = 'user';
-
-    beforeEach(() => {
-      autoApprovePr({ login, auto_approved_user });
-    });
-
-    it('should not approve', () => {
-      expect(octokit.pulls.createReview).toBeCalledTimes(0);
-    });
-  });
-
-  describe('renovate pr', () => {
-    const login = 'renovate';
-    const pull_number = 123;
-
-    beforeEach(() => {
-      autoApprovePr({ login, auto_approved_user });
-    });
-
-    it('should approve', () => {
-      expect(octokit.pulls.createReview).toHaveBeenCalledWith({
-        pull_number,
-        body: 'Approved by bot',
-        event: 'APPROVE',
-        ...context.repo
-      });
+  it('should call createReview with correct params', () => {
+    expect(octokit.pulls.createReview).toHaveBeenCalledWith({
+      pull_number: 123,
+      body: 'Approved by bot',
+      event: 'APPROVE',
+      ...context.repo
     });
   });
 });
