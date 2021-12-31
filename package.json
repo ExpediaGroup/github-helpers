@@ -56,10 +56,11 @@
   },
   "scripts": {
     "build": "tsc",
+    "clean": "rm -rf build dist",
     "format": "prettier --write ./**/**/*.ts",
     "format-check": "prettier --check **/*.ts",
     "lint": "eslint --fix src/**/*.ts test/**/*.ts",
-    "package": "ncc build --source-map --license licenses.txt && cp action.yml dist",
+    "package": "npm run clean && ncc build --source-map --license licenses.txt && cp action.yml dist",
     "prepare": "husky install",
     "test": "jest"
   }
