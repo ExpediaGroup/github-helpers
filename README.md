@@ -50,7 +50,12 @@ Additionally, the following parameters can be used for additional control over t
 ### [**initiate-deployment**](.github/workflows/initiate-deployment.yml)
   * Creates a new in-progress Github "deployment" for a commit. More information on Github deployment events can be found [here](https://docs.github.com/en/rest/reference/repos#deployments)
 ### [**manage-merge-queue**](.github/workflows/manage-merge-queue.yml)
-  * Manages a queue for PRs. Can be used to build a fully automated merge queue when used in conjunction with `prepare-queued-pr-for-merge`.
+  * Manages a queue for PRs as follows:
+    * Adding the `READY TO MERGE` label to a PR will add the PR to the "merge queue", represented by a `QUEUED FOR MERGE #X` label. Removing `READY TO MERGE` will remove this label and thus remove the PR from the queue.
+    * If a PR is first in the queue, the `QUEUE CHECKER` commit status will be set to `success`, and it will be `pending` otherwise. Github's [branch protection rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/managing-a-branch-protection-rule) can be used to ensure this requirement is met prior to merging.
+    * Merging a PR will update the positions of all PRs in the queue.
+    * Adding the `JUMP THE QUEUE` label to a PR will make that PR first in the queue immediately.
+  * This helper can be used to build a fully automated merge queue when used in conjunction with `prepare-queued-pr-for-merge`.
 ### [**move-project-card**](.github/workflows/move-project-card.yml)
 * Moves a GitHub Project card to a new column, using the `project_origin_column_name` and`project_destination_column_name` you provide.
 * In order to move a card from one place to another, it must already exist.
