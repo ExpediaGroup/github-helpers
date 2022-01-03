@@ -20,44 +20,55 @@ import { removeLabelIfExists } from '../helpers/remove-label';
 import { setCommitStatus } from '../helpers/set-commit-status';
 
 export const updateMergeQueue = (queuedPrs: PullRequestSearchResults) => {
-  const prsSortedByQueuePosition = queuedPrs
+  const sortedPrs = sortPrsByQueuePosition(queuedPrs);
+  return map(sortedPrs, updateQueuePosition);
+};
+
+const sortPrsByQueuePosition = (queuedPrs: PullRequestSearchResults): QueuedPr[] =>
+  queuedPrs
     .map(pr => {
       const label = pr.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
       const isJumpingTheQueue = Boolean(pr.labels.find(label => label.name === JUMP_THE_QUEUE_PR_LABEL));
       const queuePosition = isJumpingTheQueue ? 0 : Number(label?.split('#')?.[1]);
       return {
-        pull_number: pr.number,
+        number: pr.number,
         label,
         queuePosition
       };
     })
     .sort((pr1, pr2) => pr1.queuePosition - pr2.queuePosition);
-  return map(prsSortedByQueuePosition, async (pr, index) => {
-    const { pull_number, label, queuePosition } = pr;
-    const newQueuePosition = index + 1;
-    if (!label || queuePosition === newQueuePosition) {
-      return;
-    }
-    if (newQueuePosition === 1) {
-      const { data: pullRequest } = await octokit.pulls.get({ pull_number, ...context.repo });
-      await Promise.all([
-        setCommitStatus({
-          sha: pullRequest.head.sha,
-          context: MERGE_QUEUE_STATUS,
-          state: 'success',
-          description: 'This PR is next to merge.'
-        }),
-        removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, pull_number)
-      ]);
-    }
 
-    return Promise.all([
-      octokit.issues.addLabels({
-        labels: [`${QUEUED_FOR_MERGE_PREFIX} #${newQueuePosition}`],
-        issue_number: pull_number,
-        ...context.repo
+const updateQueuePosition = async (pr: QueuedPr, index: number) => {
+  const { number, label, queuePosition } = pr;
+  const newQueuePosition = index + 1;
+  if (!label || queuePosition === newQueuePosition) {
+    return;
+  }
+  if (newQueuePosition === 1) {
+    const { data: pullRequest } = await octokit.pulls.get({ pull_number: number, ...context.repo });
+    await Promise.all([
+      setCommitStatus({
+        sha: pullRequest.head.sha,
+        context: MERGE_QUEUE_STATUS,
+        state: 'success',
+        description: 'This PR is next to merge.'
       }),
-      removeLabelIfExists(label, pull_number)
+      removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, number)
     ]);
-  });
+  }
+
+  return Promise.all([
+    octokit.issues.addLabels({
+      labels: [`${QUEUED_FOR_MERGE_PREFIX} #${newQueuePosition}`],
+      issue_number: number,
+      ...context.repo
+    }),
+    removeLabelIfExists(label, number)
+  ]);
+};
+
+type QueuedPr = {
+  number: number;
+  label?: string;
+  queuePosition: number;
 };

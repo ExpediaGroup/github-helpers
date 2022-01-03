@@ -112,43 +112,45 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const updateMergeQueue = (queuedPrs) => {
-    const prsSortedByQueuePosition = queuedPrs
-        .map(pr => {
-        var _a, _b;
-        const label = (_a = pr.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
-        const isJumpingTheQueue = Boolean(pr.labels.find(label => label.name === constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ));
-        const queuePosition = isJumpingTheQueue ? 0 : Number((_b = label === null || label === void 0 ? void 0 : label.split('#')) === null || _b === void 0 ? void 0 : _b[1]);
-        return {
-            pull_number: pr.number,
-            label,
-            queuePosition
-        };
-    })
-        .sort((pr1, pr2) => pr1.queuePosition - pr2.queuePosition);
-    return (0,bluebird.map)(prsSortedByQueuePosition, (pr, index) => __awaiter(void 0, void 0, void 0, function* () {
-        const { pull_number, label, queuePosition } = pr;
-        const newQueuePosition = index + 1;
-        if (!label || queuePosition === newQueuePosition) {
-            return;
-        }
-        if (newQueuePosition === 1) {
-            const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number }, github.context.repo));
-            yield Promise.all([
-                (0,set_commit_status.setCommitStatus)({
-                    sha: pullRequest.head.sha,
-                    context: constants/* MERGE_QUEUE_STATUS */.Cb,
-                    state: 'success',
-                    description: 'This PR is next to merge.'
-                }),
-                (0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, pull_number)
-            ]);
-        }
-        return Promise.all([
-            octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${newQueuePosition}`], issue_number: pull_number }, github.context.repo)),
-            (0,remove_label.removeLabelIfExists)(label, pull_number)
-        ]);
-    }));
+    const sortedPrs = sortPrsByQueuePosition(queuedPrs);
+    return (0,bluebird.map)(sortedPrs, updateQueuePosition);
 };
+const sortPrsByQueuePosition = (queuedPrs) => queuedPrs
+    .map(pr => {
+    var _a, _b;
+    const label = (_a = pr.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
+    const isJumpingTheQueue = Boolean(pr.labels.find(label => label.name === constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ));
+    const queuePosition = isJumpingTheQueue ? 0 : Number((_b = label === null || label === void 0 ? void 0 : label.split('#')) === null || _b === void 0 ? void 0 : _b[1]);
+    return {
+        number: pr.number,
+        label,
+        queuePosition
+    };
+})
+    .sort((pr1, pr2) => pr1.queuePosition - pr2.queuePosition);
+const updateQueuePosition = (pr, index) => __awaiter(void 0, void 0, void 0, function* () {
+    const { number, label, queuePosition } = pr;
+    const newQueuePosition = index + 1;
+    if (!label || queuePosition === newQueuePosition) {
+        return;
+    }
+    if (newQueuePosition === 1) {
+        const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: number }, github.context.repo));
+        yield Promise.all([
+            (0,set_commit_status.setCommitStatus)({
+                sha: pullRequest.head.sha,
+                context: constants/* MERGE_QUEUE_STATUS */.Cb,
+                state: 'success',
+                description: 'This PR is next to merge.'
+            }),
+            (0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, number)
+        ]);
+    }
+    return Promise.all([
+        octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${newQueuePosition}`], issue_number: number }, github.context.repo)),
+        (0,remove_label.removeLabelIfExists)(label, number)
+    ]);
+});
 
 ;// CONCATENATED MODULE: ./src/helpers/manage-merge-queue.ts
 /*
@@ -181,28 +183,18 @@ var manage_merge_queue_awaiter = (undefined && undefined.__awaiter) || function 
 
 
 const manageMergeQueue = () => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
-    const issue_number = github.context.issue.number;
-    const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: issue_number }, github.context.repo));
+    const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: github.context.issue.number }, github.context.repo));
     if (pullRequest.merged || !pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak)) {
         core.info('This PR is not in the merge queue.');
-        return removePRFromQueue(pullRequest);
+        return removePrFromQueue(pullRequest);
     }
     const { data: { items, total_count: queuePosition } } = yield getQueuedPrData();
     if (pullRequest.labels.find(label => label.name === constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ)) {
         return updateMergeQueue(items);
     }
-    const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH);
-    return Promise.all([
-        octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`], issue_number }, github.context.repo)),
-        (0,set_commit_status.setCommitStatus)({
-            sha: pullRequest.head.sha,
-            context: constants/* MERGE_QUEUE_STATUS */.Cb,
-            state: isFirstQueuePosition ? 'success' : 'pending',
-            description: isFirstQueuePosition ? 'This PR is next to merge.' : 'This PR is in line to merge.'
-        })
-    ]);
+    return addPrToQueue(pullRequest, queuePosition);
 });
-const removePRFromQueue = (pullRequest) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
+const removePrFromQueue = (pullRequest) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const queueLabel = (_a = pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
     if (queueLabel) {
@@ -211,6 +203,18 @@ const removePRFromQueue = (pullRequest) => manage_merge_queue_awaiter(void 0, vo
         yield updateMergeQueue(items);
     }
 });
+const addPrToQueue = (pullRequest, queuePosition) => {
+    const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH);
+    return Promise.all([
+        octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`], issue_number: github.context.issue.number }, github.context.repo)),
+        (0,set_commit_status.setCommitStatus)({
+            sha: pullRequest.head.sha,
+            context: constants/* MERGE_QUEUE_STATUS */.Cb,
+            state: isFirstQueuePosition ? 'success' : 'pending',
+            description: isFirstQueuePosition ? 'This PR is next to merge.' : 'This PR is in line to merge.'
+        })
+    ]);
+};
 const getQueuedPrData = () => {
     const { repo, owner } = github.context.repo;
     return octokit/* octokit.search.issuesAndPullRequests */.K.search.issuesAndPullRequests({
