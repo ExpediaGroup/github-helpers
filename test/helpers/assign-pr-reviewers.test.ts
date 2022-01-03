@@ -37,10 +37,6 @@ describe('assignPrReviewer', () => {
   const teams = 'team1\nteam2';
   const pull_number = 123;
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
   describe('login provided', () => {
     describe('core member case', () => {
       const login = 'user1';

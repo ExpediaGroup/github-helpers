@@ -277,8 +277,4 @@ describe('prepareQueuedPrForMerge', () => {
       expect(octokit.issues.createComment).not.toHaveBeenCalled();
     });
   });
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
 });

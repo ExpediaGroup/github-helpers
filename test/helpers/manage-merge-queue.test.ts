@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { MERGE_QUEUE_STATUS, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
+import { JUMP_THE_QUEUE_PR_LABEL, MERGE_QUEUE_STATUS, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { manageMergeQueue } from '../../src/helpers/manage-merge-queue';
@@ -51,7 +51,7 @@ describe('manageMergeQueue', () => {
         data: {
           merged: true,
           number: 123,
-          labels: [{ name: 'QUEUED FOR MERGE #1' }]
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
         }
       }));
       await manageMergeQueue();
@@ -188,6 +188,35 @@ describe('manageMergeQueue', () => {
         issue_number: 123,
         ...context.repo
       });
+    });
+  });
+
+  describe('jump the queue case', () => {
+    beforeEach(async () => {
+      (octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          total_count: 5,
+          items
+        }
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          merged: false,
+          head: { sha: 'sha' },
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: JUMP_THE_QUEUE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
+        }
+      }));
+      await manageMergeQueue();
+    });
+
+    it('should call issuesAndPullRequests search with correct params', () => {
+      expect(octokit.search.issuesAndPullRequests).toHaveBeenCalledWith({
+        q: `org:owner+repo:repo+is:pr+is:open+label:"${READY_FOR_MERGE_PR_LABEL}"`
+      });
+    });
+
+    it('should call updateMergeQueue with correct params', () => {
+      expect(updateMergeQueue).toHaveBeenCalledWith(items);
     });
   });
 });

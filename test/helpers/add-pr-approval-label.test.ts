@@ -29,10 +29,6 @@ jest.mock('../../src/utils/get-core-member-logins');
 const teams = 'team1\nteam2';
 
 describe('addPrApprovalLabel', () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
   describe('core approver case', () => {
     const login = 'user1';
 
