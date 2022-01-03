@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { MERGE_QUEUE_STATUS } from '../../src/constants';
+import { JUMP_THE_QUEUE_PR_LABEL, MERGE_QUEUE_STATUS } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { PullRequestSearchResults } from '../../src/types';
 import { context } from '@actions/github';
@@ -118,7 +118,45 @@ describe('updateMergeQueue', () => {
     });
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
+  describe('pr jumping the queue case', () => {
+    const queuedPrs = [
+      {
+        number: 123,
+        labels: [{ name: JUMP_THE_QUEUE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
+      },
+      {
+        number: 456,
+        labels: [{ name: 'QUEUED FOR MERGE #1' }]
+      }
+    ];
+    beforeEach(async () => {
+      await updateMergeQueue(queuedPrs as PullRequestSearchResults);
+    });
+
+    it('should call add labels with correct params', () => {
+      expect(octokit.issues.addLabels).toHaveBeenCalledWith({
+        labels: ['QUEUED FOR MERGE #1'],
+        issue_number: 123,
+        ...context.repo
+      });
+      expect(setCommitStatus).toHaveBeenCalledWith({
+        sha: 'sha123',
+        context: MERGE_QUEUE_STATUS,
+        state: 'success',
+        description: 'This PR is next to merge.'
+      });
+      expect(octokit.issues.addLabels).toHaveBeenCalledWith({
+        labels: ['QUEUED FOR MERGE #2'],
+        issue_number: 456,
+        ...context.repo
+      });
+    });
+
+    it('should call remove label with correct params', () => {
+      expect(removeLabelIfExists).toHaveBeenCalledWith(JUMP_THE_QUEUE_PR_LABEL, 123);
+      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #5', 123);
+      expect(removeLabelIfExists).not.toHaveBeenCalledWith(JUMP_THE_QUEUE_PR_LABEL, 456);
+      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #1', 456);
+    });
   });
 });

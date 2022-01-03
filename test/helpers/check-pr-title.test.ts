@@ -22,10 +22,6 @@ jest.mock('@actions/github', () => ({
 }));
 
 describe('checkPrTitle', () => {
-  afterEach(() => {
-    jest.resetAllMocks();
-  });
-
   it('should pass as the PR title conforms to the regex', async () => {
     (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
       data: {

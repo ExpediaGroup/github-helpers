@@ -25,10 +25,6 @@ describe('filterPaths', () => {
   const paths = 'file/path/1\nfile/path/2';
   const globs = '**/*.md\nsomething/**/file1.txt';
 
-  afterEach(() => {
-    jest.resetAllMocks();
-  });
-
   it('should return true if one of the file paths match the file paths that octokit returns', async () => {
     (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
       data: [

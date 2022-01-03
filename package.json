@@ -52,7 +52,8 @@
     "transform": {
       "^.+\\.(j|t)sx?$": "ts-jest"
     },
-    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$"
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "clearMocks": true
   },
   "scripts": {
     "build": "tsc",

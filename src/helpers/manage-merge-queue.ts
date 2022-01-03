@@ -12,7 +12,13 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { FIRST_QUEUED_PR_LABEL, MERGE_QUEUE_STATUS, QUEUED_FOR_MERGE_PREFIX, READY_FOR_MERGE_PR_LABEL } from '../constants';
+import {
+  FIRST_QUEUED_PR_LABEL,
+  JUMP_THE_QUEUE_PR_LABEL,
+  MERGE_QUEUE_STATUS,
+  QUEUED_FOR_MERGE_PREFIX,
+  READY_FOR_MERGE_PR_LABEL
+} from '../constants';
 import { PullRequest } from '../types';
 import { context } from '@actions/github';
 import { map } from 'bluebird';
@@ -30,8 +36,11 @@ export const manageMergeQueue = async () => {
   }
 
   const {
-    data: { total_count: queuePosition }
+    data: { items, total_count: queuePosition }
   } = await getQueuedPrData();
+  if (pullRequest.labels.find(label => label.name === JUMP_THE_QUEUE_PR_LABEL)) {
+    return updateMergeQueue(items);
+  }
   const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === FIRST_QUEUED_PR_LABEL);
   return Promise.all([
     octokit.issues.addLabels({

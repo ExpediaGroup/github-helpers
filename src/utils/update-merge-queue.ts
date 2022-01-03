@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { MERGE_QUEUE_STATUS, QUEUED_FOR_MERGE_PREFIX } from '../constants';
+import { JUMP_THE_QUEUE_PR_LABEL, MERGE_QUEUE_STATUS, QUEUED_FOR_MERGE_PREFIX } from '../constants';
 import { PullRequestSearchResults } from '../types';
 import { context } from '@actions/github';
 import { map } from 'bluebird';
@@ -23,7 +23,8 @@ export const updateMergeQueue = (queuedPrs: PullRequestSearchResults) => {
   const prsSortedByQueuePosition = queuedPrs
     .map(pr => {
       const label = pr.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
-      const queuePosition = Number(label?.split('#')?.[1]);
+      const isJumpingTheQueue = Boolean(pr.labels.find(label => label.name === JUMP_THE_QUEUE_PR_LABEL));
+      const queuePosition = isJumpingTheQueue ? 0 : Number(label?.split('#')?.[1]);
       return {
         pull_number: pr.number,
         label,
@@ -39,12 +40,15 @@ export const updateMergeQueue = (queuedPrs: PullRequestSearchResults) => {
     }
     if (newQueuePosition === 1) {
       const { data: pullRequest } = await octokit.pulls.get({ pull_number, ...context.repo });
-      await setCommitStatus({
-        sha: pullRequest.head.sha,
-        context: MERGE_QUEUE_STATUS,
-        state: 'success',
-        description: 'This PR is next to merge.'
-      });
+      await Promise.all([
+        setCommitStatus({
+          sha: pullRequest.head.sha,
+          context: MERGE_QUEUE_STATUS,
+          state: 'success',
+          description: 'This PR is next to merge.'
+        }),
+        removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, pull_number)
+      ]);
     }
 
     return Promise.all([
