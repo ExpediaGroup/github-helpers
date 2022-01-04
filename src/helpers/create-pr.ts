@@ -16,24 +16,24 @@ import { octokit } from '../octokit';
 
 interface CreatePR {
   title: string;
-  source?: string;
-  target: string;
+  source_branch?: string;
+  target_branch: string;
   body: string;
   modify?: boolean;
   draft?: boolean;
-  issue?: string;
+  issue_number?: string;
 }
 
-export const createPr = ({ title, source, target, body, modify, draft, issue }: CreatePR) => {
-  const sourceToUse = source ? source : context.ref.replace('refs/heads/', '');
+export const createPr = ({ title, source_branch, target_branch, body, modify, draft, issue_number }: CreatePR) => {
+  const sourceToUse = source_branch || context.ref.replace('refs/heads/', '');
   octokit.pulls.create({
     title,
-    head: String(sourceToUse),
-    base: String(target),
+    head: sourceToUse,
+    base: target_branch,
     body,
     maintainer_can_modify: modify,
     draft,
-    issue: issue ? Number(issue) : undefined,
+    issue: issue_number ? Number(issue_number) : undefined,
     ...context.repo
   });
 };

@@ -13,6 +13,8 @@ Each of the following helpers are defined in a file of the same name in `src/hel
 ### [**assign-pr-reviewers**](.github/workflows/assign-pr-reviewers.yml)
   * Randomly assigns members of a github team to review a PR. If `login` is provided, it does nothing if that user is already part of the team
   * You can also pass a `slack_webhook_url` to notify the assignees that they are assigned to the PR!
+### [**create-pr**](.github/workflows/create-pr.yml)
+  * Opens a pull request
 ### [**create-project-card**](.github/workflows/create-project-card.yml)
   * Creates a Project card into your GitHub Project repository by providing a `project_name` and `project_destination_column_name` in which the card should be created.
   * If `note` is provided, it will add that information into the card. If it is not provided, it will use the PR information details to populate it.
@@ -64,8 +66,6 @@ Additionally, the following parameters can be used for additional control over t
   * Updates a Github [deployment status](https://docs.github.com/en/rest/reference/repos#deployments)
 ### [**set-latest-pipeline-status**](.github/workflows/set-latest-pipeline-status.yml)
   * Determines whether the pipeline is clear for a PR. This means it will set the "pipeline" commit status to `pending` if there is an in-progress production deployment for the repo, and `success` otherwise.
-### [**create-pr**](.github/workflows/create-pr.yml)
-  * Opens a pull request
 
 ## Usage
 ### General

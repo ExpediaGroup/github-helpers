@@ -18,4 +18,4 @@ jobs:
           title: New PR
           target: main
           body: Implemented new feature. Added tests.
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}

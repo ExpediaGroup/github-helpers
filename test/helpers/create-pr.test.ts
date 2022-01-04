@@ -29,7 +29,7 @@ describe('createPr', () => {
   beforeEach(() => {
     createPr({
       title,
-      target,
+      target_branch: target,
       body
     });
   });

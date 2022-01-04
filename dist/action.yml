@@ -97,6 +97,24 @@ inputs:
   override_filter_globs:
     description: 'A list of file paths in glob syntax (newline/comma separated) that is used to override the filter'
     required: false
+  title:
+    description: 'An issue title'
+    required: false
+  source_branch:
+    description: 'The head branch'
+    required: false
+  target_branch:
+    description: 'The base branch'
+    required: false
+  modify:
+    description: 'True if the maintainer can modify, false otherwise'
+    required: false
+  draft:
+    description: 'True if the pr is a draft, false otherwise'
+    required: false
+  issue_number:
+    description: 'The issue number'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'
