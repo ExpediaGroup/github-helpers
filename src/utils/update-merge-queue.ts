@@ -11,13 +11,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { JUMP_THE_QUEUE_PR_LABEL, MERGE_QUEUE_STATUS, QUEUED_FOR_MERGE_PREFIX } from '../constants';
+import { JUMP_THE_QUEUE_PR_LABEL, QUEUED_FOR_MERGE_PREFIX } from '../constants';
 import { PullRequestSearchResults } from '../types';
 import { context } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
 import { removeLabelIfExists } from '../helpers/remove-label';
-import { setCommitStatus } from '../helpers/set-commit-status';
 import { updatePrWithMainline } from '../helpers/prepare-queued-pr-for-merge';
 
 export const updateMergeQueue = (queuedPrs: PullRequestSearchResults) => {
@@ -47,16 +46,7 @@ const updateQueuePosition = async (pr: QueuedPr, index: number) => {
   }
   if (newQueuePosition === 1) {
     const { data: pullRequest } = await octokit.pulls.get({ pull_number: number, ...context.repo });
-    await Promise.all([
-      setCommitStatus({
-        sha: pullRequest.head.sha,
-        context: MERGE_QUEUE_STATUS,
-        state: 'success',
-        description: 'This PR is next to merge.'
-      }),
-      removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, number),
-      updatePrWithMainline(pullRequest)
-    ]);
+    await Promise.all([removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, number), updatePrWithMainline(pullRequest)]);
   }
 
   return Promise.all([

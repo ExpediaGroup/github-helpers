@@ -11,19 +11,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { JUMP_THE_QUEUE_PR_LABEL, MERGE_QUEUE_STATUS } from '../../src/constants';
+import { JUMP_THE_QUEUE_PR_LABEL } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { PullRequestSearchResults } from '../../src/types';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
 import { removeLabelIfExists } from '../../src/helpers/remove-label';
-import { setCommitStatus } from '../../src/helpers/set-commit-status';
 import { updateMergeQueue } from '../../src/utils/update-merge-queue';
 import { updatePrWithMainline } from '../../src/helpers/prepare-queued-pr-for-merge';
 
 jest.mock('../../src/helpers/remove-label');
 jest.mock('../../src/helpers/prepare-queued-pr-for-merge');
-jest.mock('../../src/helpers/set-commit-status');
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
@@ -66,12 +64,6 @@ describe('updateMergeQueue', () => {
         issue_number: 123,
         ...context.repo
       });
-      expect(setCommitStatus).toHaveBeenCalledWith({
-        sha: 'sha123',
-        context: MERGE_QUEUE_STATUS,
-        state: 'success',
-        description: 'This PR is next to merge.'
-      });
       expect(octokit.issues.addLabels).toHaveBeenCalledWith({
         labels: ['QUEUED FOR MERGE #2'],
         issue_number: 456,
@@ -110,7 +102,6 @@ describe('updateMergeQueue', () => {
         issue_number: 123,
         ...context.repo
       });
-      expect(setCommitStatus).not.toHaveBeenCalled();
       expect(octokit.issues.addLabels).toHaveBeenCalledWith({
         labels: ['QUEUED FOR MERGE #2'],
         issue_number: 456,
@@ -148,12 +139,6 @@ describe('updateMergeQueue', () => {
         labels: ['QUEUED FOR MERGE #1'],
         issue_number: 123,
         ...context.repo
-      });
-      expect(setCommitStatus).toHaveBeenCalledWith({
-        sha: 'sha123',
-        context: MERGE_QUEUE_STATUS,
-        state: 'success',
-        description: 'This PR is next to merge.'
       });
       expect(octokit.issues.addLabels).toHaveBeenCalledWith({
         labels: ['QUEUED FOR MERGE #2'],
