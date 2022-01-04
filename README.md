@@ -61,7 +61,7 @@ Additionally, the following parameters can be used for additional control over t
 * In order to move a card from one place to another, it must already exist.
 ### [**notify-pipeline-complete**](.github/workflows/notify-pipeline-complete.yml)
   * Sets a "pipeline" commit status to green for all open PRs
-### [**prepare-queued-pr-for-merge**](.github/workflows/prepare-queued-pr-for-merge.yml)
+### [~~**prepare-queued-pr-for-merge**~~](.github/workflows/prepare-queued-pr-for-merge.yml) (DEPRECATED)
   * Merges the default branch into the pull request that has the `QUEUED FOR MERGE #1` label
 ### [**remove-label**](.github/workflows/remove-label.yml)
   * Removes a label from a PR
