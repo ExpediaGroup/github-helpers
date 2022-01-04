@@ -17,3 +17,5 @@ jobs:
           helper: manage-merge-queue
           sha: ${{ github.event.pull_request.head.sha }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
+permissions: write-all
