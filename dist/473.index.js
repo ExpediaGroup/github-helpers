@@ -194,7 +194,9 @@ const manageMergeQueue = () => manage_merge_queue_awaiter(void 0, void 0, void 0
     if (pullRequest.labels.find(label => label.name === constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ)) {
         return updateMergeQueue(items);
     }
-    return addPrToQueue(pullRequest, queuePosition);
+    if (!pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) {
+        return addPrToQueue(pullRequest, queuePosition);
+    }
 });
 const removePrFromQueue = (pullRequest) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
     var _a;
