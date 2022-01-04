@@ -40,8 +40,15 @@ export const manageMergeQueue = async () => {
     return updateMergeQueue(items);
   }
   if (!pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))) {
-    return addPrToQueue(pullRequest, queuePosition);
+    await addPrToQueue(pullRequest, queuePosition);
   }
+  const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === FIRST_QUEUED_PR_LABEL);
+  return setCommitStatus({
+    sha: pullRequest.head.sha,
+    context: MERGE_QUEUE_STATUS,
+    state: isFirstQueuePosition ? 'success' : 'pending',
+    description: isFirstQueuePosition ? 'This PR is next to merge.' : 'This PR is in line to merge.'
+  });
 };
 
 const removePrFromQueue = async (pullRequest: PullRequest) => {
@@ -55,22 +62,12 @@ const removePrFromQueue = async (pullRequest: PullRequest) => {
   }
 };
 
-const addPrToQueue = (pullRequest: PullRequest, queuePosition: number) => {
-  const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === FIRST_QUEUED_PR_LABEL);
-  return Promise.all([
-    octokit.issues.addLabels({
-      labels: [`${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`],
-      issue_number: context.issue.number,
-      ...context.repo
-    }),
-    setCommitStatus({
-      sha: pullRequest.head.sha,
-      context: MERGE_QUEUE_STATUS,
-      state: isFirstQueuePosition ? 'success' : 'pending',
-      description: isFirstQueuePosition ? 'This PR is next to merge.' : 'This PR is in line to merge.'
-    })
-  ]);
-};
+const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number) =>
+  octokit.issues.addLabels({
+    labels: [`${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`],
+    issue_number: context.issue.number,
+    ...context.repo
+  });
 
 const getQueuedPrData = () => {
   const { repo, owner } = context.repo;
