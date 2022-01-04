@@ -37,15 +37,14 @@ jobs:
       - name: Compare the expected and actual dist/ directories
         id: diff
         run: |
-          git diff
           if [[ $(git status --porcelain) ]]; then
             echo "Detected uncommitted changes after build. See status below:"
             git status
             exit 1
           fi
 
-      # If dist/ was different than expected, upload the expected version as an artifact
-      - uses: actions/upload-artifact@v2
+      - name: If dist/ was different than expected, upload the expected output as an artifact
+        uses: actions/upload-artifact@v2
         if: ${{ failure() && steps.diff.conclusion == 'failure' }}
         with:
           name: dist
