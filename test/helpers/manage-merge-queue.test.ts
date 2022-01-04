@@ -191,6 +191,36 @@ describe('manageMergeQueue', () => {
     });
   });
 
+  describe('pr already in the queue case', () => {
+    beforeEach(async () => {
+      (octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          total_count: 5,
+          items
+        }
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          merged: false,
+          head: { sha: 'sha' },
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
+        }
+      }));
+      await manageMergeQueue();
+    });
+
+    it('should call issuesAndPullRequests search with correct params', () => {
+      expect(octokit.search.issuesAndPullRequests).toHaveBeenCalledWith({
+        q: `org:owner+repo:repo+is:pr+is:open+label:"${READY_FOR_MERGE_PR_LABEL}"`
+      });
+    });
+
+    it('should do nothing', () => {
+      expect(octokit.issues.addLabels).not.toHaveBeenCalled();
+      expect(updateMergeQueue).not.toHaveBeenCalled();
+    });
+  });
+
   describe('jump the queue case', () => {
     beforeEach(async () => {
       (octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({

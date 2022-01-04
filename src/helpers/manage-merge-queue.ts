@@ -39,7 +39,9 @@ export const manageMergeQueue = async () => {
   if (pullRequest.labels.find(label => label.name === JUMP_THE_QUEUE_PR_LABEL)) {
     return updateMergeQueue(items);
   }
-  return addPrToQueue(pullRequest, queuePosition);
+  if (!pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))) {
+    return addPrToQueue(pullRequest, queuePosition);
+  }
 };
 
 const removePrFromQueue = async (pullRequest: PullRequest) => {
