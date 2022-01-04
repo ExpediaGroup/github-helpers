@@ -11,7 +11,6 @@ exports.modules = {
 /* harmony export */   "$9": () => (/* binding */ DEFAULT_PIPELINE_STATUS),
 /* harmony export */   "Km": () => (/* binding */ DEFAULT_PIPELINE_DESCRIPTION),
 /* harmony export */   "Hc": () => (/* binding */ PRODUCTION_ENVIRONMENT),
-/* harmony export */   "mj": () => (/* binding */ DEFAULT_BRANCH),
 /* harmony export */   "_d": () => (/* binding */ CORE_APPROVED_PR_LABEL),
 /* harmony export */   "Xt": () => (/* binding */ PEER_APPROVED_PR_LABEL),
 /* harmony export */   "Ak": () => (/* binding */ READY_FOR_MERGE_PR_LABEL),
@@ -44,7 +43,6 @@ const DEFAULT_EXEMPT_DESCRIPTION = 'Passed in case the check is exempt.';
 const DEFAULT_PIPELINE_STATUS = 'Pipeline Status';
 const DEFAULT_PIPELINE_DESCRIPTION = 'Pipeline clear.';
 const PRODUCTION_ENVIRONMENT = 'production';
-const DEFAULT_BRANCH = 'main';
 const CORE_APPROVED_PR_LABEL = 'CORE APPROVED';
 const PEER_APPROVED_PR_LABEL = 'PEER APPROVED';
 const READY_FOR_MERGE_PR_LABEL = 'READY FOR MERGE';
@@ -63,7 +61,8 @@ const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|sty
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "prepareQueuedPrForMerge": () => (/* binding */ prepareQueuedPrForMerge)
+/* harmony export */   "prepareQueuedPrForMerge": () => (/* binding */ prepareQueuedPrForMerge),
+/* harmony export */   "updatePrWithMainline": () => (/* binding */ updatePrWithMainline)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
@@ -87,20 +86,11 @@ limitations under the License.
 
 
 
-const prepareQueuedPrForMerge = ({ prevent_merge_conflicts, default_branch = _constants__WEBPACK_IMPORTED_MODULE_1__/* .DEFAULT_BRANCH */ .mj }) => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
+const prepareQueuedPrForMerge = () => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
     .then(findNextPrToMerge)
     .then(pullRequest => {
     if (pullRequest) {
-        return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.merge */ .K.repos.merge(Object.assign({ base: pullRequest.head.ref, head: default_branch }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
-            .catch(error => {
-            if (error.status === 409 && Boolean(prevent_merge_conflicts)) {
-                _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('The next PR to merge has a conflict. Removing this PR from merge queue.');
-                return Promise.all([
-                    _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body: 'This PR has a merge conflict, so it is being removed from the merge queue.', issue_number: pullRequest.number }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo)),
-                    _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.issues.removeLabel */ .K.issues.removeLabel(Object.assign({ name: _constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, issue_number: pullRequest.number }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
-                ]);
-            }
-        });
+        return updatePrWithMainline(pullRequest);
     }
 });
 const findNextPrToMerge = (pullRequestsResponse) => {
@@ -108,6 +98,15 @@ const findNextPrToMerge = (pullRequestsResponse) => {
     return (_a = pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_1__/* .JUMP_THE_QUEUE_PR_LABEL */ .nJ]))) !== null && _a !== void 0 ? _a : pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_1__/* .FIRST_QUEUED_PR_LABEL */ .IH]));
 };
 const hasRequiredLabels = (pr, requiredLabels) => requiredLabels.every(mergeQueueLabel => pr.labels.some(label => label.name === mergeQueueLabel));
+const updatePrWithMainline = (pullRequest) => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.merge */ .K.repos.merge(Object.assign({ base: pullRequest.head.ref, head: 'HEAD' }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
+    .catch(error => {
+    if (error.status === 204) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('The first PR in the queue is already up to date!');
+    }
+    if (error.status === 409) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('The first PR in the queue has a merge conflict.');
+    }
+});
 
 
 /***/ }),

@@ -55,7 +55,7 @@ Additionally, the following parameters can be used for additional control over t
     * If a PR is first in the queue, the `QUEUE CHECKER` commit status will be set to `success`, and it will be `pending` otherwise. Github's [branch protection rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/managing-a-branch-protection-rule) can be used to ensure this requirement is met prior to merging.
     * Merging a PR will update the positions of all PRs in the queue.
     * Adding the `JUMP THE QUEUE` label to a PR will make that PR first in the queue immediately.
-  * This helper can be used to build a fully automated merge queue when used in conjunction with `prepare-queued-pr-for-merge`.
+    * When a PR is merged, it automatically updates the first-queued PR with the default branch.
 ### [**move-project-card**](.github/workflows/move-project-card.yml)
 * Moves a GitHub Project card to a new column, using the `project_origin_column_name` and`project_destination_column_name` you provide.
 * In order to move a card from one place to another, it must already exist.

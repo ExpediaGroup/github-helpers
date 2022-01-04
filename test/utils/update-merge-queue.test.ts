@@ -19,8 +19,10 @@ import { octokit } from '../../src/octokit';
 import { removeLabelIfExists } from '../../src/helpers/remove-label';
 import { setCommitStatus } from '../../src/helpers/set-commit-status';
 import { updateMergeQueue } from '../../src/utils/update-merge-queue';
+import { updatePrWithMainline } from '../../src/helpers/prepare-queued-pr-for-merge';
 
 jest.mock('../../src/helpers/remove-label');
+jest.mock('../../src/helpers/prepare-queued-pr-for-merge');
 jest.mock('../../src/helpers/set-commit-status');
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
@@ -81,6 +83,10 @@ describe('updateMergeQueue', () => {
       expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #2', 123);
       expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #3', 456);
     });
+
+    it('should call updatePrWithDefaultBranch with correct params', () => {
+      expect(updatePrWithMainline).toHaveBeenCalledWith({ head: { sha: 'sha123' } });
+    });
   });
 
   describe('pr taken out of queue case', () => {
@@ -115,6 +121,10 @@ describe('updateMergeQueue', () => {
     it('should call remove label with correct params', () => {
       expect(removeLabelIfExists).not.toHaveBeenCalledWith('QUEUED FOR MERGE #1', 123);
       expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #3', 456);
+    });
+
+    it('should not call updatePrWithDefaultBranch', () => {
+      expect(updatePrWithMainline).not.toHaveBeenCalled();
     });
   });
 
@@ -157,6 +167,10 @@ describe('updateMergeQueue', () => {
       expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #5', 123);
       expect(removeLabelIfExists).not.toHaveBeenCalledWith(JUMP_THE_QUEUE_PR_LABEL, 456);
       expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #1', 456);
+    });
+
+    it('should not call updatePrWithDefaultBranch', () => {
+      expect(updatePrWithMainline).toHaveBeenCalledWith({ head: { sha: 'sha123' } });
     });
   });
 });

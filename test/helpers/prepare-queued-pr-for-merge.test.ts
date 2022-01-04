@@ -11,7 +11,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { DEFAULT_BRANCH, FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
+import * as core from '@actions/core';
+import { FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
@@ -67,7 +68,7 @@ describe('prepareQueuedPrForMerge', () => {
           }
         ]
       }));
-      prepareQueuedPrForMerge({});
+      prepareQueuedPrForMerge();
     });
 
     it('should call pulls.list with correct params', () => {
@@ -81,7 +82,7 @@ describe('prepareQueuedPrForMerge', () => {
     it('should call repos.merge with correct params', () => {
       expect(octokit.repos.merge).toHaveBeenCalledWith({
         base: ref,
-        head: DEFAULT_BRANCH,
+        head: 'HEAD',
         ...context.repo
       });
     });
@@ -133,7 +134,7 @@ describe('prepareQueuedPrForMerge', () => {
           }
         ]
       }));
-      prepareQueuedPrForMerge({});
+      prepareQueuedPrForMerge();
     });
 
     it('should call pulls.list with correct params', () => {
@@ -147,7 +148,7 @@ describe('prepareQueuedPrForMerge', () => {
     it('should call repos.merge with correct params', () => {
       expect(octokit.repos.merge).toHaveBeenCalledWith({
         base: jumpQueueBranch,
-        head: DEFAULT_BRANCH,
+        head: 'HEAD',
         ...context.repo
       });
     });
@@ -170,7 +171,7 @@ describe('prepareQueuedPrForMerge', () => {
           }
         ]
       }));
-      prepareQueuedPrForMerge({});
+      prepareQueuedPrForMerge();
     });
 
     it('should call pulls.list with correct params', () => {
@@ -186,57 +187,7 @@ describe('prepareQueuedPrForMerge', () => {
     });
   });
 
-  describe('merge conflict case with prevent_merge_conflicts option', () => {
-    beforeEach(() => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
-        data: [
-          {
-            head: {
-              ref: 'other branch name'
-            },
-            state: 'open',
-            labels: [
-              {
-                name: 'CORE APPROVED'
-              }
-            ]
-          },
-          {
-            number: 123,
-            head: {
-              ref
-            },
-            state: 'open',
-            labels: [
-              {
-                name: READY_FOR_MERGE_PR_LABEL
-              },
-              {
-                name: FIRST_QUEUED_PR_LABEL
-              }
-            ]
-          }
-        ]
-      }));
-      (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 } as unknown as Mocktokit);
-      prepareQueuedPrForMerge({ prevent_merge_conflicts: 'true' });
-    });
-
-    it('should call removeLabel and createPRComment with correct params', () => {
-      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
-        name: READY_FOR_MERGE_PR_LABEL,
-        issue_number: 123,
-        ...context.repo
-      });
-      expect(octokit.issues.createComment).toHaveBeenCalledWith({
-        body: expect.any(String),
-        issue_number: 123,
-        ...context.repo
-      });
-    });
-  });
-
-  describe('merge conflict case without prevent_merge_conflicts option', () => {
+  describe('merge conflict case', () => {
     beforeEach(() => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
         data: [
@@ -269,12 +220,11 @@ describe('prepareQueuedPrForMerge', () => {
         ]
       }));
       (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
-      prepareQueuedPrForMerge({});
+      prepareQueuedPrForMerge();
     });
 
-    it('should call removeLabel and createPRComment with correct params', () => {
-      expect(octokit.issues.removeLabel).not.toHaveBeenCalled();
-      expect(octokit.issues.createComment).not.toHaveBeenCalled();
+    it('should call core.info', () => {
+      expect(core.info).toHaveBeenCalled();
     });
   });
 });
