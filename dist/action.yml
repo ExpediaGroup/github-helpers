@@ -7,6 +7,9 @@ inputs:
   github_token:
     description: 'The github token'
     required: true
+  personal_access_token:
+    description: 'A personal access token to be used for triggering github events that trigger other workflows'
+    required: false
   body:
     description: 'The comment body'
     required: false
