@@ -67,9 +67,6 @@ inputs:
   pattern:
     description: 'A regex pattern to match (must be wrapped in singlequotes)'
     required: false
-  prevent_merge_conflicts:
-    description: 'Set to "true" if you want the prepare-queued-pr-for-merge helper to remove PRs with merge conflicts from the queue'
-    required: false
   teams:
     description: 'A list of github teams (newline separated)'
     required: false
