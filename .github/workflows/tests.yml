@@ -37,7 +37,7 @@ jobs:
       - name: Compare the expected and actual dist/ directories
         id: diff
         run: |
-          if [[ $(git status --porcelain) ]]; then
+          if [[ $(git status --porcelain=v2) ]]; then
             echo "Detected uncommitted changes after build. See status below:"
             git status
             exit 1
