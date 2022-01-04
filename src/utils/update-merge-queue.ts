@@ -18,7 +18,7 @@ import { map } from 'bluebird';
 import { octokit } from '../octokit';
 import { removeLabelIfExists } from '../helpers/remove-label';
 import { setCommitStatus } from '../helpers/set-commit-status';
-import { updatePrWithDefaultBranch } from '../helpers/prepare-queued-pr-for-merge';
+import { updatePrWithMainline } from '../helpers/prepare-queued-pr-for-merge';
 
 export const updateMergeQueue = (queuedPrs: PullRequestSearchResults) => {
   const sortedPrs = sortPrsByQueuePosition(queuedPrs);
@@ -34,14 +34,13 @@ const sortPrsByQueuePosition = (queuedPrs: PullRequestSearchResults): QueuedPr[]
       return {
         number: pr.number,
         label,
-        queuePosition,
-        isJumpingTheQueue
+        queuePosition
       };
     })
     .sort((pr1, pr2) => pr1.queuePosition - pr2.queuePosition);
 
 const updateQueuePosition = async (pr: QueuedPr, index: number) => {
-  const { number, label, queuePosition, isJumpingTheQueue } = pr;
+  const { number, label, queuePosition } = pr;
   const newQueuePosition = index + 1;
   if (!label || isNaN(queuePosition) || queuePosition === newQueuePosition) {
     return;
@@ -55,11 +54,9 @@ const updateQueuePosition = async (pr: QueuedPr, index: number) => {
         state: 'success',
         description: 'This PR is next to merge.'
       }),
-      removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, number)
+      removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, number),
+      updatePrWithMainline(pullRequest)
     ]);
-    if (!isJumpingTheQueue) {
-      await updatePrWithDefaultBranch(pullRequest);
-    }
   }
 
   return Promise.all([
@@ -76,5 +73,4 @@ type QueuedPr = {
   number: number;
   label?: string;
   queuePosition: number;
-  isJumpingTheQueue: boolean;
 };

@@ -19,7 +19,7 @@ import { octokit } from '../../src/octokit';
 import { removeLabelIfExists } from '../../src/helpers/remove-label';
 import { setCommitStatus } from '../../src/helpers/set-commit-status';
 import { updateMergeQueue } from '../../src/utils/update-merge-queue';
-import { updatePrWithDefaultBranch } from '../../src/helpers/prepare-queued-pr-for-merge';
+import { updatePrWithMainline } from '../../src/helpers/prepare-queued-pr-for-merge';
 
 jest.mock('../../src/helpers/remove-label');
 jest.mock('../../src/helpers/prepare-queued-pr-for-merge');
@@ -85,7 +85,7 @@ describe('updateMergeQueue', () => {
     });
 
     it('should call updatePrWithDefaultBranch with correct params', () => {
-      expect(updatePrWithDefaultBranch).toHaveBeenCalledWith({ head: { sha: 'sha123' } });
+      expect(updatePrWithMainline).toHaveBeenCalledWith({ head: { sha: 'sha123' } });
     });
   });
 
@@ -124,7 +124,7 @@ describe('updateMergeQueue', () => {
     });
 
     it('should not call updatePrWithDefaultBranch', () => {
-      expect(updatePrWithDefaultBranch).not.toHaveBeenCalled();
+      expect(updatePrWithMainline).not.toHaveBeenCalled();
     });
   });
 
@@ -170,7 +170,7 @@ describe('updateMergeQueue', () => {
     });
 
     it('should not call updatePrWithDefaultBranch', () => {
-      expect(updatePrWithDefaultBranch).not.toHaveBeenCalled();
+      expect(updatePrWithMainline).toHaveBeenCalledWith({ head: { sha: 'sha123' } });
     });
   });
 });

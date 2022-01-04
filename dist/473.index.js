@@ -125,13 +125,12 @@ const sortPrsByQueuePosition = (queuedPrs) => queuedPrs
     return {
         number: pr.number,
         label,
-        queuePosition,
-        isJumpingTheQueue
+        queuePosition
     };
 })
     .sort((pr1, pr2) => pr1.queuePosition - pr2.queuePosition);
 const updateQueuePosition = (pr, index) => __awaiter(void 0, void 0, void 0, function* () {
-    const { number, label, queuePosition, isJumpingTheQueue } = pr;
+    const { number, label, queuePosition } = pr;
     const newQueuePosition = index + 1;
     if (!label || isNaN(queuePosition) || queuePosition === newQueuePosition) {
         return;
@@ -145,11 +144,9 @@ const updateQueuePosition = (pr, index) => __awaiter(void 0, void 0, void 0, fun
                 state: 'success',
                 description: 'This PR is next to merge.'
             }),
-            (0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, number)
+            (0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, number),
+            (0,prepare_queued_pr_for_merge.updatePrWithMainline)(pullRequest)
         ]);
-        if (!isJumpingTheQueue) {
-            yield (0,prepare_queued_pr_for_merge.updatePrWithDefaultBranch)(pullRequest);
-        }
     }
     return Promise.all([
         octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${newQueuePosition}`], issue_number: number }, github.context.repo)),
@@ -237,7 +234,7 @@ const getQueuedPrData = () => {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "prepareQueuedPrForMerge": () => (/* binding */ prepareQueuedPrForMerge),
-/* harmony export */   "updatePrWithDefaultBranch": () => (/* binding */ updatePrWithDefaultBranch)
+/* harmony export */   "updatePrWithMainline": () => (/* binding */ updatePrWithMainline)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
@@ -265,7 +262,7 @@ const prepareQueuedPrForMerge = () => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .o
     .then(findNextPrToMerge)
     .then(pullRequest => {
     if (pullRequest) {
-        return updatePrWithDefaultBranch(pullRequest);
+        return updatePrWithMainline(pullRequest);
     }
 });
 const findNextPrToMerge = (pullRequestsResponse) => {
@@ -273,8 +270,11 @@ const findNextPrToMerge = (pullRequestsResponse) => {
     return (_a = pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_1__/* .JUMP_THE_QUEUE_PR_LABEL */ .nJ]))) !== null && _a !== void 0 ? _a : pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_1__/* .FIRST_QUEUED_PR_LABEL */ .IH]));
 };
 const hasRequiredLabels = (pr, requiredLabels) => requiredLabels.every(mergeQueueLabel => pr.labels.some(label => label.name === mergeQueueLabel));
-const updatePrWithDefaultBranch = (pullRequest) => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.merge */ .K.repos.merge(Object.assign({ base: pullRequest.head.ref, head: 'HEAD' }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
+const updatePrWithMainline = (pullRequest) => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.merge */ .K.repos.merge(Object.assign({ base: pullRequest.head.ref, head: 'HEAD' }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo))
     .catch(error => {
+    if (error.status === 204) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('The first PR in the queue is already up to date!');
+    }
     if (error.status === 409) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('The first PR in the queue has a merge conflict.');
     }

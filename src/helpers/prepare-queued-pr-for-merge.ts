@@ -27,7 +27,7 @@ export const prepareQueuedPrForMerge = () =>
     .then(findNextPrToMerge)
     .then(pullRequest => {
       if (pullRequest) {
-        return updatePrWithDefaultBranch(pullRequest);
+        return updatePrWithMainline(pullRequest);
       }
     });
 
@@ -38,7 +38,7 @@ const findNextPrToMerge = (pullRequestsResponse: PullRequestListResponse) =>
 const hasRequiredLabels = (pr: SimplePullRequest, requiredLabels: string[]) =>
   requiredLabels.every(mergeQueueLabel => pr.labels.some(label => label.name === mergeQueueLabel));
 
-export const updatePrWithDefaultBranch = (pullRequest: PullRequest | SimplePullRequest) =>
+export const updatePrWithMainline = (pullRequest: PullRequest | SimplePullRequest) =>
   octokit.repos
     .merge({
       base: pullRequest.head.ref,
@@ -46,6 +46,9 @@ export const updatePrWithDefaultBranch = (pullRequest: PullRequest | SimplePullR
       ...context.repo
     })
     .catch(error => {
+      if (error.status === 204) {
+        core.info('The first PR in the queue is already up to date!');
+      }
       if (error.status === 409) {
         core.info('The first PR in the queue has a merge conflict.');
       }
