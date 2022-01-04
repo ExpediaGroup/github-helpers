@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { DEFAULT_BRANCH, FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
+import { FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
@@ -68,7 +68,7 @@ describe('prepareQueuedPrForMerge', () => {
           }
         ]
       }));
-      prepareQueuedPrForMerge({});
+      prepareQueuedPrForMerge();
     });
 
     it('should call pulls.list with correct params', () => {
@@ -82,7 +82,7 @@ describe('prepareQueuedPrForMerge', () => {
     it('should call repos.merge with correct params', () => {
       expect(octokit.repos.merge).toHaveBeenCalledWith({
         base: ref,
-        head: DEFAULT_BRANCH,
+        head: 'HEAD',
         ...context.repo
       });
     });
@@ -134,7 +134,7 @@ describe('prepareQueuedPrForMerge', () => {
           }
         ]
       }));
-      prepareQueuedPrForMerge({});
+      prepareQueuedPrForMerge();
     });
 
     it('should call pulls.list with correct params', () => {
@@ -148,7 +148,7 @@ describe('prepareQueuedPrForMerge', () => {
     it('should call repos.merge with correct params', () => {
       expect(octokit.repos.merge).toHaveBeenCalledWith({
         base: jumpQueueBranch,
-        head: DEFAULT_BRANCH,
+        head: 'HEAD',
         ...context.repo
       });
     });
@@ -171,7 +171,7 @@ describe('prepareQueuedPrForMerge', () => {
           }
         ]
       }));
-      prepareQueuedPrForMerge({});
+      prepareQueuedPrForMerge();
     });
 
     it('should call pulls.list with correct params', () => {
@@ -220,7 +220,7 @@ describe('prepareQueuedPrForMerge', () => {
         ]
       }));
       (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
-      prepareQueuedPrForMerge({});
+      prepareQueuedPrForMerge();
     });
 
     it('should call core.info', () => {

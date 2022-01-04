@@ -43,9 +43,6 @@ inputs:
   environment_url:
     description: 'The environment url for updating deployment status'
     required: false
-  default_branch:
-    description: 'The default branch of the repo'
-    required: false
   label:
     description: 'The singular label name used only for removing a label'
     required: false

@@ -12,16 +12,12 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { DEFAULT_BRANCH, FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../constants';
+import { FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../constants';
 import { PullRequest, PullRequestListResponse, SimplePullRequest } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-interface PrepareQueuedPrForMerge {
-  default_branch?: string;
-}
-
-export const prepareQueuedPrForMerge = ({ default_branch = DEFAULT_BRANCH }: PrepareQueuedPrForMerge) =>
+export const prepareQueuedPrForMerge = () =>
   octokit.pulls
     .list({
       state: 'open',
@@ -31,7 +27,7 @@ export const prepareQueuedPrForMerge = ({ default_branch = DEFAULT_BRANCH }: Pre
     .then(findNextPrToMerge)
     .then(pullRequest => {
       if (pullRequest) {
-        return updatePrWithDefaultBranch(pullRequest, default_branch);
+        return updatePrWithDefaultBranch(pullRequest);
       }
     });
 
@@ -42,11 +38,11 @@ const findNextPrToMerge = (pullRequestsResponse: PullRequestListResponse) =>
 const hasRequiredLabels = (pr: SimplePullRequest, requiredLabels: string[]) =>
   requiredLabels.every(mergeQueueLabel => pr.labels.some(label => label.name === mergeQueueLabel));
 
-export const updatePrWithDefaultBranch = (pullRequest: PullRequest | SimplePullRequest, defaultBranch = DEFAULT_BRANCH) =>
+export const updatePrWithDefaultBranch = (pullRequest: PullRequest | SimplePullRequest) =>
   octokit.repos
     .merge({
       base: pullRequest.head.ref,
-      head: defaultBranch,
+      head: 'HEAD',
       ...context.repo
     })
     .catch(error => {
