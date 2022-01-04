@@ -16,6 +16,9 @@ jobs:
         uses: ExpediaGroup/package-json-validator@v1
         with:
           rules: ranges
+          dependency-types: |
+            dependencies
+            devDependencies
 
       - name: Setup Node
         uses: actions/setup-node@v1
