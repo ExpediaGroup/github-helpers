@@ -13,7 +13,6 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { SingleColumn, getDestinationColumn, getProjectColumns } from '../utils/get-project-columns';
-import { GITHUB_OPTIONS } from '../constants';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
@@ -50,7 +49,9 @@ const generateCardParams = async (filteredColumn: SingleColumn, note?: string) =
       column_id: filteredColumn?.id,
       note,
       ...context.repo,
-      ...GITHUB_OPTIONS
+      headers: {
+        accept: 'application/vnd.github.v3+json'
+      }
     };
   }
 
@@ -60,6 +61,8 @@ const generateCardParams = async (filteredColumn: SingleColumn, note?: string) =
     content_type: 'PullRequest',
     note,
     ...context.repo,
-    ...GITHUB_OPTIONS
+    headers: {
+      accept: 'application/vnd.github.v3+json'
+    }
   };
 };

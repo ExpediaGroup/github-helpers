@@ -12,7 +12,6 @@ limitations under the License.
 */
 
 import { ColumnListResponse, ProjectListResponse } from '../types';
-import { GITHUB_OPTIONS } from '../constants';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
@@ -32,14 +31,27 @@ export interface SingleColumn {
 }
 
 export const getProjectColumns = async ({ project_name }: GetProjectColumns) => {
-  const projectList = await octokit.projects.listForRepo({ state: 'open', per_page: 100, ...context.repo, ...GITHUB_OPTIONS });
+  const projectList = await octokit.projects.listForRepo({
+    state: 'open',
+    per_page: 100,
+    ...context.repo,
+    headers: {
+      accept: 'application/vnd.github.v3+json'
+    }
+  });
   const project = findProjectToModify(projectList, project_name);
 
   if (!project) {
     return null;
   }
 
-  return octokit.projects.listColumns({ project_id: project.id, per_page: 100, ...GITHUB_OPTIONS });
+  return octokit.projects.listColumns({
+    project_id: project.id,
+    per_page: 100,
+    headers: {
+      accept: 'application/vnd.github.v3+json'
+    }
+  });
 };
 
 const findProjectToModify = (projectsResponse: ProjectListResponse, project_name: string) =>

@@ -14,7 +14,6 @@ limitations under the License.
 import * as core from '@actions/core';
 import { getDestinationColumn, getProjectColumns } from '../utils/get-project-columns';
 import { ColumnListResponse } from '../types';
-import { GITHUB_OPTIONS } from '../constants';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
@@ -47,7 +46,14 @@ export const moveProjectCard = async ({
   const cardToMove = await getCardToMove(originColumn);
 
   if (cardToMove && destinationColumn) {
-    return octokit.projects.moveCard({ card_id: cardToMove.id, column_id: destinationColumn.id, position: 'top', ...GITHUB_OPTIONS });
+    return octokit.projects.moveCard({
+      card_id: cardToMove.id,
+      column_id: destinationColumn.id,
+      position: 'top',
+      headers: {
+        accept: 'application/vnd.github.v3+json'
+      }
+    });
   } else {
     core.info('No destination column or card to move was found');
     return;
@@ -57,7 +63,12 @@ export const moveProjectCard = async ({
 const getCardToMove = async (originColumn: OriginColumn) => {
   const getResponse = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
   const pullRequest = getResponse.data;
-  const cardsResponse = await octokit.projects.listCards({ column_id: originColumn.id, ...GITHUB_OPTIONS });
+  const cardsResponse = await octokit.projects.listCards({
+    column_id: originColumn.id,
+    headers: {
+      accept: 'application/vnd.github.v3+json'
+    }
+  });
 
   return cardsResponse.data.find(card => card.content_url === pullRequest.issue_url);
 };
