@@ -3,8 +3,8 @@ name: Create Project Card
 on:
   pull_request:
     branches: [ main ]
-#    paths:
-#      - 'src/helpers/create-project-card.ts'
+    paths:
+      - 'src/helpers/create-project-card.ts'
 
 jobs:
   test:
