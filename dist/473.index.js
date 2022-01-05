@@ -33,10 +33,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-// These extra headers are for experimental operations. Newer versions of octokit may not require this
+// These extra headers are for experimental API features on Github Enterprise. See https://docs.github.com/en/enterprise-server@3.0/rest/overview/api-previews for details.
 const GITHUB_OPTIONS = {
     headers: {
-        accept: 'application/vnd.github.ant-man-preview+json,application/vnd.github.flash-preview+json,application/vnd.github.starfox-preview+json'
+        accept: 'application/vnd.github.ant-man-preview+json,application/vnd.github.flash-preview+json,application/vnd.github.starfox-preview+json,application/vnd.github.inertia-preview+json'
     }
 };
 const DEFAULT_EXEMPT_DESCRIPTION = 'Passed in case the check is exempt.';
