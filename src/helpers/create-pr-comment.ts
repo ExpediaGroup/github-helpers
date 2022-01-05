@@ -24,3 +24,4 @@ export const createPrComment = ({ body }: CreatePrComment) =>
     issue_number: context.issue.number,
     ...context.repo
   });
+
