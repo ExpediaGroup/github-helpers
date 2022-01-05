@@ -14,7 +14,7 @@ limitations under the License.
 // These extra headers are for experimental operations. Newer versions of octokit may not require this
 export const GITHUB_OPTIONS = {
   headers: {
-    accept: 'application/vnd.github.ant-man-preview+json,application/vnd.github.flash-preview+json'
+    accept: 'application/vnd.github.ant-man-preview+json,application/vnd.github.flash-preview+json,application/vnd.github.inertia-preview+json'
   }
 };
 
