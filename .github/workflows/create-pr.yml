@@ -16,6 +16,5 @@ jobs:
         with:
           helper: create-pr
           title: New PR
-          target: main
           body: Implemented new feature. Added tests.
           github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}

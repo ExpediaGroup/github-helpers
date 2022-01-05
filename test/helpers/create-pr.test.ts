@@ -23,13 +23,11 @@ jest.mock('@actions/github', () => ({
 
 describe('createPr', () => {
   const title = 'title';
-  const target = 'target';
   const body = 'body';
 
   beforeEach(() => {
     createPr({
       title,
-      target_branch: target,
       body
     });
   });
@@ -38,10 +36,10 @@ describe('createPr', () => {
     expect(octokit.pulls.create).toHaveBeenCalledWith({
       title,
       head: 'source',
-      base: 'target',
+      base: 'HEAD',
       body,
-      maintainer_can_modify: undefined,
-      draft: undefined,
+      maintainer_can_modify: true,
+      draft: false,
       issue: undefined,
       ...context.repo
     });
