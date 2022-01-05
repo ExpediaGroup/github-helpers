@@ -13,9 +13,9 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
-import { octokit, octokitWithPat } from '../../src/octokit';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
+import { octokit } from '../../src/octokit';
 import { prepareQueuedPrForMerge } from '../../src/helpers/prepare-queued-pr-for-merge';
 
 jest.mock('@actions/core');
@@ -32,7 +32,7 @@ jest.mock('@actions/github', () => ({
     }
   }))
 }));
-(octokitWithPat.repos.merge as unknown as Mocktokit).mockImplementation(async () => ({ some: 'response' }));
+(octokit.repos.merge as unknown as Mocktokit).mockImplementation(async () => ({ some: 'response' }));
 
 describe('prepareQueuedPrForMerge', () => {
   const ref = 'branch name';
@@ -80,7 +80,7 @@ describe('prepareQueuedPrForMerge', () => {
     });
 
     it('should call repos.merge with correct params', () => {
-      expect(octokitWithPat.repos.merge).toHaveBeenCalledWith({
+      expect(octokit.repos.merge).toHaveBeenCalledWith({
         base: ref,
         head: 'HEAD',
         ...context.repo
@@ -146,7 +146,7 @@ describe('prepareQueuedPrForMerge', () => {
     });
 
     it('should call repos.merge with correct params', () => {
-      expect(octokitWithPat.repos.merge).toHaveBeenCalledWith({
+      expect(octokit.repos.merge).toHaveBeenCalledWith({
         base: jumpQueueBranch,
         head: 'HEAD',
         ...context.repo
@@ -183,7 +183,7 @@ describe('prepareQueuedPrForMerge', () => {
     });
 
     it('should not call repos.merge', () => {
-      expect(octokitWithPat.repos.merge).not.toHaveBeenCalled();
+      expect(octokit.repos.merge).not.toHaveBeenCalled();
     });
   });
 
@@ -219,7 +219,7 @@ describe('prepareQueuedPrForMerge', () => {
           }
         ]
       }));
-      (octokitWithPat.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
+      (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
       prepareQueuedPrForMerge();
     });
 
