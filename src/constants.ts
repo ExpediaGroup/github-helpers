@@ -15,7 +15,7 @@ limitations under the License.
 export const GITHUB_OPTIONS = {
   headers: {
     accept:
-      'application/vnd.github.ant-man-preview+json,application/vnd.github.flash-preview+json,application/vnd.github.v3+json,application/vnd.github.starfox-preview+json'
+      'application/vnd.github.ant-man-preview+json,application/vnd.github.flash-preview+json,application/vnd.github.starfox-preview+json'
   }
 };
 
