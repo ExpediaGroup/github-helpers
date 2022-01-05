@@ -18,7 +18,7 @@ import { getActionInputs } from './utils/get-action-inputs';
 export const run = async () => {
   try {
     const helper = core.getInput('helper', { required: true });
-    const helperModule = await import(`../src/helpers/${helper}`);
+    const helperModule = await import(`../helpers/${helper}`);
     const method = helperModule[camelCase(helper)];
     const actionInputs = getActionInputs();
     const output = await method(actionInputs);
