@@ -14,8 +14,8 @@ limitations under the License.
 import * as core from '@actions/core';
 import { FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../constants';
 import { PullRequest, PullRequestListResponse, SimplePullRequest } from '../types';
-import { octokit, octokitWithPat } from '../octokit';
 import { context } from '@actions/github';
+import { octokit } from '../octokit';
 
 export const prepareQueuedPrForMerge = () =>
   octokit.pulls
@@ -39,7 +39,7 @@ const hasRequiredLabels = (pr: SimplePullRequest, requiredLabels: string[]) =>
   requiredLabels.every(mergeQueueLabel => pr.labels.some(label => label.name === mergeQueueLabel));
 
 export const updatePrWithMainline = (pullRequest: PullRequest | SimplePullRequest) =>
-  octokitWithPat.repos
+  octokit.repos
     .merge({
       base: pullRequest.head.ref,
       head: 'HEAD',
