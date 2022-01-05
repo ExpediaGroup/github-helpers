@@ -40,7 +40,7 @@
     "eslint-plugin-github": "4.3.5",
     "eslint-plugin-i18n-text": "1.0.1",
     "eslint-plugin-import": "2.25.3",
-    "eslint-plugin-jest": "25.3.0",
+    "eslint-plugin-jest": "25.3.4",
     "eslint-plugin-prettier": "4.0.0",
     "eslint-plugin-typescript": "0.14.0",
     "husky": "7.0.4",
