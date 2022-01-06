@@ -22933,7 +22933,7 @@ const get_action_inputs_1 = __nccwpck_require__(535);
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const helper = core.getInput('helper', { required: true });
-        const helperModule = yield Promise.resolve().then(() => __importStar(require(`../helpers/${helper}`)));
+        const helperModule = yield Promise.resolve().then(() => __importStar(require(`./${helper}`)));
         const method = helperModule[(0, lodash_1.camelCase)(helper)];
         const actionInputs = (0, get_action_inputs_1.getActionInputs)();
         const output = yield method(actionInputs);
