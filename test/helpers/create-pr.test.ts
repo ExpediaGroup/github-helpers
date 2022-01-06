@@ -39,7 +39,7 @@ describe('createPr', () => {
       base: 'HEAD',
       body,
       maintainer_can_modify: true,
-      draft: false,
+      draft: undefined,
       issue: undefined,
       ...context.repo
     });

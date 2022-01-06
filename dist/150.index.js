@@ -28,7 +28,7 @@ limitations under the License.
 
 
 const createPr = ({ title, body }) => {
-    _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.create */ .K.pulls.create(Object.assign({ title, head: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.ref.replace('refs/heads/', ''), base: 'HEAD', body, maintainer_can_modify: true, draft: false, issue: undefined }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.create */ .K.pulls.create(Object.assign({ title, head: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.ref.replace('refs/heads/', ''), base: 'HEAD', body, maintainer_can_modify: true }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
 };
 
 

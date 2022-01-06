@@ -26,8 +26,6 @@ export const createPr = ({ title, body }: CreatePR) => {
     base: 'HEAD',
     body,
     maintainer_can_modify: true,
-    draft: false,
-    issue: undefined,
     ...context.repo
   });
 };
