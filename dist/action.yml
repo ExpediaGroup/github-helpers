@@ -85,6 +85,9 @@ inputs:
   override_filter_globs:
     description: 'A list of file paths in glob syntax (newline/comma separated) that is used to override the filter'
     required: false
+  title:
+    description: 'An issue title'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'

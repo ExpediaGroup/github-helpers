@@ -1,0 +1,22 @@
+name: Open Pull Request
+
+on:
+  push:
+    branches:
+      - create-pull-request
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: ./
+        with:
+          helper: create-pr
+          title: New PR
+          body: Implemented new feature. Added tests.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+permissions: write-all
