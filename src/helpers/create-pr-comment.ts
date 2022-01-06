@@ -16,11 +16,27 @@ import { octokit } from '../octokit';
 
 interface CreatePrComment {
   body: string;
+  new_body?: string;
 }
 
-export const createPrComment = ({ body }: CreatePrComment) =>
-  octokit.issues.createComment({
+export const createPrComment = async ({ body, new_body }: CreatePrComment) => {
+  if (new_body) {
+    const commentsResponse = await octokit.issues.listComments({
+      issue_number: context.issue.number,
+      ...context.repo
+    });
+    const comment_id = commentsResponse.data.find(comment => comment.body === body)?.id;
+    if (comment_id) {
+      return octokit.issues.updateComment({
+        comment_id,
+        body,
+        ...context.repo
+      });
+    }
+  }
+  return octokit.issues.createComment({
     body,
     issue_number: context.issue.number,
     ...context.repo
   });
+};

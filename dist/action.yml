@@ -10,6 +10,9 @@ inputs:
   body:
     description: 'The comment body'
     required: false
+  new_body:
+    description: 'The new comment body for updating a comment'
+    required: false
   project_name:
     description: 'The GitHub Project name'
     required: false

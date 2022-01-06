@@ -25,9 +25,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 
 
-const createPrComment = ({ body }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+const createPrComment = ({ body, new_body }) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    if (new_body) {
+        const commentsResponse = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.listComments */ .K.issues.listComments(Object.assign({ issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+        const comment_id = (_a = commentsResponse.data.find(comment => comment.body === body)) === null || _a === void 0 ? void 0 : _a.id;
+        if (comment_id) {
+            return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.updateComment */ .K.issues.updateComment(Object.assign({ comment_id,
+                body }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+        }
+    }
+    return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+});
 
 
 /***/ }),
