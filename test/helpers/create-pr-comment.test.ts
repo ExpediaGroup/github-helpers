@@ -34,11 +34,17 @@ jest.mock('@actions/github', () => ({
   data: [
     {
       id: 12345,
-      body: 'body'
+      body: 'body',
+      user: {
+        login: 'login'
+      }
     },
     {
       id: 456,
-      body: 'some other body'
+      body: 'some other body',
+      user: {
+        login: 'some other login'
+      }
     }
   ]
 }));
@@ -62,10 +68,10 @@ describe('createPrComment', () => {
 
   describe('update comment case', function () {
     const body = 'body';
-    const new_body = 'new_body';
+    const login = 'login';
 
     beforeEach(() => {
-      createPrComment({ body, new_body });
+      createPrComment({ body, login });
     });
 
     it('should not call createComment with correct params', () => {
@@ -82,7 +88,7 @@ describe('createPrComment', () => {
     it('should call updateComment with correct params', () => {
       expect(octokit.issues.updateComment).toHaveBeenCalledWith({
         comment_id: 12345,
-        body: new_body,
+        body,
         ...context.repo
       });
     });

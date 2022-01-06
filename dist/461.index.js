@@ -36,13 +36,14 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 };
 
 
-const createPrComment = ({ body, new_body }) => __awaiter(void 0, void 0, void 0, function* () {
+const createPrComment = ({ body, login }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    if (new_body) {
+    if (login) {
         const commentsResponse = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.listComments */ .K.issues.listComments(Object.assign({ issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-        const comment_id = (_a = commentsResponse.data.find(comment => comment.body === body)) === null || _a === void 0 ? void 0 : _a.id;
+        const comment_id = (_a = commentsResponse.data.find(comment => { var _a; return ((_a = comment === null || comment === void 0 ? void 0 : comment.user) === null || _a === void 0 ? void 0 : _a.login) === login; })) === null || _a === void 0 ? void 0 : _a.id;
         if (comment_id) {
-            return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.updateComment */ .K.issues.updateComment(Object.assign({ comment_id, body: new_body }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+            return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.updateComment */ .K.issues.updateComment(Object.assign({ comment_id,
+                body }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
         }
     }
     return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));

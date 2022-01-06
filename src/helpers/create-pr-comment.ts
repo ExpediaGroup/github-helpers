@@ -16,20 +16,20 @@ import { octokit } from '../octokit';
 
 interface CreatePrComment {
   body: string;
-  new_body?: string;
+  login?: string;
 }
 
-export const createPrComment = async ({ body, new_body }: CreatePrComment) => {
-  if (new_body) {
+export const createPrComment = async ({ body, login }: CreatePrComment) => {
+  if (login) {
     const commentsResponse = await octokit.issues.listComments({
       issue_number: context.issue.number,
       ...context.repo
     });
-    const comment_id = commentsResponse.data.find(comment => comment.body === body)?.id;
+    const comment_id = commentsResponse.data.find(comment => comment?.user?.login === login)?.id;
     if (comment_id) {
       return octokit.issues.updateComment({
         comment_id,
-        body: new_body,
+        body,
         ...context.repo
       });
     }
