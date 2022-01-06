@@ -19,3 +19,5 @@ jobs:
           state: success
           description: set-commit-status is working!
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
+permissions: write-all
