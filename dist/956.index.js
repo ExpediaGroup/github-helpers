@@ -1,3 +1,4 @@
+"use strict";
 exports.id = 956;
 exports.ids = [956];
 exports.modules = {
@@ -5,7 +6,6 @@ exports.modules = {
 /***/ 9042:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "Cc": () => (/* binding */ GITHUB_OPTIONS),
 /* harmony export */   "$9": () => (/* binding */ DEFAULT_PIPELINE_STATUS),
@@ -58,7 +58,6 @@ const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|sty
 /***/ 2956:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "checkPrTitle": () => (/* binding */ checkPrTitle)
@@ -103,7 +102,6 @@ const checkPrTitle = ({ pattern = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEF
 /***/ 6161:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "K": () => (/* binding */ octokit)
 /* harmony export */ });

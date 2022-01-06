@@ -19,13 +19,13 @@ var utils = __webpack_require__(328);
 var settle = __webpack_require__(3211);
 var buildFullPath = __webpack_require__(1934);
 var buildURL = __webpack_require__(646);
-var http = __webpack_require__(8605);
-var https = __webpack_require__(7211);
-var httpFollow = __webpack_require__(7707).http;
-var httpsFollow = __webpack_require__(7707).https;
-var url = __webpack_require__(8835);
-var zlib = __webpack_require__(8761);
-var VERSION = __webpack_require__(4322).version;
+var http = __webpack_require__(3685);
+var https = __webpack_require__(5687);
+var httpFollow = (__webpack_require__(7707).http);
+var httpsFollow = (__webpack_require__(7707).https);
+var url = __webpack_require__(7310);
+var zlib = __webpack_require__(9796);
+var VERSION = (__webpack_require__(4322).version);
 var createError = __webpack_require__(5226);
 var enhanceError = __webpack_require__(1516);
 var defaults = __webpack_require__(8190);
@@ -646,7 +646,7 @@ axios.Axios = Axios;
 axios.Cancel = __webpack_require__(8875);
 axios.CancelToken = __webpack_require__(1587);
 axios.isCancel = __webpack_require__(4057);
-axios.VERSION = __webpack_require__(4322).version;
+axios.VERSION = (__webpack_require__(4322).version);
 
 // Expose all/spread
 axios.all = function all(promises) {
@@ -660,7 +660,7 @@ axios.isAxiosError = __webpack_require__(650);
 module.exports = axios;
 
 // Allow use of default import syntax in TypeScript
-module.exports.default = axios;
+module.exports["default"] = axios;
 
 
 /***/ }),
@@ -1990,7 +1990,7 @@ module.exports = function spread(callback) {
 "use strict";
 
 
-var VERSION = __webpack_require__(4322).version;
+var VERSION = (__webpack_require__(4322).version);
 
 var validators = {};
 
@@ -3012,8 +3012,8 @@ if (typeof process === 'undefined' || process.type === 'renderer' || process.bro
  * Module dependencies.
  */
 
-const tty = __webpack_require__(3867);
-const util = __webpack_require__(1669);
+const tty = __webpack_require__(6224);
+const util = __webpack_require__(3837);
 
 /**
  * This is the Node.js implementation of `debug()`.
@@ -3300,12 +3300,12 @@ module.exports = function () {
 /***/ 7707:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-var url = __webpack_require__(8835);
+var url = __webpack_require__(7310);
 var URL = url.URL;
-var http = __webpack_require__(8605);
-var https = __webpack_require__(7211);
-var Writable = __webpack_require__(2413).Writable;
-var assert = __webpack_require__(2357);
+var http = __webpack_require__(3685);
+var https = __webpack_require__(5687);
+var Writable = (__webpack_require__(2781).Writable);
+var assert = __webpack_require__(9491);
 var debug = __webpack_require__(1133);
 
 // Create handlers that pass events from native requests
@@ -4063,8 +4063,8 @@ function plural(ms, msAbs, n, name) {
 
 "use strict";
 
-const os = __webpack_require__(2087);
-const tty = __webpack_require__(3867);
+const os = __webpack_require__(2037);
+const tty = __webpack_require__(6224);
 const hasFlag = __webpack_require__(1621);
 
 const {env} = process;

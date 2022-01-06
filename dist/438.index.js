@@ -9,8 +9,8 @@ exports.modules = {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Context = void 0;
-const fs_1 = __webpack_require__(5747);
-const os_1 = __webpack_require__(2087);
+const fs_1 = __webpack_require__(7147);
+const os_1 = __webpack_require__(2037);
 class Context {
     /**
      * Hydrate the context from the environment
@@ -2774,12 +2774,12 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var Stream = _interopDefault(__webpack_require__(2413));
-var http = _interopDefault(__webpack_require__(8605));
-var Url = _interopDefault(__webpack_require__(8835));
+var Stream = _interopDefault(__webpack_require__(2781));
+var http = _interopDefault(__webpack_require__(3685));
+var Url = _interopDefault(__webpack_require__(7310));
 var whatwgUrl = _interopDefault(__webpack_require__(8665));
-var https = _interopDefault(__webpack_require__(7211));
-var zlib = _interopDefault(__webpack_require__(8761));
+var https = _interopDefault(__webpack_require__(5687));
+var zlib = _interopDefault(__webpack_require__(9796));
 
 // Based on https://github.com/tmpvar/jsdom/blob/aa85b2abf07766ff7bf5c1f6daafb3726f2f2db5/lib/jsdom/living/blob.js
 
@@ -2930,7 +2930,7 @@ FetchError.prototype.name = 'FetchError';
 
 let convert;
 try {
-	convert = __webpack_require__(2877).convert;
+	convert = (__webpack_require__(2877).convert);
 } catch (e) {}
 
 const INTERNALS = Symbol('Body internals');
@@ -4434,7 +4434,7 @@ fetch.Promise = global.Promise;
 
 module.exports = exports = fetch;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.default = exports;
+exports["default"] = exports;
 exports.Headers = Headers;
 exports.Request = Request;
 exports.Response = Response;
@@ -4498,8 +4498,8 @@ function onceStrict (fn) {
 "use strict";
 
 
-var punycode = __webpack_require__(4213);
-var mappingTable = __webpack_require__(68);
+var punycode = __webpack_require__(5477);
+var mappingTable = __webpack_require__(2020);
 
 var PROCESSING_OPTIONS = {
   TRANSITIONAL: 0,
@@ -5334,7 +5334,7 @@ module.exports = {
 "use strict";
 
 
-exports.URL = __webpack_require__(3394).interface;
+exports.URL = __webpack_require__(3394)["interface"];
 exports.serializeURL = __webpack_require__(2158).serializeURL;
 exports.serializeURLOrigin = __webpack_require__(2158).serializeURLOrigin;
 exports.basicURLParse = __webpack_require__(2158).basicURLParse;
@@ -5352,7 +5352,7 @@ exports.parseURL = __webpack_require__(2158).parseURL;
 
 "use strict";
 
-const punycode = __webpack_require__(4213);
+const punycode = __webpack_require__(5477);
 const tr46 = __webpack_require__(4256);
 
 const specialSchemes = {
@@ -6728,7 +6728,7 @@ module.exports = eval("require")("encoding");
 
 /***/ }),
 
-/***/ 68:
+/***/ 2020:
 /***/ ((module) => {
 
 "use strict";

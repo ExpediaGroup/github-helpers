@@ -13,9 +13,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const find_up_1 = __importDefault(__webpack_require__(9486));
 const locate_path_1 = __importDefault(__webpack_require__(3447));
-const path_1 = __importDefault(__webpack_require__(5622));
-const fs_1 = __importDefault(__webpack_require__(5747));
-const util_1 = __importDefault(__webpack_require__(1669));
+const path_1 = __importDefault(__webpack_require__(1017));
+const fs_1 = __importDefault(__webpack_require__(7147));
+const util_1 = __importDefault(__webpack_require__(3837));
 const ignore_1 = __importDefault(__webpack_require__(1230));
 const cross_spawn_1 = __importDefault(__webpack_require__(2746));
 let readFile = util_1.default.promisify(fs_1.default.readFile);
@@ -168,7 +168,7 @@ exports.findUnmatchedFiles = findUnmatchedFiles;
 "use strict";
 
 
-const cp = __webpack_require__(3129);
+const cp = __webpack_require__(2081);
 const parse = __webpack_require__(6855);
 const enoent = __webpack_require__(4101);
 
@@ -282,7 +282,7 @@ module.exports = {
 "use strict";
 
 
-const path = __webpack_require__(5622);
+const path = __webpack_require__(1017);
 const resolveCommand = __webpack_require__(7274);
 const escape = __webpack_require__(4274);
 const readShebang = __webpack_require__(1252);
@@ -434,7 +434,7 @@ module.exports.argument = escapeArgument;
 "use strict";
 
 
-const fs = __webpack_require__(5747);
+const fs = __webpack_require__(7147);
 const shebangCommand = __webpack_require__(7032);
 
 function readShebang(command) {
@@ -465,7 +465,7 @@ module.exports = readShebang;
 "use strict";
 
 
-const path = __webpack_require__(5622);
+const path = __webpack_require__(1017);
 const which = __webpack_require__(4207);
 const getPathKey = __webpack_require__(539);
 
@@ -524,7 +524,7 @@ module.exports = resolveCommand;
 
 "use strict";
 
-const path = __webpack_require__(5622);
+const path = __webpack_require__(1017);
 const locatePath = __webpack_require__(3447);
 const pathExists = __webpack_require__(6978);
 
@@ -1229,7 +1229,7 @@ if (
 /***/ 7126:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-var fs = __webpack_require__(5747)
+var fs = __webpack_require__(7147)
 var core
 if (process.platform === 'win32' || global.TESTING_WINDOWS) {
   core = __webpack_require__(2001)
@@ -1296,7 +1296,7 @@ function sync (path, options) {
 module.exports = isexe
 isexe.sync = sync
 
-var fs = __webpack_require__(5747)
+var fs = __webpack_require__(7147)
 
 function isexe (path, options, cb) {
   fs.stat(path, function (er, stat) {
@@ -1344,7 +1344,7 @@ function checkMode (stat, options) {
 module.exports = isexe
 isexe.sync = sync
 
-var fs = __webpack_require__(5747)
+var fs = __webpack_require__(7147)
 
 function checkPathExt (path, options) {
   var pathext = options.pathExt !== undefined ?
@@ -1392,9 +1392,9 @@ function sync (path, options) {
 
 "use strict";
 
-const path = __webpack_require__(5622);
-const fs = __webpack_require__(5747);
-const {promisify} = __webpack_require__(1669);
+const path = __webpack_require__(1017);
+const fs = __webpack_require__(7147);
+const {promisify} = __webpack_require__(3837);
 const pLocate = __webpack_require__(104);
 
 const fsStat = promisify(fs.stat);
@@ -1520,7 +1520,7 @@ const pLimit = concurrency => {
 };
 
 module.exports = pLimit;
-module.exports.default = pLimit;
+module.exports["default"] = pLimit;
 
 
 /***/ }),
@@ -1580,7 +1580,7 @@ const pLocate = async (iterable, tester, options) => {
 
 module.exports = pLocate;
 // TODO: Remove this for the next major release
-module.exports.default = pLocate;
+module.exports["default"] = pLocate;
 
 
 /***/ }),
@@ -1597,7 +1597,7 @@ const pTry = (fn, ...arguments_) => new Promise(resolve => {
 
 module.exports = pTry;
 // TODO: remove this in the next major version
-module.exports.default = pTry;
+module.exports["default"] = pTry;
 
 
 /***/ }),
@@ -1607,8 +1607,8 @@ module.exports.default = pTry;
 
 "use strict";
 
-const fs = __webpack_require__(5747);
-const {promisify} = __webpack_require__(1669);
+const fs = __webpack_require__(7147);
+const {promisify} = __webpack_require__(3837);
 
 const pAccess = promisify(fs.access);
 
@@ -1652,7 +1652,7 @@ const pathKey = (options = {}) => {
 
 module.exports = pathKey;
 // TODO: Remove this for the next major release
-module.exports.default = pathKey;
+module.exports["default"] = pathKey;
 
 
 /***/ }),
@@ -1701,7 +1701,7 @@ const isWindows = process.platform === 'win32' ||
     process.env.OSTYPE === 'cygwin' ||
     process.env.OSTYPE === 'msys'
 
-const path = __webpack_require__(5622)
+const path = __webpack_require__(1017)
 const COLON = isWindows ? ';' : ':'
 const isexe = __webpack_require__(7126)
 

@@ -1,3 +1,4 @@
+"use strict";
 exports.id = 154;
 exports.ids = [154];
 exports.modules = {
@@ -5,7 +6,6 @@ exports.modules = {
 /***/ 3154:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 // ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
 
@@ -127,7 +127,6 @@ const assignPrReviewers = ({ teams, login, number_of_assignees = '1', slack_webh
 /***/ 6161:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "K": () => (/* binding */ octokit)
 /* harmony export */ });
@@ -157,7 +156,6 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_act
 /***/ 9180:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "s": () => (/* binding */ getChangedFilepaths)
 /* harmony export */ });
@@ -175,7 +173,6 @@ const getChangedFilepaths = (pull_number) => _octokit__WEBPACK_IMPORTED_MODULE_1
 /***/ 7290:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "c": () => (/* binding */ getCoreMemberLogins)
 /* harmony export */ });

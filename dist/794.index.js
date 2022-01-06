@@ -1,3 +1,4 @@
+"use strict";
 exports.id = 794;
 exports.ids = [794];
 exports.modules = {
@@ -5,7 +6,6 @@ exports.modules = {
 /***/ 9794:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "filterPaths": () => (/* binding */ filterPaths)
@@ -56,7 +56,6 @@ const filterPaths = ({ paths, globs }) => _octokit__WEBPACK_IMPORTED_MODULE_3__/
 /***/ 6161:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "K": () => (/* binding */ octokit)
 /* harmony export */ });
