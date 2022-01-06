@@ -3,7 +3,7 @@ name: Open Pull Request
 on:
   push:
     branches:
-      - pulls/**
+      - create-pull-request
 
 jobs:
   test:
