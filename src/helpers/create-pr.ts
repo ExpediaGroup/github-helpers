@@ -19,11 +19,14 @@ interface CreatePR {
   body: string;
 }
 
-export const createPr = ({ title, body }: CreatePR) => {
-  octokit.pulls.create({
+export const createPr = async ({ title, body }: CreatePR) => {
+  const {
+    data: { default_branch }
+  } = await octokit.repos.get({ ...context.repo });
+  return octokit.pulls.create({
     title,
     head: context.ref.replace('refs/heads/', ''),
-    base: 'HEAD',
+    base: default_branch,
     body,
     maintainer_can_modify: true,
     ...context.repo
