@@ -82,7 +82,7 @@ describe('createPrComment', () => {
     it('should call updateComment with correct params', () => {
       expect(octokit.issues.updateComment).toHaveBeenCalledWith({
         comment_id: 12345,
-        body,
+        body: new_body,
         ...context.repo
       });
     });

@@ -29,7 +29,7 @@ export const createPrComment = async ({ body, new_body }: CreatePrComment) => {
     if (comment_id) {
       return octokit.issues.updateComment({
         comment_id,
-        body,
+        body: new_body,
         ...context.repo
       });
     }

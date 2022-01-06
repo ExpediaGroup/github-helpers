@@ -42,8 +42,7 @@ const createPrComment = ({ body, new_body }) => __awaiter(void 0, void 0, void 0
         const commentsResponse = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.listComments */ .K.issues.listComments(Object.assign({ issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
         const comment_id = (_a = commentsResponse.data.find(comment => comment.body === body)) === null || _a === void 0 ? void 0 : _a.id;
         if (comment_id) {
-            return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.updateComment */ .K.issues.updateComment(Object.assign({ comment_id,
-                body }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+            return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.updateComment */ .K.issues.updateComment(Object.assign({ comment_id, body: new_body }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
         }
     }
     return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
