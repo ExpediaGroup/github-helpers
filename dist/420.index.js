@@ -1,3 +1,4 @@
+"use strict";
 exports.id = 420;
 exports.ids = [420];
 exports.modules = {
@@ -5,16 +6,16 @@ exports.modules = {
 /***/ 9042:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "Cc": () => (/* binding */ GITHUB_OPTIONS),
 /* harmony export */   "$9": () => (/* binding */ DEFAULT_PIPELINE_STATUS),
 /* harmony export */   "Km": () => (/* binding */ DEFAULT_PIPELINE_DESCRIPTION),
 /* harmony export */   "Hc": () => (/* binding */ PRODUCTION_ENVIRONMENT),
-/* harmony export */   "mj": () => (/* binding */ DEFAULT_BRANCH),
 /* harmony export */   "_d": () => (/* binding */ CORE_APPROVED_PR_LABEL),
 /* harmony export */   "Xt": () => (/* binding */ PEER_APPROVED_PR_LABEL),
 /* harmony export */   "Ak": () => (/* binding */ READY_FOR_MERGE_PR_LABEL),
+/* harmony export */   "Cb": () => (/* binding */ MERGE_QUEUE_STATUS),
+/* harmony export */   "Ee": () => (/* binding */ QUEUED_FOR_MERGE_PREFIX),
 /* harmony export */   "IH": () => (/* binding */ FIRST_QUEUED_PR_LABEL),
 /* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL),
 /* harmony export */   "HW": () => (/* binding */ DEFAULT_PR_TITLE_REGEX)
@@ -32,21 +33,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-// These extra headers are for experimental operations. Newer versions of octokit may not require this
+// These extra headers are for experimental API features on Github Enterprise. See https://docs.github.com/en/enterprise-server@3.0/rest/overview/api-previews for details.
 const GITHUB_OPTIONS = {
     headers: {
-        accept: 'application/vnd.github.ant-man-preview+json,application/vnd.github.flash-preview+json,application/vnd.github.v3+json'
+        accept: 'application/vnd.github.ant-man-preview+json,application/vnd.github.flash-preview+json,application/vnd.github.starfox-preview+json,application/vnd.github.inertia-preview+json'
     }
 };
 const DEFAULT_EXEMPT_DESCRIPTION = 'Passed in case the check is exempt.';
 const DEFAULT_PIPELINE_STATUS = 'Pipeline Status';
 const DEFAULT_PIPELINE_DESCRIPTION = 'Pipeline clear.';
 const PRODUCTION_ENVIRONMENT = 'production';
-const DEFAULT_BRANCH = 'main';
 const CORE_APPROVED_PR_LABEL = 'CORE APPROVED';
 const PEER_APPROVED_PR_LABEL = 'PEER APPROVED';
 const READY_FOR_MERGE_PR_LABEL = 'READY FOR MERGE';
-const FIRST_QUEUED_PR_LABEL = 'QUEUED FOR MERGE #1';
+const MERGE_QUEUE_STATUS = 'QUEUE CHECKER';
+const QUEUED_FOR_MERGE_PREFIX = 'QUEUED FOR MERGE';
+const FIRST_QUEUED_PR_LABEL = `${QUEUED_FOR_MERGE_PREFIX} #1`;
 const JUMP_THE_QUEUE_PR_LABEL = 'JUMP THE QUEUE';
 const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|style|test|revert|Revert|BREAKING CHANGE)((.*))?: .+$';
 
@@ -56,7 +58,6 @@ const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|sty
 /***/ 420:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "initiateDeployment": () => (/* binding */ initiateDeployment)
@@ -96,7 +97,6 @@ const initiateDeployment = ({ sha, state = 'in_progress', environment, environme
 /***/ 6161:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "K": () => (/* binding */ octokit)
 /* harmony export */ });

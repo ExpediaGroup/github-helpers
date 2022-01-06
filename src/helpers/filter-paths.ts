@@ -19,14 +19,13 @@ import { octokit } from '../octokit';
 interface FilterPaths {
   paths?: string;
   globs?: string;
-  pull_number: string;
 }
 
-export const filterPaths = ({ paths, globs, pull_number }: FilterPaths) =>
+export const filterPaths = ({ paths, globs }: FilterPaths) =>
   octokit.pulls
     .listFiles({
       per_page: 100,
-      pull_number: Number(pull_number),
+      pull_number: context.issue.number,
       ...context.repo
     })
     .then(listFilesResponse => {

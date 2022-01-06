@@ -21,7 +21,6 @@ jobs:
             src
             package.json
             yarn.lock
-          pull_number: ${{ github.event.pull_request.number }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - if: steps.paths.outputs.output == 'true'

@@ -149,8 +149,4 @@ describe('setDeploymentStatus', () => {
       });
     });
   });
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
 });

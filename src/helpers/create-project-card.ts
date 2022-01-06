@@ -14,18 +14,16 @@ limitations under the License.
 import * as core from '@actions/core';
 import { SingleColumn, getDestinationColumn, getProjectColumns } from '../utils/get-project-columns';
 import { GITHUB_OPTIONS } from '../constants';
-import { PullRequest } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
 interface CreateProjectCardProps {
-  pull_number: number;
   project_name: string;
   project_destination_column_name: string;
   note?: string;
 }
 
-export const createProjectCard = async ({ pull_number, project_name, project_destination_column_name, note }: CreateProjectCardProps) => {
+export const createProjectCard = async ({ project_name, project_destination_column_name, note }: CreateProjectCardProps) => {
   const columnsList = await getProjectColumns({ project_name });
 
   if (!columnsList?.data?.length) {
@@ -39,14 +37,14 @@ export const createProjectCard = async ({ pull_number, project_name, project_des
     core.info('No destination column was found');
     return;
   }
-  const cardParams = await generateCardParams(pull_number, destinationColumn, note);
+  const cardParams = await generateCardParams(destinationColumn, note);
 
   return octokit.projects.createCard(cardParams);
 };
 
-const generateCardParams = async (pull_number: number, filteredColumn: SingleColumn, note?: string) => {
-  const getResponse = await octokit.pulls.get({ pull_number, ...context.repo });
-  const pullRequest = getResponse.data as PullRequest;
+const generateCardParams = async (filteredColumn: SingleColumn, note?: string) => {
+  const getResponse = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
+  const pullRequest = getResponse.data;
   if (note) {
     return {
       column_id: filteredColumn?.id,

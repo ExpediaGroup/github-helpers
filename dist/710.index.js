@@ -528,7 +528,7 @@ Promise.prototype._resultCancelled = function() {
 
 module.exports = function(NEXT_FILTER) {
 var util = __webpack_require__(7448);
-var getKeys = __webpack_require__(3062).keys;
+var getKeys = (__webpack_require__(3062).keys);
 var tryCatch = util.tryCatch;
 var errorObj = util.errorObj;
 
@@ -656,7 +656,7 @@ return Context;
 module.exports = function(Promise, Context,
     enableAsyncHooks, disableAsyncHooks) {
 var async = Promise._async;
-var Warning = __webpack_require__(5816).Warning;
+var Warning = (__webpack_require__(5816).Warning);
 var util = __webpack_require__(7448);
 var es5 = __webpack_require__(3062);
 var canAttachTrace = util.canAttachTrace;
@@ -2954,7 +2954,7 @@ var getContextDomain = function() {
     };
 };
 var AsyncResource = util.isNode && util.nodeSupportsAsyncResource ?
-    __webpack_require__(7303).AsyncResource : null;
+    (__webpack_require__(852).AsyncResource) : null;
 var getContextAsyncHooks = function() {
     return {
         domain: getDomain(),
@@ -3950,7 +3950,7 @@ var nodebackForPromise = __webpack_require__(4315);
 var withAppended = util.withAppended;
 var maybeWrapAsError = util.maybeWrapAsError;
 var canEvaluate = util.canEvaluate;
-var TypeError = __webpack_require__(5816).TypeError;
+var TypeError = (__webpack_require__(5816).TypeError);
 var defaultSuffix = "Async";
 var defaultPromisified = {__isPromisified__: true};
 var noCopyProps = [
@@ -4848,8 +4848,8 @@ Promise.prototype.settle = function () {
 module.exports =
 function(Promise, PromiseArray, apiRejection) {
 var util = __webpack_require__(7448);
-var RangeError = __webpack_require__(5816).RangeError;
-var AggregateError = __webpack_require__(5816).AggregateError;
+var RangeError = (__webpack_require__(5816).RangeError);
+var AggregateError = (__webpack_require__(5816).AggregateError);
 var isArray = util.isArray;
 var CANCELLATION = {};
 
@@ -5310,8 +5310,8 @@ Promise.prototype.timeout = function (ms, message) {
 module.exports = function (Promise, apiRejection, tryConvertToPromise,
     createContext, INTERNAL, debug) {
     var util = __webpack_require__(7448);
-    var TypeError = __webpack_require__(5816).TypeError;
-    var inherits = __webpack_require__(7448).inherits;
+    var TypeError = (__webpack_require__(5816).TypeError);
+    var inherits = (__webpack_require__(7448).inherits);
     var errorObj = util.errorObj;
     var tryCatch = util.tryCatch;
     var NULL = {};
@@ -5949,7 +5949,7 @@ ret.isRecentNode = ret.isNode && (function() {
 ret.nodeSupportsAsyncResource = ret.isNode && (function() {
     var supportsAsync = false;
     try {
-        var res = __webpack_require__(7303).AsyncResource;
+        var res = (__webpack_require__(852).AsyncResource);
         supportsAsync = typeof res.prototype.runInAsyncScope === "function";
     } catch (e) {
         supportsAsync = false;

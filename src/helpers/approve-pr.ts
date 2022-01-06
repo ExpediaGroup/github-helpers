@@ -14,19 +14,10 @@ limitations under the License.
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-interface AutoApprovePr {
-  pull_number: string;
-  login: string;
-  auto_approved_user: string;
-}
-
-export const autoApprovePr = ({ pull_number, login, auto_approved_user }: AutoApprovePr) => {
-  if (login === auto_approved_user) {
-    octokit.pulls.createReview({
-      ...context.repo,
-      pull_number: Number(pull_number),
-      body: 'Approved by bot',
-      event: 'APPROVE'
-    });
-  }
-};
+export const approvePr = () =>
+  octokit.pulls.createReview({
+    pull_number: context.issue.number,
+    body: 'Approved by bot',
+    event: 'APPROVE',
+    ...context.repo
+  });

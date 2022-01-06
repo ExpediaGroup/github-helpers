@@ -1,3 +1,4 @@
+"use strict";
 exports.id = 150;
 exports.ids = [150];
 exports.modules = {
@@ -5,7 +6,6 @@ exports.modules = {
 /***/ 9150:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "createPr": () => (/* binding */ createPr)
@@ -37,7 +37,6 @@ const createPr = ({ title, body }) => {
 /***/ 6161:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "K": () => (/* binding */ octokit)
 /* harmony export */ });

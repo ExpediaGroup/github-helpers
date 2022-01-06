@@ -17,17 +17,11 @@ import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
+  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({ rest: { pulls: { get: jest.fn() } } }))
 }));
 
 describe('checkPrTitle', () => {
-  const pull_number = '123';
-
-  afterEach(() => {
-    jest.resetAllMocks();
-  });
-
   it('should pass as the PR title conforms to the regex', async () => {
     (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
       data: {
@@ -38,9 +32,7 @@ describe('checkPrTitle', () => {
       }
     }));
 
-    const result = await checkPrTitle({
-      pull_number
-    });
+    const result = await checkPrTitle({});
 
     expect(result).toBe(true);
   });
@@ -55,9 +47,7 @@ describe('checkPrTitle', () => {
       }
     }));
 
-    const result = await checkPrTitle({
-      pull_number
-    });
+    const result = await checkPrTitle({});
 
     expect(result).toBe(false);
   });

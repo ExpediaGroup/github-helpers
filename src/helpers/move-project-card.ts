@@ -12,21 +12,19 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { ColumnListResponse, PullRequest } from '../types';
 import { getDestinationColumn, getProjectColumns } from '../utils/get-project-columns';
+import { ColumnListResponse } from '../types';
 import { GITHUB_OPTIONS } from '../constants';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
 interface MoveProjectCardProps {
   project_destination_column_name: string;
-  pull_number: number;
   project_name: string;
   project_origin_column_name: string;
 }
 
 export const moveProjectCard = async ({
-  pull_number,
   project_destination_column_name,
   project_origin_column_name,
   project_name
@@ -46,7 +44,7 @@ export const moveProjectCard = async ({
     return;
   }
 
-  const cardToMove = await getCardToMove(pull_number, originColumn);
+  const cardToMove = await getCardToMove(originColumn);
 
   if (cardToMove && destinationColumn) {
     return octokit.projects.moveCard({ card_id: cardToMove.id, column_id: destinationColumn.id, position: 'top', ...GITHUB_OPTIONS });
@@ -56,9 +54,9 @@ export const moveProjectCard = async ({
   }
 };
 
-const getCardToMove = async (pull_number: number, originColumn: OriginColumn) => {
-  const getResponse = await octokit.pulls.get({ pull_number, ...context.repo });
-  const pullRequest = getResponse.data as PullRequest;
+const getCardToMove = async (originColumn: OriginColumn) => {
+  const getResponse = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
+  const pullRequest = getResponse.data;
   const cardsResponse = await octokit.projects.listCards({ column_id: originColumn.id, ...GITHUB_OPTIONS });
 
   return cardsResponse.data.find(card => card.content_url === pullRequest.issue_url);

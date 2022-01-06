@@ -9,8 +9,8 @@ exports.modules = {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Context = void 0;
-const fs_1 = __webpack_require__(5747);
-const os_1 = __webpack_require__(2087);
+const fs_1 = __webpack_require__(7147);
+const os_1 = __webpack_require__(2037);
 class Context {
     /**
      * Hydrate the context from the environment
@@ -2774,12 +2774,12 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var Stream = _interopDefault(__webpack_require__(2413));
-var http = _interopDefault(__webpack_require__(8605));
-var Url = _interopDefault(__webpack_require__(8835));
-var whatwgUrl = _interopDefault(__webpack_require__(3323));
-var https = _interopDefault(__webpack_require__(7211));
-var zlib = _interopDefault(__webpack_require__(8761));
+var Stream = _interopDefault(__webpack_require__(2781));
+var http = _interopDefault(__webpack_require__(3685));
+var Url = _interopDefault(__webpack_require__(7310));
+var whatwgUrl = _interopDefault(__webpack_require__(8665));
+var https = _interopDefault(__webpack_require__(5687));
+var zlib = _interopDefault(__webpack_require__(9796));
 
 // Based on https://github.com/tmpvar/jsdom/blob/aa85b2abf07766ff7bf5c1f6daafb3726f2f2db5/lib/jsdom/living/blob.js
 
@@ -2930,7 +2930,7 @@ FetchError.prototype.name = 'FetchError';
 
 let convert;
 try {
-	convert = __webpack_require__(2877).convert;
+	convert = (__webpack_require__(2877).convert);
 } catch (e) {}
 
 const INTERNALS = Symbol('Body internals');
@@ -4434,7 +4434,7 @@ fetch.Promise = global.Promise;
 
 module.exports = exports = fetch;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.default = exports;
+exports["default"] = exports;
 exports.Headers = Headers;
 exports.Request = Request;
 exports.Response = Response;
@@ -4443,14 +4443,63 @@ exports.FetchError = FetchError;
 
 /***/ }),
 
-/***/ 2299:
+/***/ 1223:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var wrappy = __webpack_require__(2940)
+module.exports = wrappy(once)
+module.exports.strict = wrappy(onceStrict)
+
+once.proto = once(function () {
+  Object.defineProperty(Function.prototype, 'once', {
+    value: function () {
+      return once(this)
+    },
+    configurable: true
+  })
+
+  Object.defineProperty(Function.prototype, 'onceStrict', {
+    value: function () {
+      return onceStrict(this)
+    },
+    configurable: true
+  })
+})
+
+function once (fn) {
+  var f = function () {
+    if (f.called) return f.value
+    f.called = true
+    return f.value = fn.apply(this, arguments)
+  }
+  f.called = false
+  return f
+}
+
+function onceStrict (fn) {
+  var f = function () {
+    if (f.called)
+      throw new Error(f.onceError)
+    f.called = true
+    return f.value = fn.apply(this, arguments)
+  }
+  var name = fn.name || 'Function wrapped with `once`'
+  f.onceError = name + " shouldn't be called more than once"
+  f.called = false
+  return f
+}
+
+
+/***/ }),
+
+/***/ 4256:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
 
 
-var punycode = __webpack_require__(4213);
-var mappingTable = __webpack_require__(8661);
+var punycode = __webpack_require__(5477);
+var mappingTable = __webpack_require__(2020);
 
 var PROCESSING_OPTIONS = {
   TRANSITIONAL: 0,
@@ -4644,7 +4693,33 @@ module.exports.PROCESSING_OPTIONS = PROCESSING_OPTIONS;
 
 /***/ }),
 
-/***/ 5871:
+/***/ 5030:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+
+function getUserAgent() {
+  if (typeof navigator === "object" && "userAgent" in navigator) {
+    return navigator.userAgent;
+  }
+
+  if (typeof process === "object" && "version" in process) {
+    return `Node.js/${process.version.substr(1)} (${process.platform}; ${process.arch})`;
+  }
+
+  return "<environment undetectable>";
+}
+
+exports.getUserAgent = getUserAgent;
+//# sourceMappingURL=index.js.map
+
+
+/***/ }),
+
+/***/ 4886:
 /***/ ((module) => {
 
 "use strict";
@@ -4841,12 +4916,12 @@ conversions["RegExp"] = function (V, opts) {
 
 /***/ }),
 
-/***/ 8262:
+/***/ 7537:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
-const usm = __webpack_require__(33);
+const usm = __webpack_require__(2158);
 
 exports.implementation = class URLImpl {
   constructor(constructorArgs) {
@@ -5049,15 +5124,15 @@ exports.implementation = class URLImpl {
 
 /***/ }),
 
-/***/ 653:
+/***/ 3394:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
 
 
-const conversions = __webpack_require__(5871);
-const utils = __webpack_require__(276);
-const Impl = __webpack_require__(8262);
+const conversions = __webpack_require__(4886);
+const utils = __webpack_require__(3185);
+const Impl = __webpack_require__(7537);
 
 const impl = utils.implSymbol;
 
@@ -5253,32 +5328,32 @@ module.exports = {
 
 /***/ }),
 
-/***/ 3323:
+/***/ 8665:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 
-exports.URL = __webpack_require__(653).interface;
-exports.serializeURL = __webpack_require__(33).serializeURL;
-exports.serializeURLOrigin = __webpack_require__(33).serializeURLOrigin;
-exports.basicURLParse = __webpack_require__(33).basicURLParse;
-exports.setTheUsername = __webpack_require__(33).setTheUsername;
-exports.setThePassword = __webpack_require__(33).setThePassword;
-exports.serializeHost = __webpack_require__(33).serializeHost;
-exports.serializeInteger = __webpack_require__(33).serializeInteger;
-exports.parseURL = __webpack_require__(33).parseURL;
+exports.URL = __webpack_require__(3394)["interface"];
+exports.serializeURL = __webpack_require__(2158).serializeURL;
+exports.serializeURLOrigin = __webpack_require__(2158).serializeURLOrigin;
+exports.basicURLParse = __webpack_require__(2158).basicURLParse;
+exports.setTheUsername = __webpack_require__(2158).setTheUsername;
+exports.setThePassword = __webpack_require__(2158).setThePassword;
+exports.serializeHost = __webpack_require__(2158).serializeHost;
+exports.serializeInteger = __webpack_require__(2158).serializeInteger;
+exports.parseURL = __webpack_require__(2158).parseURL;
 
 
 /***/ }),
 
-/***/ 33:
+/***/ 2158:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
 
-const punycode = __webpack_require__(4213);
-const tr46 = __webpack_require__(2299);
+const punycode = __webpack_require__(5477);
+const tr46 = __webpack_require__(4256);
 
 const specialSchemes = {
   ftp: 21,
@@ -6577,7 +6652,7 @@ module.exports.parseURL = function (input, options) {
 
 /***/ }),
 
-/***/ 276:
+/***/ 3185:
 /***/ ((module) => {
 
 "use strict";
@@ -6601,81 +6676,6 @@ module.exports.implForWrapper = function (wrapper) {
   return wrapper[module.exports.implSymbol];
 };
 
-
-
-/***/ }),
-
-/***/ 1223:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-var wrappy = __webpack_require__(2940)
-module.exports = wrappy(once)
-module.exports.strict = wrappy(onceStrict)
-
-once.proto = once(function () {
-  Object.defineProperty(Function.prototype, 'once', {
-    value: function () {
-      return once(this)
-    },
-    configurable: true
-  })
-
-  Object.defineProperty(Function.prototype, 'onceStrict', {
-    value: function () {
-      return onceStrict(this)
-    },
-    configurable: true
-  })
-})
-
-function once (fn) {
-  var f = function () {
-    if (f.called) return f.value
-    f.called = true
-    return f.value = fn.apply(this, arguments)
-  }
-  f.called = false
-  return f
-}
-
-function onceStrict (fn) {
-  var f = function () {
-    if (f.called)
-      throw new Error(f.onceError)
-    f.called = true
-    return f.value = fn.apply(this, arguments)
-  }
-  var name = fn.name || 'Function wrapped with `once`'
-  f.onceError = name + " shouldn't be called more than once"
-  f.called = false
-  return f
-}
-
-
-/***/ }),
-
-/***/ 5030:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-
-function getUserAgent() {
-  if (typeof navigator === "object" && "userAgent" in navigator) {
-    return navigator.userAgent;
-  }
-
-  if (typeof process === "object" && "version" in process) {
-    return `Node.js/${process.version.substr(1)} (${process.platform}; ${process.arch})`;
-  }
-
-  return "<environment undetectable>";
-}
-
-exports.getUserAgent = getUserAgent;
-//# sourceMappingURL=index.js.map
 
 
 /***/ }),
@@ -6728,7 +6728,7 @@ module.exports = eval("require")("encoding");
 
 /***/ }),
 
-/***/ 8661:
+/***/ 2020:
 /***/ ((module) => {
 
 "use strict";

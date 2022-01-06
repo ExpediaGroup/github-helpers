@@ -11,32 +11,86 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { createPrComment } from '../../src/helpers/create-pr-comment';
 import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: jest.fn(() => ({ rest: { issues: { createComment: jest.fn() } } }))
+  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
+  getOctokit: jest.fn(() => ({
+    rest: {
+      issues: {
+        createComment: jest.fn(),
+        listComments: jest.fn(),
+        updateComment: jest.fn()
+      }
+    }
+  }))
+}));
+
+(octokit.issues.listComments as unknown as Mocktokit).mockImplementation(async () => ({
+  data: [
+    {
+      id: 12345,
+      body: 'body',
+      user: {
+        login: 'login'
+      }
+    },
+    {
+      id: 456,
+      body: 'some other body',
+      user: {
+        login: 'some other login'
+      }
+    }
+  ]
 }));
 
 describe('createPrComment', () => {
-  const body = 'body';
-  const pull_number = '123';
+  describe('create comment case', function () {
+    const body = 'body';
 
-  beforeEach(() => {
-    createPrComment({
-      body,
-      pull_number
+    beforeEach(() => {
+      createPrComment({ body });
+    });
+
+    it('should call createComment with correct params', () => {
+      expect(octokit.issues.createComment).toHaveBeenCalledWith({
+        body,
+        issue_number: 123,
+        ...context.repo
+      });
     });
   });
 
-  it('should call createComment with correct params', () => {
-    expect(octokit.issues.createComment).toHaveBeenCalledWith({
-      body,
-      issue_number: 123,
-      ...context.repo
+  describe('update comment case', function () {
+    const body = 'body';
+    const login = 'login';
+
+    beforeEach(() => {
+      createPrComment({ body, login });
+    });
+
+    it('should not call createComment with correct params', () => {
+      expect(octokit.issues.createComment).not.toHaveBeenCalled();
+    });
+
+    it('should call listComments with correct params', () => {
+      expect(octokit.issues.listComments).toHaveBeenCalledWith({
+        issue_number: 123,
+        ...context.repo
+      });
+    });
+
+    it('should call updateComment with correct params', () => {
+      expect(octokit.issues.updateComment).toHaveBeenCalledWith({
+        comment_id: 12345,
+        body,
+        ...context.repo
+      });
     });
   });
 });

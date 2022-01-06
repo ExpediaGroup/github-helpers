@@ -18,5 +18,4 @@ jobs:
         with:
           helper: assign-pr-reviewers
           login: ${{ github.event.review.user.login }}
-          pull_number: ${{ github.event.pull_request.number }}
           github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }} # must have read:org permission

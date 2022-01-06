@@ -1,3 +1,4 @@
+"use strict";
 exports.id = 154;
 exports.ids = [154];
 exports.modules = {
@@ -5,7 +6,6 @@ exports.modules = {
 /***/ 3154:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 // ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
 
@@ -60,7 +60,7 @@ const notifyReviewer = ({ login, pull_number, slack_webhook_url }) => __awaiter(
         core.setFailed(`No github email found for user ${login}. Ensure you have set your email to be publicly visible on your Github profile.`);
         throw new Error();
     }
-    const pullRequestResponse = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: Number(pull_number) }, github.context.repo));
+    const pullRequestResponse = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number }, github.context.repo));
     const { title, html_url } = pullRequestResponse.data;
     const slackResponse = yield axios_default().post(slack_webhook_url, {
         assignee: assigneeEmail,
@@ -102,17 +102,21 @@ var assign_pr_reviewers_awaiter = (undefined && undefined.__awaiter) || function
 
 
 
-const assignPrReviewers = ({ teams, pull_number, login, number_of_assignees = '1', slack_webhook_url }) => assign_pr_reviewers_awaiter(void 0, void 0, void 0, function* () {
-    const coreMemberLogins = yield (0,get_core_member_logins/* getCoreMemberLogins */.c)(pull_number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
+const assignPrReviewers = ({ teams, login, number_of_assignees = '1', slack_webhook_url }) => assign_pr_reviewers_awaiter(void 0, void 0, void 0, function* () {
+    const coreMemberLogins = yield (0,get_core_member_logins/* getCoreMemberLogins */.c)(github.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
     if (login && coreMemberLogins.includes(login)) {
         core.info('Already a core member, no need to assign.');
         return;
     }
     const assignees = (0,lodash.sampleSize)(coreMemberLogins, Number(number_of_assignees));
-    return octokit/* octokit.issues.addAssignees */.K.issues.addAssignees(Object.assign({ assignees, issue_number: Number(pull_number) }, github.context.repo))
+    return octokit/* octokit.issues.addAssignees */.K.issues.addAssignees(Object.assign({ assignees, issue_number: github.context.issue.number }, github.context.repo))
         .then(() => {
         if (slack_webhook_url) {
-            return (0,bluebird.map)(assignees, assignee => notifyReviewer({ login: assignee, pull_number, slack_webhook_url }));
+            return (0,bluebird.map)(assignees, assignee => notifyReviewer({
+                login: assignee,
+                pull_number: github.context.issue.number,
+                slack_webhook_url
+            }));
         }
     });
 });
@@ -123,7 +127,6 @@ const assignPrReviewers = ({ teams, pull_number, login, number_of_assignees = '1
 /***/ 6161:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "K": () => (/* binding */ octokit)
 /* harmony export */ });
@@ -153,7 +156,6 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_act
 /***/ 9180:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "s": () => (/* binding */ getChangedFilepaths)
 /* harmony export */ });
@@ -162,7 +164,7 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_act
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
 
 
-const getChangedFilepaths = (pull_number) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number: Number(pull_number), per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo))
+const getChangedFilepaths = (pull_number) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number, per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo))
     .then(listFilesResponse => listFilesResponse.data.map(file => file.filename));
 
 
@@ -171,7 +173,6 @@ const getChangedFilepaths = (pull_number) => _octokit__WEBPACK_IMPORTED_MODULE_1
 /***/ 7290:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "c": () => (/* binding */ getCoreMemberLogins)
 /* harmony export */ });

@@ -1,3 +1,4 @@
+"use strict";
 exports.id = 61;
 exports.ids = [61];
 exports.modules = {
@@ -5,10 +6,10 @@ exports.modules = {
 /***/ 61:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "removeLabel": () => (/* binding */ removeLabel)
+/* harmony export */   "removeLabel": () => (/* binding */ removeLabel),
+/* harmony export */   "removeLabelIfExists": () => (/* binding */ removeLabelIfExists)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
@@ -30,7 +31,8 @@ limitations under the License.
 
 
 
-const removeLabel = ({ label, pull_number }) => _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel(Object.assign({ name: label, issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
+const removeLabel = ({ label }) => removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number);
+const removeLabelIfExists = (labelName, issue_number) => _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel(Object.assign({ name: labelName, issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
     .catch(error => {
     if (error.status === 404) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Label is not present on PR.');
@@ -43,7 +45,6 @@ const removeLabel = ({ label, pull_number }) => _octokit__WEBPACK_IMPORTED_MODUL
 /***/ 6161:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "K": () => (/* binding */ octokit)
 /* harmony export */ });

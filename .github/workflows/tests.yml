@@ -16,11 +16,14 @@ jobs:
         uses: ExpediaGroup/package-json-validator@v1
         with:
           rules: ranges
+          dependency-types: |
+            dependencies
+            devDependencies
 
       - name: Setup Node
         uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 12.20.1
 
       - name: Install Dependencies
         run: npm ci
@@ -43,8 +46,8 @@ jobs:
             exit 1
           fi
 
-      # If dist/ was different than expected, upload the expected version as an artifact
-      - uses: actions/upload-artifact@v2
+      - name: If dist/ was different than expected, upload the expected output as an artifact
+        uses: actions/upload-artifact@v2
         if: ${{ failure() && steps.diff.conclusion == 'failure' }}
         with:
           name: dist

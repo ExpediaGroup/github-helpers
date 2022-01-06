@@ -16,7 +16,6 @@ jobs:
       - uses: ./
         with:
           helper: create-project-card
-          project_name: 'test project'
-          project_destination_column_name: 'test column 1'
-          pull_number: ${{ github.event.pull_request.number }}
+          project_name: Test Project
+          project_destination_column_name: Test Column 1
           github_token: ${{ secrets.GITHUB_TOKEN }}

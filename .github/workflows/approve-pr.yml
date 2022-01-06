@@ -3,11 +3,11 @@ name: Auto Approve PR
 on:
   pull_request:
     branches: [ main ]
-    paths:
-      - 'src/helpers/auto-approve-pr.ts'
+    types: [ opened ]
 
 jobs:
   test:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -15,8 +15,5 @@ jobs:
 
       - uses: ./
         with:
-          helper: auto-approve-pr
-          auto_approved_user: 'renovate[bot]'
-          login: ${{ github.event.pull_request.user.login }}
-          pull_number: ${{ github.event.pull_request.number }}
+          helper: approve-pr
           github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }} # must have write:repo permission

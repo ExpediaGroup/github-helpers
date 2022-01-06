@@ -1,3 +1,4 @@
+"use strict";
 exports.id = 209;
 exports.ids = [209];
 exports.modules = {
@@ -5,7 +6,6 @@ exports.modules = {
 /***/ 2209:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "setCommitStatus": () => (/* binding */ setCommitStatus)
@@ -42,7 +42,6 @@ const setCommitStatus = ({ sha, context, state, description, target_url }) => (0
 /***/ 6161:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "K": () => (/* binding */ octokit)
 /* harmony export */ });

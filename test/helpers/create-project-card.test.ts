@@ -19,7 +19,7 @@ import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
+  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({
     rest: {
       projects: {
@@ -33,7 +33,6 @@ jest.mock('@actions/github', () => ({
 }));
 
 describe('createProjectCard without note', () => {
-  const pull_number = 123;
   const project_name = 'test project';
   const project_destination_column_name = 'test column 1';
 
@@ -89,8 +88,7 @@ describe('createProjectCard without note', () => {
     }));
     createProjectCard({
       project_name,
-      project_destination_column_name,
-      pull_number
+      project_destination_column_name
     });
   });
 
@@ -111,7 +109,6 @@ describe('createProjectCard without note', () => {
 });
 
 describe('createProjectCard with a note', () => {
-  const pull_number = 123;
   const project_name = 'test project';
   const project_destination_column_name = 'test column 1';
 
@@ -168,7 +165,6 @@ describe('createProjectCard with a note', () => {
     createProjectCard({
       project_name,
       project_destination_column_name,
-      pull_number,
       note: 'This PR is adding an extra note due that we want to not add the PRs information'
     });
   });

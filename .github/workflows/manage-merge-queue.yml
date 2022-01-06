@@ -1,0 +1,19 @@
+name: Manage Merge Queue
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [ synchronize, labeled, unlabeled, closed ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: ./
+        with:
+          helper: manage-merge-queue
+          sha: ${{ github.event.pull_request.head.sha }}
+          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }} # must have repo:write permission

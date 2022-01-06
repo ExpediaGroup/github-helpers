@@ -10,9 +10,6 @@ inputs:
   body:
     description: 'The comment body'
     required: false
-  pull_number:
-    description: 'The pull request number'
-    required: false
   project_name:
     description: 'The GitHub Project name'
     required: false
@@ -46,9 +43,6 @@ inputs:
   environment_url:
     description: 'The environment url for updating deployment status'
     required: false
-  default_branch:
-    description: 'The default branch of the repo'
-    required: false
   label:
     description: 'The singular label name used only for removing a label'
     required: false
@@ -70,9 +64,6 @@ inputs:
   pattern:
     description: 'A regex pattern to match (must be wrapped in singlequotes)'
     required: false
-  prevent_merge_conflicts:
-    description: 'Set to "true" if you want the prepare-queued-pr-for-merge helper to remove PRs with merge conflicts from the queue'
-    required: false
   teams:
     description: 'A list of github teams (newline separated)'
     required: false
@@ -81,9 +72,6 @@ inputs:
     required: false
   paths_no_filter:
     description: 'A list of file paths to be included regardless of the filter (newline/comma separated)'
-    required: false
-  auto_approved_user:
-    description: 'User login whose request should be auto approved'
     required: false
   slack_webhook_url:
     description: 'A Slack webhook URL'

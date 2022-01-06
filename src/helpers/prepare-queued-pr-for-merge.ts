@@ -12,19 +12,12 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { DEFAULT_BRANCH, FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../constants';
-import { PullRequest, PullRequestListResponse } from '../types';
+import { FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../constants';
+import { PullRequest, PullRequestListResponse, SimplePullRequest } from '../types';
 import { context } from '@actions/github';
-import { createPrComment } from './create-pr-comment';
 import { octokit } from '../octokit';
-import { removeLabel } from './remove-label';
 
-interface PrepareQueuedPrForMerge {
-  prevent_merge_conflicts?: string;
-  default_branch?: string;
-}
-
-export const prepareQueuedPrForMerge = ({ prevent_merge_conflicts, default_branch = DEFAULT_BRANCH }: PrepareQueuedPrForMerge) =>
+export const prepareQueuedPrForMerge = () =>
   octokit.pulls
     .list({
       state: 'open',
@@ -34,29 +27,7 @@ export const prepareQueuedPrForMerge = ({ prevent_merge_conflicts, default_branc
     .then(findNextPrToMerge)
     .then(pullRequest => {
       if (pullRequest) {
-        return octokit.repos
-          .merge({
-            base: pullRequest.head.ref,
-            head: default_branch,
-            ...context.repo
-          })
-          .catch(error => {
-            if (error.status === 409 && Boolean(prevent_merge_conflicts)) {
-              core.info('The next PR to merge has a conflict. Removing this PR from merge queue.');
-              return Promise.all([
-                createPrComment({
-                  body: 'This PR has a merge conflict, so it is being removed from the merge queue.',
-                  pull_number: String(pullRequest.number),
-                  ...context.repo
-                }),
-                removeLabel({
-                  label: READY_FOR_MERGE_PR_LABEL,
-                  pull_number: String(pullRequest.number),
-                  ...context.repo
-                })
-              ]);
-            }
-          });
+        return updatePrWithMainline(pullRequest);
       }
     });
 
@@ -64,5 +35,21 @@ const findNextPrToMerge = (pullRequestsResponse: PullRequestListResponse) =>
   pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [READY_FOR_MERGE_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL])) ??
   pullRequestsResponse.data.find(pr => hasRequiredLabels(pr, [READY_FOR_MERGE_PR_LABEL, FIRST_QUEUED_PR_LABEL]));
 
-const hasRequiredLabels = (pr: PullRequest, requiredLabels: string[]) =>
+const hasRequiredLabels = (pr: SimplePullRequest, requiredLabels: string[]) =>
   requiredLabels.every(mergeQueueLabel => pr.labels.some(label => label.name === mergeQueueLabel));
+
+export const updatePrWithMainline = (pullRequest: PullRequest | SimplePullRequest) =>
+  octokit.repos
+    .merge({
+      base: pullRequest.head.ref,
+      head: 'HEAD',
+      ...context.repo
+    })
+    .catch(error => {
+      if (error.status === 204) {
+        core.info('The first PR in the queue is already up to date!');
+      }
+      if (error.status === 409) {
+        core.info('The first PR in the queue has a merge conflict.');
+      }
+    });

@@ -17,5 +17,4 @@ jobs:
         with:
           helper: create-pr-comment
           body: Test Comment
-          pull_number: ${{ github.event.pull_request.number }}
           github_token: ${{ secrets.GITHUB_TOKEN }}

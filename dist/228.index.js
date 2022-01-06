@@ -1,3 +1,4 @@
+"use strict";
 exports.id = 228;
 exports.ids = [228];
 exports.modules = {
@@ -5,7 +6,6 @@ exports.modules = {
 /***/ 610:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
 const stringify = __webpack_require__(8750);
@@ -183,7 +183,6 @@ module.exports = braces;
 /***/ 9434:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
 const fill = __webpack_require__(6330);
@@ -248,7 +247,6 @@ module.exports = compile;
 /***/ 8774:
 /***/ ((module) => {
 
-"use strict";
 
 
 module.exports = {
@@ -313,7 +311,6 @@ module.exports = {
 /***/ 5873:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
 const fill = __webpack_require__(6330);
@@ -434,7 +431,6 @@ module.exports = expand;
 /***/ 6477:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
 const stringify = __webpack_require__(8750);
@@ -775,7 +771,6 @@ module.exports = parse;
 /***/ 8750:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
 const utils = __webpack_require__(5207);
@@ -815,7 +810,6 @@ module.exports = (ast, options = {}) => {
 /***/ 5207:
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
 
 exports.isInteger = num => {
@@ -935,7 +929,6 @@ exports.flatten = (...args) => {
 /***/ 6330:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 /*!
  * fill-range <https://github.com/jonschlinkert/fill-range>
  *
@@ -945,7 +938,7 @@ exports.flatten = (...args) => {
 
 
 
-const util = __webpack_require__(1669);
+const util = __webpack_require__(3837);
 const toRegexRange = __webpack_require__(1861);
 
 const isObject = val => val !== null && typeof val === 'object' && !Array.isArray(val);
@@ -1192,7 +1185,6 @@ module.exports = fill;
 /***/ 5680:
 /***/ ((module) => {
 
-"use strict";
 /*!
  * is-number <https://github.com/jonschlinkert/is-number>
  *
@@ -1218,10 +1210,9 @@ module.exports = function(num) {
 /***/ 6228:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
-const util = __webpack_require__(1669);
+const util = __webpack_require__(3837);
 const braces = __webpack_require__(610);
 const picomatch = __webpack_require__(8569);
 const utils = __webpack_require__(479);
@@ -1693,7 +1684,6 @@ module.exports = micromatch;
 /***/ 8569:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
 module.exports = __webpack_require__(3322);
@@ -1704,10 +1694,9 @@ module.exports = __webpack_require__(3322);
 /***/ 6099:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
-const path = __webpack_require__(5622);
+const path = __webpack_require__(1017);
 const WIN_SLASH = '\\\\/';
 const WIN_NO_SLASH = `[^${WIN_SLASH}]`;
 
@@ -1891,7 +1880,6 @@ module.exports = {
 /***/ 2139:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
 const constants = __webpack_require__(6099);
@@ -2144,7 +2132,14 @@ const parse = (input, options) => {
       }
 
       if (token.inner.includes('*') && (rest = remaining()) && /^\.[^\\/.]+$/.test(rest)) {
-        output = token.close = `)${rest})${extglobStar})`;
+        // Any non-magical string (`.ts`) or even nested expression (`.{ts,tsx}`) can follow after the closing parenthesis.
+        // In this case, we need to parse the string and use it in the output of the original pattern.
+        // Suitable patterns: `/!(*.d).ts`, `/!(*.d).{ts,tsx}`, `**/!(*-dbg).@(js)`.
+        //
+        // Disabling the `fastpaths` option due to a problem with parsing strings as `.ts` in the pattern like `**/!(*.d).ts`.
+        const expression = parse(rest, { ...options, fastpaths: false }).output;
+
+        output = token.close = `)${expression})${extglobStar})`;
       }
 
       if (token.prev.type === 'bos') {
@@ -2983,10 +2978,9 @@ module.exports = parse;
 /***/ 3322:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
-const path = __webpack_require__(5622);
+const path = __webpack_require__(1017);
 const scan = __webpack_require__(2429);
 const parse = __webpack_require__(2139);
 const utils = __webpack_require__(479);
@@ -3333,7 +3327,6 @@ module.exports = picomatch;
 /***/ 2429:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
 const utils = __webpack_require__(479);
@@ -3732,10 +3725,9 @@ module.exports = scan;
 /***/ 479:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 
-const path = __webpack_require__(5622);
+const path = __webpack_require__(1017);
 const win32 = process.platform === 'win32';
 const {
   REGEX_BACKSLASH,
@@ -3804,7 +3796,6 @@ exports.wrapOutput = (input, state = {}, options = {}) => {
 /***/ 1861:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 /*!
  * to-regex-range <https://github.com/micromatch/to-regex-range>
  *

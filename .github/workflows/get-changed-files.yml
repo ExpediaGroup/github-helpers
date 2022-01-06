@@ -17,7 +17,6 @@ jobs:
         id: changed
         with:
           helper: get-changed-files
-          pull_number: ${{ github.event.pull_request.number }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - run: echo "Changed files are ${{ steps.changed.outputs.output }}"

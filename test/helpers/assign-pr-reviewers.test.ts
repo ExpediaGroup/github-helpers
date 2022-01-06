@@ -23,7 +23,7 @@ jest.mock('../../src/utils/notify-reviewer');
 jest.mock('@actions/core');
 jest.mock('lodash');
 jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
+  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({
     rest: {
       issues: { addAssignees: jest.fn(async () => 'result') }
@@ -35,18 +35,14 @@ jest.mock('@actions/github', () => ({
 
 describe('assignPrReviewer', () => {
   const teams = 'team1\nteam2';
-  const pull_number = '123';
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  const pull_number = 123;
 
   describe('login provided', () => {
     describe('core member case', () => {
       const login = 'user1';
 
       beforeEach(() => {
-        assignPrReviewers({ login, teams, pull_number });
+        assignPrReviewers({ login, teams });
       });
 
       it('should call getCoreMemberLogins with correct params', () => {
@@ -62,7 +58,7 @@ describe('assignPrReviewer', () => {
       const login = 'user4';
 
       beforeEach(() => {
-        assignPrReviewers({ login, teams, pull_number });
+        assignPrReviewers({ login, teams });
       });
 
       it('should call addAssignees with correct params', () => {
@@ -77,7 +73,7 @@ describe('assignPrReviewer', () => {
 
   describe('login not provided', () => {
     beforeEach(() => {
-      assignPrReviewers({ teams, pull_number });
+      assignPrReviewers({ teams });
     });
 
     it('should call addAssignees with correct params', () => {
@@ -93,7 +89,7 @@ describe('assignPrReviewer', () => {
     const slack_webhook_url = 'url';
 
     beforeEach(async () => {
-      await assignPrReviewers({ teams, pull_number, slack_webhook_url });
+      await assignPrReviewers({ teams, slack_webhook_url });
     });
 
     it.each(['assignee'])('should call notifyReviewer with correct params', assignee => {

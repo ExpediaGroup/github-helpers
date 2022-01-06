@@ -22,7 +22,7 @@
     "@octokit/types": "6.34.0",
     "@types/axios": "0.14.0",
     "@types/bluebird": "3.5.36",
-    "@types/jest": "27.0.3",
+    "@types/jest": "27.4.0",
     "@types/js-yaml": "4.0.5",
     "@types/lodash.camelcase": "4.3.6",
     "@types/lodash.chunk": "4.2.6",
@@ -30,20 +30,21 @@
     "@types/lodash.union": "4.6.6",
     "@types/lodash.uniq": "4.5.6",
     "@types/micromatch": "4.0.2",
-    "@typescript-eslint/eslint-plugin": "5.6.0",
-    "@typescript-eslint/parser": "5.6.0",
-    "@vercel/ncc": "0.30.0",
+    "@typescript-eslint/eslint-plugin": "5.9.0",
+    "@typescript-eslint/parser": "5.9.0",
+    "@vercel/ncc": "0.33.1",
     "eslint": "8.4.0",
-    "eslint-plugin-eslint-comments": "^3.2.0",
-    "eslint-plugin-filenames": "^1.3.2",
+    "eslint-plugin-eslint-comments": "3.2.0",
+    "eslint-plugin-filenames": "1.3.2",
+    "eslint-plugin-functional": "4.0.2",
     "eslint-plugin-github": "4.3.5",
-    "eslint-plugin-i18n-text": "^1.0.1",
-    "eslint-plugin-import": "^2.25.3",
-    "eslint-plugin-jest": "25.3.0",
+    "eslint-plugin-i18n-text": "1.0.1",
+    "eslint-plugin-import": "2.25.3",
+    "eslint-plugin-jest": "25.3.4",
     "eslint-plugin-prettier": "4.0.0",
     "eslint-plugin-typescript": "0.14.0",
     "husky": "7.0.4",
-    "jest": "27.4.3",
+    "jest": "27.4.7",
     "prettier": "2.5.1",
     "ts-jest": "27.1.0"
   },
@@ -51,14 +52,16 @@
     "transform": {
       "^.+\\.(j|t)sx?$": "ts-jest"
     },
-    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$"
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "clearMocks": true
   },
   "scripts": {
     "build": "tsc",
+    "clean": "rm -rf build dist",
     "format": "prettier --write ./**/**/*.ts",
     "format-check": "prettier --check **/*.ts",
     "lint": "eslint --fix src/**/*.ts test/**/*.ts",
-    "package": "ncc build --source-map --license licenses.txt && cp action.yml dist",
+    "package": "npm run clean && ncc build --source-map --license licenses.txt && cp action.yml dist",
     "prepare": "husky install",
     "test": "jest"
   }

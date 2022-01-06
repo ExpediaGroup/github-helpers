@@ -1,3 +1,4 @@
+"use strict";
 exports.id = 913;
 exports.ids = [913];
 exports.modules = {
@@ -5,12 +6,13 @@ exports.modules = {
 /***/ 7913:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "getChangedFiles": () => (/* binding */ getChangedFiles)
 /* harmony export */ });
-/* harmony import */ var _utils_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9180);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _utils_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9180);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +26,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const getChangedFiles = ({ pull_number }) => (0,_utils_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_0__/* .getChangedFilepaths */ .s)(pull_number).then(filePaths => filePaths.join(','));
+
+const getChangedFiles = () => (0,_utils_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_1__/* .getChangedFilepaths */ .s)(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number).then(filePaths => filePaths.join(','));
 
 
 /***/ }),
@@ -32,7 +35,6 @@ const getChangedFiles = ({ pull_number }) => (0,_utils_get_changed_filepaths__WE
 /***/ 6161:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "K": () => (/* binding */ octokit)
 /* harmony export */ });
@@ -62,7 +64,6 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_act
 /***/ 9180:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "s": () => (/* binding */ getChangedFilepaths)
 /* harmony export */ });
@@ -71,7 +72,7 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_act
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
 
 
-const getChangedFilepaths = (pull_number) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number: Number(pull_number), per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo))
+const getChangedFilepaths = (pull_number) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number, per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo))
     .then(listFilesResponse => listFilesResponse.data.map(file => file.filename));
 
 
