@@ -18,7 +18,12 @@ git checkout -b my-new-feature
 
 where "my-new-feature" describes what you're working on.
 
-### 3. Add tests for any bug fixes or new functionality
+### 3. Get set up locally
+```shell
+npm run setup
+```
+
+### 4. Add tests for any bug fixes or new functionality
 
 All functions must be tested with a unit test. Please follow the existing convention of one exported function per file with a corresponding file to test it. Run tests using `npm run test`, or using the [Jest CLI](https://jestjs.io/docs/cli).
 
