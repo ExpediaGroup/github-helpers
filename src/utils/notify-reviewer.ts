@@ -26,10 +26,8 @@ export const notifyReviewer = async ({ login, pull_number, slack_webhook_url }: 
   const assigneeResponse = await octokit.users.getByUsername({ username: login });
   const assigneeEmail = assigneeResponse.data.email;
   if (!assigneeEmail) {
-    core.setFailed(
-      `No github email found for user ${login}. Ensure you have set your email to be publicly visible on your Github profile.`
-    );
-    throw new Error();
+    core.info(`No github email found for user ${login}. Ensure you have set your email to be publicly visible on your Github profile.`);
+    return;
   }
   const pullRequestResponse = await octokit.pulls.get({ pull_number, ...context.repo });
   const { title, html_url } = pullRequestResponse.data;
