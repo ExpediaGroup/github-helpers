@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Mocktokit } from '../types';
 import axios from 'axios';
 import { context } from '@actions/github';
 import { notifyReviewer } from '../../src/utils/notify-reviewer';
@@ -33,12 +33,12 @@ const login = 'octocat';
 const assigneeEmail = 'assignee@github.com';
 const title = 'title';
 const html_url = 'url';
-(octokit.users.getByUsername as any).mockImplementation(async () => ({
+(octokit.users.getByUsername as unknown as Mocktokit).mockImplementation(async () => ({
   data: {
     email: assigneeEmail
   }
 }));
-(octokit.pulls.get as any).mockImplementation(async () => ({
+(octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
   data: { title, html_url }
 }));
 (axios.post as jest.Mock).mockResolvedValue({ data: 'request succeeded' });
