@@ -14,7 +14,7 @@ limitations under the License.
 import { assignPrReviewers } from '../../src/helpers/assign-pr-reviewers';
 import { context } from '@actions/github';
 import { getCoreMemberLogins } from '../../src/utils/get-core-member-logins';
-import { notifyReviewer } from '../../src/utils/notify-reviewer';
+import { notifyUser } from '../../src/utils/notify-user';
 import { octokit } from '../../src/octokit';
 import { sampleSize } from 'lodash';
 
@@ -92,8 +92,8 @@ describe('assignPrReviewer', () => {
       await assignPrReviewers({ teams, slack_webhook_url });
     });
 
-    it.each(['assignee'])('should call notifyReviewer with correct params', assignee => {
-      expect(notifyReviewer).toHaveBeenCalledWith({
+    it.each(['assignee'])('should call notifyUser with correct params', assignee => {
+      expect(notifyUser).toHaveBeenCalledWith({
         login: assignee,
         pull_number,
         slack_webhook_url

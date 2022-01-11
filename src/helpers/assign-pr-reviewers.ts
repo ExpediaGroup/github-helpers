@@ -15,7 +15,7 @@ import * as core from '@actions/core';
 import { context } from '@actions/github';
 import { getCoreMemberLogins } from '../utils/get-core-member-logins';
 import { map } from 'bluebird';
-import { notifyReviewer } from '../utils/notify-reviewer';
+import { notifyUser } from '../utils/notify-user';
 import { octokit } from '../octokit';
 import { sampleSize } from 'lodash';
 
@@ -43,7 +43,7 @@ export const assignPrReviewers = async ({ teams, login, number_of_assignees = '1
 
   if (slack_webhook_url) {
     return map(assignees, async assignee =>
-      notifyReviewer({
+      notifyUser({
         login: assignee,
         pull_number: context.issue.number,
         slack_webhook_url

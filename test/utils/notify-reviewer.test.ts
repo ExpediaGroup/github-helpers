@@ -14,7 +14,7 @@ limitations under the License.
 import { Mocktokit } from '../types';
 import axios from 'axios';
 import { context } from '@actions/github';
-import { notifyReviewer } from '../../src/utils/notify-reviewer';
+import { notifyUser } from '../../src/utils/notify-user';
 import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
@@ -43,12 +43,12 @@ const html_url = 'url';
 }));
 (axios.post as jest.Mock).mockResolvedValue({ data: 'request succeeded' });
 
-describe('notifyReviewer', () => {
+describe('notifyUser', () => {
   const pull_number = 123;
   const slack_webhook_url = 'https://hooks.slack.com/workflows/1234567890';
 
   beforeEach(async () => {
-    await notifyReviewer({ login, pull_number, slack_webhook_url });
+    await notifyUser({ login, pull_number, slack_webhook_url });
   });
 
   it('should call getByUsername with correct params', () => {

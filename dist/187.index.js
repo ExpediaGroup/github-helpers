@@ -1,9 +1,9 @@
 "use strict";
-exports.id = 154;
-exports.ids = [154];
+exports.id = 187;
+exports.ids = [187];
 exports.modules = {
 
-/***/ 3154:
+/***/ 5187:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 // ESM COMPAT FLAG
@@ -27,7 +27,7 @@ var axios = __webpack_require__(6545);
 var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
 // EXTERNAL MODULE: ./src/octokit.ts
 var octokit = __webpack_require__(6161);
-;// CONCATENATED MODULE: ./src/utils/notify-reviewer.ts
+;// CONCATENATED MODULE: ./src/utils/notify-user.ts
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,7 +53,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-const notifyReviewer = ({ login, pull_number, slack_webhook_url }) => __awaiter(void 0, void 0, void 0, function* () {
+const notifyUser = ({ login, pull_number, slack_webhook_url }) => __awaiter(void 0, void 0, void 0, function* () {
     const { data: { email } } = yield octokit/* octokit.users.getByUsername */.K.users.getByUsername({ username: login });
     if (!email) {
         core.info(`No github email found for user ${login}. Ensure you have set your email to be publicly visible on your Github profile.`);
@@ -110,7 +110,7 @@ const assignPrReviewers = ({ teams, login, number_of_assignees = '1', slack_webh
     yield octokit/* octokit.issues.addAssignees */.K.issues.addAssignees(Object.assign({ assignees, issue_number: github.context.issue.number }, github.context.repo));
     if (slack_webhook_url) {
         return (0,bluebird.map)(assignees, (assignee) => assign_pr_reviewers_awaiter(void 0, void 0, void 0, function* () {
-            return notifyReviewer({
+            return notifyUser({
                 login: assignee,
                 pull_number: github.context.issue.number,
                 slack_webhook_url
@@ -258,4 +258,4 @@ const getCodeOwners = (pull_number) => __awaiter(void 0, void 0, void 0, functio
 
 };
 ;
-//# sourceMappingURL=154.index.js.map
+//# sourceMappingURL=187.index.js.map

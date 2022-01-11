@@ -16,13 +16,13 @@ import axios from 'axios';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-interface NotifyReviewer {
+interface NotifyUser {
   login: string;
   pull_number: number;
   slack_webhook_url: string;
 }
 
-export const notifyReviewer = async ({ login, pull_number, slack_webhook_url }: NotifyReviewer) => {
+export const notifyUser = async ({ login, pull_number, slack_webhook_url }: NotifyUser) => {
   const {
     data: { email }
   } = await octokit.users.getByUsername({ username: login });
