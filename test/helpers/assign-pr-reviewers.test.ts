@@ -19,7 +19,7 @@ import { octokit } from '../../src/octokit';
 import { sampleSize } from 'lodash';
 
 jest.mock('../../src/utils/get-core-member-logins');
-jest.mock('../../src/utils/notify-reviewer');
+jest.mock('../../src/utils/notify-user');
 jest.mock('@actions/core');
 jest.mock('lodash');
 jest.mock('@actions/github', () => ({
