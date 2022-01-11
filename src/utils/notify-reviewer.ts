@@ -23,21 +23,23 @@ interface NotifyReviewer {
 }
 
 export const notifyReviewer = async ({ login, pull_number, slack_webhook_url }: NotifyReviewer) => {
-  const assigneeResponse = await octokit.users.getByUsername({ username: login });
-  const assigneeEmail = assigneeResponse.data.email;
-  if (!assigneeEmail) {
+  const {
+    data: { email }
+  } = await octokit.users.getByUsername({ username: login });
+  if (!email) {
     core.info(`No github email found for user ${login}. Ensure you have set your email to be publicly visible on your Github profile.`);
     return;
   }
-  const pullRequestResponse = await octokit.pulls.get({ pull_number, ...context.repo });
-  const { title, html_url } = pullRequestResponse.data;
+  const {
+    data: { title, html_url }
+  } = await octokit.pulls.get({ pull_number, ...context.repo });
 
-  const slackResponse = await axios.post(slack_webhook_url, {
-    assignee: assigneeEmail,
+  const { data } = await axios.post(slack_webhook_url, {
+    assignee: email,
     title,
     html_url,
     repo: context.repo.repo
   });
 
-  return slackResponse.data;
+  return data;
 };

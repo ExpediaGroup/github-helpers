@@ -20,18 +20,17 @@ interface CheckPrTitle {
   pattern?: string;
 }
 
-export const checkPrTitle = ({ pattern = DEFAULT_PR_TITLE_REGEX }: CheckPrTitle) => {
+export const checkPrTitle = async ({ pattern = DEFAULT_PR_TITLE_REGEX }: CheckPrTitle) => {
   const regex = new RegExp(pattern);
-  return octokit.pulls
-    .get({
-      pull_number: context.issue.number,
-      ...context.repo
-    })
-    .then(prResponse => {
-      if (regex.test(prResponse.data.title)) {
-        return true;
-      }
-      setFailed('Pull request title does not meet requirements.');
-      return false;
-    });
+  const {
+    data: { title }
+  } = await octokit.pulls.get({
+    pull_number: context.issue.number,
+    ...context.repo
+  });
+  if (regex.test(title)) {
+    return true;
+  }
+  setFailed('Pull request title does not meet requirements.');
+  return false;
 };

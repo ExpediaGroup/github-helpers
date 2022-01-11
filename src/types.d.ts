@@ -18,11 +18,14 @@ export type PipelineState = operations['repos/create-commit-status']['requestBod
 export type DeploymentState = operations['repos/create-deployment-status']['requestBody']['content']['application/json']['state'];
 export type PullRequest = components['schemas']['pull-request'];
 export type SimplePullRequest = components['schemas']['pull-request-simple'];
-export type PullRequestListResponse = RestEndpointMethodTypes['pulls']['list']['response'];
+export type PullRequestListResponse = RestEndpointMethodTypes['pulls']['list']['response']['data'];
 export type PullRequestSearchResults = RestEndpointMethodTypes['search']['issuesAndPullRequests']['response']['data']['items'];
 export type CreateDeploymentResponse = components['schemas']['deployment'];
 export type ProjectListResponse = RestEndpointMethodTypes['projects']['listForRepo']['response'];
 export type ColumnListResponse = RestEndpointMethodTypes['projects']['listColumns']['response'];
+export type GithubError = {
+  status: number;
+}
 
 export type ActionInputs = {
   [input: string]: string;

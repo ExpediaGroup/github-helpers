@@ -38,7 +38,7 @@ describe('prepareQueuedPrForMerge', () => {
   const ref = 'branch name';
 
   describe('top queued pr exists', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
         data: [
           {
@@ -68,7 +68,7 @@ describe('prepareQueuedPrForMerge', () => {
           }
         ]
       }));
-      prepareQueuedPrForMerge();
+      await prepareQueuedPrForMerge();
     });
 
     it('should call pulls.list with correct params', () => {
@@ -90,7 +90,7 @@ describe('prepareQueuedPrForMerge', () => {
 
   describe('pr jumped the queue', () => {
     const jumpQueueBranch = 'jump queue';
-    beforeEach(() => {
+    beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
         data: [
           {
@@ -134,7 +134,7 @@ describe('prepareQueuedPrForMerge', () => {
           }
         ]
       }));
-      prepareQueuedPrForMerge();
+      await prepareQueuedPrForMerge();
     });
 
     it('should call pulls.list with correct params', () => {
@@ -155,7 +155,7 @@ describe('prepareQueuedPrForMerge', () => {
   });
 
   describe('no queued prs exist', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
         data: [
           {
@@ -171,7 +171,7 @@ describe('prepareQueuedPrForMerge', () => {
           }
         ]
       }));
-      prepareQueuedPrForMerge();
+      await prepareQueuedPrForMerge();
     });
 
     it('should call pulls.list with correct params', () => {
@@ -188,7 +188,7 @@ describe('prepareQueuedPrForMerge', () => {
   });
 
   describe('merge conflict case', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
         data: [
           {
@@ -220,7 +220,7 @@ describe('prepareQueuedPrForMerge', () => {
         ]
       }));
       (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
-      prepareQueuedPrForMerge();
+      await prepareQueuedPrForMerge();
     });
 
     it('should call core.info', () => {
