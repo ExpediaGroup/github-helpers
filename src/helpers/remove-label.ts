@@ -24,7 +24,7 @@ export const removeLabel = async ({ label }: RemoveLabel) => removeLabelIfExists
 
 export const removeLabelIfExists = async (labelName: string, issue_number: number) => {
   try {
-    return octokit.issues.removeLabel({
+    await octokit.issues.removeLabel({
       name: labelName,
       issue_number,
       ...context.repo
