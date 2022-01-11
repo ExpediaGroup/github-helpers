@@ -15,7 +15,6 @@
     "project": "./tsconfig.json"
   },
   "rules": {
-    "no-implicit-any-catch": "off",
     "no-trailing-spaces": "error",
     "promise/prefer-await-to-then": "error",
     "eslint-comments/no-use": "off",
