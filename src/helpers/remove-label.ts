@@ -12,6 +12,7 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
+import { GithubError } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
@@ -19,17 +20,18 @@ interface RemoveLabel {
   label: string;
 }
 
-export const removeLabel = ({ label }: RemoveLabel) => removeLabelIfExists(label, context.issue.number);
+export const removeLabel = async ({ label }: RemoveLabel) => removeLabelIfExists(label, context.issue.number);
 
-export const removeLabelIfExists = (labelName: string, issue_number: number) =>
-  octokit.issues
-    .removeLabel({
+export const removeLabelIfExists = async (labelName: string, issue_number: number) => {
+  try {
+    await octokit.issues.removeLabel({
       name: labelName,
       issue_number,
       ...context.repo
-    })
-    .catch(error => {
-      if (error.status === 404) {
-        core.info('Label is not present on PR.');
-      }
     });
+  } catch (error) {
+    if ((error as GithubError).status === 404) {
+      core.info('Label is not present on PR.');
+    }
+  }
+};

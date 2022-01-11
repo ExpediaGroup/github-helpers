@@ -27,7 +27,7 @@ export const getCoreMemberLogins = async (pull_number: number, teams?: string[])
     throw new Error();
   }
 
-  const adminLogins = await map(codeOwners, team =>
+  const adminLogins = await map(codeOwners, async team =>
     octokit.teams
       .listMembersInOrg({
         org: context.repo.owner,

@@ -35,21 +35,19 @@ export const assignPrReviewers = async ({ teams, login, number_of_assignees = '1
   }
   const assignees = sampleSize(coreMemberLogins, Number(number_of_assignees));
 
-  return octokit.issues
-    .addAssignees({
-      assignees,
-      issue_number: context.issue.number,
-      ...context.repo
-    })
-    .then(() => {
-      if (slack_webhook_url) {
-        return map(assignees, assignee =>
-          notifyReviewer({
-            login: assignee,
-            pull_number: context.issue.number,
-            slack_webhook_url
-          })
-        );
-      }
-    });
+  await octokit.issues.addAssignees({
+    assignees,
+    issue_number: context.issue.number,
+    ...context.repo
+  });
+
+  if (slack_webhook_url) {
+    return map(assignees, async assignee =>
+      notifyReviewer({
+        login: assignee,
+        pull_number: context.issue.number,
+        slack_webhook_url
+      })
+    );
+  }
 };

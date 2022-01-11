@@ -23,44 +23,41 @@ interface SetLatestPipelineStatus {
   environment?: string;
 }
 
-export const setLatestPipelineStatus = ({
+export const setLatestPipelineStatus = async ({
   sha,
   context = DEFAULT_PIPELINE_STATUS,
   environment = PRODUCTION_ENVIRONMENT
-}: SetLatestPipelineStatus) =>
-  octokit.repos
-    .listDeployments({
-      environment,
-      ...githubContext.repo,
-      ...GITHUB_OPTIONS
-    })
-    .then(deploymentsResponse => {
-      const deployment_id = deploymentsResponse.data.find(Boolean)?.id;
-      if (!deployment_id) {
-        core.setFailed('No deployments found.');
-        throw new Error();
-      }
-      return octokit.repos.listDeploymentStatuses({
-        deployment_id,
-        ...githubContext.repo,
-        ...GITHUB_OPTIONS
-      });
-    })
-    .then(deploymentStatusResponse => deploymentStatusResponse.data.find(Boolean))
-    .then(deploymentStatus => {
-      if (!deploymentStatus) {
-        core.setFailed('No deployment statuses found.');
-        throw new Error();
-      }
-      return octokit.repos.createCommitStatus({
-        sha,
-        context,
-        state: deploymentStateToPipelineStateMap[deploymentStatus.state],
-        description: deploymentStatus.description,
-        target_url: deploymentStatus.target_url,
-        ...githubContext.repo
-      });
-    });
+}: SetLatestPipelineStatus) => {
+  const { data: deployments } = await octokit.repos.listDeployments({
+    environment,
+    ...githubContext.repo,
+    ...GITHUB_OPTIONS
+  });
+  const deployment_id = deployments.find(Boolean)?.id;
+  if (!deployment_id) {
+    core.setFailed('No deployments found.');
+    throw new Error();
+  }
+  const { data: deploymentStatuses } = await octokit.repos.listDeploymentStatuses({
+    deployment_id,
+    ...githubContext.repo,
+    ...GITHUB_OPTIONS
+  });
+  const deploymentStatus = deploymentStatuses.find(Boolean);
+  if (!deploymentStatus) {
+    core.setFailed('No deployment statuses found.');
+    throw new Error();
+  }
+  const { state, description, target_url } = deploymentStatus;
+  return octokit.repos.createCommitStatus({
+    sha,
+    context,
+    state: deploymentStateToPipelineStateMap[state],
+    description,
+    target_url,
+    ...githubContext.repo
+  });
+};
 
 const deploymentStateToPipelineStateMap: { [deploymentState: string]: PipelineState } = {
   in_progress: 'pending',

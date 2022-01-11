@@ -54,21 +54,19 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const notifyReviewer = ({ login, pull_number, slack_webhook_url }) => __awaiter(void 0, void 0, void 0, function* () {
-    const assigneeResponse = yield octokit/* octokit.users.getByUsername */.K.users.getByUsername({ username: login });
-    const assigneeEmail = assigneeResponse.data.email;
-    if (!assigneeEmail) {
+    const { data: { email } } = yield octokit/* octokit.users.getByUsername */.K.users.getByUsername({ username: login });
+    if (!email) {
         core.info(`No github email found for user ${login}. Ensure you have set your email to be publicly visible on your Github profile.`);
         return;
     }
-    const pullRequestResponse = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number }, github.context.repo));
-    const { title, html_url } = pullRequestResponse.data;
-    const slackResponse = yield axios_default().post(slack_webhook_url, {
-        assignee: assigneeEmail,
+    const { data: { title, html_url } } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number }, github.context.repo));
+    const { data } = yield axios_default().post(slack_webhook_url, {
+        assignee: email,
         title,
         html_url,
         repo: github.context.repo.repo
     });
-    return slackResponse.data;
+    return data;
 });
 
 // EXTERNAL MODULE: ./node_modules/lodash/lodash.js
@@ -109,16 +107,16 @@ const assignPrReviewers = ({ teams, login, number_of_assignees = '1', slack_webh
         return;
     }
     const assignees = (0,lodash.sampleSize)(coreMemberLogins, Number(number_of_assignees));
-    return octokit/* octokit.issues.addAssignees */.K.issues.addAssignees(Object.assign({ assignees, issue_number: github.context.issue.number }, github.context.repo))
-        .then(() => {
-        if (slack_webhook_url) {
-            return (0,bluebird.map)(assignees, assignee => notifyReviewer({
+    yield octokit/* octokit.issues.addAssignees */.K.issues.addAssignees(Object.assign({ assignees, issue_number: github.context.issue.number }, github.context.repo));
+    if (slack_webhook_url) {
+        return (0,bluebird.map)(assignees, (assignee) => assign_pr_reviewers_awaiter(void 0, void 0, void 0, function* () {
+            return notifyReviewer({
                 login: assignee,
                 pull_number: github.context.issue.number,
                 slack_webhook_url
-            }));
-        }
-    });
+            });
+        }));
+    }
 });
 
 
@@ -162,10 +160,21 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_act
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 
 
-const getChangedFilepaths = (pull_number) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number, per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo))
-    .then(listFilesResponse => listFilesResponse.data.map(file => file.filename));
+const getChangedFilepaths = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {
+    const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number, per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    return data.map(file => file.filename);
+});
 
 
 /***/ }),
@@ -222,12 +231,14 @@ const getCoreMemberLogins = (pull_number, teams) => __awaiter(void 0, void 0, vo
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No code owners found.');
         throw new Error();
     }
-    const adminLogins = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(codeOwners, team => _octokit__WEBPACK_IMPORTED_MODULE_6__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
-        org: _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo.owner,
-        team_slug: team,
-        per_page: 100
-    })
-        .then(listMembersResponse => listMembersResponse.data.map(member => member.login)));
+    const adminLogins = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(codeOwners, (team) => __awaiter(void 0, void 0, void 0, function* () {
+        return _octokit__WEBPACK_IMPORTED_MODULE_6__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
+            org: _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo.owner,
+            team_slug: team,
+            per_page: 100
+        })
+            .then(listMembersResponse => listMembersResponse.data.map(member => member.login));
+    }));
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.union)(...adminLogins);
 });
 const getCodeOwners = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {

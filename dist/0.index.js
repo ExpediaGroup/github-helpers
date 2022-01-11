@@ -80,28 +80,37 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 
 
 
 
-const setLatestPipelineStatus = ({ sha, context = _constants__WEBPACK_IMPORTED_MODULE_1__/* .DEFAULT_PIPELINE_STATUS */ .$9, environment = _constants__WEBPACK_IMPORTED_MODULE_1__/* .PRODUCTION_ENVIRONMENT */ .Hc }) => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listDeployments */ .K.repos.listDeployments(Object.assign(Object.assign({ environment }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_1__/* .GITHUB_OPTIONS */ .Cc))
-    .then(deploymentsResponse => {
+const setLatestPipelineStatus = ({ sha, context = _constants__WEBPACK_IMPORTED_MODULE_1__/* .DEFAULT_PIPELINE_STATUS */ .$9, environment = _constants__WEBPACK_IMPORTED_MODULE_1__/* .PRODUCTION_ENVIRONMENT */ .Hc }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const deployment_id = (_a = deploymentsResponse.data.find(Boolean)) === null || _a === void 0 ? void 0 : _a.id;
+    const { data: deployments } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listDeployments */ .K.repos.listDeployments(Object.assign(Object.assign({ environment }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_1__/* .GITHUB_OPTIONS */ .Cc));
+    const deployment_id = (_a = deployments.find(Boolean)) === null || _a === void 0 ? void 0 : _a.id;
     if (!deployment_id) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No deployments found.');
         throw new Error();
     }
-    return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listDeploymentStatuses */ .K.repos.listDeploymentStatuses(Object.assign(Object.assign({ deployment_id }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_1__/* .GITHUB_OPTIONS */ .Cc));
-})
-    .then(deploymentStatusResponse => deploymentStatusResponse.data.find(Boolean))
-    .then(deploymentStatus => {
+    const { data: deploymentStatuses } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listDeploymentStatuses */ .K.repos.listDeploymentStatuses(Object.assign(Object.assign({ deployment_id }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_1__/* .GITHUB_OPTIONS */ .Cc));
+    const deploymentStatus = deploymentStatuses.find(Boolean);
     if (!deploymentStatus) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No deployment statuses found.');
         throw new Error();
     }
+    const { state, description, target_url } = deploymentStatus;
     return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
-        context, state: deploymentStateToPipelineStateMap[deploymentStatus.state], description: deploymentStatus.description, target_url: deploymentStatus.target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
+        context, state: deploymentStateToPipelineStateMap[state], description,
+        target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
 });
 const deploymentStateToPipelineStateMap = {
     in_progress: 'pending',

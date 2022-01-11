@@ -2,7 +2,8 @@
   "plugins": [
     "jest",
     "@typescript-eslint",
-    "functional"
+    "functional",
+    "promise"
   ],
   "extends": [
     "plugin:github/recommended"
@@ -14,6 +15,8 @@
     "project": "./tsconfig.json"
   },
   "rules": {
+    "no-trailing-spaces": "error",
+    "promise/prefer-await-to-then": "error",
     "eslint-comments/no-use": "off",
     "import/named": "off",
     "import/no-namespace": "off",

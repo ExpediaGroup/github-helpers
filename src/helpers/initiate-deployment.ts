@@ -25,31 +25,29 @@ interface InitiateDeployment {
   target_url?: string;
 }
 
-export const initiateDeployment = ({
+export const initiateDeployment = async ({
   sha,
   state = 'in_progress',
   environment,
   environment_url,
   description,
   target_url
-}: InitiateDeployment) =>
-  octokit.repos
-    .createDeployment({
-      ref: sha,
-      environment,
-      required_contexts: [],
-      ...context.repo,
-      ...GITHUB_OPTIONS
-    })
-    .then(newDeploymentResponse => {
-      const deployment_id = (newDeploymentResponse.data as CreateDeploymentResponse).id;
-      return octokit.repos.createDeploymentStatus({
-        state,
-        deployment_id,
-        description,
-        environment_url,
-        target_url,
-        ...context.repo,
-        ...GITHUB_OPTIONS
-      });
-    });
+}: InitiateDeployment) => {
+  const { data } = await octokit.repos.createDeployment({
+    ref: sha,
+    environment,
+    required_contexts: [],
+    ...context.repo,
+    ...GITHUB_OPTIONS
+  });
+  const deployment_id = (data as CreateDeploymentResponse).id;
+  return octokit.repos.createDeploymentStatus({
+    state,
+    deployment_id,
+    description,
+    environment_url,
+    target_url,
+    ...context.repo,
+    ...GITHUB_OPTIONS
+  });
+};

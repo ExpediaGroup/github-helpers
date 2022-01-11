@@ -23,31 +23,28 @@ interface NotifyPipelineComplete {
   target_url?: string;
 }
 
-export const notifyPipelineComplete = ({
+export const notifyPipelineComplete = async ({
   context = DEFAULT_PIPELINE_STATUS,
   description = DEFAULT_PIPELINE_DESCRIPTION,
   target_url
-}: NotifyPipelineComplete) =>
-  Promise.all([
-    octokit.pulls
-      .list({
-        state: 'open',
-        per_page: 100,
+}: NotifyPipelineComplete) => {
+  const { data } = await octokit.pulls.list({
+    state: 'open',
+    per_page: 100,
+    ...githubContext.repo
+  });
+  const commitHashes = data.map(pullRequest => pullRequest.head.sha);
+  return Promise.all([
+    map(commitHashes, async sha =>
+      octokit.repos.createCommitStatus({
+        sha,
+        context,
+        state: 'success',
+        description,
+        target_url,
         ...githubContext.repo
       })
-      .then(pullRequestsResponse => {
-        const commitHashes = pullRequestsResponse.data.map(pullRequest => pullRequest.head.sha);
-        return map(commitHashes, sha =>
-          octokit.repos.createCommitStatus({
-            sha,
-            context,
-            state: 'success',
-            description,
-            target_url,
-            ...githubContext.repo
-          })
-        );
-      }),
+    ),
     setDeploymentStatus({
       description: DEFAULT_PIPELINE_DESCRIPTION,
       environment: PRODUCTION_ENVIRONMENT,
@@ -55,3 +52,4 @@ export const notifyPipelineComplete = ({
       ...githubContext.repo
     })
   ]);
+};

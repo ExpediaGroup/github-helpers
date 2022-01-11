@@ -14,7 +14,7 @@ limitations under the License.
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-export const approvePr = () =>
+export const approvePr = async () =>
   octokit.pulls.createReview({
     pull_number: context.issue.number,
     body: 'Approved by bot',

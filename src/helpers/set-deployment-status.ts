@@ -25,25 +25,23 @@ interface SetDeploymentStatus {
   environment_url?: string;
 }
 
-export const setDeploymentStatus = ({ sha, state, environment, description, target_url, environment_url }: SetDeploymentStatus) =>
-  octokit.repos
-    .listDeployments({
-      sha,
-      environment,
+export const setDeploymentStatus = async ({ sha, state, environment, description, target_url, environment_url }: SetDeploymentStatus) => {
+  const { data } = await octokit.repos.listDeployments({
+    sha,
+    environment,
+    ...context.repo,
+    ...GITHUB_OPTIONS
+  });
+  const deployment_id = data.find(Boolean)?.id;
+  if (deployment_id) {
+    return octokit.repos.createDeploymentStatus({
+      state,
+      deployment_id,
+      description,
+      target_url,
+      environment_url,
       ...context.repo,
       ...GITHUB_OPTIONS
-    })
-    .then(deploymentsResponse => {
-      const deployment_id = deploymentsResponse.data.find(Boolean)?.id;
-      if (deployment_id) {
-        return octokit.repos.createDeploymentStatus({
-          state,
-          deployment_id,
-          description,
-          target_url,
-          environment_url,
-          ...context.repo,
-          ...GITHUB_OPTIONS
-        });
-      }
     });
+  }
+};

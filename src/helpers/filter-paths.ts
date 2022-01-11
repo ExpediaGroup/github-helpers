@@ -21,22 +21,21 @@ interface FilterPaths {
   globs?: string;
 }
 
-export const filterPaths = ({ paths, globs }: FilterPaths) =>
-  octokit.pulls
-    .listFiles({
-      per_page: 100,
-      pull_number: context.issue.number,
-      ...context.repo
-    })
-    .then(listFilesResponse => {
-      const fileNames = listFilesResponse.data.map(file => file.filename);
-      if (globs) {
-        if (paths) core.info('`paths` and `globs` inputs found, defaulting to use `globs` for filtering');
-        return micromatch(fileNames, globs.split('\n')).length > 0;
-      } else if (paths) {
-        const filePaths = paths.split('\n');
-        return fileNames.some(changedFile => filePaths.some(filePath => changedFile.startsWith(filePath)));
-      } else {
-        core.error('Must pass `globs` or `paths` for filtering');
-      }
-    });
+export const filterPaths = async ({ paths, globs }: FilterPaths) => {
+  const { data } = await octokit.pulls.listFiles({
+    per_page: 100,
+    pull_number: context.issue.number,
+    ...context.repo
+  });
+
+  const fileNames = data.map(file => file.filename);
+  if (globs) {
+    if (paths) core.info('`paths` and `globs` inputs found, defaulting to use `globs` for filtering');
+    return micromatch(fileNames, globs.split('\n')).length > 0;
+  } else if (paths) {
+    const filePaths = paths.split('\n');
+    return fileNames.some(changedFile => filePaths.some(filePath => changedFile.startsWith(filePath)));
+  } else {
+    core.error('Must pass `globs` or `paths` for filtering');
+  }
+};

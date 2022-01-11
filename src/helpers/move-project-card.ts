@@ -55,11 +55,12 @@ export const moveProjectCard = async ({
 };
 
 const getCardToMove = async (originColumn: OriginColumn) => {
-  const getResponse = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
-  const pullRequest = getResponse.data;
+  const {
+    data: { issue_url }
+  } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
   const cardsResponse = await octokit.projects.listCards({ column_id: originColumn.id, ...GITHUB_OPTIONS });
 
-  return cardsResponse.data.find(card => card.content_url === pullRequest.issue_url);
+  return cardsResponse.data.find(card => card.content_url === issue_url);
 };
 
 interface OriginColumn {

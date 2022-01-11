@@ -14,4 +14,7 @@ limitations under the License.
 import { context } from '@actions/github';
 import { getChangedFilepaths } from '../utils/get-changed-filepaths';
 
-export const getChangedFiles = () => getChangedFilepaths(context.issue.number).then(filePaths => filePaths.join(','));
+export const getChangedFiles = async () => {
+  const filePaths = await getChangedFilepaths(context.issue.number);
+  return filePaths.join(',');
+};

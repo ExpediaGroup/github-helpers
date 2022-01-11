@@ -80,21 +80,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
-
-
-
-const checkPrTitle = ({ pattern = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PR_TITLE_REGEX */ .HW }) => {
-    const regex = new RegExp(pattern);
-    return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
-        .then(prResponse => {
-        if (regex.test(prResponse.data.title)) {
-            return true;
-        }
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.setFailed)('Pull request title does not meet requirements.');
-        return false;
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
+
+
+
+const checkPrTitle = ({ pattern = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PR_TITLE_REGEX */ .HW }) => __awaiter(void 0, void 0, void 0, function* () {
+    const regex = new RegExp(pattern);
+    const { data: { title } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    if (regex.test(title)) {
+        return true;
+    }
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.setFailed)('Pull request title does not meet requirements.');
+    return false;
+});
 
 
 /***/ }),
