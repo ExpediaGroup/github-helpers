@@ -3,11 +3,11 @@ name: Auto Approve PR
 on:
   pull_request:
     branches: [ main ]
-    types: [ opened ]
+    paths:
+      - 'src/helpers/approve-pr.ts'
 
 jobs:
   test:
-    if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
