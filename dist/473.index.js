@@ -189,7 +189,7 @@ const manageMergeQueue = ({ login, slack_webhook_url }) => manage_merge_queue_aw
     if (!pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) {
         yield addPrToQueue(pullRequest, queuePosition);
     }
-    if (slack_webhook_url && login && (queuePosition === 1 || queuePosition === 2)) {
+    if (slack_webhook_url && login && queuePosition === 1) {
         (0,notify_user/* notifyUser */.b)({
             login,
             pull_number: github.context.issue.number,

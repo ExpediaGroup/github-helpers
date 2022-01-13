@@ -49,7 +49,7 @@ export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMerge
     await addPrToQueue(pullRequest, queuePosition);
   }
 
-  if (slack_webhook_url && login && (queuePosition === 1 || queuePosition === 2)) {
+  if (slack_webhook_url && login && queuePosition === 1) {
     notifyUser({
       login,
       pull_number: context.issue.number,
