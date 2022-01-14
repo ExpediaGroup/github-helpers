@@ -15,6 +15,7 @@ import { JUMP_THE_QUEUE_PR_LABEL, MERGE_QUEUE_STATUS, READY_FOR_MERGE_PR_LABEL }
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { manageMergeQueue } from '../../src/helpers/manage-merge-queue';
+import { notifyUser } from '../../src/utils/notify-user';
 import { octokit } from '../../src/octokit';
 import { removeLabelIfExists } from '../../src/helpers/remove-label';
 import { setCommitStatus } from '../../src/helpers/set-commit-status';
@@ -22,6 +23,7 @@ import { updateMergeQueue } from '../../src/utils/update-merge-queue';
 
 jest.mock('../../src/helpers/remove-label');
 jest.mock('../../src/helpers/set-commit-status');
+jest.mock('../../src/utils/notify-user');
 jest.mock('../../src/utils/update-merge-queue');
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
@@ -247,6 +249,90 @@ describe('manageMergeQueue', () => {
 
     it('should call updateMergeQueue with correct params', () => {
       expect(updateMergeQueue).toHaveBeenCalledWith(items);
+    });
+  });
+
+  describe('slack reminder integration', () => {
+    const login = 'test';
+    const slack_webhook_url = 'https://hooks.slack.com/workflows/1234567890';
+
+    it('should notify user if queue position 1', async () => {
+      (octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          total_count: 1,
+          items
+        }
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          merged: false,
+          head: { sha: 'sha' },
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+        }
+      }));
+
+      await manageMergeQueue({ login, slack_webhook_url });
+
+      expect(notifyUser).toHaveBeenCalled();
+    });
+
+    it('should not notify user if queue position greater than 2', async () => {
+      (octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          total_count: 5,
+          items
+        }
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          merged: false,
+          head: { sha: 'sha' },
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
+        }
+      }));
+      await manageMergeQueue({ login, slack_webhook_url });
+
+      expect(notifyUser).not.toHaveBeenCalled();
+    });
+
+    it('should not notify user if slack_webhook_url not provided', async () => {
+      (octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          total_count: 1,
+          items
+        }
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          merged: false,
+          head: { sha: 'sha' },
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+        }
+      }));
+
+      await manageMergeQueue({ login });
+
+      expect(notifyUser).not.toHaveBeenCalled();
+    });
+
+    it('should not notify user if login not provided', async () => {
+      (octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          total_count: 1,
+          items
+        }
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          merged: false,
+          head: { sha: 'sha' },
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+        }
+      }));
+
+      await manageMergeQueue({ slack_webhook_url });
+
+      expect(notifyUser).not.toHaveBeenCalled();
     });
   });
 });

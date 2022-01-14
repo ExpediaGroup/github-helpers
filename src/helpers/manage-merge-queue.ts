@@ -22,12 +22,18 @@ import {
 import { PullRequest } from '../types';
 import { context } from '@actions/github';
 import { map } from 'bluebird';
+import { notifyUser } from '../utils/notify-user';
 import { octokit } from '../octokit';
 import { removeLabelIfExists } from './remove-label';
 import { setCommitStatus } from './set-commit-status';
 import { updateMergeQueue } from '../utils/update-merge-queue';
 
-export const manageMergeQueue = async () => {
+interface ManageMergeQueue {
+  login?: string;
+  slack_webhook_url?: string;
+}
+
+export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMergeQueue = {}) => {
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
   if (pullRequest.merged || !pullRequest.labels.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
     core.info('This PR is not in the merge queue.');
@@ -42,6 +48,15 @@ export const manageMergeQueue = async () => {
   if (!pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))) {
     await addPrToQueue(pullRequest, queuePosition);
   }
+
+  if (slack_webhook_url && login && queuePosition === 1) {
+    notifyUser({
+      login,
+      pull_number: context.issue.number,
+      slack_webhook_url
+    });
+  }
+
   const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === FIRST_QUEUED_PR_LABEL);
   return setCommitStatus({
     sha: pullRequest.head.sha,
