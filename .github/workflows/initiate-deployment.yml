@@ -1,7 +1,7 @@
 name: Initiate Deployment
 
 on:
-  pull_request:
+  pull_request_target:
     branches: [ main ]
     paths:
       - 'src/helpers/initiate-deployment.ts'
@@ -12,6 +12,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
 
       - uses: ./
         with:
@@ -19,4 +23,4 @@ jobs:
           sha: HEAD
           environment: production
           description: PR#${{ github.event.pull_request.number }} has been merged; pipeline in progress...
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
