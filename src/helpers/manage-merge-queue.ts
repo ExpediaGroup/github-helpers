@@ -33,7 +33,7 @@ interface ManageMergeQueue {
   slack_webhook_url?: string;
 }
 
-export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMergeQueue) => {
+export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMergeQueue = {}) => {
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
   if (pullRequest.merged || !pullRequest.labels.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
     core.info('This PR is not in the merge queue.');

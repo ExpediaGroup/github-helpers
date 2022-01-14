@@ -56,7 +56,7 @@ describe('manageMergeQueue', () => {
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
         }
       }));
-      await manageMergeQueue({});
+      await manageMergeQueue();
     });
 
     it('should call issuesAndPullRequests search with correct params', () => {
@@ -90,7 +90,7 @@ describe('manageMergeQueue', () => {
           labels: [{ name: 'QUEUED FOR MERGE #2' }]
         }
       }));
-      await manageMergeQueue({});
+      await manageMergeQueue();
     });
 
     it('should call issuesAndPullRequests search with correct params', () => {
@@ -124,7 +124,7 @@ describe('manageMergeQueue', () => {
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
         }
       }));
-      await manageMergeQueue({});
+      await manageMergeQueue();
     });
 
     it('should call issuesAndPullRequests search with correct params', () => {
@@ -166,7 +166,7 @@ describe('manageMergeQueue', () => {
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
         }
       }));
-      await manageMergeQueue({});
+      await manageMergeQueue();
     });
 
     it('should call issuesAndPullRequests search with correct params', () => {
@@ -208,7 +208,7 @@ describe('manageMergeQueue', () => {
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
         }
       }));
-      await manageMergeQueue({});
+      await manageMergeQueue();
     });
 
     it('should call issuesAndPullRequests search with correct params', () => {
@@ -238,7 +238,7 @@ describe('manageMergeQueue', () => {
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: JUMP_THE_QUEUE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
         }
       }));
-      await manageMergeQueue({});
+      await manageMergeQueue();
     });
 
     it('should call issuesAndPullRequests search with correct params', () => {

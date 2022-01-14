@@ -58,7 +58,7 @@ Additionally, the following parameters can be used for additional control over t
     * Merging a PR will update the positions of all PRs in the queue.
     * Adding the `JUMP THE QUEUE` label to a PR will make that PR first in the queue immediately.
     * When a PR is merged, it automatically updates the first-queued PR with the default branch.
- * You can also pass `login` and `slack_webhook_url` to notify the PR owner when they are in the 1st or 2nd position of the merge queue and will be releasing shortly.
+ * You can also pass `login` and `slack_webhook_url` to notify the PR author when they are in the 1st position of the merge queue.
 ### [**move-project-card**](.github/workflows/move-project-card.yml)
 * Moves a GitHub Project card to a new column, using the `project_origin_column_name` and`project_destination_column_name` you provide.
 * In order to move a card from one place to another, it must already exist.

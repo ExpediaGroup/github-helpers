@@ -176,7 +176,7 @@ var manage_merge_queue_awaiter = (undefined && undefined.__awaiter) || function 
 
 
 
-const manageMergeQueue = ({ login, slack_webhook_url }) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
+const manageMergeQueue = ({ login, slack_webhook_url } = {}) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
     const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: github.context.issue.number }, github.context.repo));
     if (pullRequest.merged || !pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak)) {
         core.info('This PR is not in the merge queue.');
