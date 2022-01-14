@@ -1,7 +1,7 @@
 name: Filter Paths
 
 on:
-  pull_request:
+  pull_request_target:
     branches: [ main ]
     paths:
       - 'src/helpers/filter-paths.ts'
@@ -12,6 +12,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
 
       - uses: ./
         id: paths
@@ -21,7 +25,7 @@ jobs:
             src
             package.json
             yarn.lock
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
 
       - if: steps.paths.outputs.output == 'true'
         run: echo "One of those file paths changed!"

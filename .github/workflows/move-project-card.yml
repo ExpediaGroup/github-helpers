@@ -1,7 +1,7 @@
 name: Move Project Card
 
 on:
-  pull_request:
+  pull_request_target:
     branches: [ main ]
     paths:
       - 'src/helpers/move-project-card.ts'
@@ -12,6 +12,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
 
       - uses: ./
         with:
@@ -19,4 +23,4 @@ jobs:
           project_name: Test Project
           project_origin_column_name: Test Column 1
           project_destination_column_name: Test Column 2
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
