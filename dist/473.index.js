@@ -190,7 +190,7 @@ const manageMergeQueue = ({ login, slack_webhook_url } = {}) => manage_merge_que
         yield addPrToQueue(pullRequest, queuePosition);
     }
     if (slack_webhook_url && login && queuePosition === 1) {
-        (0,notify_user/* notifyUser */.b)({
+        yield (0,notify_user/* notifyUser */.b)({
             login,
             pull_number: github.context.issue.number,
             slack_webhook_url
