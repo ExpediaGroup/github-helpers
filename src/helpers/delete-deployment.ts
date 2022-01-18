@@ -18,11 +18,9 @@ import { octokit } from '../octokit';
 interface DeleteDeployment {
   sha: string;
   environment: string;
-  description?: string;
-  target_url?: string;
 }
 
-export const deleteDeployment = async ({ sha, environment, description, target_url }: DeleteDeployment) => {
+export const deleteDeployment = async ({ sha, environment }: DeleteDeployment) => {
   const { data } = await octokit.repos.listDeployments({
     sha,
     environment,
@@ -33,8 +31,6 @@ export const deleteDeployment = async ({ sha, environment, description, target_u
   if (deployment_id) {
     return octokit.repos.deleteDeployment({
       deployment_id,
-      description,
-      target_url,
       ...context.repo,
       ...GITHUB_OPTIONS
     });

@@ -90,15 +90,13 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-const deleteDeployment = ({ sha, environment, description, target_url }) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteDeployment = ({ sha, environment }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.listDeployments */ .K.repos.listDeployments(Object.assign(Object.assign({ sha,
         environment }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
     const deployment_id = (_a = data.find(Boolean)) === null || _a === void 0 ? void 0 : _a.id;
     if (deployment_id) {
-        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.deleteDeployment */ .K.repos.deleteDeployment(Object.assign(Object.assign({ deployment_id,
-            description,
-            target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
+        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.deleteDeployment */ .K.repos.deleteDeployment(Object.assign(Object.assign({ deployment_id }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
     }
 });
 

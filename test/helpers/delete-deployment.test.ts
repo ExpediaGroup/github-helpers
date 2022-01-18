@@ -33,8 +33,6 @@ jest.mock('@actions/github', () => ({
 describe('deleteDeployment', () => {
   const sha = 'sha';
   const environment = 'environment';
-  const description = 'desc';
-  const target_url = 'target_url';
   const deployment_id = 123;
 
   describe('deployment exists', () => {
@@ -51,9 +49,7 @@ describe('deleteDeployment', () => {
       }));
       deleteDeployment({
         sha,
-        environment,
-        description,
-        target_url
+        environment
       });
     });
 
@@ -69,8 +65,6 @@ describe('deleteDeployment', () => {
     it('should call createDeploymentStatus with correct params', () => {
       expect(octokit.repos.deleteDeployment).toHaveBeenCalledWith({
         deployment_id,
-        description,
-        target_url,
         ...context.repo,
         ...GITHUB_OPTIONS
       });
@@ -84,9 +78,7 @@ describe('deleteDeployment', () => {
       }));
       deleteDeployment({
         sha,
-        environment,
-        description,
-        target_url
+        environment
       });
     });
 
