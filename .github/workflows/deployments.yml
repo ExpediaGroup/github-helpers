@@ -9,7 +9,8 @@ on:
       - 'src/helpers/set-deployment-status.ts'
 
 jobs:
-  test:
+  initiate-deployment:
+    name: Initiate Deployment
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,10 +23,22 @@ jobs:
       - uses: ./
         with:
           helper: initiate-deployment
-          sha: HEAD
-          environment: production
+          sha: ${{ github.event.pull_request.head.sha }}
+          environment: test
           description: PR#${{ github.event.pull_request.number }} has been merged; pipeline in progress...
           github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+
+  set-deployment-status:
+    name: Set Deployment Status
+    needs: [ initiate-deployment ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
 
       - uses: ./
         with:
@@ -37,11 +50,23 @@ jobs:
           target_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
 
+  delete-deployment:
+    name: Delete Deployment
+    needs: [ initiate-deployment, set-deployment-status ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+
       - uses: ./
         with:
           helper: delete-deployment
           sha: ${{ github.event.pull_request.head.sha }}
-          environment: pr-123
+          environment: test
           description: Deployment has been deleted.
           target_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
