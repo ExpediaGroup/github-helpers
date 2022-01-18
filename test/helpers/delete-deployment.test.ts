@@ -23,6 +23,7 @@ jest.mock('@actions/github', () => ({
   getOctokit: jest.fn(() => ({
     rest: {
       repos: {
+        createDeploymentStatus: jest.fn(),
         deleteDeployment: jest.fn(),
         listDeployments: jest.fn()
       }
@@ -63,6 +64,15 @@ describe('deleteDeployment', () => {
     });
 
     it('should call createDeploymentStatus with correct params', () => {
+      expect(octokit.repos.createDeploymentStatus).toHaveBeenCalledWith({
+        state: 'inactive',
+        deployment_id,
+        ...context.repo,
+        ...GITHUB_OPTIONS
+      });
+    });
+
+    it('should call deleteDeployment with correct params', () => {
       expect(octokit.repos.deleteDeployment).toHaveBeenCalledWith({
         deployment_id,
         ...context.repo,
@@ -91,7 +101,11 @@ describe('deleteDeployment', () => {
       });
     });
 
-    it('should call createDeploymentStatus with correct params', () => {
+    it('should not call createDeploymentStatus', () => {
+      expect(octokit.repos.createDeploymentStatus).not.toHaveBeenCalled();
+    });
+
+    it('should not call deleteDeployment', () => {
       expect(octokit.repos.deleteDeployment).not.toHaveBeenCalled();
     });
   });
