@@ -25,6 +25,8 @@ Each of the following helpers are defined in a file of the same name in `src/hel
   * Checks whether PR title matches a certain regular expression
 ### [**create-pr-comment**](.github/workflows/create-pr-comment.yml)
   * Comments on a pull request or other issue
+### [**delete-deployment**](.github/workflows/delete-deployment.yml#L40-47)
+* Deletes a Github [deployment](https://docs.github.com/en/rest/reference/repos#deployments)
 ### [**filter-paths**](.github/workflows/filter-paths.yml)
   * Returns `true` if specified file paths have changed for a PR, and `false` otherwise
 ### [**generate-path-matrix**](.github/workflows/generate-path-matrix.yml)
@@ -49,7 +51,7 @@ Additionally, the following parameters can be used for additional control over t
 
 ### [**get-changed-files**](.github/workflows/get-changed-files.yml)
   * Returns a comma-separated list of changed files for a PR
-### [**initiate-deployment**](.github/workflows/initiate-deployment.yml)
+### [**initiate-deployment**](.github/workflows/initiate-deployment.yml#L22-28)
   * Creates a new in-progress Github "deployment" for a commit. More information on Github deployment events can be found [here](https://docs.github.com/en/rest/reference/repos#deployments)
 ### [**manage-merge-queue**](.github/workflows/manage-merge-queue.yml)
   * Manages a queue for PRs as follows:
@@ -70,7 +72,7 @@ Additionally, the following parameters can be used for additional control over t
   * Removes a label from a PR
 ### [**set-commit-status**](.github/workflows/set-commit-status.yml)
   * Sets a [commit status](https://github.blog/2012-09-04-commit-status-api/)
-### [**set-deployment-status**](.github/workflows/set-deployment-status.yml)
+### [**set-deployment-status**](.github/workflows/set-deployment-status.yml#L30-38)
   * Updates a Github [deployment status](https://docs.github.com/en/rest/reference/repos#deployments)
 ### [**set-latest-pipeline-status**](.github/workflows/set-latest-pipeline-status.yml)
   * Determines whether the pipeline is clear for a PR. This means it will set the "pipeline" commit status to `pending` if there is an in-progress production deployment for the repo, and `success` otherwise.
