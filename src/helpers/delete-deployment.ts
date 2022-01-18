@@ -27,8 +27,15 @@ export const deleteDeployment = async ({ sha, environment }: DeleteDeployment) =
     ...context.repo,
     ...GITHUB_OPTIONS
   });
+  console.log(JSON.stringify(data));
   const deployment_id = data.find(Boolean)?.id;
   if (deployment_id) {
+    await octokit.repos.createDeploymentStatus({
+      state: 'inactive',
+      deployment_id,
+      ...context.repo,
+      ...GITHUB_OPTIONS
+    });
     return octokit.repos.deleteDeployment({
       deployment_id,
       ...context.repo,
