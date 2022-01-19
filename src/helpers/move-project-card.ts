@@ -18,10 +18,10 @@ import { GITHUB_OPTIONS } from '../constants';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-interface MoveProjectCardProps {
-  project_destination_column_name: string;
-  project_name: string;
-  project_origin_column_name: string;
+export class MoveProjectCardProps {
+  project_destination_column_name = '';
+  project_name = '';
+  project_origin_column_name = '';
 }
 
 export const moveProjectCard = async ({

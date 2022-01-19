@@ -17,8 +17,8 @@ import { PipelineState } from '../types';
 import { context as githubContext } from '@actions/github';
 import { octokit } from '../octokit';
 
-interface SetLatestPipelineStatus {
-  sha: string;
+export class SetLatestPipelineStatus {
+  sha = '';
   context?: string;
   environment?: string;
 }

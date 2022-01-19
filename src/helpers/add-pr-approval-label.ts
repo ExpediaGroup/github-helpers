@@ -16,8 +16,8 @@ import { context } from '@actions/github';
 import { getCoreMemberLogins } from '../utils/get-core-member-logins';
 import { octokit } from '../octokit';
 
-interface AddPrApprovalLabel {
-  login: string;
+export class AddPrApprovalLabel {
+  login = '';
   teams?: string;
 }
 

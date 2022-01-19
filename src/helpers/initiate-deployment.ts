@@ -16,9 +16,9 @@ import { GITHUB_OPTIONS } from '../constants';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-interface InitiateDeployment {
-  sha: string;
-  environment: string;
+export class InitiateDeployment {
+  sha = '';
+  environment = '';
   state?: DeploymentState;
   environment_url?: string;
   description?: string;

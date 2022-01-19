@@ -17,7 +17,7 @@ import { map } from 'bluebird';
 import { octokit } from '../octokit';
 import { setDeploymentStatus } from './set-deployment-status';
 
-interface NotifyPipelineComplete {
+export class NotifyPipelineComplete {
   context?: string;
   description?: string;
   target_url?: string;

@@ -16,8 +16,8 @@ import { GithubError } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-interface RemoveLabel {
-  label: string;
+export class RemoveLabel {
+  label = '';
 }
 
 export const removeLabel = async ({ label }: RemoveLabel) => removeLabelIfExists(label, context.issue.number);

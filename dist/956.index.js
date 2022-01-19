@@ -60,6 +60,7 @@ const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|sty
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "CheckPrTitle": () => (/* binding */ CheckPrTitle),
 /* harmony export */   "checkPrTitle": () => (/* binding */ checkPrTitle)
 /* harmony export */ });
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
@@ -93,6 +94,8 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+class CheckPrTitle {
+}
 const checkPrTitle = ({ pattern = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PR_TITLE_REGEX */ .HW }) => __awaiter(void 0, void 0, void 0, function* () {
     const regex = new RegExp(pattern);
     const { data: { title } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));

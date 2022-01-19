@@ -8,6 +8,7 @@ exports.modules = {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "RemoveLabel": () => (/* binding */ RemoveLabel),
 /* harmony export */   "removeLabel": () => (/* binding */ removeLabel),
 /* harmony export */   "removeLabelIfExists": () => (/* binding */ removeLabelIfExists)
 /* harmony export */ });
@@ -40,6 +41,11 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+class RemoveLabel {
+    constructor() {
+        this.label = '';
+    }
+}
 const removeLabel = ({ label }) => __awaiter(void 0, void 0, void 0, function* () { return removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number); });
 const removeLabelIfExists = (labelName, issue_number) => __awaiter(void 0, void 0, void 0, function* () {
     try {

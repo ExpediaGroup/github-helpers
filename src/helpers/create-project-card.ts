@@ -17,9 +17,9 @@ import { GITHUB_OPTIONS } from '../constants';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-interface CreateProjectCardProps {
-  project_name: string;
-  project_destination_column_name: string;
+export class CreateProjectCardProps {
+  project_name = '';
+  project_destination_column_name = '';
   note?: string;
 }
 

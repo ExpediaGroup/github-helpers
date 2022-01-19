@@ -14,8 +14,8 @@ limitations under the License.
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-interface AddLabels {
-  labels: string;
+export class AddLabels {
+  labels = '';
 }
 
 export const addLabels = ({ labels }: AddLabels) =>

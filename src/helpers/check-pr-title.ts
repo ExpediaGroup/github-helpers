@@ -16,7 +16,7 @@ import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import { setFailed } from '@actions/core';
 
-interface CheckPrTitle {
+export class CheckPrTitle {
   pattern?: string;
 }
 

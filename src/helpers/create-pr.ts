@@ -14,9 +14,9 @@ limitations under the License.
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-interface CreatePR {
-  title: string;
-  body: string;
+export class CreatePR {
+  title = '';
+  body = '';
 }
 
 export const createPr = async ({ title, body }: CreatePR) => {

@@ -16,8 +16,8 @@ import { context } from '@actions/github';
 import { getChangedFilepaths } from '../utils/get-changed-filepaths';
 import micromatch from 'micromatch';
 
-interface GeneratePathMatrix {
-  paths: string;
+export class GeneratePathMatrix {
+  paths = '';
   override_filter_paths?: string;
   override_filter_globs?: string;
   paths_no_filter?: string;

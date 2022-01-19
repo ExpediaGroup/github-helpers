@@ -8,6 +8,7 @@ exports.modules = {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "AssignPrReviewer": () => (/* binding */ AssignPrReviewer),
 /* harmony export */   "assignPrReviewers": () => (/* binding */ assignPrReviewers)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
@@ -49,6 +50,8 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+class AssignPrReviewer {
+}
 const assignPrReviewers = ({ teams, login, number_of_assignees = '1', slack_webhook_url }) => __awaiter(void 0, void 0, void 0, function* () {
     const coreMemberLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .c)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
     if (login && coreMemberLogins.includes(login)) {

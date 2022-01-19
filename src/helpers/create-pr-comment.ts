@@ -14,8 +14,8 @@ limitations under the License.
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-interface CreatePrComment {
-  body: string;
+export class CreatePrComment {
+  body = '';
   login?: string;
 }
 
