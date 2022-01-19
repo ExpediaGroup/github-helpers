@@ -6,7 +6,7 @@ module.exports = {
     rules: [
       {
         test: /\.ts$/,
-        loader: 'ts-loader', // or 'awesome-typescript-loader'
+        loader: 'awesome-typescript-loader', // or 'awesome-typescript-loader'
         options: {
           // make sure not to set `transpileOnly: true` here, otherwise it will not work
           getCustomTransformers: program => ({
