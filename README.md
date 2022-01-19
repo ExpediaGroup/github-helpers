@@ -3,7 +3,42 @@
 # github-helpers
 #### A collection of Github Actions that simplify and standardize common CI/CD workflow tasks.
 
-## Helpers:
+## Usage
+### General
+```yaml
+uses: ExpediaGroup/github-helpers@v1
+with:
+  helper: < HELPER NAME >
+  ...
+  github_token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+The `helper` and `github_token` inputs are required for all helpers. Additional inputs vary by helper. Each helper file in `src/helpers` contains an interface that defines which additional inputs are required or optional. If a required input is ommitted, the helper will throw a descriptive error.
+
+### Example
+Input interface in `src/helpers/set-commit-status.ts`:
+```ts
+export class SetCommitStatus {
+    sha = ''; // required
+    context = ''; // required
+    state = ''; // required
+    description?: string; // optional
+    target_url?: string; // optional
+}
+```
+Github Actions workflow invocation:
+```yaml
+uses: ExpediaGroup/github-helpers@v1
+with:
+  helper: set-commit-status
+  sha: ${{ github.event.pull_request.head.sha }}
+  context: My Context
+  state: success
+  description: My Description
+  github_token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+## Available Helpers
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
 
 ### [**add-labels**](.github/workflows/add-labels.yml)
@@ -76,41 +111,6 @@ Additionally, the following parameters can be used for additional control over t
   * Updates a Github [deployment status](https://docs.github.com/en/rest/reference/repos#deployments)
 ### [**set-latest-pipeline-status**](.github/workflows/set-latest-pipeline-status.yml)
   * Determines whether the pipeline is clear for a PR. This means it will set the "pipeline" commit status to `pending` if there is an in-progress production deployment for the repo, and `success` otherwise.
-
-## Usage
-### General
-```yaml
-uses: ExpediaGroup/github-helpers@v1
-with:
-  helper: < HELPER NAME >
-  ...
-  github_token: ${{ secrets.GITHUB_TOKEN }}
-```
-
-The `helper` and `github_token` inputs are required for all helpers. Additional inputs vary by helper. Each helper file in `src/helpers` contains an interface that defines which additional inputs are required or optional.
-
-### Example
-Input interface in `src/helpers/set-commit-status.ts`:
-```ts
-interface SetCommitStatus {
-  sha: string;
-  context: string;
-  state: PipelineState;
-  description?: string;
-  target_url?: string;
-}
-```
-Github Actions workflow invocation:
-```yaml
-uses: ExpediaGroup/github-helpers@v1
-with:
-  helper: set-commit-status
-  sha: ${{ github.event.pull_request.head.sha }}
-  context: My Context
-  state: success
-  description: My Description
-  github_token: ${{ secrets.GITHUB_TOKEN }}
-```
 
 ## Legal
 
