@@ -12,13 +12,14 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { camelCase } from 'lodash';
+import { camelCase, upperFirst } from 'lodash';
 import { getActionInputs } from './utils/get-action-inputs';
 
 export const run = async () => {
   try {
     const helper = core.getInput('helper', { required: true });
-    const { [camelCase(helper)]: method, requiredInputs } = await import(`./helpers/${helper}`);
+    const { [camelCase(helper)]: method, [upperFirst(camelCase(helper))]: HelperClass } = await import(`./helpers/${helper}`);
+    const requiredInputs = Object.keys(new HelperClass());
     const actionInputs = getActionInputs(requiredInputs);
     const output = await method(actionInputs);
     core.setOutput('output', output);

@@ -23260,7 +23260,8 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const helper = core.getInput('helper', { required: true });
-        const { [(0,lodash.camelCase)(helper)]: method, requiredInputs } = yield __nccwpck_require__(1933)(`./${helper}`);
+        const { [(0,lodash.camelCase)(helper)]: method, [(0,lodash.upperFirst)((0,lodash.camelCase)(helper))]: HelperClass } = yield __nccwpck_require__(1933)(`./${helper}`);
+        const requiredInputs = Object.keys(new HelperClass());
         const actionInputs = getActionInputs(requiredInputs);
         const output = yield method(actionInputs);
         core.setOutput('output', output);
