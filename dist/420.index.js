@@ -60,6 +60,7 @@ const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|sty
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "InitiateDeployment": () => (/* binding */ InitiateDeployment),
 /* harmony export */   "initiateDeployment": () => (/* binding */ initiateDeployment)
 /* harmony export */ });
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
@@ -90,6 +91,12 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+class InitiateDeployment {
+    constructor() {
+        this.sha = '';
+        this.environment = '';
+    }
+}
 const initiateDeployment = ({ sha, state = 'in_progress', environment, environment_url, description, target_url }) => __awaiter(void 0, void 0, void 0, function* () {
     const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createDeployment */ .K.repos.createDeployment(Object.assign(Object.assign({ ref: sha, environment, required_contexts: [] }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
     const deployment_id = data.id;

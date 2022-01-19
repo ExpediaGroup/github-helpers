@@ -60,6 +60,7 @@ const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|sty
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "DeleteDeployment": () => (/* binding */ DeleteDeployment),
 /* harmony export */   "deleteDeployment": () => (/* binding */ deleteDeployment)
 /* harmony export */ });
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
@@ -90,6 +91,12 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+class DeleteDeployment {
+    constructor() {
+        this.sha = '';
+        this.environment = '';
+    }
+}
 const deleteDeployment = ({ sha, environment }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.listDeployments */ .K.repos.listDeployments(Object.assign(Object.assign({ sha,

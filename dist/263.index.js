@@ -60,6 +60,7 @@ const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|sty
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "MoveProjectCardProps": () => (/* binding */ MoveProjectCardProps),
 /* harmony export */   "moveProjectCard": () => (/* binding */ moveProjectCard)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
@@ -95,6 +96,13 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+class MoveProjectCardProps {
+    constructor() {
+        this.project_destination_column_name = '';
+        this.project_name = '';
+        this.project_origin_column_name = '';
+    }
+}
 const moveProjectCard = ({ project_destination_column_name, project_origin_column_name, project_name }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const columnsList = yield (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__/* .getProjectColumns */ .N)({ project_name });

@@ -8,6 +8,7 @@ exports.modules = {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "GeneratePathMatrix": () => (/* binding */ GeneratePathMatrix),
 /* harmony export */   "generatePathMatrix": () => (/* binding */ generatePathMatrix)
 /* harmony export */ });
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(250);
@@ -42,6 +43,11 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+class GeneratePathMatrix {
+    constructor() {
+        this.paths = '';
+    }
+}
 const generatePathMatrix = ({ paths, override_filter_paths, override_filter_globs, paths_no_filter, batches }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const changedFiles = yield (0,_utils_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_2__/* .getChangedFilepaths */ .s)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number);

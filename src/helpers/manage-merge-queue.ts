@@ -28,7 +28,7 @@ import { removeLabelIfExists } from './remove-label';
 import { setCommitStatus } from './set-commit-status';
 import { updateMergeQueue } from '../utils/update-merge-queue';
 
-interface ManageMergeQueue {
+export class ManageMergeQueue {
   login?: string;
   slack_webhook_url?: string;
 }

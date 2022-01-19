@@ -19,7 +19,7 @@ import { notifyUser } from '../utils/notify-user';
 import { octokit } from '../octokit';
 import { sampleSize } from 'lodash';
 
-interface AssignPrReviewer {
+export class AssignPrReviewer {
   teams?: string;
   login?: string;
   number_of_assignees?: string;

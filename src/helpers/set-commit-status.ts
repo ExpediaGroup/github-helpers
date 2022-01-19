@@ -16,10 +16,10 @@ import { context as githubContext } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
 
-interface SetCommitStatus {
-  sha: string;
-  context: string;
-  state: PipelineState;
+export class SetCommitStatus {
+  sha = '';
+  context = '';
+  state = '';
   description?: string;
   target_url?: string;
 }
@@ -29,7 +29,7 @@ export const setCommitStatus = ({ sha, context, state, description, target_url }
     octokit.repos.createCommitStatus({
       sha,
       context,
-      state,
+      state: state as PipelineState,
       description,
       target_url,
       ...githubContext.repo

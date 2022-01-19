@@ -8,6 +8,7 @@ exports.modules = {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "SetCommitStatus": () => (/* binding */ SetCommitStatus),
 /* harmony export */   "setCommitStatus": () => (/* binding */ setCommitStatus)
 /* harmony export */ });
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
@@ -39,11 +40,16 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+class SetCommitStatus {
+    constructor() {
+        this.sha = '';
+        this.context = '';
+        this.state = '';
+    }
+}
 const setCommitStatus = ({ sha, context, state, description, target_url }) => (0,bluebird__WEBPACK_IMPORTED_MODULE_1__.map)(context.split('\n'), (context) => __awaiter(void 0, void 0, void 0, function* () {
     return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
-        context,
-        state,
-        description,
+        context, state: state, description,
         target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
 }));
 

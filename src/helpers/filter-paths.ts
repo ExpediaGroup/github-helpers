@@ -16,7 +16,7 @@ import { context } from '@actions/github';
 import micromatch from 'micromatch';
 import { octokit } from '../octokit';
 
-interface FilterPaths {
+export class FilterPaths {
   paths?: string;
   globs?: string;
 }

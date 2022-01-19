@@ -15,9 +15,9 @@ import { GITHUB_OPTIONS } from '../constants';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-interface DeleteDeployment {
-  sha: string;
-  environment: string;
+export class DeleteDeployment {
+  sha = '';
+  environment = '';
 }
 
 export const deleteDeployment = async ({ sha, environment }: DeleteDeployment) => {

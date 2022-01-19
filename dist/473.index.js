@@ -63,6 +63,7 @@ __webpack_require__.r(__webpack_exports__);
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
+  "ManageMergeQueue": () => (/* binding */ ManageMergeQueue),
   "manageMergeQueue": () => (/* binding */ manageMergeQueue)
 });
 
@@ -176,6 +177,8 @@ var manage_merge_queue_awaiter = (undefined && undefined.__awaiter) || function 
 
 
 
+class ManageMergeQueue {
+}
 const manageMergeQueue = ({ login, slack_webhook_url } = {}) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
     const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: github.context.issue.number }, github.context.repo));
     if (pullRequest.merged || !pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak)) {
@@ -299,6 +302,7 @@ const updatePrWithMainline = (pullRequest) => __awaiter(void 0, void 0, void 0, 
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "RemoveLabel": () => (/* binding */ RemoveLabel),
 /* harmony export */   "removeLabel": () => (/* binding */ removeLabel),
 /* harmony export */   "removeLabelIfExists": () => (/* binding */ removeLabelIfExists)
 /* harmony export */ });
@@ -331,6 +335,11 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+class RemoveLabel {
+    constructor() {
+        this.label = '';
+    }
+}
 const removeLabel = ({ label }) => __awaiter(void 0, void 0, void 0, function* () { return removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number); });
 const removeLabelIfExists = (labelName, issue_number) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -351,6 +360,7 @@ const removeLabelIfExists = (labelName, issue_number) => __awaiter(void 0, void 
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "SetCommitStatus": () => (/* binding */ SetCommitStatus),
 /* harmony export */   "setCommitStatus": () => (/* binding */ setCommitStatus)
 /* harmony export */ });
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
@@ -382,11 +392,16 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+class SetCommitStatus {
+    constructor() {
+        this.sha = '';
+        this.context = '';
+        this.state = '';
+    }
+}
 const setCommitStatus = ({ sha, context, state, description, target_url }) => (0,bluebird__WEBPACK_IMPORTED_MODULE_1__.map)(context.split('\n'), (context) => __awaiter(void 0, void 0, void 0, function* () {
     return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
-        context,
-        state,
-        description,
+        context, state: state, description,
         target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
 }));
 

@@ -16,9 +16,9 @@ import { GITHUB_OPTIONS } from '../constants';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-interface SetDeploymentStatus {
-  state: DeploymentState;
-  environment: string;
+export class SetDeploymentStatus {
+  state = '';
+  environment = '';
   sha?: string;
   description?: string;
   target_url?: string;
@@ -35,7 +35,7 @@ export const setDeploymentStatus = async ({ sha, state, environment, description
   const deployment_id = data.find(Boolean)?.id;
   if (deployment_id) {
     return octokit.repos.createDeploymentStatus({
-      state,
+      state: state as DeploymentState,
       deployment_id,
       description,
       target_url,
