@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { createPrComment } from '../src/helpers/create-pr-comment';
+import * as helperModule from '../src/helpers/create-pr-comment';
 import { getActionInputs } from '../src/utils/get-action-inputs';
 import { getInput } from '@actions/core';
 import { run } from '../src/main';
@@ -23,7 +23,7 @@ jest.mock('@actions/github', () => ({
   getOctokit: jest.fn(() => ({ rest: { issues: { createComment: jest.fn() } } }))
 }));
 jest.mock('../src/utils/get-action-inputs');
-jest.mock('../src/helpers/create-pr-comment');
+const helperSpy = jest.spyOn(helperModule, 'createPrComment');
 const helper = 'create-pr-comment';
 const otherInputs = {
   my: 'input',
@@ -32,15 +32,19 @@ const otherInputs = {
 const output = 'some output';
 (getInput as jest.Mock).mockReturnValue(helper);
 (getActionInputs as jest.Mock).mockReturnValue(otherInputs);
-(createPrComment as jest.Mock).mockResolvedValue(output);
+(helperSpy as jest.Mock).mockResolvedValue(output);
 
 describe('main', () => {
   beforeEach(async () => {
     await run();
   });
 
+  it('should call getActionInputs with correct params', () => {
+    expect(getActionInputs).toHaveBeenCalledWith(['body']);
+  });
+
   it('should call helper with all inputs', () => {
-    expect(createPrComment).toHaveBeenCalledWith(otherInputs);
+    expect(helperSpy).toHaveBeenCalledWith(otherInputs);
   });
 
   it('should set output', () => {

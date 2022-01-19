@@ -11,8 +11,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { GetRequiredInputs } from '../types';
 import { context } from '@actions/github';
+import { keys } from 'ts-transformer-keys';
 import { octokit } from '../octokit';
+
+export const requiredInputs = keys<GetRequiredInputs<CreatePrComment>>();
 
 interface CreatePrComment {
   body: string;

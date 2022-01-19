@@ -14,9 +14,18 @@ limitations under the License.
 import { ActionInputs } from '../types';
 import { getInput } from '@actions/core';
 import { getInputsFromFile } from './get-inputs-from-file';
+import { pickBy } from 'lodash';
 import { readFileSync } from 'fs';
 
-export const getActionInputs = (): ActionInputs =>
-  getInputsFromFile(readFileSync(`${__dirname}/action.yml`).toString())
-    .filter(getInput as (input: string) => string)
-    .reduce((acc, current) => ({ ...acc, [current]: getInput(current) }), {});
+export const getActionInputs = (requiredInputs: string[] = []): ActionInputs => {
+  const yamlContents = readFileSync(`${__dirname}/action.yml`).toString();
+  const inputsFromFile = getInputsFromFile(yamlContents).reduce(
+    (acc, current) => ({
+      ...acc,
+      [current]: getInput(current, { required: requiredInputs.includes(current) })
+    }),
+    {}
+  );
+
+  return pickBy(inputsFromFile);
+};

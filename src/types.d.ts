@@ -30,3 +30,6 @@ export type GithubError = {
 export type ActionInputs = {
   [input: string]: string;
 };
+
+type RequiredKeys<T> = { [k in keyof T]-?: undefined extends T[k] ? never : k }[keyof T];
+export type GetRequiredInputs<T> = Pick<T, RequiredKeys<T>>;

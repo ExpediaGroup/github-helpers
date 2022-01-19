@@ -23225,9 +23225,12 @@ limitations under the License.
 
 
 
-const getActionInputs = () => getInputsFromFile((0,external_fs_.readFileSync)(`${__dirname}/action.yml`).toString())
-    .filter(core.getInput)
-    .reduce((acc, current) => (Object.assign(Object.assign({}, acc), { [current]: (0,core.getInput)(current) })), {});
+
+const getActionInputs = (requiredInputs = []) => {
+    const yamlContents = (0,external_fs_.readFileSync)(`${__dirname}/action.yml`).toString();
+    const inputsFromFile = getInputsFromFile(yamlContents).reduce((acc, current) => (Object.assign(Object.assign({}, acc), { [current]: (0,core.getInput)(current, { required: requiredInputs.includes(current) }) })), {});
+    return (0,lodash.pickBy)(inputsFromFile);
+};
 
 ;// CONCATENATED MODULE: ./src/main.ts
 /*
@@ -23257,9 +23260,8 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const helper = core.getInput('helper', { required: true });
-        const helperModule = yield __nccwpck_require__(1933)(`./${helper}`);
-        const method = helperModule[(0,lodash.camelCase)(helper)];
-        const actionInputs = getActionInputs();
+        const { [(0,lodash.camelCase)(helper)]: method, requiredInputs } = yield __nccwpck_require__(1933)(`./${helper}`);
+        const actionInputs = getActionInputs(requiredInputs);
         const output = yield method(actionInputs);
         core.setOutput('output', output);
     }
