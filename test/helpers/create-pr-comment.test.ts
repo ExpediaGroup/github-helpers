@@ -21,6 +21,9 @@ jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({
     rest: {
+      repos: {
+        listPullRequestsAssociatedWithCommit: jest.fn()
+      },
       issues: {
         createComment: jest.fn(),
         listComments: jest.fn(),
@@ -48,9 +51,19 @@ jest.mock('@actions/github', () => ({
     }
   ]
 }));
+(octokit.repos.listPullRequestsAssociatedWithCommit as unknown as Mocktokit).mockImplementation(async () => ({
+  data: [
+    {
+      number: 112233
+    },
+    {
+      number: 456
+    }
+  ]
+}));
 
 describe('createPrComment', () => {
-  describe('create comment case', function () {
+  describe('create comment case', () => {
     const body = 'body';
 
     beforeEach(() => {
@@ -66,7 +79,31 @@ describe('createPrComment', () => {
     });
   });
 
-  describe('update comment case', function () {
+  describe('commit sha case', () => {
+    const body = 'body';
+    const sha = 'sha';
+
+    beforeEach(() => {
+      createPrComment({ body, sha });
+    });
+
+    it('should call listPullRequestsAssociatedWithCommit with correct params', () => {
+      expect(octokit.repos.listPullRequestsAssociatedWithCommit).toHaveBeenCalledWith({
+        commit_sha: 'sha',
+        ...context.repo
+      });
+    });
+
+    it('should call createComment with correct params', () => {
+      expect(octokit.issues.createComment).toHaveBeenCalledWith({
+        body,
+        issue_number: 112233,
+        ...context.repo
+      });
+    });
+  });
+
+  describe('update comment case', () => {
     const body = 'body';
     const login = 'login';
 
