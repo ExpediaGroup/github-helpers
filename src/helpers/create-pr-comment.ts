@@ -16,16 +16,38 @@ import { octokit } from '../octokit';
 
 export class CreatePrComment {
   body = '';
+  sha?: string;
   login?: string;
 }
 
-export const createPrComment = async ({ body, login }: CreatePrComment) => {
-  if (login) {
-    const commentsResponse = await octokit.issues.listComments({
+export const createPrComment = async ({ body, sha, login }: CreatePrComment) => {
+  if (!sha && !login) {
+    return octokit.issues.createComment({
+      body,
       issue_number: context.issue.number,
       ...context.repo
     });
-    const comment_id = commentsResponse.data.find(comment => comment?.user?.login === login)?.id;
+  }
+  if (sha) {
+    const { data } = await octokit.repos.listPullRequestsAssociatedWithCommit({
+      commit_sha: sha,
+      ...context.repo
+    });
+    const prNumber = data.find(Boolean)?.number;
+    if (prNumber) {
+      return octokit.issues.createComment({
+        body,
+        issue_number: prNumber,
+        ...context.repo
+      });
+    }
+  }
+  if (login) {
+    const { data } = await octokit.issues.listComments({
+      issue_number: context.issue.number,
+      ...context.repo
+    });
+    const comment_id = data.find(comment => comment?.user?.login === login)?.id;
     if (comment_id) {
       return octokit.issues.updateComment({
         comment_id,
@@ -34,9 +56,4 @@ export const createPrComment = async ({ body, login }: CreatePrComment) => {
       });
     }
   }
-  return octokit.issues.createComment({
-    body,
-    issue_number: context.issue.number,
-    ...context.repo
-  });
 };

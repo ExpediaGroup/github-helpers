@@ -42,17 +42,26 @@ class CreatePrComment {
         this.body = '';
     }
 }
-const createPrComment = ({ body, login }) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+const createPrComment = ({ body, sha, login }) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    if (!sha && !login) {
+        return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    }
+    if (sha) {
+        const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.listPullRequestsAssociatedWithCommit */ .K.repos.listPullRequestsAssociatedWithCommit(Object.assign({ commit_sha: sha }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+        const prNumber = (_a = data.find(Boolean)) === null || _a === void 0 ? void 0 : _a.number;
+        if (prNumber) {
+            return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: prNumber }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+        }
+    }
     if (login) {
-        const commentsResponse = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.listComments */ .K.issues.listComments(Object.assign({ issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-        const comment_id = (_a = commentsResponse.data.find(comment => { var _a; return ((_a = comment === null || comment === void 0 ? void 0 : comment.user) === null || _a === void 0 ? void 0 : _a.login) === login; })) === null || _a === void 0 ? void 0 : _a.id;
+        const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.listComments */ .K.issues.listComments(Object.assign({ issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+        const comment_id = (_b = data.find(comment => { var _a; return ((_a = comment === null || comment === void 0 ? void 0 : comment.user) === null || _a === void 0 ? void 0 : _a.login) === login; })) === null || _b === void 0 ? void 0 : _b.id;
         if (comment_id) {
             return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.updateComment */ .K.issues.updateComment(Object.assign({ comment_id,
                 body }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
         }
     }
-    return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
 });
 
 
