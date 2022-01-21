@@ -10,7 +10,7 @@ const filesWithoutCopyrightHeader =
   )).filter(Boolean);
 
 if (filesWithoutCopyrightHeader.length) {
-  console.error(`\nThe following files are missing a valid copyright header:\n${filesWithoutCopyrightHeader.join('\n')}`);
+  console.error(`\nThe following files are missing a valid copyright header:${filesWithoutCopyrightHeader.map(file => `\n   • ${file}`).join()}`);
   Deno.exit(1);
 }
 
