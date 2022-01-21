@@ -11,6 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { GITHUB_OPTIONS } from '../constants';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
@@ -31,7 +32,8 @@ export const createPrComment = async ({ body, sha, login }: CreatePrComment) => 
   if (sha) {
     const { data } = await octokit.repos.listPullRequestsAssociatedWithCommit({
       commit_sha: sha,
-      ...context.repo
+      ...context.repo,
+      ...GITHUB_OPTIONS
     });
     const prNumber = data.find(Boolean)?.number;
     if (prNumber) {
