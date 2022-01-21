@@ -11,4 +11,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-export type Mocktokit = jest.MockInstance<any, any>;
+export type Mocktokit = jest.MockInstance<any, any[]>;
