@@ -20,6 +20,14 @@ jobs:
             dependencies
             devDependencies
 
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+
+      - name: Validate Copyright Headers
+        run: deno run --allow-read scripts/verify-file-headers.ts
+
       - name: Setup Node
         uses: actions/setup-node@v1
         with:

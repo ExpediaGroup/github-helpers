@@ -65,7 +65,7 @@
     "lint": "eslint --fix src/**/*.ts test/**/*.ts",
     "package": "npm run clean && ncc build --source-map --license licenses.txt && cp action.yml dist",
     "prepare": "husky install",
-    "setup": "./dev-setup.sh",
+    "setup": "./scripts/dev-setup.sh",
     "test": "jest"
   }
 }
