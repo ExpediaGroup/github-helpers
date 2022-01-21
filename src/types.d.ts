@@ -25,7 +25,8 @@ export type ProjectListResponse = RestEndpointMethodTypes['projects']['listForRe
 export type ColumnListResponse = RestEndpointMethodTypes['projects']['listColumns']['response'];
 export type GithubError = {
   status: number;
-}
+  message: string;
+};
 
 export type ActionInputs = {
   [input: string]: string;
