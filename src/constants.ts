@@ -12,9 +12,16 @@ limitations under the License.
 */
 
 // These extra headers are for experimental API features on Github Enterprise. See https://docs.github.com/en/enterprise-server@3.0/rest/overview/api-previews for details.
+const PREVIEWS = [
+  'ant-man',
+  'flash',
+  'groot',
+  'inertia',
+  'starfox',
+];
 export const GITHUB_OPTIONS = {
   headers: {
-    accept: 'application/vnd.github.ant-man-preview+json,application/vnd.github.flash-preview+json,application/vnd.github.starfox-preview+json,application/vnd.github.inertia-preview+json'
+    accept: PREVIEWS.map(preview => `application/vnd.github.${preview}-preview+json`).join()
   }
 };
 
