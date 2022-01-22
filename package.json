@@ -62,7 +62,7 @@
     "clean": "rm -rf build dist",
     "format": "prettier --write ./**/**/*.ts",
     "format-check": "prettier --check **/*.ts",
-    "lint": "eslint --fix ./**/*.ts",
+    "lint": "eslint --quiet --fix ./**/*.ts src/**/*.ts test/**/*.ts",
     "package": "npm run clean && ncc build --source-map --license licenses.txt && cp action.yml dist",
     "prepare": "husky install",
     "setup": "./scripts/dev-setup.sh",
