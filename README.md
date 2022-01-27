@@ -40,6 +40,9 @@ with:
 
 ## Available Helpers
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
+### [remove-pr-from-merge-queue](.github/workflows/remove-pr-from-merge-queue.yml)
+  * Removes a PR from the merge queue if it has a stale failing status check.
+
 ### [add-labels](.github/workflows/add-labels.yml)
   * Adds one or more labels to a PR
 
