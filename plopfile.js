@@ -33,7 +33,7 @@ module.exports = plop => {
         templateFile: 'templates/workflow.hbs'
       },
       {
-        type: 'append',
+        type: 'modify',
         path: 'README.md',
         pattern: /Each of the following helpers are defined in a file of the same name in `src\/helpers`:/g,
         templateFile: 'templates/docs.hbs'
