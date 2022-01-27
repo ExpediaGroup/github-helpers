@@ -62,6 +62,7 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf build dist",
+    "create-helper": "plop helper --force",
     "format": "prettier --write ./**/**/*.ts",
     "format-check": "prettier --check **/*.ts",
     "lint": "eslint --quiet --fix ./**/*.ts src/**/*.ts test/**/*.ts",
