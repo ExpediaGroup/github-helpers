@@ -35,7 +35,7 @@ module.exports = plop => {
       {
         type: 'append',
         path: 'README.md',
-        pattern: /Each of the following helpers are defined in a file of the same name in `src\/helpers`:\n/g,
+        pattern: /Each of the following helpers are defined in a file of the same name in `src\/helpers`:/g,
         templateFile: 'templates/docs.hbs'
       }
     ]
