@@ -18976,6 +18976,16 @@ var map = {
 		438,
 		61
 	],
+	"./remove-pr-from-merge-queue": [
+		6974,
+		438,
+		974
+	],
+	"./remove-pr-from-merge-queue.ts": [
+		6974,
+		438,
+		974
+	],
 	"./set-commit-status": [
 		2209,
 		438,
