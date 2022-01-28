@@ -169,6 +169,7 @@ const removePrFromMergeQueue = ({ seconds }) => __awaiter(void 0, void 0, void 0
     }
     const { number, head: { sha } } = firstQueuedPr;
     const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listCommitStatusesForRef */ .K.repos.listCommitStatusesForRef(Object.assign({ ref: sha }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
+    console.log('data', JSON.stringify(data));
     const failingStatus = data.find(status => status.state === 'failure');
     console.log('failingStatus', JSON.stringify(failingStatus));
     if (failingStatus && timestampIsStale(failingStatus.created_at, seconds)) {

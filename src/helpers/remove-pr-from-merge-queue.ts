@@ -41,6 +41,7 @@ export const removePrFromMergeQueue = async ({ seconds }: RemovePrFromMergeQueue
     ref: sha,
     ...context.repo
   });
+  console.log('data', JSON.stringify(data));
   const failingStatus = data.find(status => status.state === 'failure');
   console.log('failingStatus', JSON.stringify(failingStatus));
   if (failingStatus && timestampIsStale(failingStatus.created_at, seconds)) {
