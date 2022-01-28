@@ -40,9 +40,6 @@ with:
 
 ## Available Helpers
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
-### [remove-pr-from-merge-queue](.github/workflows/remove-pr-from-merge-queue.yml)
-  * Removes a PR from the merge queue if it has a stale failing status check. A PR check is considered stale if it is older than the provided number of `seconds`.
-
 ### [add-labels](.github/workflows/add-labels.yml)
   * Adds one or more labels to a PR
 
@@ -124,6 +121,9 @@ Additionally, the following parameters can be used for additional control over t
 
 ### [remove-label](.github/workflows/remove-label.yml)
   * Removes a label from a PR
+
+### [remove-pr-from-merge-queue](.github/workflows/remove-pr-from-merge-queue.yml)
+* Removes a PR from the merge queue if it has a stale failing status check. A PR check is considered stale if it is older than the provided number of `seconds`.
 
 ### [set-commit-status](.github/workflows/set-commit-status.yml)
   * Sets a [commit status](https://github.blog/2012-09-04-commit-status-api/)
