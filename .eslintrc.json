@@ -21,7 +21,7 @@
     "eslint-comments/no-use": "off",
     "import/named": "off",
     "import/no-namespace": "off",
-    "no-console": "off",
+    "no-console": "error",
     "no-shadow": "off",
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": "error",
