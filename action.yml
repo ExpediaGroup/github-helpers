@@ -43,6 +43,9 @@ inputs:
   environment_url:
     description: 'The environment url for updating deployment status'
     required: false
+  auto_merge:
+    description: 'Attempts to automatically merge the default branch into the requested ref, if it''s behind the default branch. Default: true'
+    required: false
   label:
     description: 'The singular label name used only for removing a label'
     required: false

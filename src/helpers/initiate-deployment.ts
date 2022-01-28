@@ -19,6 +19,7 @@ import { octokit } from '../octokit';
 export class InitiateDeployment {
   sha = '';
   environment = '';
+  auto_merge?: boolean;
   state?: DeploymentState;
   environment_url?: string;
   description?: string;
@@ -30,12 +31,14 @@ export const initiateDeployment = async ({
   state = 'in_progress',
   environment,
   environment_url,
+  auto_merge,
   description,
   target_url
 }: InitiateDeployment) => {
   const { data } = await octokit.repos.createDeployment({
     ref: sha,
     environment,
+    auto_merge,
     required_contexts: [],
     ...context.repo,
     ...GITHUB_OPTIONS
