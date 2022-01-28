@@ -91,6 +91,9 @@ inputs:
   title:
     description: 'An issue title'
     required: false
+  seconds:
+    description: 'An amount of time in seconds'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'
