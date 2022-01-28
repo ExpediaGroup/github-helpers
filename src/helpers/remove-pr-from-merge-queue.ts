@@ -41,9 +41,7 @@ export const removePrFromMergeQueue = async ({ seconds }: RemovePrFromMergeQueue
     ref: sha,
     ...context.repo
   });
-  console.log('data', JSON.stringify(data));
   const failingStatus = data.find(status => status.state === 'failure');
-  console.log('failingStatus', JSON.stringify(failingStatus));
   if (failingStatus && timestampIsStale(failingStatus.created_at, seconds)) {
     return removeLabelIfExists(READY_FOR_MERGE_PR_LABEL, number);
   }
@@ -52,7 +50,5 @@ export const removePrFromMergeQueue = async ({ seconds }: RemovePrFromMergeQueue
 const timestampIsStale = (timestamp: string, seconds: string) => {
   const ageOfTimestampInMiliseconds = Date.now() - new Date(timestamp).getTime();
   const milisecondsConsideredStale = Number(seconds) * 1000;
-  console.log('ageOfTimestampInMiliseconds', ageOfTimestampInMiliseconds);
-  console.log('milisecondsConsideredStale', milisecondsConsideredStale);
   return ageOfTimestampInMiliseconds > milisecondsConsideredStale;
 };

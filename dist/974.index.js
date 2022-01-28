@@ -169,9 +169,7 @@ const removePrFromMergeQueue = ({ seconds }) => __awaiter(void 0, void 0, void 0
     }
     const { number, head: { sha } } = firstQueuedPr;
     const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listCommitStatusesForRef */ .K.repos.listCommitStatusesForRef(Object.assign({ ref: sha }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
-    console.log('data', JSON.stringify(data));
     const failingStatus = data.find(status => status.state === 'failure');
-    console.log('failingStatus', JSON.stringify(failingStatus));
     if (failingStatus && timestampIsStale(failingStatus.created_at, seconds)) {
         return (0,_remove_label__WEBPACK_IMPORTED_MODULE_4__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, number);
     }
@@ -179,8 +177,6 @@ const removePrFromMergeQueue = ({ seconds }) => __awaiter(void 0, void 0, void 0
 const timestampIsStale = (timestamp, seconds) => {
     const ageOfTimestampInMiliseconds = Date.now() - new Date(timestamp).getTime();
     const milisecondsConsideredStale = Number(seconds) * 1000;
-    console.log('ageOfTimestampInMiliseconds', ageOfTimestampInMiliseconds);
-    console.log('milisecondsConsideredStale', milisecondsConsideredStale);
     return ageOfTimestampInMiliseconds > milisecondsConsideredStale;
 };
 
