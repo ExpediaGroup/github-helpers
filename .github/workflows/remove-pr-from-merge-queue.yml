@@ -21,4 +21,4 @@ jobs:
         with:
           helper: remove-pr-from-merge-queue
           seconds: 10
-          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
