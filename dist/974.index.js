@@ -171,7 +171,7 @@ const removePrFromMergeQueue = ({ seconds }) => __awaiter(void 0, void 0, void 0
     const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listCommitStatusesForRef */ .K.repos.listCommitStatusesForRef(Object.assign({ ref: sha }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
     const failingStatus = data.find(status => status.state === 'failure');
     if (failingStatus && timestampIsStale(failingStatus.created_at, seconds)) {
-        return (0,_remove_label__WEBPACK_IMPORTED_MODULE_4__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_1__/* .FIRST_QUEUED_PR_LABEL */ .IH, number);
+        return (0,_remove_label__WEBPACK_IMPORTED_MODULE_4__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, number);
     }
 });
 const timestampIsStale = (timestamp, seconds) => {

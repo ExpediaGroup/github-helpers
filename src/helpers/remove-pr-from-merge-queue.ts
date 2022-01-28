@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { FIRST_QUEUED_PR_LABEL } from '../constants';
+import { FIRST_QUEUED_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../constants';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import { removeLabelIfExists } from './remove-label';
@@ -43,7 +43,7 @@ export const removePrFromMergeQueue = async ({ seconds }: RemovePrFromMergeQueue
   });
   const failingStatus = data.find(status => status.state === 'failure');
   if (failingStatus && timestampIsStale(failingStatus.created_at, seconds)) {
-    return removeLabelIfExists(FIRST_QUEUED_PR_LABEL, number);
+    return removeLabelIfExists(READY_FOR_MERGE_PR_LABEL, number);
   }
 };
 

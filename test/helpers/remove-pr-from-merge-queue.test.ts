@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { FIRST_QUEUED_PR_LABEL } from '../../src/constants';
+import { FIRST_QUEUED_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
@@ -45,7 +45,7 @@ jest.spyOn(Date, 'now').mockImplementation(() => new Date('2022-01-01T10:00:00Z'
     {
       number: 12345,
       head: { sha: 'correct sha' },
-      labels: [{ name: FIRST_QUEUED_PR_LABEL }]
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: FIRST_QUEUED_PR_LABEL }]
     }
   ]
 }));
@@ -90,7 +90,7 @@ describe('removePrFromMergeQueue', () => {
     });
 
     it('should call removeLabelIfExists', () => {
-      expect(removeLabelIfExists).toHaveBeenCalledWith(FIRST_QUEUED_PR_LABEL, 12345);
+      expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 12345);
     });
   });
 
