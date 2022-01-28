@@ -35,7 +35,7 @@ export const setLatestPipelineStatus = async ({
   });
   const deployment_id = deployments.find(Boolean)?.id;
   if (!deployment_id) {
-    core.setFailed('No deployments found.');
+    core.setFailed('No deployments found. test');
     throw new Error();
   }
   const { data: deploymentStatuses } = await octokit.repos.listDeploymentStatuses({
