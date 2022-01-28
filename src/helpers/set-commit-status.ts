@@ -29,7 +29,7 @@ export const setCommitStatus = ({ sha, context, state, description, target_url }
     octokit.repos.createCommitStatus({
       sha,
       context,
-      state: state as PipelineState,
+      state: 'failure',
       description,
       target_url,
       ...githubContext.repo
