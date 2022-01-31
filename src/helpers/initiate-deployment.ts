@@ -36,6 +36,7 @@ export const initiateDeployment = async ({
   const { data } = await octokit.repos.createDeployment({
     ref: sha,
     environment,
+    auto_merge: false,
     required_contexts: [],
     ...context.repo,
     ...GITHUB_OPTIONS

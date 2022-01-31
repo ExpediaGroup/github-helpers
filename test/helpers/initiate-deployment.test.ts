@@ -42,6 +42,7 @@ describe('initiateDeployment', () => {
   const environment = 'env';
   const description = 'desc';
   const target_url = 'url';
+  const auto_merge = false;
 
   beforeEach(() => {
     initiateDeployment({
@@ -56,6 +57,7 @@ describe('initiateDeployment', () => {
     expect(octokit.repos.createDeployment).toHaveBeenCalledWith({
       ref: sha,
       environment,
+      auto_merge,
       required_contexts: [],
       ...context.repo,
       ...GITHUB_OPTIONS
