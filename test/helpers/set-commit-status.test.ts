@@ -90,6 +90,8 @@ describe('setCommitStatus', () => {
       });
     });
 
-    expect(octokit.repos.createCommitStatus).toHaveBeenCalledTimes(2);
+    it('should skip blank line', () => {
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledTimes(2);
+    });
   });
 });
