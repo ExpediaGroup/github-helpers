@@ -25,7 +25,7 @@ export class SetCommitStatus {
 }
 
 export const setCommitStatus = ({ sha, context, state, description, target_url }: SetCommitStatus) =>
-  map(context.split('\n'), async context =>
+  map(context.split('\n').filter(Boolean), async context =>
     octokit.repos.createCommitStatus({
       sha,
       context,

@@ -76,4 +76,22 @@ describe('setCommitStatus', () => {
       });
     });
   });
+
+  describe('ignore whitespace in context', () => {
+    const context = 'context1\n\ncontext2';
+
+    beforeEach(async () => {
+      await setCommitStatus({
+        sha,
+        context,
+        state,
+        description,
+        target_url
+      });
+    });
+
+    it('should skip blank line', () => {
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledTimes(2);
+    });
+  });
 });
