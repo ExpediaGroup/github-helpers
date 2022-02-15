@@ -40,6 +40,9 @@ with:
 
 ## Available Helpers
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
+### [rerun-pr-workflows](.github/workflows/rerun-pr-workflows.yml)
+  * use to rerun all failed workflows on a pull request
+
 ### [add-labels](.github/workflows/add-labels.yml)
   * Adds one or more labels to a PR
 
