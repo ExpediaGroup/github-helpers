@@ -33,7 +33,7 @@
     "@types/lodash.uniq": "4.5.6",
     "@types/micromatch": "4.0.2",
     "@typescript-eslint/eslint-plugin": "5.11.0",
-    "@typescript-eslint/parser": "5.11.0",
+    "@typescript-eslint/parser": "5.12.0",
     "@vercel/ncc": "0.33.3",
     "eslint": "8.9.0",
     "eslint-plugin-eslint-comments": "3.2.0",
