@@ -26,12 +26,12 @@ export const createPr = async ({ title, body }: CreatePR) => {
   } = await octokit.repos.get({ ...context.repo });
   core.info(default_branch);
   core.info(context.ref);
-  return octokit.pulls.create({
-    title,
-    head: context.ref.replace('refs/heads/', ''),
-    base: default_branch,
-    body,
-    maintainer_can_modify: true,
-    ...context.repo
-  });
+//   return octokit.pulls.create({
+//     title,
+//     head: context.ref.replace('refs/heads/', ''),
+//     base: default_branch,
+//     body,
+//     maintainer_can_modify: true,
+//     ...context.repo
+//   });
 };
