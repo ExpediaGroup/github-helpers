@@ -11,9 +11,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "CreatePR": () => (/* binding */ CreatePR),
 /* harmony export */   "createPr": () => (/* binding */ createPr)
 /* harmony export */ });
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,6 +39,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 };
 
 
+
 class CreatePR {
     constructor() {
         this.title = '';
@@ -44,8 +47,17 @@ class CreatePR {
     }
 }
 const createPr = ({ title, body }) => __awaiter(void 0, void 0, void 0, function* () {
-    const { data: { default_branch } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.get */ .K.repos.get(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-    return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.create */ .K.pulls.create(Object.assign({ title, head: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.ref.replace('refs/heads/', ''), base: default_branch, body, maintainer_can_modify: true }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    const { data: { default_branch } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.get */ .K.repos.get(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(default_branch);
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref);
+    //   return octokit.pulls.create({
+    //     title,
+    //     head: context.ref.replace('refs/heads/', ''),
+    //     base: default_branch,
+    //     body,
+    //     maintainer_can_modify: true,
+    //     ...context.repo
+    //   });
 });
 
 
