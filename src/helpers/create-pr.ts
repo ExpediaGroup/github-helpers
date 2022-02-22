@@ -11,7 +11,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import * as core from '@actions/core';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
@@ -33,6 +32,5 @@ export const createPr = async ({ title, body }: CreatePR) => {
     ...context.repo
   });
   const pullNumber = result?.data?.number;
-  core.info(pullNumber.toString());
   return pullNumber;
 };
