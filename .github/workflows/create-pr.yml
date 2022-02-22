@@ -18,5 +18,7 @@ jobs:
           title: New PR
           body: Implemented new feature. Added tests.
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - run: echo "${{ steps.create-pr.outputs.output }}"
 
 permissions: write-all
