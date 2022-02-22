@@ -13,10 +13,13 @@ jobs:
         uses: actions/checkout@v2
 
       - uses: ./
+        id: create
         with:
           helper: create-pr
           title: New PR
           body: Implemented new feature. Added tests.
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: echo "Created PR \#${{ steps.create.outputs.output }}"
 
 permissions: write-all

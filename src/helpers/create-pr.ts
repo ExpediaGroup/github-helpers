@@ -32,5 +32,7 @@ export const createPr = async ({ title, body }: CreatePR) => {
     maintainer_can_modify: true,
     ...context.repo
   });
-  core.info(JSON.stringify(result));
+  const pullNumber = result?.data?.number;
+  core.info(pullNumber.toString());
+  return pullNumber;
 };
