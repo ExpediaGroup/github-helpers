@@ -11,6 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import * as core from '@actions/core';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
@@ -23,7 +24,7 @@ export const createPr = async ({ title, body }: CreatePR) => {
   const {
     data: { default_branch }
   } = await octokit.repos.get({ ...context.repo });
-  return octokit.pulls.create({
+  const result = await octokit.pulls.create({
     title,
     head: context.ref.replace('refs/heads/', ''),
     base: default_branch,
@@ -31,4 +32,5 @@ export const createPr = async ({ title, body }: CreatePR) => {
     maintainer_can_modify: true,
     ...context.repo
   });
+  core.info(JSON.stringify(result));
 };
