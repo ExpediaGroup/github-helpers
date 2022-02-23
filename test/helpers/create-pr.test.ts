@@ -32,23 +32,29 @@ jest.mock('@actions/github', () => ({
     default_branch: 'default branch'
   }
 }));
+(octokit.pulls.create as unknown as Mocktokit).mockImplementation(async () => ({
+  data: {
+    number: 100
+  }
+}));
 
 describe('createPr', () => {
   const title = 'title';
   const body = 'body';
 
-  beforeEach(() => {
-    createPr({
+  it('should call repos get with correct params', async () => {
+    await createPr({
       title,
       body
     });
-  });
-
-  it('should call repos get with correct params', () => {
     expect(octokit.repos.get).toHaveBeenCalledWith({ ...context.repo });
   });
 
-  it('should call create with correct params', () => {
+  it('should call create with correct params', async () => {
+    await createPr({
+      title,
+      body
+    });
     expect(octokit.pulls.create).toHaveBeenCalledWith({
       title,
       head: 'source',
@@ -59,5 +65,13 @@ describe('createPr', () => {
       issue: undefined,
       ...context.repo
     });
+  });
+
+  it('should return the pull number', async () => {
+    const result = await createPr({
+      title,
+      body
+    });
+    expect(result).toBe(100);
   });
 });

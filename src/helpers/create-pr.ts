@@ -23,7 +23,7 @@ export const createPr = async ({ title, body }: CreatePR) => {
   const {
     data: { default_branch }
   } = await octokit.repos.get({ ...context.repo });
-  return octokit.pulls.create({
+  const result = await octokit.pulls.create({
     title,
     head: context.ref.replace('refs/heads/', ''),
     base: default_branch,
@@ -31,4 +31,6 @@ export const createPr = async ({ title, body }: CreatePR) => {
     maintainer_can_modify: true,
     ...context.repo
   });
+  const pullNumber = result?.data?.number;
+  return pullNumber;
 };
