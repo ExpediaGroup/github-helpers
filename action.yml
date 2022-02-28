@@ -91,6 +91,9 @@ inputs:
   seconds:
     description: 'An amount of time in seconds'
     required: false
+  pull_number:
+    description: 'Pull request/issue number'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'
