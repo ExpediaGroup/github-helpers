@@ -69,6 +69,23 @@ describe('assignPrReviewer', () => {
         });
       });
     });
+
+    describe('override pull_number', () => {
+      const login = 'user4';
+      const pull_number_2 = 456;
+
+      beforeEach(() => {
+        assignPrReviewers({ login, teams, pull_number: pull_number_2 });
+      });
+
+      it('pull_number should come from the argument', () => {
+        expect(octokit.issues.addAssignees).toHaveBeenCalledWith({
+          assignees: ['assignee'],
+          issue_number: pull_number_2,
+          ...context.repo
+        });
+      });
+    });
   });
 
   describe('login not provided', () => {
