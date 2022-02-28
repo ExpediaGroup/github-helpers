@@ -27,7 +27,13 @@ export class AssignPrReviewer {
   pull_number?: number;
 }
 
-export const assignPrReviewers = async ({ teams, login, number_of_assignees = '1', slack_webhook_url, pull_number }: AssignPrReviewer) => {
+export const assignPrReviewers = async ({
+  teams,
+  login,
+  number_of_assignees = '1',
+  slack_webhook_url,
+  pull_number = context.issue.number
+}: AssignPrReviewer) => {
   const coreMemberLogins = await getCoreMemberLogins(context.issue.number, teams?.split('\n'));
 
   if (login && coreMemberLogins.includes(login)) {
@@ -38,7 +44,7 @@ export const assignPrReviewers = async ({ teams, login, number_of_assignees = '1
 
   await octokit.issues.addAssignees({
     assignees,
-    issue_number: pull_number || context.issue.number,
+    issue_number: pull_number,
     ...context.repo
   });
 
@@ -46,7 +52,7 @@ export const assignPrReviewers = async ({ teams, login, number_of_assignees = '1
     return map(assignees, async assignee =>
       notifyUser({
         login: assignee,
-        pull_number: pull_number || context.issue.number,
+        pull_number,
         slack_webhook_url
       })
     );
