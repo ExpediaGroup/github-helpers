@@ -74,4 +74,23 @@ describe('createPr', () => {
     });
     expect(result).toBe(100);
   });
+
+  it('should create pull from specified head', async () => {
+    const head = 'feature/abc';
+    await createPr({
+      title,
+      body,
+      head
+    });
+    expect(octokit.pulls.create).toHaveBeenCalledWith({
+      title,
+      head,
+      base: 'default branch',
+      body,
+      maintainer_can_modify: true,
+      draft: undefined,
+      issue: undefined,
+      ...context.repo
+    });
+  });
 });

@@ -17,15 +17,16 @@ import { octokit } from '../octokit';
 export class CreatePR {
   title = '';
   body = '';
+  head?: string;
 }
 
-export const createPr = async ({ title, body }: CreatePR) => {
+export const createPr = async ({ title, body, head = context.ref.replace('refs/heads/', '') }: CreatePR) => {
   const {
     data: { default_branch }
   } = await octokit.repos.get({ ...context.repo });
   const result = await octokit.pulls.create({
     title,
-    head: context.ref.replace('refs/heads/', ''),
+    head,
     base: default_branch,
     body,
     maintainer_can_modify: true,
