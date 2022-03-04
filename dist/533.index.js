@@ -56,8 +56,11 @@ paths_no_filter,
 /** number of evenly-sized batches to separate matching paths into (returns comma-separated result) */
 batches }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    if (!paths && !globs)
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error('Must supply one of paths, globs');
+    if (!paths && !globs) {
+        const err = 'Must supply one of paths, globs';
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(err);
+        throw new Error(err);
+    }
     const changedFiles = yield (0,_utils_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_3__/* .getChangedFilepaths */ .s)(_actions_github__WEBPACK_IMPORTED_MODULE_2__.context.issue.number);
     const shouldOverrideFilter = override_filter_globs
         ? micromatch__WEBPACK_IMPORTED_MODULE_4___default()(changedFiles, override_filter_globs.split('\n')).length > 0

@@ -37,7 +37,11 @@ export const generatePathMatrix = async ({
   /** number of evenly-sized batches to separate matching paths into (returns comma-separated result) */
   batches
 }: GeneratePathMatrix) => {
-  if (!paths && !globs) core.error('Must supply one of paths, globs');
+  if (!paths && !globs) {
+    const err = 'Must supply one of paths, globs';
+    core.error(err);
+    throw new Error(err);
+  }
   const changedFiles = await getChangedFilepaths(context.issue.number);
   const shouldOverrideFilter = override_filter_globs
     ? micromatch(changedFiles, override_filter_globs.split('\n')).length > 0
