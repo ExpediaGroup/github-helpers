@@ -11,13 +11,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import * as core from '@actions/core';
 import { chunk, uniq } from 'lodash';
 import { context } from '@actions/github';
 import { getChangedFilepaths } from '../utils/get-changed-filepaths';
 import micromatch from 'micromatch';
 
 export class GeneratePathMatrix {
-  paths = '';
+  paths?: string;
+  globs?: string;
   override_filter_paths?: string;
   override_filter_globs?: string;
   paths_no_filter?: string;
@@ -25,20 +27,27 @@ export class GeneratePathMatrix {
 }
 
 export const generatePathMatrix = async ({
-  paths,
+  paths = '',
+  globs = '',
+  /** paths that override the changed files filter, causing the action to return all paths */
   override_filter_paths,
   override_filter_globs,
+  /** paths that will be returned regardless of their adherence to the filter */
   paths_no_filter,
+  /** number of evenly-sized batches to separate matching paths into (returns comma-separated result) */
   batches
 }: GeneratePathMatrix) => {
+  if (!paths && !globs) core.error('Must supply one of paths, globs');
   const changedFiles = await getChangedFilepaths(context.issue.number);
   const shouldOverrideFilter = override_filter_globs
     ? micromatch(changedFiles, override_filter_globs.split('\n')).length > 0
     : changedFiles.some(changedFile => override_filter_paths?.split(/[\n,]/).includes(changedFile));
-  const splitPaths = paths.split(/[\n,]/);
+  const splitPaths = (paths || globs).split(/[\n,]/);
   const basePaths = shouldOverrideFilter
     ? splitPaths
-    : splitPaths.filter(path => changedFiles.some(changedFile => changedFile.startsWith(path)));
+    : paths
+    ? splitPaths.filter(path => changedFiles.some(changedFile => changedFile.startsWith(path)))
+    : splitPaths.filter(glob => micromatch(changedFiles, glob).length > 0);
   const extraPaths: string[] = paths_no_filter?.split(/[\n,]/) ?? [];
   const matrixValues = uniq(basePaths.concat(extraPaths));
   if (batches) {

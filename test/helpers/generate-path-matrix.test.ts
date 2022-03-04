@@ -23,10 +23,10 @@ jest.mock('@actions/github', () => ({
 }));
 
 const file1 = 'file/path/1/file1.txt';
-const file2 = 'something/totally/different/file1.ts';
-const file3 = 'something/totally/crazy/file1.txt';
-const file4 = 'something/totally/not/crazy/file1.md';
-const file5 = 'something/totally/crazy/file1.js';
+const file2 = 'packages/abc/file1.ts';
+const file3 = 'packages/def/file1.txt';
+const file4 = 'packages/ghi/more/dirs/file1.md';
+const file5 = 'docs/xyz/file1.js';
 const pkg = 'package.json';
 (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
   data: [
@@ -52,10 +52,14 @@ const pkg = 'package.json';
 }));
 
 describe('generatePathMatrix', () => {
-  const filePath1 = 'something/totally/crazy';
+  const filePath1 = 'packages/abc';
   const filePath2 = 'file';
-  const filePath3 = 'something/totally/random';
+  const filePath3 = 'packages/random';
+  const fileGlob1 = '**/abc/**';
+  const fileGlob2 = '**/xyz/**';
+  const fileGlob3 = '**/random/**';
   const paths = `${filePath1},${filePath2},${filePath3}`;
+  const globs = `${fileGlob1},${fileGlob2},${fileGlob3}`;
 
   describe('no override filter paths case', () => {
     it('should call listFiles with correct params', async () => {
@@ -122,12 +126,41 @@ describe('generatePathMatrix', () => {
     });
   });
 
+  describe('no override filter globs case', () => {
+    it('should call listFiles with correct params', async () => {
+      await generatePathMatrix({
+        globs
+      });
+      expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
+        pull_number: 123,
+        per_page: 100,
+        ...context.repo
+      });
+    });
+
+    it('should return expected result', async () => {
+      const result = await generatePathMatrix({
+        globs
+      });
+      expect(result).toEqual({
+        include: [
+          {
+            path: fileGlob1
+          },
+          {
+            path: fileGlob2
+          }
+        ]
+      });
+    });
+  });
+
   describe('override filter globs case', () => {
     const override_filter_globs = 'package.json\ntotally/crazy';
 
     it('should call listFiles with correct params', async () => {
       await generatePathMatrix({
-        paths,
+        globs,
         override_filter_globs
       });
       expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
@@ -139,19 +172,19 @@ describe('generatePathMatrix', () => {
 
     it('should return expected result', async () => {
       const result = await generatePathMatrix({
-        paths,
+        globs,
         override_filter_globs
       });
       expect(result).toEqual({
         include: [
           {
-            path: filePath1
+            path: fileGlob1
           },
           {
-            path: filePath2
+            path: fileGlob2
           },
           {
-            path: filePath3
+            path: fileGlob3
           }
         ]
       });
