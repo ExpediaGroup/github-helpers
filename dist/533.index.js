@@ -48,7 +48,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 class GeneratePathMatrix {
 }
-const generatePathMatrix = ({ paths = '', globs = '', 
+const generatePathMatrix = ({ paths, globs, 
 /** paths that override the changed files filter, causing the action to return all paths */
 override_filter_paths, override_filter_globs, 
 /** paths that will be returned regardless of their adherence to the filter */
@@ -56,16 +56,16 @@ paths_no_filter,
 /** number of evenly-sized batches to separate matching paths into (returns comma-separated result) */
 batches }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    if (!paths && !globs) {
-        const err = 'Must supply one of paths, globs';
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(err);
-        throw new Error(err);
+    const pathsToUse = paths || globs;
+    if (!pathsToUse) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error('Must supply one of paths, globs');
+        throw new Error();
     }
     const changedFiles = yield (0,_utils_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_3__/* .getChangedFilepaths */ .s)(_actions_github__WEBPACK_IMPORTED_MODULE_2__.context.issue.number);
     const shouldOverrideFilter = override_filter_globs
         ? micromatch__WEBPACK_IMPORTED_MODULE_4___default()(changedFiles, override_filter_globs.split('\n')).length > 0
         : changedFiles.some(changedFile => override_filter_paths === null || override_filter_paths === void 0 ? void 0 : override_filter_paths.split(/[\n,]/).includes(changedFile));
-    const splitPaths = (paths || globs).split(/[\n,]/);
+    const splitPaths = pathsToUse.split(/[\n,]/);
     const basePaths = shouldOverrideFilter
         ? splitPaths
         : paths

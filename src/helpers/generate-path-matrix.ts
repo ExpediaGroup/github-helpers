@@ -27,8 +27,8 @@ export class GeneratePathMatrix {
 }
 
 export const generatePathMatrix = async ({
-  paths = '',
-  globs = '',
+  paths,
+  globs,
   /** paths that override the changed files filter, causing the action to return all paths */
   override_filter_paths,
   override_filter_globs,
@@ -37,16 +37,16 @@ export const generatePathMatrix = async ({
   /** number of evenly-sized batches to separate matching paths into (returns comma-separated result) */
   batches
 }: GeneratePathMatrix) => {
-  if (!paths && !globs) {
-    const err = 'Must supply one of paths, globs';
-    core.error(err);
-    throw new Error(err);
+  const pathsToUse = paths || globs;
+  if (!pathsToUse) {
+    core.error('Must supply one of paths, globs');
+    throw new Error();
   }
   const changedFiles = await getChangedFilepaths(context.issue.number);
   const shouldOverrideFilter = override_filter_globs
     ? micromatch(changedFiles, override_filter_globs.split('\n')).length > 0
     : changedFiles.some(changedFile => override_filter_paths?.split(/[\n,]/).includes(changedFile));
-  const splitPaths = (paths || globs).split(/[\n,]/);
+  const splitPaths = pathsToUse.split(/[\n,]/);
   const basePaths = shouldOverrideFilter
     ? splitPaths
     : paths
