@@ -19,7 +19,11 @@ jobs:
         with:
           helper: set-commit-status
           sha: ${{ github.event.pull_request.head.sha }}
-          context: Commit Status Test
-          state: success
-          description: set-commit-status is working!
+          context: |
+            Test 1
+            Test 2
+            Test 3
+          state: pending
+          description: set-commit-status is working.
+          target_url: https://google.com
           github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
