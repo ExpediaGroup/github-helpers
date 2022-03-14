@@ -186,9 +186,10 @@ const manageMergeQueue = ({ login, slack_webhook_url } = {}) => manage_merge_que
         core.info('This PR is not in the merge queue.');
         return removePrFromQueue(pullRequest);
     }
-    const { data: { items, total_count: queuePosition } } = yield getQueuedPrData();
+    const queuedPrs = yield getQueuedPullRequests();
+    const queuePosition = queuedPrs.length;
     if (pullRequest.labels.find(label => label.name === constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ)) {
-        return updateMergeQueue(items);
+        return updateMergeQueue(queuedPrs);
     }
     if (!pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) {
         yield addPrToQueue(pullRequest, queuePosition);
@@ -213,18 +214,16 @@ const removePrFromQueue = (pullRequest) => manage_merge_queue_awaiter(void 0, vo
     const queueLabel = (_a = pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
     if (queueLabel) {
         yield (0,bluebird.map)([constants/* READY_FOR_MERGE_PR_LABEL */.Ak, queueLabel], (label) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () { return (0,remove_label.removeLabelIfExists)(label, pullRequest.number); }));
-        const { data: { items } } = yield getQueuedPrData();
-        yield updateMergeQueue(items);
+        const queuedPrs = yield getQueuedPullRequests();
+        yield updateMergeQueue(queuedPrs);
     }
 });
 const addPrToQueue = (pullRequest, queuePosition) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
     return octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`], issue_number: github.context.issue.number }, github.context.repo));
 });
-const getQueuedPrData = () => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
-    const { repo, owner } = github.context.repo;
-    return octokit/* octokit.search.issuesAndPullRequests */.K.search.issuesAndPullRequests({
-        q: `org:${owner}+repo:${repo}+is:pr+is:open+label:"${constants/* READY_FOR_MERGE_PR_LABEL */.Ak}"`
-    });
+const getQueuedPullRequests = () => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
+    const { data: openPullRequests } = yield octokit/* octokit.pulls.list */.K.pulls.list(Object.assign({ state: 'open', per_page: 100 }, github.context.repo));
+    return openPullRequests.filter(pr => pr.labels.some(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak));
 });
 
 

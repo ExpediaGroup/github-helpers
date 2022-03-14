@@ -19,7 +19,7 @@ import {
   QUEUED_FOR_MERGE_PREFIX,
   READY_FOR_MERGE_PR_LABEL
 } from '../constants';
-import { PullRequest } from '../types';
+import { PullRequest, PullRequestList } from '../types';
 import { context } from '@actions/github';
 import { map } from 'bluebird';
 import { notifyUser } from '../utils/notify-user';
@@ -39,11 +39,10 @@ export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMerge
     core.info('This PR is not in the merge queue.');
     return removePrFromQueue(pullRequest);
   }
-  const {
-    data: { items, total_count: queuePosition }
-  } = await getQueuedPrData();
+  const queuedPrs = await getQueuedPullRequests();
+  const queuePosition = queuedPrs.length;
   if (pullRequest.labels.find(label => label.name === JUMP_THE_QUEUE_PR_LABEL)) {
-    return updateMergeQueue(items);
+    return updateMergeQueue(queuedPrs);
   }
   if (!pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))) {
     await addPrToQueue(pullRequest, queuePosition);
@@ -70,10 +69,8 @@ const removePrFromQueue = async (pullRequest: PullRequest) => {
   const queueLabel = pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
   if (queueLabel) {
     await map([READY_FOR_MERGE_PR_LABEL, queueLabel], async label => removeLabelIfExists(label, pullRequest.number));
-    const {
-      data: { items }
-    } = await getQueuedPrData();
-    await updateMergeQueue(items);
+    const queuedPrs = await getQueuedPullRequests();
+    await updateMergeQueue(queuedPrs);
   }
 };
 
@@ -84,9 +81,11 @@ const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number) =>
     ...context.repo
   });
 
-const getQueuedPrData = async () => {
-  const { repo, owner } = context.repo;
-  return octokit.search.issuesAndPullRequests({
-    q: `org:${owner}+repo:${repo}+is:pr+is:open+label:"${READY_FOR_MERGE_PR_LABEL}"`
+const getQueuedPullRequests = async (): Promise<PullRequestList> => {
+  const { data: openPullRequests } = await octokit.pulls.list({
+    state: 'open',
+    per_page: 100,
+    ...context.repo
   });
+  return openPullRequests.filter(pr => pr.labels.some(label => label.name === READY_FOR_MERGE_PR_LABEL));
 };
