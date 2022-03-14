@@ -399,11 +399,13 @@ class SetCommitStatus {
         this.state = '';
     }
 }
-const setCommitStatus = ({ sha, context, state, description, target_url }) => (0,bluebird__WEBPACK_IMPORTED_MODULE_1__.map)(context.split('\n').filter(Boolean), (context) => __awaiter(void 0, void 0, void 0, function* () {
-    return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
-        context, state: state, description,
-        target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-}));
+const setCommitStatus = ({ sha, context, state, description, target_url }) => __awaiter(void 0, void 0, void 0, function* () {
+    yield (0,bluebird__WEBPACK_IMPORTED_MODULE_1__.map)(context.split('\n').filter(Boolean), (context) => __awaiter(void 0, void 0, void 0, function* () {
+        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
+            context, state: state, description,
+            target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    }));
+});
 
 
 /***/ }),
