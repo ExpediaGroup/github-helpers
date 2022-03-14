@@ -12,19 +12,19 @@ limitations under the License.
 */
 
 import { JUMP_THE_QUEUE_PR_LABEL, QUEUED_FOR_MERGE_PREFIX } from '../constants';
-import { PullRequestSearchResults } from '../types';
+import { PullRequestList } from '../types';
 import { context } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
 import { removeLabelIfExists } from '../helpers/remove-label';
 import { updatePrWithMainline } from '../helpers/prepare-queued-pr-for-merge';
 
-export const updateMergeQueue = (queuedPrs: PullRequestSearchResults) => {
+export const updateMergeQueue = (queuedPrs: PullRequestList) => {
   const sortedPrs = sortPrsByQueuePosition(queuedPrs);
   return map(sortedPrs, updateQueuePosition);
 };
 
-const sortPrsByQueuePosition = (queuedPrs: PullRequestSearchResults): QueuedPr[] =>
+const sortPrsByQueuePosition = (queuedPrs: PullRequestList): QueuedPr[] =>
   queuedPrs
     .map(pr => {
       const label = pr.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;

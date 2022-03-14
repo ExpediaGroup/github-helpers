@@ -13,7 +13,7 @@ limitations under the License.
 
 import { JUMP_THE_QUEUE_PR_LABEL } from '../../src/constants';
 import { Mocktokit } from '../types';
-import { PullRequestSearchResults } from '../../src/types';
+import { PullRequestList } from '../../src/types';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
 import { removeLabelIfExists } from '../../src/helpers/remove-label';
@@ -55,7 +55,7 @@ describe('updateMergeQueue', () => {
       }
     ];
     beforeEach(async () => {
-      await updateMergeQueue(queuedPrs as PullRequestSearchResults);
+      await updateMergeQueue(queuedPrs as PullRequestList);
     });
 
     it('should call add labels with correct params', () => {
@@ -93,7 +93,7 @@ describe('updateMergeQueue', () => {
       }
     ];
     beforeEach(async () => {
-      await updateMergeQueue(queuedPrs as PullRequestSearchResults);
+      await updateMergeQueue(queuedPrs as PullRequestList);
     });
 
     it('should call add labels with correct params', () => {
@@ -131,7 +131,7 @@ describe('updateMergeQueue', () => {
       }
     ];
     beforeEach(async () => {
-      await updateMergeQueue(queuedPrs as PullRequestSearchResults);
+      await updateMergeQueue(queuedPrs as PullRequestList);
     });
 
     it('should call add labels with correct params', () => {

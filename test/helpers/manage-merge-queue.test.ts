@@ -30,24 +30,20 @@ jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({
     rest: {
-      pulls: { get: jest.fn() },
+      pulls: { get: jest.fn(), list: jest.fn() },
       issues: {
         addLabels: jest.fn()
-      },
-      search: { issuesAndPullRequests: jest.fn() }
+      }
     }
   }))
 }));
-const items = ['some', 'items'];
 
 describe('manageMergeQueue', () => {
   describe('pr merged case', () => {
+    const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }, { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
     beforeEach(async () => {
-      (octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          total_count: 2,
-          items
-        }
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+        data: queuedPrs
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: {
@@ -59,29 +55,21 @@ describe('manageMergeQueue', () => {
       await manageMergeQueue();
     });
 
-    it('should call issuesAndPullRequests search with correct params', () => {
-      expect(octokit.search.issuesAndPullRequests).toHaveBeenCalledWith({
-        q: `org:owner+repo:repo+is:pr+is:open+label:"${READY_FOR_MERGE_PR_LABEL}"`
-      });
-    });
-
     it('should call remove label with correct params', () => {
       expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 123);
       expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #1', 123);
     });
 
     it('should call updateMergeQueue with correct params', () => {
-      expect(updateMergeQueue).toHaveBeenCalledWith(items);
+      expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
     });
   });
 
   describe('pr not ready for merge case', () => {
+    const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }, { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
     beforeEach(async () => {
-      (octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          total_count: 2,
-          items
-        }
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+        data: queuedPrs
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: {
@@ -93,29 +81,21 @@ describe('manageMergeQueue', () => {
       await manageMergeQueue();
     });
 
-    it('should call issuesAndPullRequests search with correct params', () => {
-      expect(octokit.search.issuesAndPullRequests).toHaveBeenCalledWith({
-        q: `org:owner+repo:repo+is:pr+is:open+label:"${READY_FOR_MERGE_PR_LABEL}"`
-      });
-    });
-
     it('should call remove label with correct params', () => {
       expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 123);
       expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #2', 123);
     });
 
     it('should call updateMergeQueue with correct params', () => {
-      expect(updateMergeQueue).toHaveBeenCalledWith(items);
+      expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
     });
   });
 
   describe('pr ready for merge case', () => {
+    const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }, { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
     beforeEach(async () => {
-      (octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          total_count: 2,
-          items
-        }
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+        data: queuedPrs
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: {
@@ -125,12 +105,6 @@ describe('manageMergeQueue', () => {
         }
       }));
       await manageMergeQueue();
-    });
-
-    it('should call issuesAndPullRequests search with correct params', () => {
-      expect(octokit.search.issuesAndPullRequests).toHaveBeenCalledWith({
-        q: `org:owner+repo:repo+is:pr+is:open+label:"${READY_FOR_MERGE_PR_LABEL}"`
-      });
     });
 
     it('should call setCommitStatus with correct params', () => {
@@ -152,12 +126,10 @@ describe('manageMergeQueue', () => {
   });
 
   describe('pr ready for merge case queued #1', () => {
+    const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
     beforeEach(async () => {
-      (octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          total_count: 1,
-          items
-        }
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+        data: queuedPrs
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: {
@@ -167,12 +139,6 @@ describe('manageMergeQueue', () => {
         }
       }));
       await manageMergeQueue();
-    });
-
-    it('should call issuesAndPullRequests search with correct params', () => {
-      expect(octokit.search.issuesAndPullRequests).toHaveBeenCalledWith({
-        q: `org:owner+repo:repo+is:pr+is:open+label:"${READY_FOR_MERGE_PR_LABEL}"`
-      });
     });
 
     it('should call setCommitStatus', () => {
@@ -194,12 +160,16 @@ describe('manageMergeQueue', () => {
   });
 
   describe('pr already in the queue case', () => {
+    const queuedPrs = [
+      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }
+    ];
     beforeEach(async () => {
-      (octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          total_count: 5,
-          items
-        }
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+        data: queuedPrs
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: {
@@ -211,12 +181,6 @@ describe('manageMergeQueue', () => {
       await manageMergeQueue();
     });
 
-    it('should call issuesAndPullRequests search with correct params', () => {
-      expect(octokit.search.issuesAndPullRequests).toHaveBeenCalledWith({
-        q: `org:owner+repo:repo+is:pr+is:open+label:"${READY_FOR_MERGE_PR_LABEL}"`
-      });
-    });
-
     it('should do nothing', () => {
       expect(octokit.issues.addLabels).not.toHaveBeenCalled();
       expect(updateMergeQueue).not.toHaveBeenCalled();
@@ -224,12 +188,16 @@ describe('manageMergeQueue', () => {
   });
 
   describe('jump the queue case', () => {
+    const queuedPrs = [
+      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }
+    ];
     beforeEach(async () => {
-      (octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          total_count: 5,
-          items
-        }
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+        data: queuedPrs
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: {
@@ -241,27 +209,19 @@ describe('manageMergeQueue', () => {
       await manageMergeQueue();
     });
 
-    it('should call issuesAndPullRequests search with correct params', () => {
-      expect(octokit.search.issuesAndPullRequests).toHaveBeenCalledWith({
-        q: `org:owner+repo:repo+is:pr+is:open+label:"${READY_FOR_MERGE_PR_LABEL}"`
-      });
-    });
-
     it('should call updateMergeQueue with correct params', () => {
-      expect(updateMergeQueue).toHaveBeenCalledWith(items);
+      expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
     });
   });
 
   describe('slack reminder integration', () => {
     const login = 'test';
     const slack_webhook_url = 'https://hooks.slack.com/workflows/1234567890';
+    const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
 
     it('should notify user if queue position 1', async () => {
-      (octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          total_count: 1,
-          items
-        }
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+        data: queuedPrs
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: {
@@ -277,11 +237,15 @@ describe('manageMergeQueue', () => {
     });
 
     it('should not notify user if queue position greater than 2', async () => {
-      (octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          total_count: 5,
-          items
-        }
+      const queuedPrs = [
+        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }
+      ];
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+        data: queuedPrs
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: {
@@ -296,11 +260,9 @@ describe('manageMergeQueue', () => {
     });
 
     it('should not notify user if slack_webhook_url not provided', async () => {
-      (octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          total_count: 1,
-          items
-        }
+      const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+        data: queuedPrs
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: {
@@ -316,11 +278,9 @@ describe('manageMergeQueue', () => {
     });
 
     it('should not notify user if login not provided', async () => {
-      (octokit.search.issuesAndPullRequests as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          total_count: 1,
-          items
-        }
+      const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+        data: queuedPrs
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: {
