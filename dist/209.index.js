@@ -40,7 +40,6 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-// test comment
 class SetCommitStatus {
     constructor() {
         this.sha = '';
