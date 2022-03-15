@@ -15,7 +15,6 @@ import { PipelineState } from '../types';
 import { context as githubContext } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
-// test comment
 
 export class SetCommitStatus {
   sha = '';
