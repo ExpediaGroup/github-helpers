@@ -67,8 +67,8 @@ limitations under the License.
 */
 
 
-const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true }), { userAgent: 'github-helpers' })
-    .rest;
+const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true });
+const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(githubToken, { userAgent: 'github-helpers' }).rest;
 
 
 /***/ })
