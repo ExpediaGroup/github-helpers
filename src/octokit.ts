@@ -15,4 +15,5 @@ import * as core from '@actions/core';
 import { Octokit } from '@octokit/rest';
 import { getOctokit } from '@actions/github';
 
-export const octokit = getOctokit(core.getInput('github_token', { required: true })).rest as unknown as Octokit;
+const githubToken = core.getInput('github_token', { required: true });
+export const octokit = getOctokit(githubToken, { userAgent: 'github-helpers' }).rest as unknown as Octokit;
