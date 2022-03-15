@@ -1,12 +1,16 @@
 name: Manage Merge Queue
 
 on:
-  pull_request_target:
+  pull_request:
     branches: [ main ]
-    types: [ synchronize, labeled, unlabeled, closed ]
+    types: [ labeled, unlabeled, closed ]
 
 jobs:
   test:
+    if: |
+      github.event.action == 'closed' ||
+      github.event.label.name == 'READY FOR MERGE' ||
+      github.event.label.name == 'JUMP THE QUEUE'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -19,5 +23,4 @@ jobs:
       - uses: ./
         with:
           helper: manage-merge-queue
-          sha: ${{ github.event.pull_request.head.sha }}
           github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }} # must have repo:write permission

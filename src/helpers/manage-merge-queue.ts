@@ -84,6 +84,8 @@ const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number) =>
 const getQueuedPullRequests = async (): Promise<PullRequestList> => {
   const { data: openPullRequests } = await octokit.pulls.list({
     state: 'open',
+    sort: 'updated',
+    direction: 'desc',
     per_page: 100,
     ...context.repo
   });
