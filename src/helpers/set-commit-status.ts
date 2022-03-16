@@ -11,7 +11,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import * as core from '@actions/core';
 import { PipelineState } from '../types';
 import { context as githubContext } from '@actions/github';
 import { map } from 'bluebird';
@@ -35,7 +34,5 @@ export const setCommitStatus = async ({ sha, context, state, description, target
       target_url,
       ...githubContext.repo
     })
-  ).catch(error => {
-    core.error(error);
-  });
+  );
 };
