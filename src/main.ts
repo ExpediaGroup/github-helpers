@@ -13,7 +13,6 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { camelCase, upperFirst } from 'lodash';
-import { GithubError } from './types';
 import { getActionInputs } from './utils/get-action-inputs';
 
 export const run = async () => {
@@ -25,7 +24,7 @@ export const run = async () => {
     const output = await method(actionInputs);
     core.setOutput('output', output);
   } catch (error) {
-    core.setFailed((error as GithubError).message);
+    core.setFailed(error as Error);
   }
 };
 

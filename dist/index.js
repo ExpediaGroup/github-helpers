@@ -23277,7 +23277,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         core.setOutput('output', output);
     }
     catch (error) {
-        core.setFailed(error.message);
+        core.setFailed(error);
     }
 });
 run();
