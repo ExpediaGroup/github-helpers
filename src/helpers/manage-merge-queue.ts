@@ -82,12 +82,23 @@ const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number) =>
   });
 
 const getQueuedPullRequests = async (): Promise<PullRequestList> => {
-  const { data: openPullRequests } = await octokit.pulls.list({
-    state: 'open',
-    sort: 'updated',
-    direction: 'desc',
-    per_page: 100,
-    ...context.repo
-  });
+  const openPullRequests = [];
+  // eslint-disable-next-line functional/no-let
+  let response;
+  // eslint-disable-next-line functional/no-let
+  let page = 1;
+  do {
+    response = await octokit.pulls.list({
+      state: 'open',
+      sort: 'updated',
+      direction: 'desc',
+      per_page: 100,
+      page,
+      ...context.repo
+    });
+    // eslint-disable-next-line functional/immutable-data
+    openPullRequests.push(...response.data);
+    page += 1;
+  } while (response.data.length);
   return openPullRequests.filter(pr => pr.labels.some(label => label.name === READY_FOR_MERGE_PR_LABEL));
 };
