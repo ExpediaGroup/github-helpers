@@ -1,4 +1,4 @@
-name: Set Commit Status
+name: Rerun PR Checks
 
 on:
   pull_request_target:
