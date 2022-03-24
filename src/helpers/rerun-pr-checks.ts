@@ -21,9 +21,9 @@ export const rerunPrChecks = async () => {
     data: {
       head: {
         user: { login: owner },
-        sha: latestHash
-      },
-      base: { ref: branch }
+        sha: latestHash,
+        ref: branch
+      }
     }
   } = await octokit.pulls.get({
     pull_number: context.issue.number,

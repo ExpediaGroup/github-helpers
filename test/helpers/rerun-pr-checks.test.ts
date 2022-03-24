@@ -61,9 +61,9 @@ describe('rerunPrChecks', () => {
         user: {
           login: 'owner'
         },
-        sha: 'aef123'
-      },
-      base: { ref: 'branch' }
+        sha: 'aef123',
+        ref: 'branch'
+      }
     };
     (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({ data: pullsMockData }));
 
@@ -106,9 +106,9 @@ describe('rerunPrChecks', () => {
         user: {
           login: 'forkuser'
         },
-        sha: 'aef123'
-      },
-      base: { ref: 'branch' }
+        sha: 'aef123',
+        ref: 'branch'
+      }
     };
     (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({ data: pullsMockData }));
 

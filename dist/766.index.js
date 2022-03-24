@@ -41,7 +41,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 const rerunPrChecks = () => __awaiter(void 0, void 0, void 0, function* () {
     /** grab owner in case of fork branch */
-    const { data: { head: { user: { login: owner }, sha: latestHash }, base: { ref: branch } } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    const { data: { head: { user: { login: owner }, sha: latestHash, ref: branch } } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     const workflowRuns = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.actions.listWorkflowRunsForRepo */ .K.actions.listWorkflowRunsForRepo(Object.assign(Object.assign({ branch }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), { owner, event: 'pull_request', per_page: 100 }));
     if (!workflowRuns.data.workflow_runs.length) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`No workflow runs found on branch ${branch} on ${owner}/${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo}`);
