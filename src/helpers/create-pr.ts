@@ -22,7 +22,7 @@ export class CreatePR {
 }
 
 export const createPr = async ({ title, body, head = context.ref.replace('refs/heads/', ''), base }: CreatePR) => {
-  const pr_base = base || await getDefaultBranch();
+  const pr_base = base || (await getDefaultBranch());
   const result = await octokit.pulls.create({
     title,
     head,
