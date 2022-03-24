@@ -20,3 +20,9 @@ jobs:
         with:
           helper: rerun-pr-checks
           github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+
+      - uses: ./
+        with:
+          helper: remove-label
+          label: RE-RUN PR CHECKS
+          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
