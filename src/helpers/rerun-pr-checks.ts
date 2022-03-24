@@ -22,13 +22,13 @@ export const rerunPrChecks = async () => {
       head: {
         user: { login: owner },
         sha: latestHash
-      }
+      },
+      base: { ref: branch }
     }
   } = await octokit.pulls.get({
     pull_number: context.issue.number,
     ...context.repo
   });
-  const branch = context.ref.replace('refs/heads/', '');
   const workflowRuns = await octokit.actions.listWorkflowRunsForRepo({
     branch,
     ...context.repo,
