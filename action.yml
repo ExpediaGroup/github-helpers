@@ -94,6 +94,9 @@ inputs:
   pull_number:
     description: 'Pull request/issue number'
     required: false
+  base:
+    description: 'Base ref to initiate pull request onto'
+    required: false
   head:
     description: 'Head ref to initiate pull request from'
     required: false
