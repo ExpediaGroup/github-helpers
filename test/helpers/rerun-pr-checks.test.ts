@@ -63,7 +63,7 @@ describe('rerunPrChecks', () => {
         },
         sha: 'aef123'
       },
-      base: { branch: 'branch' }
+      base: { ref: 'branch' }
     };
     (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({ data: pullsMockData }));
 
@@ -108,7 +108,7 @@ describe('rerunPrChecks', () => {
         },
         sha: 'aef123'
       },
-      base: { branch: 'branch' }
+      base: { ref: 'branch' }
     };
     (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({ data: pullsMockData }));
 
