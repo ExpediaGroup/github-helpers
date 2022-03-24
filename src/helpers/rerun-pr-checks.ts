@@ -20,7 +20,8 @@ export const rerunPrChecks = async () => {
   const {
     data: {
       head: {
-        user: { login: owner }
+        user: { login: owner },
+        sha: latestHash
       }
     }
   } = await octokit.pulls.get({
@@ -35,12 +36,11 @@ export const rerunPrChecks = async () => {
     event: 'pull_request',
     per_page: 100
   });
-  if (!workflowRuns.data.total_count) {
+  if (!workflowRuns.data.workflow_runs.length) {
     core.info(`No workflow runs found on branch ${branch} on ${owner}/${context.repo.repo}`);
     return;
   }
   /** grab only latest occurrence of each workflow run */
-  const latestHash = workflowRuns.data.workflow_runs[0].head_sha;
   const latestRuns = workflowRuns.data.workflow_runs.filter(({ head_sha }) => head_sha === latestHash);
   core.info(`Found the ${latestRuns} latest runs on this branch, triggering reruns...`);
   /** trigger a rerun for all of the latest runs on the branch */

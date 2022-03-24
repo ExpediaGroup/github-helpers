@@ -41,15 +41,14 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 const rerunPrChecks = () => __awaiter(void 0, void 0, void 0, function* () {
     /** grab owner in case of fork branch */
-    const { data: { head: { user: { login: owner } } } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    const { data: { head: { user: { login: owner }, sha: latestHash } } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     const branch = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref.replace('refs/heads/', '');
     const workflowRuns = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.actions.listWorkflowRunsForRepo */ .K.actions.listWorkflowRunsForRepo(Object.assign(Object.assign({ branch }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), { owner, event: 'pull_request', per_page: 100 }));
-    if (!workflowRuns.data.total_count) {
+    if (!workflowRuns.data.workflow_runs.length) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`No workflow runs found on branch ${branch} on ${owner}/${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo}`);
         return;
     }
     /** grab only latest occurrence of each workflow run */
-    const latestHash = workflowRuns.data.workflow_runs[0].head_sha;
     const latestRuns = workflowRuns.data.workflow_runs.filter(({ head_sha }) => head_sha === latestHash);
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Found the ${latestRuns} latest runs on this branch, triggering reruns...`);
     /** trigger a rerun for all of the latest runs on the branch */

@@ -60,7 +60,8 @@ describe('rerunPrChecks', () => {
       head: {
         user: {
           login: 'owner'
-        }
+        },
+        sha: 'aef123'
       }
     };
     (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({ data: pullsMockData }));
@@ -81,6 +82,21 @@ describe('rerunPrChecks', () => {
     });
 
     expect(octokit.request).toHaveBeenCalledTimes(3);
+    expect(octokit.request).toHaveBeenNthCalledWith(1, 'POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
+      owner: 'owner',
+      repo: context.repo.repo,
+      run_id: 1001
+    });
+    expect(octokit.request).toHaveBeenNthCalledWith(2, 'POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
+      owner: 'owner',
+      repo: context.repo.repo,
+      run_id: 1002
+    });
+    expect(octokit.request).toHaveBeenNthCalledWith(3, 'POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
+      owner: 'owner',
+      repo: context.repo.repo,
+      run_id: 1003
+    });
   });
 
   it('should rerun all the latest workflow runs on a fork PR', async () => {
@@ -88,7 +104,8 @@ describe('rerunPrChecks', () => {
       head: {
         user: {
           login: 'forkuser'
-        }
+        },
+        sha: 'aef123'
       }
     };
     (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({ data: pullsMockData }));
