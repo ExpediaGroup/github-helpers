@@ -18,16 +18,15 @@ export class CreatePR {
   title = '';
   body = '';
   head?: string;
+  base?: string;
 }
 
-export const createPr = async ({ title, body, head = context.ref.replace('refs/heads/', '') }: CreatePR) => {
-  const {
-    data: { default_branch }
-  } = await octokit.repos.get({ ...context.repo });
+export const createPr = async ({ title, body, head = context.ref.replace('refs/heads/', ''), base }: CreatePR) => {
+  const pr_base = base != null ? base : await getDefaultBranch();
   const result = await octokit.pulls.create({
     title,
     head,
-    base: default_branch,
+    base: pr_base,
     body,
     maintainer_can_modify: true,
     ...context.repo
@@ -35,3 +34,10 @@ export const createPr = async ({ title, body, head = context.ref.replace('refs/h
   const pullNumber = result?.data?.number;
   return pullNumber;
 };
+
+async function getDefaultBranch() {
+  const {
+    data: { default_branch }
+  } = await octokit.repos.get({ ...context.repo });
+  return default_branch;
+}
