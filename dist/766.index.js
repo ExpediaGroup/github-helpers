@@ -59,7 +59,10 @@ const rerunPrChecks = () => __awaiter(void 0, void 0, void 0, function* () {
         yield (0,_octokit_request__WEBPACK_IMPORTED_MODULE_4__.request)('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
             owner,
             repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
-            run_id: id
+            run_id: id,
+            headers: {
+                authorization: `token ${_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token')}`
+            }
         });
     }));
 });

@@ -50,7 +50,10 @@ export const rerunPrChecks = async () => {
     await request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
       owner,
       repo: context.repo.repo,
-      run_id: id
+      run_id: id,
+      headers: {
+        authorization: `token ${core.getInput('github_token')}`
+      }
     });
   });
 };
