@@ -25,3 +25,4 @@ jobs:
         with:
           helper: remove-label
           label: RE-RUN PR CHECKS
+          github_token: ${{ secrets.GITHUB_TOKEN }}
