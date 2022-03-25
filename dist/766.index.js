@@ -17,6 +17,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8710);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6161);
+/* harmony import */ var _octokit_request__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6234);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,6 +43,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+
 const rerunPrChecks = () => __awaiter(void 0, void 0, void 0, function* () {
     /** grab owner in case of fork branch */
     const { data: { head: { user: { login: owner }, sha: latestHash, ref: branch } } } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
@@ -54,7 +56,7 @@ const rerunPrChecks = () => __awaiter(void 0, void 0, void 0, function* () {
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`The latest runs on this branch are ${latestWorkflowRuns.map(run => run.name)}, triggering reruns...`);
     return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(latestWorkflowRuns, ({ id, name }) => __awaiter(void 0, void 0, void 0, function* () {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`- Rerunning ${name}`);
-        yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.request */ .K.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
+        yield (0,_octokit_request__WEBPACK_IMPORTED_MODULE_4__.request)('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
             owner,
             repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
             run_id: id

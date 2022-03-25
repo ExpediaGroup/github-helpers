@@ -15,6 +15,7 @@ import * as core from '@actions/core';
 import { context } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
+import { request } from '@octokit/request';
 
 export const rerunPrChecks = async () => {
   /** grab owner in case of fork branch */
@@ -46,7 +47,7 @@ export const rerunPrChecks = async () => {
 
   return map(latestWorkflowRuns, async ({ id, name }) => {
     core.info(`- Rerunning ${name}`);
-    await octokit.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
+    await request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
       owner,
       repo: context.repo.repo,
       run_id: id
