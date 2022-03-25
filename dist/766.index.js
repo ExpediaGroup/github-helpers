@@ -63,6 +63,8 @@ const rerunPrChecks = () => __awaiter(void 0, void 0, void 0, function* () {
             headers: {
                 authorization: `token ${_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token')}`
             }
+        }).catch(error => {
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(JSON.stringify(error));
         });
     }));
 });

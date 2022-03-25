@@ -54,6 +54,8 @@ export const rerunPrChecks = async () => {
       headers: {
         authorization: `token ${core.getInput('github_token')}`
       }
+    }).catch(error => {
+      core.info(JSON.stringify(error));
     });
   });
 };
