@@ -13,6 +13,7 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { context } from '@actions/github';
+import { map } from 'bluebird';
 import { octokit } from '../octokit';
 
 export const rerunPrChecks = async () => {
@@ -40,11 +41,10 @@ export const rerunPrChecks = async () => {
     core.info(`No workflow runs found on branch ${branch} on ${owner}/${context.repo.repo}`);
     return;
   }
-  /** grab only latest occurrence of each workflow run */
-  const latestRuns = workflowRuns.data.workflow_runs.filter(({ head_sha }) => head_sha === latestHash);
-  core.info(`Found the ${latestRuns} latest runs on this branch, triggering reruns...`);
-  /** trigger a rerun for all of the latest runs on the branch */
-  latestRuns.forEach(async ({ id, name }) => {
+  const latestWorkflowRuns = workflowRuns.data.workflow_runs.filter(({ head_sha }) => head_sha === latestHash);
+  core.info(`The latest runs on this branch are ${latestWorkflowRuns.map(run => run.name)}, triggering reruns...`);
+
+  return map(latestWorkflowRuns, async ({ id, name }) => {
     core.info(`- Rerunning ${name}`);
     await octokit.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
       owner,

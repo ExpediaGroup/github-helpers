@@ -14,7 +14,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8710);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6161);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,21 +41,20 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+
 const rerunPrChecks = () => __awaiter(void 0, void 0, void 0, function* () {
     /** grab owner in case of fork branch */
-    const { data: { head: { user: { login: owner }, sha: latestHash, ref: branch } } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
-    const workflowRuns = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.actions.listWorkflowRunsForRepo */ .K.actions.listWorkflowRunsForRepo(Object.assign(Object.assign({ branch }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), { owner, event: 'pull_request', per_page: 100 }));
+    const { data: { head: { user: { login: owner }, sha: latestHash, ref: branch } } } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    const workflowRuns = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.actions.listWorkflowRunsForRepo */ .K.actions.listWorkflowRunsForRepo(Object.assign(Object.assign({ branch }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), { owner, event: 'pull_request', per_page: 100 }));
     if (!workflowRuns.data.workflow_runs.length) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`No workflow runs found on branch ${branch} on ${owner}/${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo}`);
         return;
     }
-    /** grab only latest occurrence of each workflow run */
-    const latestRuns = workflowRuns.data.workflow_runs.filter(({ head_sha }) => head_sha === latestHash);
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Found the ${latestRuns} latest runs on this branch, triggering reruns...`);
-    /** trigger a rerun for all of the latest runs on the branch */
-    latestRuns.forEach(({ id, name }) => __awaiter(void 0, void 0, void 0, function* () {
+    const latestWorkflowRuns = workflowRuns.data.workflow_runs.filter(({ head_sha }) => head_sha === latestHash);
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`The latest runs on this branch are ${latestWorkflowRuns.map(run => run.name)}, triggering reruns...`);
+    return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(latestWorkflowRuns, ({ id, name }) => __awaiter(void 0, void 0, void 0, function* () {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`- Rerunning ${name}`);
-        yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.request */ .K.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
+        yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.request */ .K.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
             owner,
             repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
             run_id: id
