@@ -295,4 +295,32 @@ describe('manageMergeQueue', () => {
       expect(notifyUser).not.toHaveBeenCalled();
     });
   });
+
+  describe('multiple pages of prs', () => {
+    const queuedPrsPage1 = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }, { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
+    const queuedPrsPage2 = [{ labels: [] }, { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
+    const queuedPrs = queuedPrsPage1.concat(queuedPrsPage2).filter(pr => pr.labels.some(label => label.name === READY_FOR_MERGE_PR_LABEL));
+    beforeEach(async () => {
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+        data: page === 1 ? queuedPrsPage1 : queuedPrsPage2
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          merged: true,
+          number: 123,
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
+        }
+      }));
+      await manageMergeQueue();
+    });
+
+    it('should call remove label with correct params', () => {
+      expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 123);
+      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #1', 123);
+    });
+
+    it('should call updateMergeQueue with correct params', () => {
+      expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
+    });
+  });
 });
