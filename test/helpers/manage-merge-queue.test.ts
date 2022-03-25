@@ -302,7 +302,7 @@ describe('manageMergeQueue', () => {
     const queuedPrs = queuedPrsPage1.concat(queuedPrsPage2).filter(pr => pr.labels.some(label => label.name === READY_FOR_MERGE_PR_LABEL));
     beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrsPage1 : queuedPrsPage2
+        data: page === 1 ? queuedPrsPage1 : page === 2 ? queuedPrsPage2 : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: {
