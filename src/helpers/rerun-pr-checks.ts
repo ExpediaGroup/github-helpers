@@ -31,18 +31,21 @@ export const rerunPrChecks = async () => {
     pull_number: context.issue.number,
     ...context.repo
   });
-  const workflowRuns = await octokit.actions.listWorkflowRunsForRepo({
-    branch,
-    ...context.repo,
-    owner,
-    event: 'pull_request',
-    per_page: 100
-  });
-  if (!workflowRuns.data.workflow_runs.length) {
+  const workflowRunResponses = await map(['pull_request', 'pull_request_target'], event =>
+    octokit.actions.listWorkflowRunsForRepo({
+      branch,
+      ...context.repo,
+      owner,
+      event,
+      per_page: 100
+    })
+  );
+  const workflowRuns = workflowRunResponses.map(response => response.data.workflow_runs).flat();
+  if (!workflowRuns.length) {
     core.info(`No workflow runs found on branch ${branch} on ${owner}/${context.repo.repo}`);
     return;
   }
-  const latestWorkflowRuns = workflowRuns.data.workflow_runs.filter(({ head_sha }) => head_sha === latestHash);
+  const latestWorkflowRuns = workflowRuns.filter(({ head_sha }) => head_sha === latestHash);
   core.info(`The latest runs on this branch are ${latestWorkflowRuns.map(run => run.name)}, triggering reruns...`);
 
   return map(latestWorkflowRuns, async ({ id, name }) => {

@@ -11,17 +11,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import * as core from '@actions/core';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
+import { request } from '@octokit/request';
 import { rerunPrChecks } from '../../src/helpers/rerun-pr-checks';
 
 jest.mock('@actions/core');
+jest.mock('@octokit/request');
 jest.mock('@actions/github', () => ({
-  context: { ref: 'refs/heads/branch', repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
+  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({ rest: { pulls: { get: jest.fn() }, actions: { listWorkflowRunsForRepo: jest.fn() }, request: jest.fn() } }))
 }));
-const workflowRunsMockData = {
+const gh_token = 'gh token';
+(core.getInput as jest.Mock).mockReturnValue(gh_token);
+const prWorkflowRuns = {
   total_count: 5,
   workflow_runs: [
     {
@@ -36,90 +41,122 @@ const workflowRunsMockData = {
     },
     {
       id: 1003,
-      name: 'unit-tests',
-      head_sha: 'aef123'
-    },
-    {
-      id: 1004,
       name: 'danger',
-      head_sha: 'efc459'
-    },
-    {
-      id: 1005,
-      name: 'build',
       head_sha: 'efc459'
     }
   ]
 };
-(octokit.actions.listWorkflowRunsForRepo as unknown as Mocktokit).mockImplementation(async () => ({ data: workflowRunsMockData }));
-(octokit.request as unknown as Mocktokit).mockImplementation(async () => {});
+const prTargetWorkflowRuns = {
+  total_count: 5,
+  workflow_runs: [
+    {
+      id: 1004,
+      name: 'danger',
+      head_sha: 'aef123'
+    },
+    {
+      id: 1005,
+      name: 'build',
+      head_sha: 'aef123'
+    },
+    {
+      id: 1006,
+      name: 'danger',
+      head_sha: 'efc459'
+    }
+  ]
+};
+(octokit.actions.listWorkflowRunsForRepo as unknown as Mocktokit).mockImplementation(async ({ event }) =>
+  event === 'pull_request' ? { data: prWorkflowRuns } : { data: prTargetWorkflowRuns }
+);
+const branch = 'branch';
+const owner = 'owner';
+const latestHash = 'aef123';
+const pullsMockData = {
+  head: {
+    user: {
+      login: owner
+    },
+    sha: latestHash,
+    ref: branch
+  }
+};
+(octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({ data: pullsMockData }));
+(request as unknown as jest.Mock).mockResolvedValue({ catch: jest.fn() });
 
 describe('rerunPrChecks', () => {
-  it('should rerun all the latest workflow runs', async () => {
-    const pullsMockData = {
-      head: {
-        user: {
-          login: 'owner'
-        },
-        sha: 'aef123',
-        ref: 'branch'
-      }
-    };
-    (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({ data: pullsMockData }));
-
+  beforeEach(async () => {
     await rerunPrChecks();
+  });
 
+  it('should rerun all the latest workflow runs', () => {
     expect(octokit.pulls.get).toHaveBeenCalledWith({
       pull_number: 123,
       ...context.repo
     });
 
     expect(octokit.actions.listWorkflowRunsForRepo).toHaveBeenCalledWith({
-      branch: 'branch',
-      repo: 'repo',
-      owner: 'owner',
+      branch,
+      repo: context.repo.repo,
+      owner,
       event: 'pull_request',
       per_page: 100
     });
-
-    expect(octokit.request).toHaveBeenCalledTimes(3);
-    expect(octokit.request).toHaveBeenNthCalledWith(1, 'POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
-      owner: 'owner',
-      repo: context.repo.repo,
-      run_id: 1001
-    });
-    expect(octokit.request).toHaveBeenNthCalledWith(2, 'POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
-      owner: 'owner',
-      repo: context.repo.repo,
-      run_id: 1002
-    });
-    expect(octokit.request).toHaveBeenNthCalledWith(3, 'POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
-      owner: 'owner',
-      repo: context.repo.repo,
-      run_id: 1003
-    });
-  });
-
-  it('should rerun all the latest workflow runs on a fork PR', async () => {
-    const pullsMockData = {
-      head: {
-        user: {
-          login: 'forkuser'
-        },
-        sha: 'aef123',
-        ref: 'branch'
-      }
-    };
-    (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({ data: pullsMockData }));
-
-    await rerunPrChecks();
-
     expect(octokit.actions.listWorkflowRunsForRepo).toHaveBeenCalledWith({
-      branch: 'branch',
-      repo: 'repo',
-      owner: 'forkuser',
-      event: 'pull_request',
+      branch,
+      repo: context.repo.repo,
+      owner,
+      event: 'pull_request_target',
       per_page: 100
+    });
+
+    expect(request).toHaveBeenCalledWith('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
+      owner,
+      repo: context.repo.repo,
+      run_id: 1001,
+      headers: {
+        authorization: `token ${gh_token}`
+      }
+    });
+    expect(request).toHaveBeenCalledWith('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
+      owner,
+      repo: context.repo.repo,
+      run_id: 1002,
+      headers: {
+        authorization: `token ${gh_token}`
+      }
+    });
+    expect(request).not.toHaveBeenCalledWith('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
+      owner,
+      repo: context.repo.repo,
+      run_id: 1003,
+      headers: {
+        authorization: `token ${gh_token}`
+      }
+    });
+    expect(request).toHaveBeenCalledWith('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
+      owner,
+      repo: context.repo.repo,
+      run_id: 1004,
+      headers: {
+        authorization: `token ${gh_token}`
+      }
+    });
+    expect(request).toHaveBeenCalledWith('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
+      owner,
+      repo: context.repo.repo,
+      run_id: 1005,
+      headers: {
+        authorization: `token ${gh_token}`
+      }
+    });
+    expect(request).not.toHaveBeenCalledWith('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
+      owner,
+      repo: context.repo.repo,
+      run_id: 1006,
+      headers: {
+        authorization: `token ${gh_token}`
+      }
     });
   });
 });
