@@ -55,7 +55,9 @@ export const rerunPrChecks = async () => {
         authorization: `token ${core.getInput('github_token')}`
       }
     }).catch(error => {
-      core.info(JSON.stringify(error));
+      if (error.status === 403) {
+        core.info(`${name} is already running.`);
+      }
     });
   });
 };
