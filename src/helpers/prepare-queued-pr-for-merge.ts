@@ -46,9 +46,10 @@ export const updatePrWithMainline = async (pullRequest: PullRequest | SimplePull
   } catch (error) {
     if ((error as GithubError).status === 204) {
       core.info('The first PR in the queue is already up to date!');
-    }
-    if ((error as GithubError).status === 409) {
+    } else if ((error as GithubError).status === 409) {
       core.info('The first PR in the queue has a merge conflict.');
+    } else {
+      core.debug((error as GithubError).message);
     }
   }
 };

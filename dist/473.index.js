@@ -288,8 +288,11 @@ const updatePrWithMainline = (pullRequest) => __awaiter(void 0, void 0, void 0, 
         if (error.status === 204) {
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('The first PR in the queue is already up to date!');
         }
-        if (error.status === 409) {
+        else if (error.status === 409) {
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('The first PR in the queue has a merge conflict.');
+        }
+        else {
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(error.message);
         }
     }
 });
