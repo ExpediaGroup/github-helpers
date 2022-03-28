@@ -117,9 +117,12 @@ const updatePrWithMainline = (pullRequest) => __awaiter(void 0, void 0, void 0, 
         }
         else if (error.status >= 400) {
             if (error.status === 409)
-                _actions_core__WEBPACK_IMPORTED_MODULE_0__.error('The first PR in the queue has a merge conflict.');
+                _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('The first PR in the queue has a merge conflict.');
             else
-                _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(error.message);
+                _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
+        }
+        else {
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(error.message);
         }
     }
 });
