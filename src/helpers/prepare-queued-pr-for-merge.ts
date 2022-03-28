@@ -44,13 +44,7 @@ export const updatePrWithMainline = async (pullRequest: PullRequest | SimplePull
       ...context.repo
     });
   } catch (error) {
-    if ((error as GithubError).status === 204) {
-      core.info('The first PR in the queue is already up to date!');
-    } else if ((error as GithubError).status >= 400) {
-      if ((error as GithubError).status === 409) core.setFailed('The first PR in the queue has a merge conflict.');
-      else core.setFailed((error as GithubError).message);
-    } else {
-      core.info((error as GithubError).message);
-    }
+    if ((error as GithubError).status === 409) core.setFailed('The first PR in the queue has a merge conflict.');
+    else core.setFailed((error as GithubError).message);
   }
 };
