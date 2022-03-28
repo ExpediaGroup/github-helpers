@@ -224,7 +224,7 @@ describe('prepareQueuedPrForMerge', () => {
     });
 
     it('should call core.error', () => {
-      expect(core.error).toHaveBeenCalled();
+      expect(core.setFailed).toHaveBeenCalled();
     });
   });
 });
