@@ -223,8 +223,8 @@ describe('prepareQueuedPrForMerge', () => {
       await prepareQueuedPrForMerge();
     });
 
-    it('should call core.info', () => {
-      expect(core.info).toHaveBeenCalled();
+    it('should call core.error', () => {
+      expect(core.error).toHaveBeenCalled();
     });
   });
 });
