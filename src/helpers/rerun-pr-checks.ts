@@ -12,6 +12,7 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
+import { GithubError } from '../types';
 import { context } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
@@ -46,10 +47,10 @@ export const rerunPrChecks = async () => {
     return;
   }
   const latestWorkflowRuns = workflowRuns.filter(({ head_sha }) => head_sha === latestHash);
-  core.info(`The latest runs on this branch are ${latestWorkflowRuns.map(run => run.name)}, triggering reruns...`);
+  core.info(`There are ${latestWorkflowRuns.length} checks associated with the latest commit, triggering reruns...`);
 
   return map(latestWorkflowRuns, async ({ id, name }) => {
-    core.info(`- Rerunning ${name}`);
+    core.info(`- Rerunning ${name} (${id})`);
     await request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
       owner,
       repo: context.repo.repo,
@@ -60,6 +61,8 @@ export const rerunPrChecks = async () => {
     }).catch(error => {
       if (error.status === 403) {
         core.info(`${name} is already running.`);
+      } else {
+        core.setFailed((error as GithubError).message);
       }
     });
   });
