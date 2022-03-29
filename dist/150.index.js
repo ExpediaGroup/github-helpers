@@ -43,14 +43,20 @@ class CreatePR {
         this.body = '';
     }
 }
-const createPr = ({ title, body, head = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.ref.replace('refs/heads/', '') }) => __awaiter(void 0, void 0, void 0, function* () {
+const createPr = ({ title, body, head = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.ref.replace('refs/heads/', ''), base }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const { data: { default_branch } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.get */ .K.repos.get(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    const pr_base = base || (yield getDefaultBranch());
     const result = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.create */ .K.pulls.create(Object.assign({ title,
-        head, base: default_branch, body, maintainer_can_modify: true }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+        head, base: pr_base, body, maintainer_can_modify: true }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     const pullNumber = (_a = result === null || result === void 0 ? void 0 : result.data) === null || _a === void 0 ? void 0 : _a.number;
     return pullNumber;
 });
+function getDefaultBranch() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { data: { default_branch } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.get */ .K.repos.get(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+        return default_branch;
+    });
+}
 
 
 /***/ }),
