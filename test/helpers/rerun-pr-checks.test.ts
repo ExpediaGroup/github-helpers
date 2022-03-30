@@ -83,16 +83,16 @@ const pullsMockData = {
 };
 (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({ data: pullsMockData }));
 (request as unknown as jest.Mock).mockResolvedValue({ catch: jest.fn() });
-const baseUrl = 'https://github.company.co/api/v3';
+const base_url = 'https://github.company.co/api/v3';
 
 describe('rerunPrChecks', () => {
   beforeEach(async () => {
-    await rerunPrChecks({ baseUrl });
+    await rerunPrChecks({ base_url });
   });
 
   it('should rerun all the latest workflow runs', () => {
     expect(request.defaults).toHaveBeenCalledWith({
-      baseUrl,
+      baseUrl: base_url,
       headers: {
         authorization: `token ${core.getInput('github_token')}`
       }

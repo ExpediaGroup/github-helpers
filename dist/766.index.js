@@ -47,7 +47,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 class RerunPrChecks {
 }
-const rerunPrChecks = ({ baseUrl }) => __awaiter(void 0, void 0, void 0, function* () {
+const rerunPrChecks = ({ base_url: baseUrl }) => __awaiter(void 0, void 0, void 0, function* () {
     /** set defaults */
     _octokit_request__WEBPACK_IMPORTED_MODULE_4__.request.defaults({
         baseUrl,

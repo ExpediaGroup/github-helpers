@@ -19,10 +19,10 @@ import { octokit } from '../octokit';
 import { request } from '@octokit/request';
 
 export class RerunPrChecks {
-  baseUrl?: string;
+  base_url?: string;
 }
 
-export const rerunPrChecks = async ({ baseUrl }: RerunPrChecks) => {
+export const rerunPrChecks = async ({ base_url: baseUrl }: RerunPrChecks) => {
   /** set defaults */
   request.defaults({
     baseUrl,
