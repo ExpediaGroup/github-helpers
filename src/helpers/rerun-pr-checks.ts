@@ -18,14 +18,9 @@ import { map } from 'bluebird';
 import { octokit } from '../octokit';
 import { request } from '@octokit/request';
 
-export class RerunPrChecks {
-  base_url?: string;
-}
-
-export const rerunPrChecks = async ({ base_url: baseUrl }: RerunPrChecks) => {
+export const rerunPrChecks = async () => {
   /** set defaults */
   request.defaults({
-    baseUrl,
     headers: {
       authorization: `token ${core.getInput('github_token')}`
     }
@@ -60,13 +55,9 @@ export const rerunPrChecks = async ({ base_url: baseUrl }: RerunPrChecks) => {
   const latestWorkflowRuns = workflowRuns.filter(({ head_sha }) => head_sha === latestHash);
   core.info(`There are ${latestWorkflowRuns.length} checks associated with the latest commit, triggering reruns...`);
 
-  return map(latestWorkflowRuns, async ({ id, name }) => {
+  return map(latestWorkflowRuns, async ({ id, name, rerun_url }) => {
     core.info(`- Rerunning ${name} (${id})`);
-    await request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
-      owner,
-      repo: context.repo.repo,
-      run_id: id
-    }).catch(error => {
+    await request(`POST ${rerun_url}`).catch(error => {
       if (error.status === 403) {
         core.info(`${name} is already running.`);
       } else {

@@ -100,9 +100,6 @@ inputs:
   head:
     description: 'Head ref to initiate pull request from'
     required: false
-  base_url:
-    description: Base URL of the GitHub API
-    required: false
 outputs:
   output:
     description: 'The output of the helper'

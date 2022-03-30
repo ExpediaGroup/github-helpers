@@ -8,7 +8,6 @@ exports.modules = {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "RerunPrChecks": () => (/* binding */ RerunPrChecks),
 /* harmony export */   "rerunPrChecks": () => (/* binding */ rerunPrChecks)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
@@ -45,12 +44,9 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-class RerunPrChecks {
-}
-const rerunPrChecks = ({ base_url: baseUrl }) => __awaiter(void 0, void 0, void 0, function* () {
+const rerunPrChecks = () => __awaiter(void 0, void 0, void 0, function* () {
     /** set defaults */
     _octokit_request__WEBPACK_IMPORTED_MODULE_4__.request.defaults({
-        baseUrl,
         headers: {
             authorization: `token ${_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token')}`
         }
@@ -66,13 +62,9 @@ const rerunPrChecks = ({ base_url: baseUrl }) => __awaiter(void 0, void 0, void 
     }
     const latestWorkflowRuns = workflowRuns.filter(({ head_sha }) => head_sha === latestHash);
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`There are ${latestWorkflowRuns.length} checks associated with the latest commit, triggering reruns...`);
-    return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(latestWorkflowRuns, ({ id, name }) => __awaiter(void 0, void 0, void 0, function* () {
+    return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(latestWorkflowRuns, ({ id, name, rerun_url }) => __awaiter(void 0, void 0, void 0, function* () {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`- Rerunning ${name} (${id})`);
-        yield (0,_octokit_request__WEBPACK_IMPORTED_MODULE_4__.request)('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
-            owner,
-            repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
-            run_id: id
-        }).catch(error => {
+        yield (0,_octokit_request__WEBPACK_IMPORTED_MODULE_4__.request)(`POST ${rerun_url}`).catch(error => {
             if (error.status === 403) {
                 _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`${name} is already running.`);
             }
