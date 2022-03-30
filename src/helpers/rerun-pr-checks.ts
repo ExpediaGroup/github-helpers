@@ -19,12 +19,6 @@ import { octokit } from '../octokit';
 import { request } from '@octokit/request';
 
 export const rerunPrChecks = async () => {
-  /** set defaults */
-  request.defaults({
-    headers: {
-      authorization: `token ${core.getInput('github_token')}`
-    }
-  });
   /** grab owner in case of fork branch */
   const {
     data: {
@@ -57,7 +51,11 @@ export const rerunPrChecks = async () => {
 
   return map(latestWorkflowRuns, async ({ id, name, rerun_url }) => {
     core.info(`- Rerunning ${name} (${id})`);
-    await request(`POST ${rerun_url}`).catch(error => {
+    await request(`POST ${rerun_url}`, {
+      headers: {
+        authorization: `token ${core.getInput('github_token')}`
+      }
+    }).catch(error => {
       if (error.status === 403) {
         core.info(`${name} is already running.`);
       } else {

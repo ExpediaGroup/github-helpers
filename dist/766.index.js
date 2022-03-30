@@ -45,12 +45,6 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const rerunPrChecks = () => __awaiter(void 0, void 0, void 0, function* () {
-    /** set defaults */
-    _octokit_request__WEBPACK_IMPORTED_MODULE_4__.request.defaults({
-        headers: {
-            authorization: `token ${_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token')}`
-        }
-    });
     /** grab owner in case of fork branch */
     const { data: { head: { user: { login: owner }, sha: latestHash, ref: branch } } } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     const workflowRunResponses = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(['pull_request', 'pull_request_target'], event => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.actions.listWorkflowRunsForRepo */ .K.actions.listWorkflowRunsForRepo(Object.assign(Object.assign({ branch }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), { owner,
@@ -64,7 +58,11 @@ const rerunPrChecks = () => __awaiter(void 0, void 0, void 0, function* () {
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`There are ${latestWorkflowRuns.length} checks associated with the latest commit, triggering reruns...`);
     return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(latestWorkflowRuns, ({ id, name, rerun_url }) => __awaiter(void 0, void 0, void 0, function* () {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`- Rerunning ${name} (${id})`);
-        yield (0,_octokit_request__WEBPACK_IMPORTED_MODULE_4__.request)(`POST ${rerun_url}`).catch(error => {
+        yield (0,_octokit_request__WEBPACK_IMPORTED_MODULE_4__.request)(`POST ${rerun_url}`, {
+            headers: {
+                authorization: `token ${_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token')}`
+            }
+        }).catch(error => {
             if (error.status === 403) {
                 _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`${name} is already running.`);
             }

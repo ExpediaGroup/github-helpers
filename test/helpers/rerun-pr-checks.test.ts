@@ -96,12 +96,6 @@ describe('rerunPrChecks', () => {
   });
 
   it('should rerun all the latest workflow runs', () => {
-    expect(request.defaults).toHaveBeenCalledWith({
-      headers: {
-        authorization: `token ${core.getInput('github_token')}`
-      }
-    });
-
     expect(octokit.pulls.get).toHaveBeenCalledWith({
       pull_number: 123,
       ...context.repo
@@ -122,11 +116,35 @@ describe('rerunPrChecks', () => {
       per_page: 100
     });
 
-    expect(request).toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1001/rerun');
-    expect(request).toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1002/rerun');
-    expect(request).not.toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1003/rerun');
-    expect(request).toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1004/rerun');
-    expect(request).toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1005/rerun');
-    expect(request).not.toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1006/rerun');
+    expect(request).toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1001/rerun', {
+      headers: {
+        authorization: `token ${gh_token}`
+      }
+    });
+    expect(request).toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1002/rerun', {
+      headers: {
+        authorization: `token ${gh_token}`
+      }
+    });
+    expect(request).not.toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1003/rerun', {
+      headers: {
+        authorization: `token ${gh_token}`
+      }
+    });
+    expect(request).toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1004/rerun', {
+      headers: {
+        authorization: `token ${gh_token}`
+      }
+    });
+    expect(request).toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1005/rerun', {
+      headers: {
+        authorization: `token ${gh_token}`
+      }
+    });
+    expect(request).not.toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1006/rerun', {
+      headers: {
+        authorization: `token ${gh_token}`
+      }
+    });
   });
 });
