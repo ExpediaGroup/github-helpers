@@ -222,18 +222,15 @@ const addPrToQueue = (pullRequest, queuePosition) => manage_merge_queue_awaiter(
     return octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`], issue_number: github.context.issue.number }, github.context.repo));
 });
 const getQueuedPullRequests = () => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
-    const openPullRequests = [];
-    // eslint-disable-next-line functional/no-let
-    let response;
-    // eslint-disable-next-line functional/no-let
-    let page = 1;
-    do {
-        response = yield octokit/* octokit.pulls.list */.K.pulls.list(Object.assign({ state: 'open', sort: 'updated', direction: 'desc', per_page: 100, page }, github.context.repo));
-        // eslint-disable-next-line functional/immutable-data
-        openPullRequests.push(...response.data);
-        page += 1;
-    } while (response.data.length);
+    const openPullRequests = yield paginateAllOpenPullRequests();
     return openPullRequests.filter(pr => pr.labels.some(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak));
+});
+const paginateAllOpenPullRequests = (page = 1) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
+    const response = yield octokit/* octokit.pulls.list */.K.pulls.list(Object.assign({ state: 'open', sort: 'updated', direction: 'desc', per_page: 100, page }, github.context.repo));
+    if (!response.data.length) {
+        return [];
+    }
+    return response.data.concat(yield paginateAllOpenPullRequests(page + 1));
 });
 
 
