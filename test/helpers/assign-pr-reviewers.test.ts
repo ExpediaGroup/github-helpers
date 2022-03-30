@@ -109,9 +109,9 @@ describe('assignPrReviewer', () => {
       await assignPrReviewers({ teams, slack_webhook_url });
     });
 
-    it.each(['assignee'])('should call notifyUser with correct params', assignee => {
+    it('should call notifyUser with correct params', () => {
       expect(notifyUser).toHaveBeenCalledWith({
-        login: assignee,
+        login: 'assignee',
         pull_number,
         slack_webhook_url
       });
