@@ -38,7 +38,8 @@ export const rerunPrChecks = async () => {
       ...context.repo,
       owner,
       event,
-      per_page: 100
+      per_page: 100,
+      status: 'completed'
     })
   );
   const workflowRuns = workflowRunResponses.map(response => response.data.workflow_runs).flat();

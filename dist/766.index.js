@@ -48,7 +48,7 @@ const rerunPrChecks = () => __awaiter(void 0, void 0, void 0, function* () {
     /** grab owner in case of fork branch */
     const { data: { head: { user: { login: owner }, sha: latestHash, ref: branch } } } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     const workflowRunResponses = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(['pull_request', 'pull_request_target'], event => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.actions.listWorkflowRunsForRepo */ .K.actions.listWorkflowRunsForRepo(Object.assign(Object.assign({ branch }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), { owner,
-        event, per_page: 100 })));
+        event, per_page: 100, status: 'completed' })));
     const workflowRuns = workflowRunResponses.map(response => response.data.workflow_runs).flat();
     if (!workflowRuns.length) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`No workflow runs found on branch ${branch} on ${owner}/${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo}`);

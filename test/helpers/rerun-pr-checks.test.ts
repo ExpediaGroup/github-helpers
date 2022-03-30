@@ -106,14 +106,16 @@ describe('rerunPrChecks', () => {
       repo: context.repo.repo,
       owner,
       event: 'pull_request',
-      per_page: 100
+      per_page: 100,
+      status: 'completed'
     });
     expect(octokit.actions.listWorkflowRunsForRepo).toHaveBeenCalledWith({
       branch,
       repo: context.repo.repo,
       owner,
       event: 'pull_request_target',
-      per_page: 100
+      per_page: 100,
+      status: 'completed'
     });
 
     expect(request).toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1001/rerun', {
