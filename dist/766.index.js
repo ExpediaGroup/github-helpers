@@ -63,12 +63,7 @@ const rerunPrChecks = () => __awaiter(void 0, void 0, void 0, function* () {
                 authorization: `token ${_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token')}`
             }
         }).catch(error => {
-            if (error.status === 403) {
-                _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`${name} is already running.`);
-            }
-            else {
-                _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
-            }
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
         });
     }));
 });
