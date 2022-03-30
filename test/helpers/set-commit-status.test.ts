@@ -65,10 +65,18 @@ describe('setCommitStatus', () => {
       });
     });
 
-    it.each(['context1', 'context2'])('should call createCommitStatus with correct params', context => {
+    it('should call createCommitStatus with correct params', () => {
       expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
         sha,
-        context,
+        context: 'context1',
+        state,
+        description,
+        target_url,
+        ...githubContext.repo
+      });
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+        sha,
+        context: 'context2',
         state,
         description,
         target_url,
