@@ -83,13 +83,21 @@ const pullsMockData = {
 };
 (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({ data: pullsMockData }));
 (request as unknown as jest.Mock).mockResolvedValue({ catch: jest.fn() });
+const baseUrl = 'https://github.company.co/api/v3';
 
 describe('rerunPrChecks', () => {
   beforeEach(async () => {
-    await rerunPrChecks();
+    await rerunPrChecks({ baseUrl });
   });
 
   it('should rerun all the latest workflow runs', () => {
+    expect(request.defaults).toHaveBeenCalledWith({
+      baseUrl,
+      headers: {
+        authorization: `token ${core.getInput('github_token')}`
+      }
+    });
+
     expect(octokit.pulls.get).toHaveBeenCalledWith({
       pull_number: 123,
       ...context.repo
@@ -113,50 +121,32 @@ describe('rerunPrChecks', () => {
     expect(request).toHaveBeenCalledWith('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
       owner,
       repo: context.repo.repo,
-      run_id: 1001,
-      headers: {
-        authorization: `token ${gh_token}`
-      }
+      run_id: 1001
     });
     expect(request).toHaveBeenCalledWith('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
       owner,
       repo: context.repo.repo,
-      run_id: 1002,
-      headers: {
-        authorization: `token ${gh_token}`
-      }
+      run_id: 1002
     });
     expect(request).not.toHaveBeenCalledWith('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
       owner,
       repo: context.repo.repo,
-      run_id: 1003,
-      headers: {
-        authorization: `token ${gh_token}`
-      }
+      run_id: 1003
     });
     expect(request).toHaveBeenCalledWith('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
       owner,
       repo: context.repo.repo,
-      run_id: 1004,
-      headers: {
-        authorization: `token ${gh_token}`
-      }
+      run_id: 1004
     });
     expect(request).toHaveBeenCalledWith('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
       owner,
       repo: context.repo.repo,
-      run_id: 1005,
-      headers: {
-        authorization: `token ${gh_token}`
-      }
+      run_id: 1005
     });
     expect(request).not.toHaveBeenCalledWith('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
       owner,
       repo: context.repo.repo,
-      run_id: 1006,
-      headers: {
-        authorization: `token ${gh_token}`
-      }
+      run_id: 1006
     });
   });
 });

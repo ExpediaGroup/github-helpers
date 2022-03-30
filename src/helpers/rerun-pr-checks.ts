@@ -18,7 +18,18 @@ import { map } from 'bluebird';
 import { octokit } from '../octokit';
 import { request } from '@octokit/request';
 
-export const rerunPrChecks = async () => {
+export class RerunPrChecks {
+  baseUrl?: string;
+}
+
+export const rerunPrChecks = async ({ baseUrl }: RerunPrChecks) => {
+  /** set defaults */
+  request.defaults({
+    baseUrl,
+    headers: {
+      authorization: `token ${core.getInput('github_token')}`
+    }
+  });
   /** grab owner in case of fork branch */
   const {
     data: {
@@ -54,10 +65,7 @@ export const rerunPrChecks = async () => {
     await request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
       owner,
       repo: context.repo.repo,
-      run_id: id,
-      headers: {
-        authorization: `token ${core.getInput('github_token')}`
-      }
+      run_id: id
     }).catch(error => {
       if (error.status === 403) {
         core.info(`${name} is already running.`);
