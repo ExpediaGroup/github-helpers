@@ -13,7 +13,7 @@ with:
   github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-The `helper` and `github_token` inputs are required for all helpers. Additional inputs vary by helper. Each helper file in `src/helpers` contains an interface that defines which additional inputs are required or optional. If a required input is ommitted, the helper will throw a descriptive error.
+The `helper` and `github_token` inputs are required for all helpers. Additi onal inputs vary by helper. Each helper file in `src/helpers` contains an interface that defines which additional inputs are required or optional. If a required input is ommitted, the helper will throw a descriptive error.
 
 ### Example
 Input interface in `src/helpers/set-commit-status.ts`:
