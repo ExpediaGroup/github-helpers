@@ -32,17 +32,20 @@ const prWorkflowRuns = {
     {
       id: 1001,
       name: 'danger',
-      head_sha: 'aef123'
+      head_sha: 'aef123',
+      rerun_url: 'https://api.github.com/repos/owner/repo/actions/runs/1001/rerun'
     },
     {
       id: 1002,
       name: 'build',
-      head_sha: 'aef123'
+      head_sha: 'aef123',
+      rerun_url: 'https://api.github.com/repos/owner/repo/actions/runs/1002/rerun'
     },
     {
       id: 1003,
       name: 'danger',
-      head_sha: 'efc459'
+      head_sha: 'efc459',
+      rerun_url: 'https://api.github.com/repos/owner/repo/actions/runs/1003/rerun'
     }
   ]
 };
@@ -52,17 +55,20 @@ const prTargetWorkflowRuns = {
     {
       id: 1004,
       name: 'danger',
-      head_sha: 'aef123'
+      head_sha: 'aef123',
+      rerun_url: 'https://api.github.com/repos/owner/repo/actions/runs/1004/rerun'
     },
     {
       id: 1005,
       name: 'build',
-      head_sha: 'aef123'
+      head_sha: 'aef123',
+      rerun_url: 'https://api.github.com/repos/owner/repo/actions/runs/1005/rerun'
     },
     {
       id: 1006,
       name: 'danger',
-      head_sha: 'efc459'
+      head_sha: 'efc459',
+      rerun_url: 'https://api.github.com/repos/owner/repo/actions/runs/1006/rerun'
     }
   ]
 };
@@ -100,60 +106,44 @@ describe('rerunPrChecks', () => {
       repo: context.repo.repo,
       owner,
       event: 'pull_request',
-      per_page: 100
+      per_page: 100,
+      status: 'completed'
     });
     expect(octokit.actions.listWorkflowRunsForRepo).toHaveBeenCalledWith({
       branch,
       repo: context.repo.repo,
       owner,
       event: 'pull_request_target',
-      per_page: 100
+      per_page: 100,
+      status: 'completed'
     });
 
-    expect(request).toHaveBeenCalledWith('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
-      owner,
-      repo: context.repo.repo,
-      run_id: 1001,
+    expect(request).toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1001/rerun', {
       headers: {
         authorization: `token ${gh_token}`
       }
     });
-    expect(request).toHaveBeenCalledWith('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
-      owner,
-      repo: context.repo.repo,
-      run_id: 1002,
+    expect(request).toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1002/rerun', {
       headers: {
         authorization: `token ${gh_token}`
       }
     });
-    expect(request).not.toHaveBeenCalledWith('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
-      owner,
-      repo: context.repo.repo,
-      run_id: 1003,
+    expect(request).not.toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1003/rerun', {
       headers: {
         authorization: `token ${gh_token}`
       }
     });
-    expect(request).toHaveBeenCalledWith('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
-      owner,
-      repo: context.repo.repo,
-      run_id: 1004,
+    expect(request).toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1004/rerun', {
       headers: {
         authorization: `token ${gh_token}`
       }
     });
-    expect(request).toHaveBeenCalledWith('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
-      owner,
-      repo: context.repo.repo,
-      run_id: 1005,
+    expect(request).toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1005/rerun', {
       headers: {
         authorization: `token ${gh_token}`
       }
     });
-    expect(request).not.toHaveBeenCalledWith('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
-      owner,
-      repo: context.repo.repo,
-      run_id: 1006,
+    expect(request).not.toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1006/rerun', {
       headers: {
         authorization: `token ${gh_token}`
       }

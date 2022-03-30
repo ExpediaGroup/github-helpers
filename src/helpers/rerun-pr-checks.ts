@@ -38,7 +38,8 @@ export const rerunPrChecks = async () => {
       ...context.repo,
       owner,
       event,
-      per_page: 100
+      per_page: 100,
+      status: 'completed'
     })
   );
   const workflowRuns = workflowRunResponses.map(response => response.data.workflow_runs).flat();
@@ -49,12 +50,9 @@ export const rerunPrChecks = async () => {
   const latestWorkflowRuns = workflowRuns.filter(({ head_sha }) => head_sha === latestHash);
   core.info(`There are ${latestWorkflowRuns.length} checks associated with the latest commit, triggering reruns...`);
 
-  return map(latestWorkflowRuns, async ({ id, name }) => {
+  return map(latestWorkflowRuns, async ({ id, name, rerun_url }) => {
     core.info(`- Rerunning ${name} (${id})`);
-    await request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
-      owner,
-      repo: context.repo.repo,
-      run_id: id,
+    await request(`POST ${rerun_url}`, {
       headers: {
         authorization: `token ${core.getInput('github_token')}`
       }
