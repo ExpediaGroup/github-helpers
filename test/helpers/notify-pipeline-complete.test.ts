@@ -49,9 +49,23 @@ describe('setOpenPullRequestStatus', () => {
     });
   });
 
-  it.each(['sha 1', 'sha 2', 'sha 3'])('should call createCommitStatus with correct params', sha => {
+  it('should call createCommitStatus with correct params', () => {
     expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
-      sha,
+      sha: 'sha 1',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'success',
+      description,
+      ...context.repo
+    });
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+      sha: 'sha 2',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'success',
+      description,
+      ...context.repo
+    });
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+      sha: 'sha 3',
       context: DEFAULT_PIPELINE_STATUS,
       state: 'success',
       description,
