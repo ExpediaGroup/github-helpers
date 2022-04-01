@@ -11,14 +11,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { ChangedFilesList } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
 export const getChangedFilepaths = async (pull_number: number) => {
-  const { data } = await octokit.pulls.listFiles({
+  const changedFiles = await paginateAllChangedFilepaths(pull_number);
+  return changedFiles.map(file => file.filename);
+};
+
+const paginateAllChangedFilepaths = async (pull_number: number, page = 1): Promise<ChangedFilesList> => {
+  const response = await octokit.pulls.listFiles({
     pull_number,
     per_page: 100,
+    page,
     ...context.repo
   });
-  return data.map(file => file.filename);
+  if (!response.data.length) {
+    return [];
+  }
+  return response.data.concat(await paginateAllChangedFilepaths(pull_number, page + 1));
 };

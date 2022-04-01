@@ -174,8 +174,15 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const getChangedFilepaths = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {
-    const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number, per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-    return data.map(file => file.filename);
+    const changedFiles = yield paginateAllChangedFilepaths(pull_number);
+    return changedFiles.map(file => file.filename);
+});
+const paginateAllChangedFilepaths = (pull_number, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number, per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    if (!response.data.length) {
+        return [];
+    }
+    return response.data.concat(yield paginateAllChangedFilepaths(pull_number, page + 1));
 });
 
 

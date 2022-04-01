@@ -43,15 +43,18 @@ describe('getCoreMemberLogins', () => {
   describe('codeowners tests', () => {
     describe('only some codeowners case', () => {
       beforeEach(() => {
-        (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
-          data: [
-            {
-              filename: file1
-            },
-            {
-              filename: file2
-            }
-          ]
+        (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+          data:
+            page === 1
+              ? [
+                  {
+                    filename: file1
+                  },
+                  {
+                    filename: file2
+                  }
+                ]
+              : []
         }));
       });
 
@@ -64,21 +67,24 @@ describe('getCoreMemberLogins', () => {
 
     describe('all codeowners case', () => {
       beforeEach(() => {
-        (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
-          data: [
-            {
-              filename: file1
-            },
-            {
-              filename: file2
-            },
-            {
-              filename: file3
-            },
-            {
-              filename: pkg
-            }
-          ]
+        (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+          data:
+            page === 1
+              ? [
+                  {
+                    filename: file1
+                  },
+                  {
+                    filename: file2
+                  },
+                  {
+                    filename: file3
+                  },
+                  {
+                    filename: pkg
+                  }
+                ]
+              : []
         }));
       });
 
@@ -94,21 +100,24 @@ describe('getCoreMemberLogins', () => {
     const teams = ['test-owners-1', 'test-owners-2'];
 
     beforeEach(() => {
-      (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
-        data: [
-          {
-            filename: file1
-          },
-          {
-            filename: file2
-          },
-          {
-            filename: file3
-          },
-          {
-            filename: pkg
-          }
-        ]
+      (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+        data:
+          page === 1
+            ? [
+                {
+                  filename: file1
+                },
+                {
+                  filename: file2
+                },
+                {
+                  filename: file3
+                },
+                {
+                  filename: pkg
+                }
+              ]
+            : []
       }));
     });
 

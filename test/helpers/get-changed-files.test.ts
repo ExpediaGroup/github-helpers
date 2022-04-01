@@ -47,8 +47,8 @@ const mock_data = [
     patch: '@@ -132,7 +132,7 @@ module Test @@ -1000,7 +1000,7 @@ module Test'
   }
 ];
-(octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
-  data: mock_data
+(octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+  data: page === 1 ? mock_data : []
 }));
 
 describe('getChangedFiles', () => {
