@@ -28,27 +28,30 @@ const file3 = 'packages/def/file1.txt';
 const file4 = 'packages/ghi/more/dirs/file1.md';
 const file5 = 'docs/xyz/file1.js';
 const pkg = 'package.json';
-(octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
-  data: [
-    {
-      filename: file1
-    },
-    {
-      filename: file2
-    },
-    {
-      filename: file3
-    },
-    {
-      filename: file4
-    },
-    {
-      filename: file5
-    },
-    {
-      filename: pkg
-    }
-  ]
+(octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+  data:
+    page === 1
+      ? [
+          {
+            filename: file1
+          },
+          {
+            filename: file2
+          },
+          {
+            filename: file3
+          },
+          {
+            filename: file4
+          },
+          {
+            filename: file5
+          },
+          {
+            filename: pkg
+          }
+        ]
+      : []
 }));
 
 describe('generatePathMatrix', () => {
@@ -69,6 +72,7 @@ describe('generatePathMatrix', () => {
       expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
         pull_number: 123,
         per_page: 100,
+        page: 1,
         ...context.repo
       });
     });
@@ -101,6 +105,7 @@ describe('generatePathMatrix', () => {
       expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
         pull_number: 123,
         per_page: 100,
+        page: 1,
         ...context.repo
       });
     });
@@ -134,6 +139,7 @@ describe('generatePathMatrix', () => {
       expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
         pull_number: 123,
         per_page: 100,
+        page: 1,
         ...context.repo
       });
     });
@@ -166,6 +172,7 @@ describe('generatePathMatrix', () => {
       expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
         pull_number: 123,
         per_page: 100,
+        page: 1,
         ...context.repo
       });
     });
@@ -202,6 +209,7 @@ describe('generatePathMatrix', () => {
       expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
         pull_number: 123,
         per_page: 100,
+        page: 1,
         ...context.repo
       });
     });
@@ -240,6 +248,7 @@ describe('generatePathMatrix', () => {
       expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
         pull_number: 123,
         per_page: 100,
+        page: 1,
         ...context.repo
       });
     });
