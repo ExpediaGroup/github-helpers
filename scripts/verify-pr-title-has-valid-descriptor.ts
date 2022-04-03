@@ -6,7 +6,7 @@ const { title } = parse(Deno.args);
 const helpersPath = 'src/helpers/';
 const helpers = getFiles({ root: '.', include: [helpersPath] })
   .map(file => file.path.match(new RegExp(`(?<=${helpersPath})(.*)(?=.ts)`))?.find(Boolean));
-const validDescriptors = helpers.concat(['repo']);
+const validDescriptors = helpers.concat(['repo', 'deps', 'deps-dev']);
 
 const prTitleHasValidDescriptor = title.match(new RegExp(`\((${validDescriptors.join('|')})\)`, 'g'));
 
