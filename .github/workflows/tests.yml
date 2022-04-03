@@ -1,7 +1,7 @@
 name: PR Checks
 
 on:
-  pull_request:
+  pull_request_target:
     branches: [ main ]
 
 jobs:
@@ -26,9 +26,6 @@ jobs:
 
       - name: Setup Deno
         uses: denoland/setup-deno@v1
-
-      - name: Validate PR Title Contains Valid Descriptor
-        run: deno run -A scripts/verify-pr-title-has-valid-descriptor.ts --title ${{ github.event.pull_request.title }}
 
       - name: Validate Copyright Headers
         run: deno run -A scripts/verify-file-headers.ts
