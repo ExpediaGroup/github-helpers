@@ -65,7 +65,7 @@ export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMerge
   });
 };
 
-const removePrFromQueue = async (pullRequest: PullRequest) => {
+export const removePrFromQueue = async (pullRequest: PullRequest) => {
   const queueLabel = pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
   if (queueLabel) {
     await map([READY_FOR_MERGE_PR_LABEL, queueLabel], async label => removeLabelIfExists(label, pullRequest.number));

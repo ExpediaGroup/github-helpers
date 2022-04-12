@@ -18925,14 +18925,14 @@ var map = {
 		832,
 		710,
 		545,
-		473
+		676
 	],
 	"./manage-merge-queue.ts": [
 		7473,
 		832,
 		710,
 		545,
-		473
+		676
 	],
 	"./move-project-card": [
 		7263,
@@ -18959,12 +18959,16 @@ var map = {
 	"./prepare-queued-pr-for-merge": [
 		1004,
 		832,
-		4
+		710,
+		545,
+		676
 	],
 	"./prepare-queued-pr-for-merge.ts": [
 		1004,
 		832,
-		4
+		710,
+		545,
+		676
 	],
 	"./remove-label": [
 		61,

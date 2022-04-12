@@ -12,6 +12,9 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
+import * as manageMergeQueue from '../../src/helpers/manage-merge-queue';
+import * as removeLabel from '../../src/helpers/remove-label';
+import * as updateMergeQueue from '../../src/utils/update-merge-queue';
 import { FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
@@ -33,6 +36,9 @@ jest.mock('@actions/github', () => ({
   }))
 }));
 (octokit.repos.merge as unknown as Mocktokit).mockImplementation(async () => ({ some: 'response' }));
+const removePrSpy = jest.spyOn(manageMergeQueue, 'removePrFromQueue');
+const updateQueueSpy = jest.spyOn(updateMergeQueue, 'updateMergeQueue');
+const removeLabelSpy = jest.spyOn(removeLabel, 'removeLabelIfExists');
 
 describe('prepareQueuedPrForMerge', () => {
   const ref = 'branch name';
@@ -188,42 +194,50 @@ describe('prepareQueuedPrForMerge', () => {
   });
 
   describe('merge conflict case', () => {
+    const firstInQueue = {
+      number: 123,
+      head: {
+        ref
+      },
+      state: 'open',
+      labels: [
+        {
+          name: READY_FOR_MERGE_PR_LABEL
+        },
+        {
+          name: FIRST_QUEUED_PR_LABEL
+        }
+      ]
+    };
     beforeEach(async () => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
-        data: [
-          {
-            head: {
-              ref: 'other branch name'
-            },
-            state: 'open',
-            labels: [
-              {
-                name: 'CORE APPROVED'
-              }
-            ]
-          },
-          {
-            number: 123,
-            head: {
-              ref
-            },
-            state: 'open',
-            labels: [
-              {
-                name: READY_FOR_MERGE_PR_LABEL
-              },
-              {
-                name: FIRST_QUEUED_PR_LABEL
-              }
-            ]
-          }
-        ]
-      }));
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) =>
+        page === 1 || !page
+          ? {
+              data: [
+                {
+                  head: {
+                    ref: 'other branch name'
+                  },
+                  state: 'open',
+                  labels: [
+                    {
+                      name: 'CORE APPROVED'
+                    }
+                  ]
+                },
+                firstInQueue
+              ]
+            }
+          : { data: [] }
+      );
       (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
       await prepareQueuedPrForMerge();
     });
 
-    it('should call core.error', () => {
+    it('should remove PR from queue and call core.error', () => {
+      expect(removePrSpy).toHaveBeenCalledWith(firstInQueue);
+      expect(removeLabelSpy).toHaveBeenCalled();
+      expect(updateQueueSpy).toHaveBeenCalled();
       expect(core.setFailed).toHaveBeenCalled();
     });
   });
