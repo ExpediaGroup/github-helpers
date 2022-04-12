@@ -1,6 +1,6 @@
 "use strict";
-exports.id = 473;
-exports.ids = [473,4,61,209];
+exports.id = 676;
+exports.ids = [676,61,209];
 exports.modules = {
 
 /***/ 9042:
@@ -65,7 +65,8 @@ __webpack_require__.r(__webpack_exports__);
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
   "ManageMergeQueue": () => (/* binding */ ManageMergeQueue),
-  "manageMergeQueue": () => (/* binding */ manageMergeQueue)
+  "manageMergeQueue": () => (/* binding */ manageMergeQueue),
+  "removePrFromQueue": () => (/* binding */ removePrFromQueue)
 });
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
@@ -250,6 +251,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6161);
+/* harmony import */ var _manage_merge_queue__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(7473);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -275,6 +277,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+
 const prepareQueuedPrForMerge = () => __awaiter(void 0, void 0, void 0, function* () {
     const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
     const pullRequest = findNextPrToMerge(data);
@@ -292,8 +295,10 @@ const updatePrWithMainline = (pullRequest) => __awaiter(void 0, void 0, void 0, 
         yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.merge */ .K.repos.merge(Object.assign({ base: pullRequest.head.ref, head: 'HEAD' }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
     }
     catch (error) {
-        if (error.status === 409)
+        if (error.status === 409) {
+            yield (0,_manage_merge_queue__WEBPACK_IMPORTED_MODULE_4__.removePrFromQueue)(pullRequest);
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('The first PR in the queue has a merge conflict.');
+        }
         else
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
     }
@@ -505,4 +510,4 @@ const notifyUser = ({ login, pull_number, slack_webhook_url }) => __awaiter(void
 
 };
 ;
-//# sourceMappingURL=473.index.js.map
+//# sourceMappingURL=676.index.js.map

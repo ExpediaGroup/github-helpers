@@ -16,6 +16,7 @@ import { FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABE
 import { GithubError, PullRequest, PullRequestList, SimplePullRequest } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
+import { removePrFromQueue } from './manage-merge-queue';
 
 export const prepareQueuedPrForMerge = async () => {
   const { data } = await octokit.pulls.list({
@@ -44,7 +45,9 @@ export const updatePrWithMainline = async (pullRequest: PullRequest | SimplePull
       ...context.repo
     });
   } catch (error) {
-    if ((error as GithubError).status === 409) core.setFailed('The first PR in the queue has a merge conflict.');
-    else core.setFailed((error as GithubError).message);
+    if ((error as GithubError).status === 409) {
+      await removePrFromQueue(pullRequest as PullRequest);
+      core.setFailed('The first PR in the queue has a merge conflict.');
+    } else core.setFailed((error as GithubError).message);
   }
 };
