@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@octokit/types": "6.34.0",
-    "@types/adobe__node-fetch-retry": "1.0.4",
+    "@types/adobe__node-fetch-retry": "2.1.1",
     "@types/axios": "0.14.0",
     "@types/bluebird": "3.5.36",
     "@types/jest": "27.4.1",
