@@ -49,7 +49,7 @@
     "eslint-plugin-typescript": "0.14.0",
     "husky": "7.0.4",
     "jest": "27.5.1",
-    "plop": "3.0.5",
+    "plop": "3.1.0",
     "prettier": "2.6.1",
     "ts-jest": "27.1.4"
   },
