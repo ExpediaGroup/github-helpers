@@ -3,7 +3,7 @@
   "main": "src/main.ts",
   "private": true,
   "dependencies": {
-    "@actions/core": "1.6.0",
+    "@actions/core": "1.7.0",
     "@actions/github": "5.0.0",
     "@adobe/node-fetch-retry": "2.2.0",
     "@octokit/rest": "18.12.0",
