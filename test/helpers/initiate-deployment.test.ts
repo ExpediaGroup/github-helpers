@@ -36,11 +36,6 @@ const deployment_id = 123;
     id: deployment_id
   }
 }));
-(octokit.repos.createDeploymentStatus as unknown as Mocktokit).mockImplementation(async () => ({
-  data: {
-    id: deployment_id
-  }
-}));
 
 describe('initiateDeployment', () => {
   const sha = 'sha';

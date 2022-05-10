@@ -42,9 +42,7 @@ export const initiateDeployment = async ({
     ...GITHUB_OPTIONS
   });
   const deployment_id = (data as CreateDeploymentResponse).id;
-  const {
-    data: { id }
-  } = await octokit.repos.createDeploymentStatus({
+  await octokit.repos.createDeploymentStatus({
     state,
     deployment_id,
     description,
@@ -54,5 +52,5 @@ export const initiateDeployment = async ({
     ...GITHUB_OPTIONS
   });
 
-  return id;
+  return deployment_id;
 };
