@@ -44,16 +44,13 @@ describe('initiateDeployment', () => {
   const target_url = 'url';
   const auto_merge = false;
 
-  beforeEach(() => {
-    initiateDeployment({
+  it('should call createDeployment with correct params', async () => {
+    await initiateDeployment({
       sha,
       environment,
       description,
       target_url
     });
-  });
-
-  it('should call createDeployment with correct params', () => {
     expect(octokit.repos.createDeployment).toHaveBeenCalledWith({
       ref: sha,
       environment,
@@ -64,7 +61,13 @@ describe('initiateDeployment', () => {
     });
   });
 
-  it('should call createDeploymentStatus with correct params', () => {
+  it('should call createDeploymentStatus with correct params', async () => {
+    await initiateDeployment({
+      sha,
+      environment,
+      description,
+      target_url
+    });
     expect(octokit.repos.createDeploymentStatus).toHaveBeenCalledWith({
       state: 'in_progress',
       deployment_id,
@@ -73,5 +76,15 @@ describe('initiateDeployment', () => {
       ...context.repo,
       ...GITHUB_OPTIONS
     });
+  });
+
+  it('should return deployment id as output', async () => {
+    const result = await initiateDeployment({
+      sha,
+      environment,
+      description,
+      target_url
+    });
+    expect(result).toEqual(deployment_id);
   });
 });
