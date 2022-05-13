@@ -11,11 +11,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { DEFAULT_PIPELINE_DESCRIPTION, DEFAULT_PIPELINE_STATUS, PRODUCTION_ENVIRONMENT } from '../constants';
+import { DEFAULT_PIPELINE_DESCRIPTION, DEFAULT_PIPELINE_STATUS } from '../constants';
 import { context as githubContext } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
-import { setDeploymentStatus } from './set-deployment-status';
 
 export class NotifyPipelineComplete {
   context?: string;
@@ -34,22 +33,14 @@ export const notifyPipelineComplete = async ({
     ...githubContext.repo
   });
   const commitHashes = data.map(pullRequest => pullRequest.head.sha);
-  return Promise.all([
-    map(commitHashes, async sha =>
-      octokit.repos.createCommitStatus({
-        sha,
-        context,
-        state: 'success',
-        description,
-        target_url,
-        ...githubContext.repo
-      })
-    ),
-    setDeploymentStatus({
-      description: DEFAULT_PIPELINE_DESCRIPTION,
-      environment: PRODUCTION_ENVIRONMENT,
+  return map(commitHashes, async sha =>
+    octokit.repos.createCommitStatus({
+      sha,
+      context,
       state: 'success',
+      description,
+      target_url,
       ...githubContext.repo
     })
-  ]);
+  );
 };
