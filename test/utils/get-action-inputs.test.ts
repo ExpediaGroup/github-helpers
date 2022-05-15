@@ -14,17 +14,20 @@ limitations under the License.
 import { getActionInputs } from '../../src/utils/get-action-inputs';
 import { getInput } from '@actions/core';
 import { getInputsFromFile } from '../../src/utils/get-inputs-from-file';
-import { readFileSync } from 'fs';
 
 jest.mock('../../src/utils/get-inputs-from-file');
 jest.mock('@actions/core');
-jest.mock('fs');
+jest.mock('fs', () => ({
+  promises: {
+    access: jest.fn()
+  },
+  readFileSync: jest.fn(() => ({
+    toString: jest.fn()
+  }))
+}));
 
 (getInputsFromFile as jest.Mock).mockReturnValue(['input1', 'input2', 'input3']);
 (getInput as jest.Mock).mockImplementation(input => (input === 'input2' ? '' : input));
-(readFileSync as jest.Mock).mockImplementation(() => ({
-  toString: jest.fn()
-}));
 
 describe('getActionInputs', () => {
   const requiredInputs = ['input1'];
