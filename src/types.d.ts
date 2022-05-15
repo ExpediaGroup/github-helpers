@@ -15,7 +15,8 @@ import { components, operations } from '@octokit/openapi-types/types';
 import { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types';
 
 export type PipelineState = operations['repos/create-commit-status']['requestBody']['content']['application/json']['state'];
-export type DeploymentState = operations['repos/create-deployment-status']['requestBody']['content']['application/json']['state'];
+export type DeploymentStatus = operations['repos/create-deployment-status']['requestBody']['content']['application/json'];
+export type DeploymentState = DeploymentStatus['state'];
 export type PullRequest = components['schemas']['pull-request'];
 export type SimplePullRequest = components['schemas']['pull-request-simple'];
 export type PullRequestList = RestEndpointMethodTypes['pulls']['list']['response']['data'];
@@ -23,6 +24,7 @@ export type ChangedFilesList = RestEndpointMethodTypes['pulls']['listFiles']['re
 export type CreateDeploymentResponse = components['schemas']['deployment'];
 export type ProjectListResponse = RestEndpointMethodTypes['projects']['listForRepo']['response'];
 export type ColumnListResponse = RestEndpointMethodTypes['projects']['listColumns']['response'];
+
 export type GithubError = {
   status: number;
   message: string;

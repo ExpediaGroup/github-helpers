@@ -13,7 +13,7 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { DEFAULT_PIPELINE_STATUS, GITHUB_OPTIONS, PRODUCTION_ENVIRONMENT } from '../constants';
-import { PipelineState } from '../types';
+import { DeploymentStatus, PipelineState } from '../types';
 import { context as githubContext } from '@actions/github';
 import { octokit } from '../octokit';
 
@@ -35,7 +35,7 @@ export const setLatestPipelineStatus = async ({
   });
   const deployment_id = deployments.find(Boolean)?.id;
   if (!deployment_id) {
-    core.setFailed('No deployments found.');
+    core.setFailed('No deployments found. There must be a GitHub deployment on your repository before this helper can run.');
     throw new Error();
   }
   const { data: deploymentStatuses } = await octokit.repos.listDeploymentStatuses({
@@ -43,16 +43,12 @@ export const setLatestPipelineStatus = async ({
     ...githubContext.repo,
     ...GITHUB_OPTIONS
   });
-  const deploymentStatus = deploymentStatuses.find(Boolean);
-  if (!deploymentStatus) {
-    core.setFailed('No deployment statuses found.');
-    throw new Error();
-  }
+  const deploymentStatus = deploymentStatuses.find(Boolean) ?? ({} as DeploymentStatus);
   const { state, description, target_url } = deploymentStatus;
   return octokit.repos.createCommitStatus({
     sha,
     context,
-    state: deploymentStateToPipelineStateMap[state],
+    state: deploymentStateToPipelineStateMap[state] ?? 'pending',
     description,
     target_url,
     ...githubContext.repo

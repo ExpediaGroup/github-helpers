@@ -32,62 +32,80 @@ jest.mock('@actions/github', () => ({
 }));
 
 const deployment_id = 123;
-
-(octokit.repos.listDeploymentStatuses as unknown as Mocktokit).mockImplementation(async () => ({
+(octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
   data: [
     {
-      state: 'success',
-      description: 'description',
-      target_url: 'url'
+      id: deployment_id
     },
     {
-      state: 'pending',
-      description: 'other description'
+      id: 456
     }
   ]
 }));
 
 describe('setLatestDeploymentStatus', () => {
   const sha = 'sha';
+  describe('deployment status found', () => {
+    beforeEach(() => {
+      (octokit.repos.listDeploymentStatuses as unknown as Mocktokit).mockImplementation(async () => ({
+        data: [
+          {
+            state: 'success',
+            description: 'description',
+            target_url: 'url'
+          },
+          {
+            state: 'pending',
+            description: 'other description'
+          }
+        ]
+      }));
+      setLatestPipelineStatus({ sha });
+    });
 
-  beforeEach(() => {
-    (octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
-      data: [
-        {
-          id: deployment_id
-        },
-        {
-          id: 456
-        }
-      ]
-    }));
-    setLatestPipelineStatus({ sha });
-  });
+    it('should call listDeployments with correct params', () => {
+      expect(octokit.repos.listDeployments).toHaveBeenCalledWith({
+        environment: PRODUCTION_ENVIRONMENT,
+        ...context.repo,
+        ...GITHUB_OPTIONS
+      });
+    });
 
-  it('should call listDeployments with correct params', () => {
-    expect(octokit.repos.listDeployments).toHaveBeenCalledWith({
-      environment: PRODUCTION_ENVIRONMENT,
-      ...context.repo,
-      ...GITHUB_OPTIONS
+    it('should call listDeploymentStatuses with correct params', () => {
+      expect(octokit.repos.listDeploymentStatuses).toHaveBeenCalledWith({
+        deployment_id,
+        ...context.repo,
+        ...GITHUB_OPTIONS
+      });
+    });
+
+    it('should call createCommitStatus with correct params', () => {
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+        sha,
+        context: DEFAULT_PIPELINE_STATUS,
+        state: 'success',
+        description: 'description',
+        target_url: 'url',
+        ...context.repo
+      });
     });
   });
 
-  it('should call listDeploymentStatuses with correct params', () => {
-    expect(octokit.repos.listDeploymentStatuses).toHaveBeenCalledWith({
-      deployment_id,
-      ...context.repo,
-      ...GITHUB_OPTIONS
+  describe('deployment status not found', () => {
+    beforeEach(() => {
+      (octokit.repos.listDeploymentStatuses as unknown as Mocktokit).mockImplementation(async () => ({
+        data: []
+      }));
+      setLatestPipelineStatus({ sha });
     });
-  });
 
-  it('should call createCommitStatus with correct params', () => {
-    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
-      sha,
-      context: DEFAULT_PIPELINE_STATUS,
-      state: 'success',
-      description: 'description',
-      target_url: 'url',
-      ...context.repo
+    it('should call createCommitStatus with correct params', () => {
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+        sha,
+        context: DEFAULT_PIPELINE_STATUS,
+        state: 'pending',
+        ...context.repo
+      });
     });
   });
 });
