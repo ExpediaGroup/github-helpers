@@ -11,12 +11,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { DEFAULT_PIPELINE_DESCRIPTION, DEFAULT_PIPELINE_STATUS, PRODUCTION_ENVIRONMENT } from '../../src/constants';
+import { DEFAULT_PIPELINE_STATUS } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { notifyPipelineComplete } from '../../src/helpers/notify-pipeline-complete';
 import { octokit } from '../../src/octokit';
-import { setDeploymentStatus } from '../../src/helpers/set-deployment-status';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
@@ -69,15 +68,6 @@ describe('setOpenPullRequestStatus', () => {
       context: DEFAULT_PIPELINE_STATUS,
       state: 'success',
       description,
-      ...context.repo
-    });
-  });
-
-  it('should call setDeploymentStatus with correct params', () => {
-    expect(setDeploymentStatus).toHaveBeenCalledWith({
-      state: 'success',
-      environment: PRODUCTION_ENVIRONMENT,
-      description: DEFAULT_PIPELINE_DESCRIPTION,
       ...context.repo
     });
   });

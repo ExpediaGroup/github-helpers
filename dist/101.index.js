@@ -1,6 +1,6 @@
 "use strict";
 exports.id = 101;
-exports.ids = [101,807];
+exports.ids = [101];
 exports.modules = {
 
 /***/ 9042:
@@ -70,7 +70,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8710);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6161);
-/* harmony import */ var _set_deployment_status__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(2807);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -92,7 +91,6 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-
 
 
 
@@ -102,72 +100,11 @@ class NotifyPipelineComplete {
 const notifyPipelineComplete = ({ context = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PIPELINE_STATUS */ .$9, description = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PIPELINE_DESCRIPTION */ .Km, target_url }) => __awaiter(void 0, void 0, void 0, function* () {
     const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     const commitHashes = data.map(pullRequest => pullRequest.head.sha);
-    return Promise.all([
-        (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(commitHashes, (sha) => __awaiter(void 0, void 0, void 0, function* () {
-            return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
-                context, state: 'success', description,
-                target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
-        })),
-        (0,_set_deployment_status__WEBPACK_IMPORTED_MODULE_4__.setDeploymentStatus)(Object.assign({ description: _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PIPELINE_DESCRIPTION */ .Km, environment: _constants__WEBPACK_IMPORTED_MODULE_0__/* .PRODUCTION_ENVIRONMENT */ .Hc, state: 'success' }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo))
-    ]);
-});
-
-
-/***/ }),
-
-/***/ 2807:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "SetDeploymentStatus": () => (/* binding */ SetDeploymentStatus),
-/* harmony export */   "setDeploymentStatus": () => (/* binding */ setDeploymentStatus)
-/* harmony export */ });
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
-/*
-Copyright 2021 Expedia, Inc.
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-    https://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-
-
-
-class SetDeploymentStatus {
-    constructor() {
-        this.state = '';
-        this.environment = '';
-    }
-}
-const setDeploymentStatus = ({ sha, state, environment, description, target_url, environment_url }) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.listDeployments */ .K.repos.listDeployments(Object.assign(Object.assign({ sha,
-        environment }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
-    const deployment_id = (_a = data.find(Boolean)) === null || _a === void 0 ? void 0 : _a.id;
-    if (deployment_id) {
-        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createDeploymentStatus */ .K.repos.createDeploymentStatus(Object.assign(Object.assign({ state: state, deployment_id,
-            description,
-            target_url,
-            environment_url }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
-    }
+    return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(commitHashes, (sha) => __awaiter(void 0, void 0, void 0, function* () {
+        return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
+            context, state: 'success', description,
+            target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    }));
 });
 
 
