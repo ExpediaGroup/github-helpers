@@ -105,7 +105,10 @@ const deleteDeployment = ({ sha, environment }) => __awaiter(void 0, void 0, voi
     const deployment_id = (_a = data.find(Boolean)) === null || _a === void 0 ? void 0 : _a.id;
     if (deployment_id) {
         yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createDeploymentStatus */ .K.repos.createDeploymentStatus(Object.assign(Object.assign({ state: 'inactive', deployment_id }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
-        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.deleteDeployment */ .K.repos.deleteDeployment(Object.assign(Object.assign({ deployment_id }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
+        return Promise.all([
+            _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.deleteDeployment */ .K.repos.deleteDeployment(Object.assign(Object.assign({ deployment_id }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc)),
+            _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.deleteAnEnvironment */ .K.repos.deleteAnEnvironment(Object.assign(Object.assign({ environment_name: environment }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc))
+        ]);
     }
 });
 

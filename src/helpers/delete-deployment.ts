@@ -35,10 +35,17 @@ export const deleteDeployment = async ({ sha, environment }: DeleteDeployment) =
       ...context.repo,
       ...GITHUB_OPTIONS
     });
-    return octokit.repos.deleteDeployment({
-      deployment_id,
-      ...context.repo,
-      ...GITHUB_OPTIONS
-    });
+    return Promise.all([
+      octokit.repos.deleteDeployment({
+        deployment_id,
+        ...context.repo,
+        ...GITHUB_OPTIONS
+      }),
+      octokit.repos.deleteAnEnvironment({
+        environment_name: environment,
+        ...context.repo,
+        ...GITHUB_OPTIONS
+      })
+    ]);
   }
 };

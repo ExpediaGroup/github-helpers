@@ -68,7 +68,7 @@ Each of the following helpers are defined in a file of the same name in `src/hel
   * Comments on a pull request or other issue
 
 ### [delete-deployment](.github/workflows/deployments.yml#L53)
-* Deletes a Github [deployment](https://docs.github.com/en/rest/reference/repos#deployments)
+* Deletes a Github [deployment](https://docs.github.com/en/rest/reference/repos#deployments) and [environment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment#about-environments)
 
 ### [filter-paths](.github/workflows/filter-paths.yml)
   * Returns `true` if specified file paths have changed for a PR, and `false` otherwise
