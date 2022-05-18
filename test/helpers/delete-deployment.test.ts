@@ -25,6 +25,7 @@ jest.mock('@actions/github', () => ({
       repos: {
         createDeploymentStatus: jest.fn(),
         deleteDeployment: jest.fn(),
+        deleteAnEnvironment: jest.fn(),
         listDeployments: jest.fn()
       }
     }
@@ -79,6 +80,14 @@ describe('deleteDeployment', () => {
         ...GITHUB_OPTIONS
       });
     });
+
+    it('should call deleteAnEnvironment with correct params', () => {
+      expect(octokit.repos.deleteAnEnvironment).toHaveBeenCalledWith({
+        environment_name: environment,
+        ...context.repo,
+        ...GITHUB_OPTIONS
+      });
+    });
   });
 
   describe('deployment does not exist', () => {
@@ -107,6 +116,10 @@ describe('deleteDeployment', () => {
 
     it('should not call deleteDeployment', () => {
       expect(octokit.repos.deleteDeployment).not.toHaveBeenCalled();
+    });
+
+    it('should not call deleteAnEnvironment', () => {
+      expect(octokit.repos.deleteAnEnvironment).not.toHaveBeenCalled();
     });
   });
 });
