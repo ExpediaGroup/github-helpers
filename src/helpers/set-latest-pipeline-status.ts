@@ -35,8 +35,8 @@ export const setLatestPipelineStatus = async ({
   });
   const deployment_id = deployments.find(Boolean)?.id;
   if (!deployment_id) {
-    core.setFailed('No deployments found. There must be a GitHub deployment on your repository before this helper can run.');
-    throw new Error();
+    core.info('No deployments found. Pipeline is clear!');
+    return;
   }
   const { data: deploymentStatuses } = await octokit.repos.listDeploymentStatuses({
     deployment_id,

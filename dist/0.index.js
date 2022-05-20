@@ -105,8 +105,8 @@ const setLatestPipelineStatus = ({ sha, context = _constants__WEBPACK_IMPORTED_M
     const { data: deployments } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listDeployments */ .K.repos.listDeployments(Object.assign(Object.assign({ environment }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_1__/* .GITHUB_OPTIONS */ .Cc));
     const deployment_id = (_a = deployments.find(Boolean)) === null || _a === void 0 ? void 0 : _a.id;
     if (!deployment_id) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No deployments found. There must be a GitHub deployment on your repository before this helper can run.');
-        throw new Error();
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('No deployments found. Pipeline is clear!');
+        return;
     }
     const { data: deploymentStatuses } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listDeploymentStatuses */ .K.repos.listDeploymentStatuses(Object.assign(Object.assign({ deployment_id }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_1__/* .GITHUB_OPTIONS */ .Cc));
     const deploymentStatus = (_b = deploymentStatuses.find(Boolean)) !== null && _b !== void 0 ? _b : {};
