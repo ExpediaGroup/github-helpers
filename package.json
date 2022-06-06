@@ -48,7 +48,7 @@
     "jest": "28.1.0",
     "plop": "3.1.0",
     "prettier": "2.6.2",
-    "ts-jest": "28.0.3"
+    "ts-jest": "28.0.4"
   },
   "jest": {
     "transform": {
