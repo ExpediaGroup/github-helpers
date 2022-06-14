@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { HelperInputs } from '../types/inputs';
+import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { getCoreMemberLogins } from '../utils/get-core-member-logins';
 import { map } from 'bluebird';

@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import { DeploymentState } from '../types/github';
-import { HelperInputs } from '../types/inputs';
+import { HelperInputs } from '../types/generated';
 import { GITHUB_OPTIONS } from '../constants';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';

@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import { PipelineState } from '../types/github';
-import { HelperInputs } from '../types/inputs';
+import { HelperInputs } from '../types/generated';
 import { context as githubContext } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';

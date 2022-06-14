@@ -13,7 +13,7 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { GithubError } from '../types/github';
-import { HelperInputs } from '../types/inputs';
+import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 

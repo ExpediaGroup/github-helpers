@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { HelperInputs } from '../types/inputs';
+import { HelperInputs } from '../types/generated';
 import { chunk, uniq } from 'lodash';
 import { context } from '@actions/github';
 import { getChangedFilepaths } from '../utils/get-changed-filepaths';

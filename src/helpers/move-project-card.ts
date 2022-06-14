@@ -15,7 +15,7 @@ import * as core from '@actions/core';
 import { getDestinationColumn, getProjectColumns } from '../utils/get-project-columns';
 import { ColumnListResponse } from '../types/github';
 import { GITHUB_OPTIONS } from '../constants';
-import { HelperInputs } from '../types/inputs';
+import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 

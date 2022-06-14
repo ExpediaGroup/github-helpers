@@ -19,7 +19,7 @@ import {
   QUEUED_FOR_MERGE_PREFIX,
   READY_FOR_MERGE_PR_LABEL
 } from '../constants';
-import { HelperInputs } from '../types/inputs';
+import { HelperInputs } from '../types/generated';
 import { PullRequest, PullRequestList } from '../types/github';
 import { context } from '@actions/github';
 import { map } from 'bluebird';

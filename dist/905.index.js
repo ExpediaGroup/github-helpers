@@ -77,7 +77,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "addPrApprovalLabel": () => (/* binding */ addPrApprovalLabel)
 /* harmony export */ });
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
-/* harmony import */ var _types_inputs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(4549);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(3476);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(7290);
@@ -108,7 +108,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-class AddPrApprovalLabel extends _types_inputs__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
+class AddPrApprovalLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
     constructor() {
         super(...arguments);
         this.login = '';
@@ -156,7 +156,7 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(gith
 
 /***/ }),
 
-/***/ 4549:
+/***/ 3476:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {

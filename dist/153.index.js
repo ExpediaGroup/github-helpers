@@ -13,7 +13,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _types_inputs__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(4549);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(3476);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(7290);
@@ -52,7 +52,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-class AssignPrReviewer extends _types_inputs__WEBPACK_IMPORTED_MODULE_7__/* .HelperInputs */ .s {
+class AssignPrReviewer extends _types_generated__WEBPACK_IMPORTED_MODULE_7__/* .HelperInputs */ .s {
 }
 const assignPrReviewers = ({ teams, login, number_of_assignees = '1', slack_webhook_url, pull_number = String(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number) }) => __awaiter(void 0, void 0, void 0, function* () {
     const coreMemberLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .c)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
@@ -109,7 +109,7 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(gith
 
 /***/ }),
 
-/***/ 4549:
+/***/ 3476:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {

@@ -14,7 +14,7 @@ limitations under the License.
 import * as core from '@actions/core';
 import { DEFAULT_PIPELINE_STATUS, GITHUB_OPTIONS, PRODUCTION_ENVIRONMENT } from '../constants';
 import { DeploymentStatus, PipelineState } from '../types/github';
-import { HelperInputs } from '../types/inputs';
+import { HelperInputs } from '../types/generated';
 import { context as githubContext } from '@actions/github';
 import { octokit } from '../octokit';
 

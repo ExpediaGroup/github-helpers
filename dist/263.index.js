@@ -80,7 +80,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3041);
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9042);
-/* harmony import */ var _types_inputs__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(4549);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(3476);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6161);
@@ -111,7 +111,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-class MoveProjectCardProps extends _types_inputs__WEBPACK_IMPORTED_MODULE_5__/* .HelperInputs */ .s {
+class MoveProjectCardProps extends _types_generated__WEBPACK_IMPORTED_MODULE_5__/* .HelperInputs */ .s {
     constructor() {
         super(...arguments);
         this.project_destination_column_name = '';
@@ -184,7 +184,7 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(gith
 
 /***/ }),
 
-/***/ 4549:
+/***/ 3476:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
