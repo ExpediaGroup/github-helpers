@@ -13,7 +13,7 @@ limitations under the License.
 
 import { JUMP_THE_QUEUE_PR_LABEL } from '../../src/constants';
 import { Mocktokit } from '../types';
-import { PullRequestList } from '../../src/types';
+import { PullRequestList } from '../../src/types/github';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
 import { removeLabelIfExists } from '../../src/helpers/remove-label';

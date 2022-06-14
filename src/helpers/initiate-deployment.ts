@@ -11,12 +11,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { CreateDeploymentResponse, DeploymentState } from '../types';
+import { CreateDeploymentResponse, DeploymentState } from '../types/github';
 import { GITHUB_OPTIONS } from '../constants';
+import { HelperInputs } from '../types/inputs';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-export class InitiateDeployment {
+export class InitiateDeployment extends HelperInputs {
   sha = '';
   environment = '';
   state?: DeploymentState;

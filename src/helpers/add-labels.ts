@@ -11,10 +11,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { HelperInputs } from '../types/inputs';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-export class AddLabels {
+export class AddLabels extends HelperInputs {
   labels = '';
 }
 

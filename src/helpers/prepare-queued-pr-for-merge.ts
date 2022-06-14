@@ -13,7 +13,7 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../constants';
-import { GithubError, PullRequest, PullRequestList, SimplePullRequest } from '../types';
+import { GithubError, PullRequest, PullRequestList, SimplePullRequest } from '../types/github';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import { removePrFromQueue } from './manage-merge-queue';

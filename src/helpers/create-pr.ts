@@ -11,10 +11,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { HelperInputs } from '../types/inputs';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-export class CreatePR {
+export class CreatePR extends HelperInputs {
   title = '';
   body = '';
   head?: string;
@@ -22,17 +23,17 @@ export class CreatePR {
 }
 
 export const createPr = async ({ title, body, head = context.ref.replace('refs/heads/', ''), base }: CreatePR) => {
-  const {
-    data: { number }
-  } = await octokit.pulls.create({
+  const pr_base = base || (await getDefaultBranch());
+  const result = await octokit.pulls.create({
     title,
     head,
-    base: base || (await getDefaultBranch()),
+    base: pr_base,
     body,
     maintainer_can_modify: true,
     ...context.repo
   });
-  return number;
+  const pullNumber = result?.data?.number;
+  return pullNumber;
 };
 
 async function getDefaultBranch() {

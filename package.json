@@ -64,6 +64,7 @@
     "create-helper": "plop helper --force",
     "format": "prettier --write ./**/**/*.ts",
     "format-check": "prettier --check ./**/**/*.ts",
+    "generate": "deno run -A scripts/generate-helper-inputs.ts",
     "lint": "eslint --quiet --fix ./**/*.ts src/**/*.ts test/**/*.ts",
     "package": "npm run clean && ncc build --source-map --license licenses.txt && cp action.yml dist",
     "prepare": "husky install",

@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { GithubError } from '../types';
+import { GithubError } from '../types/github';
 import { context } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';

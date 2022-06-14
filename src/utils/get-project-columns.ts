@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { ColumnListResponse, ProjectListResponse } from '../types';
+import { ColumnListResponse, ProjectListResponse } from '../types/github';
 import { GITHUB_OPTIONS } from '../constants';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';

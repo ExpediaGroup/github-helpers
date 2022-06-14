@@ -12,11 +12,12 @@ limitations under the License.
 */
 
 import { CORE_APPROVED_PR_LABEL, PEER_APPROVED_PR_LABEL } from '../constants';
+import { HelperInputs } from '../types/inputs';
 import { context } from '@actions/github';
 import { getCoreMemberLogins } from '../utils/get-core-member-logins';
 import { octokit } from '../octokit';
 
-export class AddPrApprovalLabel {
+export class AddPrApprovalLabel extends HelperInputs {
   login = '';
   teams?: string;
 }

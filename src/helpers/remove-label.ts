@@ -12,11 +12,12 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { GithubError } from '../types';
+import { GithubError } from '../types/github';
+import { HelperInputs } from '../types/inputs';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-export class RemoveLabel {
+export class RemoveLabel extends HelperInputs {
   label = '';
 }
 

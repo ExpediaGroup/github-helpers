@@ -13,6 +13,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _types_inputs__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(4549);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(7290);
@@ -50,21 +51,22 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-class AssignPrReviewer {
+
+class AssignPrReviewer extends _types_inputs__WEBPACK_IMPORTED_MODULE_7__/* .HelperInputs */ .s {
 }
-const assignPrReviewers = ({ teams, login, number_of_assignees = '1', slack_webhook_url, pull_number = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }) => __awaiter(void 0, void 0, void 0, function* () {
+const assignPrReviewers = ({ teams, login, number_of_assignees = '1', slack_webhook_url, pull_number = String(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number) }) => __awaiter(void 0, void 0, void 0, function* () {
     const coreMemberLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .c)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
     if (login && coreMemberLogins.includes(login)) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Already a core member, no need to assign.');
         return;
     }
     const assignees = (0,lodash__WEBPACK_IMPORTED_MODULE_6__.sampleSize)(coreMemberLogins, Number(number_of_assignees));
-    yield _octokit__WEBPACK_IMPORTED_MODULE_5__/* .octokit.issues.addAssignees */ .K.issues.addAssignees(Object.assign({ assignees, issue_number: pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    yield _octokit__WEBPACK_IMPORTED_MODULE_5__/* .octokit.issues.addAssignees */ .K.issues.addAssignees(Object.assign({ assignees, issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     if (slack_webhook_url) {
         return (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(assignees, (assignee) => __awaiter(void 0, void 0, void 0, function* () {
             return (0,_utils_notify_user__WEBPACK_IMPORTED_MODULE_4__/* .notifyUser */ .b)({
                 login: assignee,
-                pull_number,
+                pull_number: Number(pull_number),
                 slack_webhook_url
             });
         }));
@@ -103,6 +105,30 @@ limitations under the License.
 
 const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true });
 const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } }).rest;
+
+
+/***/ }),
+
+/***/ 4549:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "s": () => (/* binding */ HelperInputs)
+/* harmony export */ });
+/*
+Copyright 2021 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+class HelperInputs {
+}
 
 
 /***/ }),

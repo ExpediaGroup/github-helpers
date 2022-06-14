@@ -12,10 +12,11 @@ limitations under the License.
 */
 
 import { GITHUB_OPTIONS } from '../constants';
+import { HelperInputs } from '../types/inputs';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-export class CreatePrComment {
+export class CreatePrComment extends HelperInputs {
   body = '';
   sha?: string;
   login?: string;

@@ -19,7 +19,8 @@ import {
   QUEUED_FOR_MERGE_PREFIX,
   READY_FOR_MERGE_PR_LABEL
 } from '../constants';
-import { PullRequest, PullRequestList } from '../types';
+import { HelperInputs } from '../types/inputs';
+import { PullRequest, PullRequestList } from '../types/github';
 import { context } from '@actions/github';
 import { map } from 'bluebird';
 import { notifyUser } from '../utils/notify-user';
@@ -28,7 +29,7 @@ import { removeLabelIfExists } from './remove-label';
 import { setCommitStatus } from './set-commit-status';
 import { updateMergeQueue } from '../utils/update-merge-queue';
 
-export class ManageMergeQueue {
+export class ManageMergeQueue extends HelperInputs {
   login?: string;
   slack_webhook_url?: string;
 }

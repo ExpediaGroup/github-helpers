@@ -12,11 +12,12 @@ limitations under the License.
 */
 
 import { DEFAULT_PIPELINE_DESCRIPTION, DEFAULT_PIPELINE_STATUS } from '../constants';
+import { HelperInputs } from '../types/inputs';
 import { context as githubContext } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
 
-export class NotifyPipelineComplete {
+export class NotifyPipelineComplete extends HelperInputs {
   context?: string;
   description?: string;
   target_url?: string;

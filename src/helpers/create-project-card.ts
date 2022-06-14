@@ -14,10 +14,11 @@ limitations under the License.
 import * as core from '@actions/core';
 import { SingleColumn, getDestinationColumn, getProjectColumns } from '../utils/get-project-columns';
 import { GITHUB_OPTIONS } from '../constants';
+import { HelperInputs } from '../types/inputs';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-export class CreateProjectCardProps {
+export class CreateProjectCardProps extends HelperInputs {
   project_name = '';
   project_destination_column_name = '';
   note?: string;

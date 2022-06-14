@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import { JUMP_THE_QUEUE_PR_LABEL, QUEUED_FOR_MERGE_PREFIX } from '../constants';
-import { PullRequestList } from '../types';
+import { PullRequestList } from '../types/github';
 import { context } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';

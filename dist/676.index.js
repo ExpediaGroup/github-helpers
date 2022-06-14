@@ -20,7 +20,7 @@ exports.modules = {
 /* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL),
 /* harmony export */   "HW": () => (/* binding */ DEFAULT_PR_TITLE_REGEX)
 /* harmony export */ });
-/* unused harmony export DEFAULT_EXEMPT_DESCRIPTION */
+/* unused harmony exports DEFAULT_EXEMPT_DESCRIPTION, COPYRIGHT_HEADER */
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,6 +52,18 @@ const QUEUED_FOR_MERGE_PREFIX = 'QUEUED FOR MERGE';
 const FIRST_QUEUED_PR_LABEL = `${QUEUED_FOR_MERGE_PREFIX} #1`;
 const JUMP_THE_QUEUE_PR_LABEL = 'JUMP THE QUEUE';
 const DEFAULT_PR_TITLE_REGEX = '^(build|ci|chore|docs|feat|fix|perf|refactor|style|test|revert|Revert|BREAKING CHANGE)((.*))?: .+$';
+const COPYRIGHT_HEADER = (/* unused pure expression or super */ null && (`/*
+Copyright 2021 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/`));
 
 
 /***/ }),
@@ -73,6 +85,8 @@ __webpack_require__.d(__webpack_exports__, {
 var core = __webpack_require__(2186);
 // EXTERNAL MODULE: ./src/constants.ts
 var constants = __webpack_require__(9042);
+// EXTERNAL MODULE: ./src/types/inputs.ts
+var inputs = __webpack_require__(4549);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __webpack_require__(5438);
 // EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
@@ -179,7 +193,8 @@ var manage_merge_queue_awaiter = (undefined && undefined.__awaiter) || function 
 
 
 
-class ManageMergeQueue {
+
+class ManageMergeQueue extends inputs/* HelperInputs */.s {
 }
 const manageMergeQueue = ({ login, slack_webhook_url } = {}) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
     const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: github.context.issue.number }, github.context.repo));
@@ -318,6 +333,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _types_inputs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4549);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
@@ -345,8 +361,10 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-class RemoveLabel {
+
+class RemoveLabel extends _types_inputs__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .s {
     constructor() {
+        super(...arguments);
         this.label = '';
     }
 }
@@ -373,6 +391,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "SetCommitStatus": () => (/* binding */ SetCommitStatus),
 /* harmony export */   "setCommitStatus": () => (/* binding */ setCommitStatus)
 /* harmony export */ });
+/* harmony import */ var _types_inputs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4549);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(8710);
@@ -402,8 +421,10 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-class SetCommitStatus {
+
+class SetCommitStatus extends _types_inputs__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .s {
     constructor() {
+        super(...arguments);
         this.sha = '';
         this.context = '';
         this.state = '';
@@ -447,6 +468,30 @@ limitations under the License.
 
 const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true });
 const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } }).rest;
+
+
+/***/ }),
+
+/***/ 4549:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "s": () => (/* binding */ HelperInputs)
+/* harmony export */ });
+/*
+Copyright 2021 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+class HelperInputs {
+}
 
 
 /***/ }),

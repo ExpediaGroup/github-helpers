@@ -11,13 +11,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { ActionInputs } from '../types';
 import { getInput } from '@actions/core';
 import { getInputsFromFile } from './get-inputs-from-file';
 import { pickBy } from 'lodash';
 import { readFileSync } from 'fs';
 
-export const getActionInputs = (requiredInputs: string[] = []): ActionInputs => {
+export const getActionInputs = (requiredInputs: string[] = []) => {
   const yamlContents = readFileSync(`${__dirname}/action.yml`).toString();
   const inputsFromFile = getInputsFromFile(yamlContents).reduce(
     (acc, current) => ({

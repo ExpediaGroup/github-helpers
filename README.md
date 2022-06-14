@@ -119,9 +119,6 @@ Additionally, the following parameters can be used for additional control over t
 ### [~~prepare-queued-pr-for-merge~~](.github/workflows/prepare-queued-pr-for-merge.yml) (DEPRECATED)
   * Merges the default branch into the pull request that has the `QUEUED FOR MERGE #1` label
 
-### [rebase-pr](.github/workflows/rebase-pr.yml)
-  * Rebases a pull request using [github-rebase](https://www.npmjs.com/package/github-rebase)
-
 ### [remove-label](.github/workflows/remove-label.yml)
   * Removes a label from a PR
 
