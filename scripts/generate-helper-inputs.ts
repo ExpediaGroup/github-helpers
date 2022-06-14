@@ -11,4 +11,4 @@ ${Object.keys(inputs).map(input => `  ${input}?: string;`).join('\n')}
 }
 `
 
-Deno.writeTextFileSync('src/types/inputs.ts', newContents);
+Deno.writeTextFileSync('src/types/generated.ts', newContents);
