@@ -29,7 +29,3 @@ export type GithubError = {
   status: number;
   message: string;
 };
-
-export type ActionInputs = {
-  [input: string]: string;
-};

@@ -12,10 +12,11 @@ limitations under the License.
 */
 
 import { GITHUB_OPTIONS } from '../constants';
+import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-export class DeleteDeployment {
+export class DeleteDeployment extends HelperInputs {
   sha = '';
   environment = '';
 }

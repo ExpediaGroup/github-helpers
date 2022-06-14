@@ -11,10 +11,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-export class CreatePR {
+export class CreatePR extends HelperInputs {
   title = '';
   body = '';
   head?: string;

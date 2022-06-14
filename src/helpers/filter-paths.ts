@@ -12,11 +12,12 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
+import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import micromatch from 'micromatch';
 import { octokit } from '../octokit';
 
-export class FilterPaths {
+export class FilterPaths extends HelperInputs {
   paths?: string;
   globs?: string;
 }

@@ -12,11 +12,12 @@ limitations under the License.
 */
 
 import { DEFAULT_PR_TITLE_REGEX } from '../constants';
+import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import { setFailed } from '@actions/core';
 
-export class CheckPrTitle {
+export class CheckPrTitle extends HelperInputs {
   pattern?: string;
 }
 

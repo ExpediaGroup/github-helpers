@@ -1,13 +1,7 @@
 import getFiles from 'https://deno.land/x/getfiles@v1.0.0/mod.ts';
 
-const filePaths = getFiles({ root: '.', include: ['src', 'test'] }).map(file => file.path);
-const filesWithoutCopyrightHeader =
-  (await Promise.all(
-    filePaths.map(async filePath => {
-      const fileText = await Deno.readTextFile(filePath);
-      return fileText.startsWith('/*\nCopyright') ? undefined : filePath;
-    })
-  )).filter(Boolean);
+const filePaths = getFiles({ root: '.', include: ['src', 'test'] }).filter(file => !file.path.endsWith('.DS_Store')).map(file => file.path);
+const filesWithoutCopyrightHeader = filePaths.filter(filePath => !Deno.readTextFileSync(filePath).startsWith('/*\nCopyright'));
 
 if (filesWithoutCopyrightHeader.length) {
   console.error(`\nThe following files are missing a valid copyright header:${filesWithoutCopyrightHeader.map(file => `\n   • ${file}`).join()}`);

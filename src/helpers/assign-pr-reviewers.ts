@@ -12,6 +12,7 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
+import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { getCoreMemberLogins } from '../utils/get-core-member-logins';
 import { map } from 'bluebird';
@@ -19,12 +20,12 @@ import { notifyUser } from '../utils/notify-user';
 import { octokit } from '../octokit';
 import { sampleSize } from 'lodash';
 
-export class AssignPrReviewer {
+export class AssignPrReviewer extends HelperInputs {
   teams?: string;
   login?: string;
   number_of_assignees?: string;
   slack_webhook_url?: string;
-  pull_number?: number;
+  pull_number?: string;
 }
 
 export const assignPrReviewers = async ({
@@ -32,7 +33,7 @@ export const assignPrReviewers = async ({
   login,
   number_of_assignees = '1',
   slack_webhook_url,
-  pull_number = context.issue.number
+  pull_number = String(context.issue.number)
 }: AssignPrReviewer) => {
   const coreMemberLogins = await getCoreMemberLogins(context.issue.number, teams?.split('\n'));
 
@@ -44,7 +45,7 @@ export const assignPrReviewers = async ({
 
   await octokit.issues.addAssignees({
     assignees,
-    issue_number: pull_number,
+    issue_number: Number(pull_number),
     ...context.repo
   });
 
@@ -52,7 +53,7 @@ export const assignPrReviewers = async ({
     return map(assignees, async assignee =>
       notifyUser({
         login: assignee,
-        pull_number,
+        pull_number: Number(pull_number),
         slack_webhook_url
       })
     );

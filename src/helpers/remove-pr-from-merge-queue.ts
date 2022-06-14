@@ -13,11 +13,12 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { FIRST_QUEUED_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../constants';
+import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import { removeLabelIfExists } from './remove-label';
 
-export class RemovePrFromMergeQueue {
+export class RemovePrFromMergeQueue extends HelperInputs {
   seconds = '';
 }
 
