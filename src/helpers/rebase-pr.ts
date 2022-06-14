@@ -13,31 +13,13 @@ limitations under the License.
 
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
+import { rebasePullRequest } from "github-rebase";
 
-export class CreatePR {
-  title = '';
-  body = '';
-  head?: string;
-  base?: string;
+export class RebasePr {
+  pull_number = '';
+  optionalInput?: string;
 }
 
-export const createPr = async ({ title, body, head = context.ref.replace('refs/heads/', ''), base }: CreatePR) => {
-  const {
-    data: { number }
-  } = await octokit.pulls.create({
-    title,
-    head,
-    base: base || (await getDefaultBranch()),
-    body,
-    maintainer_can_modify: true,
-    ...context.repo
-  });
-  return number;
+export const rebasePr = async ({ requiredInput, optionalInput }: RebasePr) => {
+
 };
-
-async function getDefaultBranch() {
-  const {
-    data: { default_branch }
-  } = await octokit.repos.get({ ...context.repo });
-  return default_branch;
-}
