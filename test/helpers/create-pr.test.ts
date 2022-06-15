@@ -21,7 +21,7 @@ jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, ref: 'refs/heads/source' },
   getOctokit: jest.fn(() => ({
     rest: {
-      repos: { get: jest.fn() },
+      repos: { get: jest.fn(), merge: jest.fn() },
       pulls: { create: jest.fn() }
     }
   }))
@@ -48,6 +48,18 @@ describe('createPr', () => {
       body
     });
     expect(octokit.repos.get).toHaveBeenCalledWith({ ...context.repo });
+  });
+
+  it('should call repos merge with correct params', async () => {
+    await createPr({
+      title,
+      body
+    });
+    expect(octokit.repos.merge).toHaveBeenCalledWith({
+      base: 'source',
+      head: 'default branch',
+      ...context.repo
+    });
   });
 
   it('should call create with correct params', async () => {

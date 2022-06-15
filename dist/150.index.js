@@ -47,19 +47,17 @@ class CreatePR extends _types_generated__WEBPACK_IMPORTED_MODULE_2__/* .HelperIn
     }
 }
 const createPr = ({ title, body, head = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.ref.replace('refs/heads/', ''), base }) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     const pr_base = base || (yield getDefaultBranch());
-    const result = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.create */ .K.pulls.create(Object.assign({ title,
+    yield updateHeadWithBaseBranch(pr_base, head);
+    const { data: { number } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.create */ .K.pulls.create(Object.assign({ title,
         head, base: pr_base, body, maintainer_can_modify: true }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-    const pullNumber = (_a = result === null || result === void 0 ? void 0 : result.data) === null || _a === void 0 ? void 0 : _a.number;
-    return pullNumber;
+    return number;
 });
-function getDefaultBranch() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const { data: { default_branch } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.get */ .K.repos.get(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-        return default_branch;
-    });
-}
+const updateHeadWithBaseBranch = (base, head) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.merge */ .K.repos.merge(Object.assign({ base: head, head: base }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+const getDefaultBranch = () => __awaiter(void 0, void 0, void 0, function* () {
+    const { data: { default_branch } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.get */ .K.repos.get(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    return default_branch;
+});
 
 
 /***/ }),
