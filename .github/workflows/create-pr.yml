@@ -1,9 +1,9 @@
 name: Open Pull Request
 
 on:
-  pull_request:
+  push:
     branches:
-      - main
+      - create-pull-request
 
 jobs:
   test:
@@ -15,7 +15,6 @@ jobs:
       - uses: ./
         with:
           helper: create-pr
-          head: create-pull-request
           title: New PR
           body: Implemented new feature. Added tests.
           github_token: ${{ secrets.GITHUB_TOKEN }}
