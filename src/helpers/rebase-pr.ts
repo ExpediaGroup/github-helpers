@@ -12,18 +12,18 @@ limitations under the License.
 */
 
 import { HelperInputs } from '../types/generated';
-import { context } from '@actions/github';
-import { octokit } from '../octokit';
+import { context, getOctokit } from '@actions/github';
 import { rebasePullRequest } from 'github-rebase';
 
 export class RebasePr extends HelperInputs {
   pull_number = '';
+  github_token = '';
 }
 
-export const rebasePr = async ({ pull_number }: RebasePr) => {
+export const rebasePr = async ({ pull_number, github_token }: RebasePr) => {
   await rebasePullRequest({
     pullRequestNumber: Number(pull_number),
-    octokit,
+    octokit: getOctokit(github_token),
     ...context.repo
   });
 };

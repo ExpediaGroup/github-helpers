@@ -13,27 +13,24 @@ limitations under the License.
 
 import { context } from '@actions/github';
 import { rebasePr } from '../../src/helpers/rebase-pr';
-import { octokit } from '../../src/octokit';
 import { rebasePullRequest } from 'github-rebase';
 
 jest.mock('@actions/core');
 jest.mock('github-rebase');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({
-    rest: jest.fn()
-  }))
+  getOctokit: jest.fn(() => 'octokit')
 }));
 
 describe('rebasePr', () => {
   beforeEach(() => {
-    rebasePr({ pull_number: '123' });
+    rebasePr({ pull_number: '123', github_token: 'token' });
   });
 
   it('should call rebasePullRequest with correct params', () => {
     expect(rebasePullRequest).toHaveBeenCalledWith({
       pullRequestNumber: 123,
-      octokit,
+      octokit: 'octokit',
       ...context.repo
     });
   });
