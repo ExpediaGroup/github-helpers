@@ -1,9 +1,9 @@
 name: Open Pull Request
 
 on:
-  push:
+  pull_request:
     branches:
-      - create-pull-request
+      - main
 
 jobs:
   test:
