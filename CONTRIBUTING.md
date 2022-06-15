@@ -19,6 +19,7 @@ git checkout -b my-new-feature
 where "my-new-feature" describes what you're working on.
 
 ### 3. Get set up locally
+This script will install all dependencies for local development.
 ```shell
 npm run setup
 ```
