@@ -11,27 +11,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { rebasePr } from '../../src/helpers/rebase-pr';
 import { octokit } from '../../src/octokit';
+import { rebasePullRequest } from 'github-rebase';
 
 jest.mock('@actions/core');
+jest.mock('github-rebase');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({
-    rest: {
-
-    }
+    rest: jest.fn()
   }))
 }));
 
 describe('rebasePr', () => {
   beforeEach(() => {
-    rebasePr({ requiredInput: '', optionalInput: '' });
+    rebasePr({ pull_number: '123' });
   });
 
-  it('should pass', () => {
-    expect(false).toBe(true);
+  it('should call rebasePullRequest with correct params', () => {
+    expect(rebasePullRequest).toHaveBeenCalledWith({
+      pullRequestNumber: 123,
+      octokit,
+      ...context.repo
+    });
   });
 });

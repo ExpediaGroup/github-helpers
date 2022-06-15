@@ -11,15 +11,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
-import { rebasePullRequest } from "github-rebase";
+import { rebasePullRequest } from 'github-rebase';
 
-export class RebasePr {
+export class RebasePr extends HelperInputs {
   pull_number = '';
-  optionalInput?: string;
 }
 
-export const rebasePr = async ({ requiredInput, optionalInput }: RebasePr) => {
-
+export const rebasePr = async ({ pull_number }: RebasePr) => {
+  await rebasePullRequest({
+    pullRequestNumber: Number(pull_number),
+    octokit,
+    ...context.repo
+  });
 };
