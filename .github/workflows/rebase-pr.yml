@@ -27,4 +27,5 @@ jobs:
       - uses: ./
         with:
           helper: rebase-pr
+          pull_number: 210
           github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
