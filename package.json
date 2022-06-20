@@ -21,7 +21,7 @@
     "typescript": "4.6.4"
   },
   "devDependencies": {
-    "@octokit/types": "6.34.0",
+    "@octokit/types": "6.35.0",
     "@types/axios": "0.14.0",
     "@types/bluebird": "3.5.36",
     "@types/jest": "28.1.1",
