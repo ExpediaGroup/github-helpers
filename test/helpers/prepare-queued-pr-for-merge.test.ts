@@ -27,7 +27,7 @@ jest.mock('@actions/github', () => ({
   getOctokit: jest.fn(() => ({
     rest: {
       pulls: { list: jest.fn() },
-      repos: { merge: jest.fn() },
+      repos: { merge: jest.fn(), mergeUpstream: jest.fn() },
       issues: {
         removeLabel: jest.fn(),
         createComment: jest.fn()
@@ -35,6 +35,7 @@ jest.mock('@actions/github', () => ({
     }
   }))
 }));
+(octokit.repos.mergeUpstream as unknown as Mocktokit).mockImplementation(async () => ({ some: 'response' }));
 (octokit.repos.merge as unknown as Mocktokit).mockImplementation(async () => ({ some: 'response' }));
 const removePrSpy = jest.spyOn(manageMergeQueue, 'removePrFromQueue');
 const updateQueueSpy = jest.spyOn(updateMergeQueue, 'updateMergeQueue');
@@ -82,6 +83,75 @@ describe('prepareQueuedPrForMerge', () => {
         state: 'open',
         per_page: 100,
         ...context.repo
+      });
+    });
+
+    it('should call repos.merge with correct params', () => {
+      expect(octokit.repos.merge).toHaveBeenCalledWith({
+        base: ref,
+        head: 'HEAD',
+        ...context.repo
+      });
+    });
+  });
+
+  describe('top queued pr exists and head is fork branch', () => {
+    beforeEach(async () => {
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+        data: [
+          {
+            head: {
+              ref: 'other branch name'
+            },
+            state: 'open',
+            labels: [
+              {
+                name: 'CORE APPROVED'
+              }
+            ]
+          },
+          {
+            head: {
+              ref,
+              user: {
+                login: 'user'
+              }
+            },
+            base: {
+              user: {
+                login: 'owner'
+              },
+              repo: {
+                default_branch: 'master'
+              }
+            },
+            state: 'open',
+            labels: [
+              {
+                name: READY_FOR_MERGE_PR_LABEL
+              },
+              {
+                name: FIRST_QUEUED_PR_LABEL
+              }
+            ]
+          }
+        ]
+      }));
+      await prepareQueuedPrForMerge();
+    });
+
+    it('should call pulls.list with correct params', () => {
+      expect(octokit.pulls.list).toHaveBeenCalledWith({
+        state: 'open',
+        per_page: 100,
+        ...context.repo
+      });
+    });
+
+    it('should call repos.mergeUpstream with correct params', () => {
+      expect(octokit.repos.mergeUpstream).toHaveBeenCalledWith({
+        ...context.repo,
+        branch: 'master'
       });
     });
 
@@ -238,6 +308,62 @@ describe('prepareQueuedPrForMerge', () => {
       expect(removePrSpy).toHaveBeenCalledWith(firstInQueue);
       expect(removeLabelSpy).toHaveBeenCalled();
       expect(updateQueueSpy).toHaveBeenCalled();
+      expect(core.setFailed).toHaveBeenCalled();
+    });
+  });
+
+  describe('merge conflict when update fork default branch with upstream', () => {
+    const firstInQueue = {
+      head: {
+        ref,
+        user: {
+          login: 'user'
+        }
+      },
+      base: {
+        user: {
+          login: 'owner'
+        },
+        repo: {
+          default_branch: 'master'
+        }
+      },
+      state: 'open',
+      labels: [
+        {
+          name: READY_FOR_MERGE_PR_LABEL
+        },
+        {
+          name: FIRST_QUEUED_PR_LABEL
+        }
+      ]
+    };
+    beforeEach(async () => {
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) =>
+        page === 1 || !page
+          ? {
+              data: [
+                {
+                  head: {
+                    ref: 'other branch name'
+                  },
+                  state: 'open',
+                  labels: [
+                    {
+                      name: 'CORE APPROVED'
+                    }
+                  ]
+                },
+                firstInQueue
+              ]
+            }
+          : { data: [] }
+      );
+      (octokit.repos.mergeUpstream as unknown as Mocktokit).mockRejectedValue({ status: 409 });
+      await prepareQueuedPrForMerge();
+    });
+
+    it('should call core.error', () => {
       expect(core.setFailed).toHaveBeenCalled();
     });
   });
