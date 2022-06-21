@@ -24,6 +24,8 @@ This script will install all dependencies for local development.
 npm run setup
 ```
 
+Ensure [Deno is installed on your local machine](https://deno.land/manual/getting_started/installation) as well.
+
 ### 4. If you are creating a new helper
 ```shell
 npm run create-helper
