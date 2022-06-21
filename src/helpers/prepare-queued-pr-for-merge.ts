@@ -38,6 +38,19 @@ const hasRequiredLabels = (pr: SimplePullRequest, requiredLabels: string[]) =>
   requiredLabels.every(mergeQueueLabel => pr.labels.some(label => label.name === mergeQueueLabel));
 
 export const updatePrWithMainline = async (pullRequest: PullRequest | SimplePullRequest) => {
+  if (pullRequest.head.user?.login && pullRequest.base.user?.login && pullRequest.head.user?.login !== pullRequest.base.user?.login) {
+    try {
+      // update fork default branch with upstream
+      await octokit.repos.mergeUpstream({
+        ...context.repo,
+        branch: pullRequest.base.repo.default_branch
+      });
+    } catch (error) {
+      if ((error as GithubError).status === 409) {
+        core.setFailed('Attempt to update fork branch with upstream failed; conflict on default branch between fork and upstream.');
+      } else core.setFailed((error as GithubError).message);
+    }
+  }
   try {
     await octokit.repos.merge({
       base: pullRequest.head.ref,

@@ -306,6 +306,20 @@ const findNextPrToMerge = (pullRequests) => {
 };
 const hasRequiredLabels = (pr, requiredLabels) => requiredLabels.every(mergeQueueLabel => pr.labels.some(label => label.name === mergeQueueLabel));
 const updatePrWithMainline = (pullRequest) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d;
+    if (((_a = pullRequest.head.user) === null || _a === void 0 ? void 0 : _a.login) && ((_b = pullRequest.base.user) === null || _b === void 0 ? void 0 : _b.login) && ((_c = pullRequest.head.user) === null || _c === void 0 ? void 0 : _c.login) !== ((_d = pullRequest.base.user) === null || _d === void 0 ? void 0 : _d.login)) {
+        try {
+            // update fork default branch with upstream
+            yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.mergeUpstream */ .K.repos.mergeUpstream(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo), { branch: pullRequest.base.repo.default_branch }));
+        }
+        catch (error) {
+            if (error.status === 409) {
+                _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('Attempt to update fork branch with upstream failed; conflict on default branch between fork and upstream.');
+            }
+            else
+                _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
+        }
+    }
     try {
         yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.merge */ .K.repos.merge(Object.assign({ base: pullRequest.head.ref, head: 'HEAD' }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
     }
