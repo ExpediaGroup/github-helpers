@@ -19300,16 +19300,6 @@ var map = {
 		832,
 		956
 	],
-	"./close-stale-pull-requests": [
-		6551,
-		832,
-		934
-	],
-	"./close-stale-pull-requests.ts": [
-		6551,
-		832,
-		934
-	],
 	"./create-pr": [
 		9150,
 		832,

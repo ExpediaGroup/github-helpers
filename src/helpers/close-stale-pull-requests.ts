@@ -22,7 +22,6 @@ export class CloseStalePullRequests extends HelperInputs {
 export const closeStalePullRequests = async ({ threshold }: CloseStalePullRequests) => {
   const result = await octokit.pulls.list({
     state: 'open',
-    per_page: 100,
     ...context.repo
   });
   // eslint-disable-next-line functional/no-let
