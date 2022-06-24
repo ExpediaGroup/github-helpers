@@ -40,6 +40,9 @@ with:
 
 ## Available Helpers
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
+### [close-stale-pull-requests](.github/workflows/close-stale-pull-requests.yml)
+  * Closes stale pull requests
+
 ### [add-labels](.github/workflows/add-labels.yml)
   * Adds one or more labels to a PR
 
