@@ -57,11 +57,22 @@ override_filter_paths, override_filter_globs,
 paths_no_filter, 
 /** number of evenly-sized batches to separate matching paths into (returns comma-separated result) */
 batches }) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b;
     const pathsToUse = paths || globs;
     if (!pathsToUse) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error('Must supply one of paths, globs');
-        throw new Error();
+        if (!paths_no_filter) {
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__.error('Must supply one of paths, globs, paths_no_filter');
+            throw new Error();
+        }
+        const extraPaths = (_a = paths_no_filter === null || paths_no_filter === void 0 ? void 0 : paths_no_filter.split(/[\n,]/)) !== null && _a !== void 0 ? _a : [];
+        if (batches) {
+            return {
+                include: (0,lodash__WEBPACK_IMPORTED_MODULE_1__.chunk)((0,lodash__WEBPACK_IMPORTED_MODULE_1__.uniq)(extraPaths), Math.ceil(extraPaths.length / Number(batches))).map(chunk => ({ path: chunk.join(',') }))
+            };
+        }
+        return {
+            include: extraPaths.map(path => ({ path }))
+        };
     }
     const changedFiles = yield (0,_utils_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_3__/* .getChangedFilepaths */ .s)(_actions_github__WEBPACK_IMPORTED_MODULE_2__.context.issue.number);
     const shouldOverrideFilter = override_filter_globs
@@ -73,7 +84,7 @@ batches }) => __awaiter(void 0, void 0, void 0, function* () {
         : paths
             ? splitPaths.filter(path => changedFiles.some(changedFile => changedFile.startsWith(path)))
             : splitPaths.filter(glob => micromatch__WEBPACK_IMPORTED_MODULE_4___default()(changedFiles, glob).length > 0);
-    const extraPaths = (_a = paths_no_filter === null || paths_no_filter === void 0 ? void 0 : paths_no_filter.split(/[\n,]/)) !== null && _a !== void 0 ? _a : [];
+    const extraPaths = (_b = paths_no_filter === null || paths_no_filter === void 0 ? void 0 : paths_no_filter.split(/[\n,]/)) !== null && _b !== void 0 ? _b : [];
     const matrixValues = (0,lodash__WEBPACK_IMPORTED_MODULE_1__.uniq)(basePaths.concat(extraPaths));
     if (batches) {
         return {

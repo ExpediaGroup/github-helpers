@@ -40,8 +40,19 @@ export const generatePathMatrix = async ({
 }: GeneratePathMatrix) => {
   const pathsToUse = paths || globs;
   if (!pathsToUse) {
-    core.error('Must supply one of paths, globs');
-    throw new Error();
+    if (!paths_no_filter) {
+      core.error('Must supply one of paths, globs, paths_no_filter');
+      throw new Error();
+    }
+    const extraPaths: string[] = paths_no_filter?.split(/[\n,]/) ?? [];
+    if (batches) {
+      return {
+        include: chunk(uniq(extraPaths), Math.ceil(extraPaths.length / Number(batches))).map(chunk => ({ path: chunk.join(',') }))
+      };
+    }
+    return {
+      include: extraPaths.map(path => ({ path }))
+    };
   }
   const changedFiles = await getChangedFilepaths(context.issue.number);
   const shouldOverrideFilter = override_filter_globs

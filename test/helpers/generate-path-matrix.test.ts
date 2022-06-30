@@ -272,4 +272,33 @@ describe('generatePathMatrix', () => {
       });
     });
   });
+
+  describe('only paths_no_filter case', () => {
+    it('should call listFiles with correct params', async () => {
+      await generatePathMatrix({
+        paths_no_filter: paths,
+        batches: '2'
+      });
+
+      expect(octokit.pulls.listFiles).not.toHaveBeenCalled();
+    });
+
+    it('should return expected result', async () => {
+      const result = await generatePathMatrix({
+        paths_no_filter: paths,
+        batches: '2'
+      });
+
+      expect(result).toEqual({
+        include: [
+          {
+            path: `${filePath1},${filePath2}`
+          },
+          {
+            path: filePath3
+          }
+        ]
+      });
+    });
+  });
 });
