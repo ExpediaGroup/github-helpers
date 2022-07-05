@@ -1,7 +1,7 @@
 name: PR Checks
 
 on:
-  pull_request_target:
+  pull_request:
     branches: [ main ]
 
 jobs:
@@ -14,7 +14,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Validate package.json
         uses: ExpediaGroup/package-json-validator@v1
@@ -58,7 +58,7 @@ jobs:
             git config user.name "${{ github.actor }}"
             git config user.email "${{ github.actor }}@users.noreply.github.com"
             git add dist/
-            git commit -m "chore: comitting generated dist"
+            git commit -m "chore: committing generated dist"
             git push
             exit 1
           fi
