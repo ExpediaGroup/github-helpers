@@ -116,7 +116,7 @@ Additionally, the following parameters can be used for additional control over t
 ### [notify-pipeline-complete](.github/workflows/notify-pipeline-complete.yml)
   * Sets a "pipeline" commit status to green for all open PRs
 
-### [~~prepare-queued-pr-for-merge~~](.github/workflows/prepare-queued-pr-for-merge.yml) (DEPRECATED)
+### [prepare-queued-pr-for-merge](.github/workflows/prepare-queued-pr-for-merge.yml)
   * Merges the default branch into the pull request that has the `QUEUED FOR MERGE #1` label
 
 ### [remove-label](.github/workflows/remove-label.yml)
