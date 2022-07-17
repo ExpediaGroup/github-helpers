@@ -6,7 +6,7 @@
     "@actions/core": "1.9.0",
     "@actions/github": "5.0.3",
     "@adobe/node-fetch-retry": "2.2.0",
-    "@octokit/request": "6.0.2",
+    "@octokit/request": "6.2.0",
     "@octokit/rest": "19.0.3",
     "axios": "0.27.2",
     "bluebird": "3.7.2",
