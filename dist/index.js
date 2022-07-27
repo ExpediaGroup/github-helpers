@@ -19352,6 +19352,18 @@ var map = {
 		228,
 		794
 	],
+	"./generate-component-matrix": [
+		7075,
+		832,
+		988,
+		75
+	],
+	"./generate-component-matrix.ts": [
+		7075,
+		832,
+		988,
+		75
+	],
 	"./generate-path-matrix": [
 		2533,
 		832,

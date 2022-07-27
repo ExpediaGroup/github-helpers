@@ -45,4 +45,5 @@ export class HelperInputs {
   pull_number?: string;
   base?: string;
   head?: string;
+  backstage_url?: string;
 }
