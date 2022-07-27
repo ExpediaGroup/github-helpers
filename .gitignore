@@ -13,3 +13,4 @@ node_modules
 lib
 .idea
 .env
+*.log

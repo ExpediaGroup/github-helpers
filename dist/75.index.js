@@ -123,6 +123,10 @@ function parseStatus(status) {
 
 // EXTERNAL MODULE: ./node_modules/@backstage/catalog-client/dist/index.cjs.js
 var index_cjs = __webpack_require__(8988);
+// EXTERNAL MODULE: external "path"
+var external_path_ = __webpack_require__(1017);
+// EXTERNAL MODULE: external "fs"
+var external_fs_ = __webpack_require__(7147);
 ;// CONCATENATED MODULE: ./src/helpers/generate-component-matrix.ts
 /*
 Copyright 2022 Aurora Labs
@@ -150,6 +154,8 @@ var generate_component_matrix_awaiter = (undefined && undefined.__awaiter) || fu
 
 
 
+
+
 class GenerateComponentMatrix extends generated/* HelperInputs */.s {
 }
 function sourceLocation(entity) {
@@ -162,10 +168,35 @@ function sourceLocationDir(entity) {
     const loc = sourceLocation(entity);
     return loc.split('/').slice(7, -1).join('/');
 }
+/**
+ * Finds the first parent directory that contains rootFile.
+ * If the rootFile is not found, returns ./
+ */
+function findRoot(fileName, rootFile) {
+    const dirs = fileName.split('/');
+    core.info(`searching ${rootFile} for ${fileName}`);
+    while (dirs.length >= 0) {
+        try {
+            const testFile = external_path_.join('./', ...dirs, rootFile);
+            core.info(`checking: ${testFile}`);
+            if (external_fs_.existsSync(testFile)) {
+                core.info(`Found ${rootFile} root for ${fileName}:`);
+                core.info(dirs.join('/'));
+                break;
+            }
+        }
+        finally {
+            // eslint-disable-next-line functional/immutable-data
+            dirs.pop();
+        }
+    }
+    if (dirs.length === 0) {
+        core.info(`Unable to find ${rootFile} for ${fileName}, using the default`);
+    }
+    return dirs.length > 0 ? dirs.join('/') : './';
+}
 const generateComponentMatrix = ({ backstage_url }) => generate_component_matrix_awaiter(void 0, void 0, void 0, function* () {
-    const eventName = process.env.GITHUB_EVENT_NAME;
-    const changedFiles = yield getChangedFiles(eventName);
-    core.info(`Changed files: ${changedFiles}`);
+    core.info('Connecting to Backstage to fetch contract entities for the current repo');
     const discoveryApi = {
         getBaseUrl() {
             return generate_component_matrix_awaiter(this, void 0, void 0, function* () {
@@ -177,21 +208,38 @@ const generateComponentMatrix = ({ backstage_url }) => generate_component_matrix
         discoveryApi
     });
     const entities = yield catalogClient.getEntities({});
-    core.info(`Discovered entities: ${entities.items.length}`);
+    core.info(`Total backstage entities: ${entities.items.length}`);
     const repoUrl = `${process.env.GITHUB_SERVER_URL}/${github.context.repo.owner}/${github.context.repo.repo}`;
-    // const locations = entities.items.filter(item => item.spec?.type === 'contract').map(item => sourceLocation(item));
-    // console.log(locations);
-    const items = entities.items
+    const contractItems = entities.items
         .filter(item => { var _a; return (_a = sourceLocation(item)) === null || _a === void 0 ? void 0 : _a.startsWith(`url:${repoUrl}`); })
         .filter(item => { var _a; return ((_a = item.spec) === null || _a === void 0 ? void 0 : _a.type) === 'contract'; });
-    // console.log(items);
-    // console.log(items.length);
+    const contractItemNames = contractItems.map(item => item.metadata.name);
+    core.info(`Contract entities in this repo: ${contractItems.length} (${contractItemNames})`);
+    const eventName = process.env.GITHUB_EVENT_NAME;
+    const changedFiles = yield getChangedFiles(eventName);
+    core.info(`Changed files count: ${changedFiles.length}`);
+    const changedContracts = contractItems.filter(contractItem => changedFiles.some(file => {
+        const loc = sourceLocation(contractItem);
+        return file.file.startsWith(loc);
+    }));
+    core.info(`Changed contracts: ${Object.keys(changedContracts).length} ({${Object.keys(changedContracts)}})`);
+    const forceAll = eventName !== 'pull_request';
+    if (forceAll)
+        core.info('forcing CI runs for all components (not a pull request)');
+    core.info('Generating component matrix...');
     return {
-        include: items.map(item => ({
-            name: item.metadata.name,
-            tags: item.metadata.tags,
-            path: sourceLocationDir(item)
-        }))
+        include: contractItems.map(item => {
+            // TODO add solidity tag in backstage
+            const isSolidity = !item.metadata.tags.includes('near');
+            const runSlither = isSolidity && (forceAll || changedContracts.includes(item));
+            return {
+                name: item.metadata.name,
+                tags: item.metadata.tags,
+                path: sourceLocationDir(item),
+                nodeRoot: findRoot(sourceLocationDir(item), 'package.json'),
+                runSlither
+            };
+        })
     };
 });
 
