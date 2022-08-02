@@ -72,6 +72,9 @@ export const addPrStaleLabel = async ({ prs, owner, repo }: AddPrStaleLabel) => 
  * @return [Boolean] whether or not the provided label is needed for the pull request
  */
 const isLabelNeeded = async ( prData: PullResponseType, label: string )=> {
+  if (prData == null) {
+    return false;
+  }
   const last_updated = new Date(prData.data.updated_at);
   const now = new Date();
   const age = now.getTime() - last_updated.getTime();
