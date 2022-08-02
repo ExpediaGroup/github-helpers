@@ -23,6 +23,16 @@ jest.mock('@actions/github', () => ({
         addLabels: jest.fn()
       },
       pulls: {
+        list: jest.fn().mockReturnValue({
+          header:"",
+          status:"",
+          url:"",
+          data: [
+            {
+              id: 123
+            }
+          ]
+        }),
         get: jest.fn().mockReturnValueOnce({
           header:"",
           status:"",
@@ -56,17 +66,21 @@ jest.mock('@actions/github', () => ({
 describe('addPrStaleLabel', () => {
   jest.setTimeout(9999999);
   describe('Late Review', () => {
-    const prs = "123";
     const owner = "owner";
     const repo = "repo";
 
 
     it('should add Late Review label to the pr', async () => {
       await addPrStaleLabel({
-        prs,
         owner,
         repo
       });
+
+      expect(octokit.pulls.list).toHaveBeenCalledWith({
+        owner: "owner",
+        repo: "repo"
+      });
+      
       expect(octokit.pulls.get).toHaveBeenCalledWith({
         owner: "owner",
         repo: "repo",
@@ -83,15 +97,21 @@ describe('addPrStaleLabel', () => {
 
     it('should add Stale label to the pr', async () => {
       await addPrStaleLabel({
-        prs,
         owner,
         repo
       });
+      
+      expect(octokit.pulls.list).toHaveBeenCalledWith({
+        owner: "owner",
+        repo: "repo"
+      });
+
       expect(octokit.pulls.get).toHaveBeenCalledWith({
         owner: "owner",
         repo: "repo",
         pull_number: 123
       });
+
       expect(octokit.issues.addLabels).toHaveBeenCalledWith({
         labels: [STALE],
         issue_number: 123,
@@ -102,9 +122,13 @@ describe('addPrStaleLabel', () => {
 
     it('should not add any labels to the pr', async () => {
       await addPrStaleLabel({
-        prs,
         owner,
         repo
+      });
+      
+      expect(octokit.pulls.list).toHaveBeenCalledWith({
+        owner: "owner",
+        repo: "repo"
       });
       
       expect(octokit.pulls.get).toHaveBeenCalledWith({

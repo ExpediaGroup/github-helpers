@@ -17,9 +17,9 @@ import { octokit } from '../octokit';
 import { RestEndpointMethodTypes } from '@octokit/rest';
 
 type PullResponseType = RestEndpointMethodTypes["pulls"]["get"]["response"];
+type ListResponseType = RestEndpointMethodTypes["pulls"]["list"]["response"];
 
 export class AddPrStaleLabel extends HelperInputs {
-  prs = '';
   owner = '';
   repo = '';
 }
@@ -29,17 +29,22 @@ export class AddPrStaleLabel extends HelperInputs {
  * @param [string] owner: name of the repo's owner
  * @param [string] repo: name of the repo
  */
-export const addPrStaleLabel = async ({ prs, owner, repo }: AddPrStaleLabel) => {
-  var pull_requests = prs.split(',');
+export const addPrStaleLabel = async ({ owner, repo }: AddPrStaleLabel) => {
+  // Get all pull requests
+  var pull_requests = await octokit.pulls.list({
+    owner: owner,
+    repo: repo
+  }) as ListResponseType;
+
   var pull_request_data;
   var pr;
-  var num_requests = pull_requests.length;
+  var num_requests = pull_requests.data.length;
   var label;
 
   // Loop through all of the issue numbers
   for (var i = 0; i < num_requests; i++) {
     label = [];
-    pr = parseInt(pull_requests[i]);
+    pr = pull_requests.data[i].id;
     // Get the PR
     pull_request_data = await octokit.pulls.get({
         owner: owner,
