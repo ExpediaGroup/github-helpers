@@ -33,7 +33,8 @@ export const addPrStaleLabel = async ({ owner, repo }: AddPrStaleLabel) => {
   // Get all pull requests
   var pull_requests = await octokit.pulls.list({
     owner: owner,
-    repo: repo
+    repo: repo,
+    state: "open"
   }) as ListResponseType;
 
   var pull_request_data;

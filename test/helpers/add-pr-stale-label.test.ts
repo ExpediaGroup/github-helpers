@@ -78,9 +78,10 @@ describe('addPrStaleLabel', () => {
 
       expect(octokit.pulls.list).toHaveBeenCalledWith({
         owner: "owner",
-        repo: "repo"
+        repo: "repo",
+        state: "open"
       });
-      
+
       expect(octokit.pulls.get).toHaveBeenCalledWith({
         owner: "owner",
         repo: "repo",
@@ -103,7 +104,8 @@ describe('addPrStaleLabel', () => {
       
       expect(octokit.pulls.list).toHaveBeenCalledWith({
         owner: "owner",
-        repo: "repo"
+        repo: "repo",
+        state: "open"
       });
 
       expect(octokit.pulls.get).toHaveBeenCalledWith({
@@ -128,7 +130,8 @@ describe('addPrStaleLabel', () => {
       
       expect(octokit.pulls.list).toHaveBeenCalledWith({
         owner: "owner",
-        repo: "repo"
+        repo: "repo",
+        state: "open"
       });
       
       expect(octokit.pulls.get).toHaveBeenCalledWith({
