@@ -13,13 +13,10 @@ limitations under the License.
 
 import { STALE, LATE_REVIEW } from '../../src/constants';
 import { addPrStaleLabel } from '../../src/helpers/add-pr-stale-label';
-//comment 17-24 for testing
-import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({
     rest: {
       issues: {
@@ -79,7 +76,8 @@ describe('addPrStaleLabel', () => {
       expect(octokit.issues.addLabels).toHaveBeenCalledWith({
         labels: [LATE_REVIEW],
         issue_number: 123,
-        ...context.repo
+        repo: "repo",
+        owner: "owner"
       });
     });
 
@@ -97,7 +95,8 @@ describe('addPrStaleLabel', () => {
       expect(octokit.issues.addLabels).toHaveBeenCalledWith({
         labels: [STALE],
         issue_number: 123,
-        ...context.repo
+        repo: "repo",
+        owner: "owner"
       });
     });
 

@@ -13,7 +13,6 @@ limitations under the License.
 
 import { LATE_REVIEW, STALE } from '../constants';
 import { HelperInputs } from '../types/generated';
-import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import { RestEndpointMethodTypes } from '@octokit/rest';
 
@@ -61,7 +60,8 @@ export const addPrStaleLabel = async ({ prs, owner, repo }: AddPrStaleLabel) => 
     octokit.issues.addLabels({
       labels: label,
       issue_number: pr,
-      ...context.repo
+      owner: owner,
+      repo: repo
     });
   }
 };
