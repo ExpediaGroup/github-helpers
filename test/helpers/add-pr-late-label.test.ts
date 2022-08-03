@@ -11,8 +11,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { STALE, LATE_REVIEW } from '../../src/constants';
-import { addPrStaleLabel } from '../../src/helpers/add-pr-stale-label';
+import { LATE_REVIEW } from '../../src/constants';
+import { addPrLateReviewLabels } from '../../src/helpers/add-pr-late-label';
 import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
@@ -46,14 +46,6 @@ jest.mock('@actions/github', () => ({
           status:"",
           url:"",
           data: {
-            updated_at: "2022-06-25T07:00:00.000Z",
-            mergeable_state: "unknown"
-          }
-        }).mockReturnValueOnce({
-          header:"",
-          status:"",
-          url:"",
-          data: {
             updated_at: "2022-07-25T07:00:00.000Z",
             mergeable_state: "behind"
           }
@@ -63,7 +55,7 @@ jest.mock('@actions/github', () => ({
   }))
 }));
 
-describe('addPrStaleLabel', () => {
+describe('addPrLateReviewLabels', () => {
   jest.setTimeout(9999999);
   describe('Late Review', () => {
     const owner = "owner";
@@ -71,7 +63,7 @@ describe('addPrStaleLabel', () => {
 
 
     it('should add Late Review label to the pr', async () => {
-      await addPrStaleLabel({
+      await addPrLateReviewLabels({
         owner,
         repo
       });
@@ -96,34 +88,8 @@ describe('addPrStaleLabel', () => {
       });
     });
 
-    it('should add Stale label to the pr', async () => {
-      await addPrStaleLabel({
-        owner,
-        repo
-      });
-      
-      expect(octokit.pulls.list).toHaveBeenCalledWith({
-        owner: "owner",
-        repo: "repo",
-        state: "open"
-      });
-
-      expect(octokit.pulls.get).toHaveBeenCalledWith({
-        owner: "owner",
-        repo: "repo",
-        pull_number: 123
-      });
-
-      expect(octokit.issues.addLabels).toHaveBeenCalledWith({
-        labels: [STALE],
-        issue_number: 123,
-        repo: "repo",
-        owner: "owner"
-      });
-    });
-
     it('should not add any labels to the pr', async () => {
-      await addPrStaleLabel({
+      await addPrLateReviewLabels({
         owner,
         repo
       });

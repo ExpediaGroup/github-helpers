@@ -23,7 +23,6 @@ export const DEFAULT_EXEMPT_DESCRIPTION = 'Passed in case the check is exempt.';
 export const DEFAULT_PIPELINE_STATUS = 'Pipeline Status';
 export const DEFAULT_PIPELINE_DESCRIPTION = 'Pipeline clear.';
 export const PRODUCTION_ENVIRONMENT = 'production';
-export const STALE = 'Stale';
 export const LATE_REVIEW = 'Late Review';
 export const CORE_APPROVED_PR_LABEL = 'CORE APPROVED';
 export const PEER_APPROVED_PR_LABEL = 'PEER APPROVED';
