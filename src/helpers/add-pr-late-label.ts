@@ -15,7 +15,7 @@ import { LATE_REVIEW } from '../constants';
 import { HelperInputs } from '../types/generated';
 import { octokit } from '../octokit';
 import { RestEndpointMethodTypes } from '@octokit/rest';
-import { map } from "bluebird";
+import { each } from "bluebird";
 
 type PullResponseType = RestEndpointMethodTypes["pulls"]["get"]["response"];
 type ListResponseType = RestEndpointMethodTypes["pulls"]["list"]["response"];
@@ -26,25 +26,42 @@ export class AddPrLateReviewLabels extends HelperInputs {
 }
 
 export const addPrLateReviewLabels = async ({ owner, repo }: AddPrLateReviewLabels) => {
-  // Get all pull requests
-  const pull_requests = await octokit.pulls.list({
+  var page = 1;
+  var pull_requests = await getPRs(owner, repo, page) as ListResponseType;
+
+  while (pull_requests.data.length > 0 ) {
+    if (pull_requests.status != 200) {
+      //loghere
+      continue;
+    }
+
+    const pr_data = pull_requests.data || [];
+  
+    // Loop through all of the issue numbers
+    await each(pr_data, async pull_request =>
+      await labelPullRequest( 
+        pull_request,
+        owner,
+        repo
+      )
+    );
+    // Setup next PR page
+    page += 1;
+    // Get all pull requests  
+    pull_requests = await getPRs(owner, repo, page);
+  }
+};
+
+const getPRs = async ( owner: string, repo: string, page: number) => {
+  return await octokit.pulls.list({
     owner: owner,
     repo: repo,
-    state: "open"
+    state: "open",
+    sort: "created",
+    per_page: 100,
+    page: page
   }) as ListResponseType;
-
-  const pr_data = pull_requests.data;
-
-  // Loop through all of the issue numbers
-  map(pr_data, async pull_request =>
-    labelPullRequest( 
-      pull_request,
-      owner,
-      repo
-    )
-  );
-    
-};
+}
 
 const labelPullRequest = async ( pull_request: any, owner: string, repo: string) => {
   const pr = parseInt(pull_request.id);

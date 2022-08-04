@@ -23,28 +23,35 @@ jest.mock('@actions/github', () => ({
         addLabels: jest.fn()
       },
       pulls: {
-        list: jest.fn().mockReturnValue({
-          header:"",
-          status:"",
-          url:"",
+        list: jest.fn().mockReturnValueOnce({
+          status:"200",
           data: [
             {
               id: 123
             }
           ]
+        }).mockReturnValueOnce({
+          status:"200",
+          data: []
+        }).mockReturnValueOnce({
+          status:"200",
+          data: [
+            {
+              id: 123
+            }
+          ]
+        }).mockReturnValueOnce({
+          status:"200",
+          data: []
         }),
         get: jest.fn().mockReturnValueOnce({
-          header:"",
-          status:"",
-          url:"",
+          status:"200",
           data: {
             updated_at: "2022-07-25T07:00:00.000Z",
             mergeable_state: "blocked"
           }
         }).mockReturnValueOnce({
-          header:"",
-          status:"",
-          url:"",
+          status:"200",
           data: {
             updated_at: "2022-07-25T07:00:00.000Z",
             mergeable_state: "behind"
@@ -70,7 +77,19 @@ describe('addPrLateReviewLabels', () => {
 
       expect(octokit.pulls.list).toHaveBeenCalledWith({
         owner: "owner",
+        page: 1,
+        per_page: 100,
         repo: "repo",
+        sort: "created",
+        state: "open"
+      });
+
+      expect(octokit.pulls.list).toHaveBeenCalledWith({
+        owner: "owner",
+        page: 2,
+        per_page: 100,
+        repo: "repo",
+        sort: "created",
         state: "open"
       });
 
@@ -96,7 +115,19 @@ describe('addPrLateReviewLabels', () => {
       
       expect(octokit.pulls.list).toHaveBeenCalledWith({
         owner: "owner",
+        page: 1,
+        per_page: 100,
         repo: "repo",
+        sort: "created",
+        state: "open"
+      });
+      
+      expect(octokit.pulls.list).toHaveBeenCalledWith({
+        owner: "owner",
+        page: 2,
+        per_page: 100,
+        repo: "repo",
+        sort: "created",
         state: "open"
       });
       
