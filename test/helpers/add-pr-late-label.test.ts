@@ -62,6 +62,8 @@ jest.mock('@actions/github', () => ({
   }))
 }));
 
+jest.spyOn(Date, 'now').mockImplementation(() => new Date('2022-08-04T10:00:00Z').getTime());
+
 describe('addPrLateReviewLabels', () => {
   jest.setTimeout(9999999);
   describe('Late Review', () => {
