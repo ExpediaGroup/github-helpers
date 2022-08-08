@@ -47,27 +47,29 @@ function findRoot(fileName: string, rootFile: string) {
   const dirs = fileName.split('/');
   core.info(`searching ${rootFile} for ${fileName}`);
 
-  while (dirs.length >= 0) {
-    try {
-      const testFile = path.join('./', ...dirs, rootFile);
-      core.info(`checking: ${testFile}`);
-      if (fs.existsSync(testFile)) {
-        core.info(`Found ${rootFile} root for ${fileName}:`);
-        core.info(dirs.join('/'));
-        break;
-      }
-    } finally {
-      // eslint-disable-next-line functional/immutable-data
-      dirs.pop();
+  for (;;) {
+    const testFile = path.join('./', ...dirs, rootFile);
+    core.info(`checking: ${testFile}`);
+    if (fs.existsSync(testFile)) {
+      core.info(`Found ${rootFile} root for ${fileName}:`);
+      core.info(dirs.join('/'));
+      break;
     }
+    if (dirs.length === 0) {
+      core.info(`Unable to find ${rootFile} for ${fileName}, using the default`);
+      break;
+    }
+    // eslint-disable-next-line functional/immutable-data
+    dirs.pop();
   }
-  if (dirs.length === 0) {
-    core.info(`Unable to find ${rootFile} for ${fileName}, using the default`);
-  }
-  return dirs.length > 0 ? dirs.join('/') : './';
+  return dirs.length > 0 ? dirs.join('/') : '.';
 }
 
 export const generateComponentMatrix = async ({ backstage_url }: GenerateComponentMatrix) => {
+  if (!backstage_url) {
+    throw new Error('BACKSTAGE_URL is required, make sure to set the secret');
+  }
+
   core.info('Connecting to Backstage to fetch contract entities for the current repo');
 
   const discoveryApi: DiscoveryApi = {
@@ -111,19 +113,25 @@ export const generateComponentMatrix = async ({ backstage_url }: GenerateCompone
 
   core.info('Generating component matrix...');
 
-  return {
+  const matrix = {
     include: contractItems.map(item => {
-      // TODO add solidity tag in backstage
-      const isSolidity = !item.metadata.tags!.includes('near');
+      const isSolidity = ['ethereum', 'aurora'].some(tag => item.metadata.tags!.includes(tag));
+      const isRust = item.metadata.tags!.includes('near');
       const runSlither = isSolidity && (forceAll || changedContracts.includes(item));
+      const runClippy = isRust && (forceAll || changedContracts.includes(item));
 
       return {
         name: item.metadata.name,
         tags: item.metadata.tags,
         path: sourceLocationDir(item),
         nodeRoot: findRoot(sourceLocationDir(item)!, 'package.json'),
-        runSlither
+        runSlither,
+        runClippy
       };
     })
   };
+
+  core.info(JSON.stringify(matrix, null, 2));
+
+  return matrix;
 };
