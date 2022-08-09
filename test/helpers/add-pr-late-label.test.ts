@@ -43,7 +43,8 @@ describe('addPrLateReviewLabels', () => {
         status: "200",
         data: [
           {
-            id: 123
+            id: 123,
+            requested_reviewers: [{id:234}]
           }
         ]
       }).mockReturnValueOnce({
@@ -87,7 +88,8 @@ describe('addPrLateReviewLabels', () => {
         status: "200",
         data: [
           {
-            id: 123
+            id: 123,
+            requested_reviewers: [{id:234}]
           }
         ]
       }).mockReturnValueOnce({
