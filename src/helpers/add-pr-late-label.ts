@@ -73,7 +73,7 @@ const labelPullRequest = async ( pull_request: any, owner: string, repo: string)
     });
 
   // Checks if the PR is within the Late Review timeframe
-  if (!await isLabelNeeded(pull_request_data.data)) {
+  if (!await isLabelNeeded(pull_request_data.data, 2)) {
     return;
   } 
 
@@ -86,10 +86,10 @@ const labelPullRequest = async ( pull_request: any, owner: string, repo: string)
   });
 }
 
-const isLabelNeeded = async ( { mergeable_state, updated_at}: any ) => {
+const isLabelNeeded = async ( { mergeable_state, updated_at}: any, numDays: number ) => {
   const last_updated = new Date( updated_at );
   const now = new Date();
   const age = now.getTime() - last_updated.getTime();
   const oneDay = 86400000;
-  return age > oneDay * 2 && mergeable_state == "blocked";
+  return age > oneDay * numDays && mergeable_state == "blocked";
 }

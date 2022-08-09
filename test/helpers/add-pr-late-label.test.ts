@@ -15,63 +15,52 @@ import { LATE_REVIEW } from '../../src/constants';
 import { addPrLateReviewLabels } from '../../src/helpers/add-pr-late-label';
 import { octokit } from '../../src/octokit';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  getOctokit: jest.fn(() => ({
-    rest: {
-      issues: {
-        addLabels: jest.fn()
-      },
-      pulls: {
-        list: jest.fn().mockReturnValueOnce({
-          status:"200",
-          data: [
-            {
-              id: 123
-            }
-          ]
-        }).mockReturnValueOnce({
-          status:"200",
-          data: []
-        }).mockReturnValueOnce({
-          status:"200",
-          data: [
-            {
-              id: 123
-            }
-          ]
-        }).mockReturnValueOnce({
-          status:"200",
-          data: []
-        }),
-        get: jest.fn().mockReturnValueOnce({
-          status:"200",
-          data: {
-            updated_at: "2022-07-25T07:00:00.000Z",
-            mergeable_state: "blocked"
-          }
-        }).mockReturnValueOnce({
-          status:"200",
-          data: {
-            updated_at: "2022-07-25T07:00:00.000Z",
-            mergeable_state: "behind"
-          }
-        })
-      }
-    }
-  }))
-}));
-
-jest.spyOn(Date, 'now').mockImplementation(() => new Date('2022-08-04T10:00:00Z').getTime());
-
 describe('addPrLateReviewLabels', () => {
-  jest.setTimeout(9999999);
+  const mockList = jest.fn();
+  const mockGet = jest.fn();
+  jest.mock('@actions/core');
+  jest.mock('@actions/github', () => ({
+    getOctokit: jest.fn(() => ({
+      rest: {
+        issues: {
+          addLabels: jest.fn()
+        },
+        pulls: {
+          list: mockList,
+          get: mockGet
+        }
+      }
+    }))
+  }));
+
+  jest.spyOn(Date, 'now').mockImplementation(() => new Date('2022-08-04T10:00:00Z').getTime());
+
   describe('Late Review', () => {
     const owner = "owner";
     const repo = "repo";
 
 
     it('should add Late Review label to the pr', async () => {
+      mockList.mockReturnValueOnce({
+        status: "200",
+        data: [
+          {
+            id: 123
+          }
+        ]
+      }).mockReturnValueOnce({
+        status: "200",
+        data: []
+      });
+
+      mockGet.mockReturnValueOnce({
+        status: "200",
+        data: {
+          updated_at: "2022-07-25T07:00:00.000Z",
+          mergeable_state: "blocked"
+        }
+      });
+
       await addPrLateReviewLabels({
         owner,
         repo
@@ -110,11 +99,30 @@ describe('addPrLateReviewLabels', () => {
     });
 
     it('should not add any labels to the pr', async () => {
+      mockList.mockReturnValueOnce({
+        status: "200",
+        data: [
+          {
+            id: 123
+          }
+        ]
+      }).mockReturnValueOnce({
+        status: "200",
+        data: []
+      });
+      mockGet.mockReturnValueOnce({
+        status: "200",
+        data: {
+          updated_at: "2022-07-25T07:00:00.000Z",
+          mergeable_state: "behind"
+        }
+      });
+
       await addPrLateReviewLabels({
         owner,
         repo
       });
-      
+
       expect(octokit.pulls.list).toHaveBeenCalledWith({
         owner: "owner",
         page: 1,
@@ -123,7 +131,7 @@ describe('addPrLateReviewLabels', () => {
         sort: "created",
         state: "open"
       });
-      
+
       expect(octokit.pulls.list).toHaveBeenCalledWith({
         owner: "owner",
         page: 2,
@@ -132,7 +140,7 @@ describe('addPrLateReviewLabels', () => {
         sort: "created",
         state: "open"
       });
-      
+
       expect(octokit.pulls.get).toHaveBeenCalledWith({
         owner: "owner",
         repo: "repo",
