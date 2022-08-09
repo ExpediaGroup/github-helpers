@@ -65,15 +65,9 @@ const getPRs = async ( owner: string, repo: string, page: number) => {
 
 const labelPullRequest = async ( pull_request: any, owner: string, repo: string) => {
   const pr = parseInt(pull_request.id);
-  // Get the PR
-  const pull_request_data = await octokit.pulls.get({
-      owner: owner,
-      repo: repo,
-      pull_number: pr
-    });
 
   // Checks if the PR is within the Late Review timeframe
-  if (!await isLabelNeeded(pull_request_data.data, 2)) {
+  if (!await isLabelNeeded(pull_request.data, 2)) {
     return;
   } 
 
@@ -86,10 +80,11 @@ const labelPullRequest = async ( pull_request: any, owner: string, repo: string)
   });
 }
 
-const isLabelNeeded = async ( { mergeable_state, updated_at}: any, numDays: number ) => {
+const isLabelNeeded = async ( { requested_reviewers, requested_teams, updated_at}: any, numDays: number ) => {
   const last_updated = new Date( updated_at );
   const now = new Date();
   const age = now.getTime() - last_updated.getTime();
   const oneDay = 86400000;
-  return age > oneDay * numDays && mergeable_state == "blocked";
+  // No response over the given number of days & is waiting on reviewers
+  return age > oneDay * numDays && (requested_reviewers || requested_teams);
 }

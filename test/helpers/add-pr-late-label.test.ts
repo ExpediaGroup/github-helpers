@@ -17,7 +17,6 @@ import { octokit } from '../../src/octokit';
 
 describe('addPrLateReviewLabels', () => {
   const mockList = jest.fn();
-  const mockGet = jest.fn();
   jest.mock('@actions/core');
   jest.mock('@actions/github', () => ({
     getOctokit: jest.fn(() => ({
@@ -26,8 +25,7 @@ describe('addPrLateReviewLabels', () => {
           addLabels: jest.fn()
         },
         pulls: {
-          list: mockList,
-          get: mockGet
+          list: mockList
         }
       }
     }))
@@ -53,14 +51,6 @@ describe('addPrLateReviewLabels', () => {
         data: []
       });
 
-      mockGet.mockReturnValueOnce({
-        status: "200",
-        data: {
-          updated_at: "2022-07-25T07:00:00.000Z",
-          mergeable_state: "blocked"
-        }
-      });
-
       await addPrLateReviewLabels({
         owner,
         repo
@@ -82,12 +72,6 @@ describe('addPrLateReviewLabels', () => {
         repo: "repo",
         sort: "created",
         state: "open"
-      });
-
-      expect(octokit.pulls.get).toHaveBeenCalledWith({
-        owner: "owner",
-        repo: "repo",
-        pull_number: 123
       });
 
       expect(octokit.issues.addLabels).toHaveBeenCalledWith({
@@ -110,13 +94,6 @@ describe('addPrLateReviewLabels', () => {
         status: "200",
         data: []
       });
-      mockGet.mockReturnValueOnce({
-        status: "200",
-        data: {
-          updated_at: "2022-07-25T07:00:00.000Z",
-          mergeable_state: "behind"
-        }
-      });
 
       await addPrLateReviewLabels({
         owner,
@@ -139,12 +116,6 @@ describe('addPrLateReviewLabels', () => {
         repo: "repo",
         sort: "created",
         state: "open"
-      });
-
-      expect(octokit.pulls.get).toHaveBeenCalledWith({
-        owner: "owner",
-        repo: "repo",
-        pull_number: 123
       });
 
       expect(octokit.issues.addLabels).not.toHaveBeenCalledWith();
