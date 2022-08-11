@@ -11,27 +11,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+
+const mockList = jest.fn();
+jest.mock('../../src/octokit', () => ({
+  octokit: {
+    issues: {
+      addLabels: jest.fn()
+    },
+    pulls: {
+      list: mockList
+    }
+  }
+}));
+jest.spyOn(Date, 'now').mockImplementation(() => new Date('2022-08-04T10:00:00Z').getTime());
+
 import { LATE_REVIEW } from '../../src/constants';
 import { addPrLateReviewLabels } from '../../src/helpers/add-pr-late-label';
 import { octokit } from '../../src/octokit';
 
-describe('addPrLateReviewLabels', () => {
-  const mockList = jest.fn();
-  jest.mock('@actions/core');
-  jest.mock('@actions/github', () => ({
-    getOctokit: jest.fn(() => ({
-      rest: {
-        issues: {
-          addLabels: jest.fn()
-        },
-        pulls: {
-          list: mockList
-        }
-      }
-    }))
-  }));
 
-  jest.spyOn(Date, 'now').mockImplementation(() => new Date('2022-08-04T10:00:00Z').getTime());
+describe('addPrLateReviewLabels', () => {
 
   describe('Late Review', () => {
     const owner = "owner";
@@ -44,7 +43,8 @@ describe('addPrLateReviewLabels', () => {
         data: [
           {
             id: 123,
-            requested_reviewers: [{id:234}]
+            requested_reviewers: [{id:234}],
+            updated_at:"2022-07-25T20:09:21Z"
           }
         ]
       }).mockReturnValueOnce({
@@ -89,7 +89,8 @@ describe('addPrLateReviewLabels', () => {
         data: [
           {
             id: 123,
-            requested_reviewers: [{id:234}]
+            requested_reviewers: [{id:234}],
+            updated_at:"2022-07-25T20:09:21Z"
           }
         ]
       }).mockReturnValueOnce({

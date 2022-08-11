@@ -17,7 +17,6 @@ import { octokit } from '../octokit';
 import { RestEndpointMethodTypes } from '@octokit/rest';
 import { each } from "bluebird";
 
-type PullResponseType = RestEndpointMethodTypes["pulls"]["get"]["response"];
 type ListResponseType = RestEndpointMethodTypes["pulls"]["list"]["response"];
 
 export class AddPrLateReviewLabels extends HelperInputs {
@@ -67,7 +66,7 @@ const labelPullRequest = async ( pull_request: any, owner: string, repo: string)
   const pr = parseInt(pull_request.id);
 
   // Checks if the PR is within the Late Review timeframe
-  if (!await isLabelNeeded(pull_request.data, 2)) {
+  if (!await isLabelNeeded(pull_request, 2)) {
     return;
   } 
 
