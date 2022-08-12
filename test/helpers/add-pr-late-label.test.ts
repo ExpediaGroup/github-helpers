@@ -11,6 +11,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { LATE_REVIEW } from '../../src/constants';
+import { addPrLateReviewLabels } from '../../src/helpers/add-pr-late-label';
+import { octokit } from '../../src/octokit';
 
 const mockList = jest.fn();
 jest.mock('../../src/octokit', () => ({
@@ -25,32 +28,27 @@ jest.mock('../../src/octokit', () => ({
 }));
 jest.spyOn(Date, 'now').mockImplementation(() => new Date('2022-08-04T10:00:00Z').getTime());
 
-import { LATE_REVIEW } from '../../src/constants';
-import { addPrLateReviewLabels } from '../../src/helpers/add-pr-late-label';
-import { octokit } from '../../src/octokit';
-
-
 describe('addPrLateReviewLabels', () => {
-
   describe('Late Review', () => {
-    const owner = "owner";
-    const repo = "repo";
-
+    const owner = 'owner';
+    const repo = 'repo';
 
     it('should add Late Review label to the pr', async () => {
-      mockList.mockReturnValueOnce({
-        status: "200",
-        data: [
-          {
-            id: 123,
-            requested_reviewers: [{id:234}],
-            updated_at:"2022-07-25T20:09:21Z"
-          }
-        ]
-      }).mockReturnValueOnce({
-        status: "200",
-        data: []
-      });
+      mockList
+        .mockReturnValueOnce({
+          status: '200',
+          data: [
+            {
+              id: 123,
+              requested_reviewers: [{ id: 234 }],
+              updated_at: '2022-07-25T20:09:21Z'
+            }
+          ]
+        })
+        .mockReturnValueOnce({
+          status: '200',
+          data: []
+        });
 
       await addPrLateReviewLabels({
         owner,
@@ -58,45 +56,47 @@ describe('addPrLateReviewLabels', () => {
       });
 
       expect(octokit.pulls.list).toHaveBeenCalledWith({
-        owner: "owner",
+        owner: 'owner',
         page: 1,
         per_page: 100,
-        repo: "repo",
-        sort: "created",
-        state: "open"
+        repo: 'repo',
+        sort: 'created',
+        state: 'open'
       });
 
       expect(octokit.pulls.list).toHaveBeenCalledWith({
-        owner: "owner",
+        owner: 'owner',
         page: 2,
         per_page: 100,
-        repo: "repo",
-        sort: "created",
-        state: "open"
+        repo: 'repo',
+        sort: 'created',
+        state: 'open'
       });
 
       expect(octokit.issues.addLabels).toHaveBeenCalledWith({
         labels: [LATE_REVIEW],
         issue_number: 123,
-        repo: "repo",
-        owner: "owner"
+        repo: 'repo',
+        owner: 'owner'
       });
     });
 
     it('should not add any labels to the pr', async () => {
-      mockList.mockReturnValueOnce({
-        status: "200",
-        data: [
-          {
-            id: 123,
-            requested_reviewers: [{id:234}],
-            updated_at:"2022-07-25T20:09:21Z"
-          }
-        ]
-      }).mockReturnValueOnce({
-        status: "200",
-        data: []
-      });
+      mockList
+        .mockReturnValueOnce({
+          status: '200',
+          data: [
+            {
+              id: 123,
+              requested_reviewers: [{ id: 234 }],
+              updated_at: '2022-07-25T20:09:21Z'
+            }
+          ]
+        })
+        .mockReturnValueOnce({
+          status: '200',
+          data: []
+        });
 
       await addPrLateReviewLabels({
         owner,
@@ -104,21 +104,21 @@ describe('addPrLateReviewLabels', () => {
       });
 
       expect(octokit.pulls.list).toHaveBeenCalledWith({
-        owner: "owner",
+        owner: 'owner',
         page: 1,
         per_page: 100,
-        repo: "repo",
-        sort: "created",
-        state: "open"
+        repo: 'repo',
+        sort: 'created',
+        state: 'open'
       });
 
       expect(octokit.pulls.list).toHaveBeenCalledWith({
-        owner: "owner",
+        owner: 'owner',
         page: 2,
         per_page: 100,
-        repo: "repo",
-        sort: "created",
-        state: "open"
+        repo: 'repo',
+        sort: 'created',
+        state: 'open'
       });
 
       expect(octokit.issues.addLabels).not.toHaveBeenCalledWith();
