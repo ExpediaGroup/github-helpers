@@ -11,6 +11,7 @@ exports.modules = {
 /* harmony export */   "$9": () => (/* binding */ DEFAULT_PIPELINE_STATUS),
 /* harmony export */   "Km": () => (/* binding */ DEFAULT_PIPELINE_DESCRIPTION),
 /* harmony export */   "Hc": () => (/* binding */ PRODUCTION_ENVIRONMENT),
+/* harmony export */   "fy": () => (/* binding */ LATE_REVIEW),
 /* harmony export */   "_d": () => (/* binding */ CORE_APPROVED_PR_LABEL),
 /* harmony export */   "Xt": () => (/* binding */ PEER_APPROVED_PR_LABEL),
 /* harmony export */   "Ak": () => (/* binding */ READY_FOR_MERGE_PR_LABEL),
@@ -44,6 +45,7 @@ const DEFAULT_EXEMPT_DESCRIPTION = 'Passed in case the check is exempt.';
 const DEFAULT_PIPELINE_STATUS = 'Pipeline Status';
 const DEFAULT_PIPELINE_DESCRIPTION = 'Pipeline clear.';
 const PRODUCTION_ENVIRONMENT = 'production';
+const LATE_REVIEW = 'Late Review';
 const CORE_APPROVED_PR_LABEL = 'CORE APPROVED';
 const PEER_APPROVED_PR_LABEL = 'PEER APPROVED';
 const READY_FOR_MERGE_PR_LABEL = 'READY FOR MERGE';
@@ -162,6 +164,8 @@ const updateQueuePosition = (pr, index) => __awaiter(void 0, void 0, void 0, fun
     ]);
 });
 
+// EXTERNAL MODULE: ./src/utils/paginate-open-pull-requests.ts
+var paginate_open_pull_requests = __webpack_require__(5757);
 ;// CONCATENATED MODULE: ./src/helpers/manage-merge-queue.ts
 /*
 Copyright 2021 Expedia, Inc.
@@ -184,6 +188,7 @@ var manage_merge_queue_awaiter = (undefined && undefined.__awaiter) || function 
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
 
 
 
@@ -238,15 +243,8 @@ const addPrToQueue = (pullRequest, queuePosition) => manage_merge_queue_awaiter(
     return octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`], issue_number: github.context.issue.number }, github.context.repo));
 });
 const getQueuedPullRequests = () => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
-    const openPullRequests = yield paginateAllOpenPullRequests();
+    const openPullRequests = yield (0,paginate_open_pull_requests/* paginateAllOpenPullRequests */.P)();
     return openPullRequests.filter(pr => pr.labels.some(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak));
-});
-const paginateAllOpenPullRequests = (page = 1) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
-    const response = yield octokit/* octokit.pulls.list */.K.pulls.list(Object.assign({ state: 'open', sort: 'updated', direction: 'desc', per_page: 100, page }, github.context.repo));
-    if (!response.data.length) {
-        return [];
-    }
-    return response.data.concat(yield paginateAllOpenPullRequests(page + 1));
 });
 
 
@@ -562,6 +560,37 @@ const notifyUser = ({ login, pull_number, slack_webhook_url }) => __awaiter(void
         repo: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo
     });
     return data;
+});
+
+
+/***/ }),
+
+/***/ 5757:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "P": () => (/* binding */ paginateAllOpenPullRequests)
+/* harmony export */ });
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6161);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+const paginateAllOpenPullRequests = (page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', sort: 'updated', direction: 'desc', per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    if (!response.data.length) {
+        return [];
+    }
+    return response.data.concat(yield paginateAllOpenPullRequests(page + 1));
 });
 
 

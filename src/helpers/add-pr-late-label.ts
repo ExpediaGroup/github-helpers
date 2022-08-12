@@ -14,76 +14,38 @@ limitations under the License.
 import { LATE_REVIEW } from '../constants';
 import { HelperInputs } from '../types/generated';
 import { octokit } from '../octokit';
-import { RestEndpointMethodTypes } from '@octokit/rest';
-import { each } from "bluebird";
-
-type ListResponseType = RestEndpointMethodTypes["pulls"]["list"]["response"];
+import { map } from 'bluebird';
+import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
+import { SimplePullRequest } from '../types/github';
 
 export class AddPrLateReviewLabels extends HelperInputs {
   owner = '';
   repo = '';
+  days?: string;
 }
 
-export const addPrLateReviewLabels = async ({ owner, repo }: AddPrLateReviewLabels) => {
-  var page = 1;
-  var pull_requests = await getPRs(owner, repo, page) as ListResponseType;
+export const addPrLateReviewLabels = async ({ owner, repo, days = '1' }: AddPrLateReviewLabels) => {
+  const openPullRequests = await paginateAllOpenPullRequests();
 
-  while (pull_requests.data.length > 0 ) {
-    if (pull_requests.status != 200) {
-      //loghere
-      continue;
+  return map(openPullRequests, pr => {
+    if (!isLabelNeeded(pr, Number(days))) {
+      return;
     }
 
-    const pr_data = pull_requests.data || [];
-  
-    // Loop through all of the issue numbers
-    await each(pr_data, async pull_request =>
-      await labelPullRequest( 
-        pull_request,
-        owner,
-        repo
-      )
-    );
-    // Setup next PR page
-    page += 1;
-    // Get all pull requests  
-    pull_requests = await getPRs(owner, repo, page);
-  }
+    return octokit.issues.addLabels({
+      labels: [LATE_REVIEW],
+      issue_number: pr.number,
+      owner,
+      repo
+    });
+  });
 };
 
-const getPRs = async ( owner: string, repo: string, page: number) => {
-  return await octokit.pulls.list({
-    owner: owner,
-    repo: repo,
-    state: "open",
-    sort: "created",
-    per_page: 100,
-    page: page
-  }) as ListResponseType;
-}
-
-const labelPullRequest = async ( pull_request: any, owner: string, repo: string) => {
-  const pr = parseInt(pull_request.id);
-
-  // Checks if the PR is within the Late Review timeframe
-  if (!await isLabelNeeded(pull_request, 2)) {
-    return;
-  } 
-
-  // Only update labels if its qualified for label
-  octokit.issues.addLabels({
-    labels: [LATE_REVIEW],
-    issue_number: pr,
-    owner: owner,
-    repo: repo
-  });
-}
-
-const isLabelNeeded = async ( { requested_reviewers, requested_teams, updated_at}: any, numDays: number ) => {
-  const last_updated = new Date( updated_at );
+const isLabelNeeded = ({ requested_reviewers, requested_teams, updated_at }: SimplePullRequest, days: number) => {
+  const last_updated = new Date(updated_at);
   const now = new Date();
-  const age = now.getTime() - last_updated.getTime();
-  const oneDay = 86400000;
-  // No response over the given number of days & is waiting on reviewers
-  return age > oneDay * numDays && (requested_reviewers || requested_teams);
-}
+  const timeSinceLastUpdated = now.getTime() - last_updated.getTime();
+  const dayThreshold = days * 86400000;
+  const isWaitingOnReviewers = Boolean(requested_reviewers || requested_teams);
+  return timeSinceLastUpdated > dayThreshold && isWaitingOnReviewers;
+};
