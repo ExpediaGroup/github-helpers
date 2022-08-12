@@ -34,7 +34,7 @@ export const addPrLateReviewLabels = async ({ owner, repo, days = '1' }: AddPrLa
 
     return octokit.issues.addLabels({
       labels: [LATE_REVIEW],
-      issue_number: pr.number,
+      issue_number: pr.id,
       owner,
       repo
     });

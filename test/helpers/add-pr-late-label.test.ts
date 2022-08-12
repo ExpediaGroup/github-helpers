@@ -11,10 +11,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { LATE_REVIEW } from '../../src/constants';
-import { addPrLateReviewLabels } from '../../src/helpers/add-pr-late-label';
-import { octokit } from '../../src/octokit';
-
 const mockList = jest.fn();
 jest.mock('../../src/octokit', () => ({
   octokit: {
@@ -26,12 +22,21 @@ jest.mock('../../src/octokit', () => ({
     }
   }
 }));
+
+import { LATE_REVIEW } from '../../src/constants';
+import { AddPrLateReviewLabels, addPrLateReviewLabels } from '../../src/helpers/add-pr-late-label';
+import { context } from '@actions/github';
+import { octokit } from '../../src/octokit';
+
+jest.mock('@actions/core');
+jest.mock('@actions/github', () => ({
+  context: { repo: { repo: 'repo', owner: 'owner' }},
+}));
+
 jest.spyOn(Date, 'now').mockImplementation(() => new Date('2022-08-04T10:00:00Z').getTime());
 
 describe('addPrLateReviewLabels', () => {
   describe('Late Review', () => {
-    const owner = 'owner';
-    const repo = 'repo';
 
     it('should add Late Review label to the pr', async () => {
       mockList
@@ -51,33 +56,32 @@ describe('addPrLateReviewLabels', () => {
         });
 
       await addPrLateReviewLabels({
-        owner,
-        repo
-      });
+        days: '1',
+        ...context.repo
+      } as AddPrLateReviewLabels);
 
       expect(octokit.pulls.list).toHaveBeenCalledWith({
-        owner: 'owner',
         page: 1,
         per_page: 100,
-        repo: 'repo',
-        sort: 'created',
-        state: 'open'
+        sort: 'updated',
+        direction: 'desc',
+        state: 'open',
+        ...context.repo
       });
 
       expect(octokit.pulls.list).toHaveBeenCalledWith({
-        owner: 'owner',
         page: 2,
         per_page: 100,
-        repo: 'repo',
-        sort: 'created',
-        state: 'open'
+        sort: 'updated',
+        direction: 'desc',
+        state: 'open',
+        ...context.repo
       });
 
       expect(octokit.issues.addLabels).toHaveBeenCalledWith({
         labels: [LATE_REVIEW],
         issue_number: 123,
-        repo: 'repo',
-        owner: 'owner'
+        ...context.repo
       });
     });
 
@@ -98,27 +102,28 @@ describe('addPrLateReviewLabels', () => {
           data: []
         });
 
+
       await addPrLateReviewLabels({
-        owner,
-        repo
-      });
+        days: '1',
+        ...context.repo
+      } as AddPrLateReviewLabels);
 
       expect(octokit.pulls.list).toHaveBeenCalledWith({
-        owner: 'owner',
         page: 1,
         per_page: 100,
-        repo: 'repo',
-        sort: 'created',
-        state: 'open'
+        sort: 'updated',
+        direction: 'desc',
+        state: 'open',
+        ...context.repo
       });
 
       expect(octokit.pulls.list).toHaveBeenCalledWith({
-        owner: 'owner',
         page: 2,
         per_page: 100,
-        repo: 'repo',
-        sort: 'created',
-        state: 'open'
+        sort: 'updated',
+        direction: 'desc',
+        state: 'open',
+        ...context.repo
       });
 
       expect(octokit.issues.addLabels).not.toHaveBeenCalledWith();
