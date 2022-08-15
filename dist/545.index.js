@@ -4548,13 +4548,13 @@ module.exports = setup;
 if (typeof process === 'undefined' || process.type === 'renderer' || process.browser === true || process.__nwjs) {
 	module.exports = __webpack_require__(8222);
 } else {
-	module.exports = __webpack_require__(5332);
+	module.exports = __webpack_require__(4874);
 }
 
 
 /***/ }),
 
-/***/ 5332:
+/***/ 4874:
 /***/ ((module, exports, __webpack_require__) => {
 
 /**
