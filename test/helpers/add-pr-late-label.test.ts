@@ -44,7 +44,7 @@ describe('addPrLateReviewLabels', () => {
           status: '200',
           data: [
             {
-              id: 123,
+              number: 123,
               requested_reviewers: [{ id: 234 }],
               updated_at: '2022-07-25T20:09:21Z'
             }
@@ -91,7 +91,7 @@ describe('addPrLateReviewLabels', () => {
           status: '200',
           data: [
             {
-              id: 123,
+              number: 123,
               requested_reviewers: [{ id: 234 }],
               updated_at: '2022-07-25T20:09:21Z'
             }
