@@ -15,31 +15,21 @@ import { LATE_REVIEW } from '../../src/constants';
 import { AddPrLateReviewLabels, addPrLateReviewLabels } from '../../src/helpers/add-pr-late-label';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
-
-const mockList = jest.fn();
-jest.mock('../../src/octokit', () => ({
-  octokit: {
-    issues: {
-      addLabels: jest.fn()
-    },
-    pulls: {
-      list: mockList
-    }
-  }
-}));
+import { Mocktokit } from '../types';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } }
+  context: { repo: { repo: 'repo', owner: 'owner' } },
+  getOctokit: jest.fn(() => ({ rest: { issues: { addLabels: jest.fn() }, pulls: { list: jest.fn() } } }))
 }));
 
 jest.spyOn(Date, 'now').mockImplementation(() => new Date('2022-08-04T10:00:00Z').getTime());
 
 describe('addPrLateReviewLabels', () => {
   describe('Late Review', () => {
-    it('should add Late Review label to the pr', async () => {
-      mockList
-        .mockReturnValueOnce({
+    beforeEach(() => {
+      (octokit.pulls.list as unknown as Mocktokit)
+        .mockResolvedValueOnce({
           status: '200',
           data: [
             {
@@ -49,11 +39,13 @@ describe('addPrLateReviewLabels', () => {
             }
           ]
         })
-        .mockReturnValueOnce({
+        .mockResolvedValueOnce({
           status: '200',
           data: []
         });
+    });
 
+    it('should add Late Review label to the pr', async () => {
       await addPrLateReviewLabels({
         days: '1',
         ...context.repo
@@ -85,22 +77,6 @@ describe('addPrLateReviewLabels', () => {
     });
 
     it('should not add any labels to the pr', async () => {
-      mockList
-        .mockReturnValueOnce({
-          status: '200',
-          data: [
-            {
-              number: 123,
-              requested_reviewers: [{ id: 234 }],
-              updated_at: '2022-07-25T20:09:21Z'
-            }
-          ]
-        })
-        .mockReturnValueOnce({
-          status: '200',
-          data: []
-        });
-
       await addPrLateReviewLabels({
         days: '1',
         ...context.repo
