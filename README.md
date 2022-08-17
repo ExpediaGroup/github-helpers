@@ -43,6 +43,9 @@ Each of the following helpers are defined in a file of the same name in `src/hel
 ### [add-labels](.github/workflows/add-labels.yml)
   * Adds one or more labels to a PR
 
+### [add-late-review-label](.github/workflows/add-late-review-label.yml)
+  * Adds a `LATE REVIEW` label to all PRs that are open and waiting for review for over 2 days
+
 ### [add-pr-approval-label](.github/workflows/add-pr-approval-label.yml)
   * Upon PR review, adds a `CORE APPROVED` label if the reviewer is a part of the provided Github team, otherwise adds the `PEER APPROVED` label
 
