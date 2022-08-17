@@ -11,6 +11,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { LATE_REVIEW } from '../../src/constants';
+import { AddPrLateReviewLabels, addPrLateReviewLabels } from '../../src/helpers/add-pr-late-label';
+import { context } from '@actions/github';
+import { octokit } from '../../src/octokit';
+
 const mockList = jest.fn();
 jest.mock('../../src/octokit', () => ({
   octokit: {
@@ -23,21 +28,15 @@ jest.mock('../../src/octokit', () => ({
   }
 }));
 
-import { LATE_REVIEW } from '../../src/constants';
-import { AddPrLateReviewLabels, addPrLateReviewLabels } from '../../src/helpers/add-pr-late-label';
-import { context } from '@actions/github';
-import { octokit } from '../../src/octokit';
-
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }},
+  context: { repo: { repo: 'repo', owner: 'owner' } }
 }));
 
 jest.spyOn(Date, 'now').mockImplementation(() => new Date('2022-08-04T10:00:00Z').getTime());
 
 describe('addPrLateReviewLabels', () => {
   describe('Late Review', () => {
-
     it('should add Late Review label to the pr', async () => {
       mockList
         .mockReturnValueOnce({
@@ -101,7 +100,6 @@ describe('addPrLateReviewLabels', () => {
           status: '200',
           data: []
         });
-
 
       await addPrLateReviewLabels({
         days: '1',
