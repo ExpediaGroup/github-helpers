@@ -18,13 +18,13 @@ import { map } from 'bluebird';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
 import { SimplePullRequest } from '../types/github';
 
-export class AddPrLateReviewLabels extends HelperInputs {
+export class AddLateReviewLabel extends HelperInputs {
   owner = '';
   repo = '';
   days?: string;
 }
 
-export const addPrLateReviewLabels = async ({ owner, repo, days = '1' }: AddPrLateReviewLabels) => {
+export const addLateReviewLabel = async ({ owner, repo, days = '1' }: AddLateReviewLabel) => {
   const openPullRequests = await paginateAllOpenPullRequests();
 
   return map(openPullRequests, pr => {

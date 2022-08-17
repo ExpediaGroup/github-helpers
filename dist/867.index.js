@@ -1,6 +1,6 @@
 "use strict";
-exports.id = 686;
-exports.ids = [686];
+exports.id = 867;
+exports.ids = [867];
 exports.modules = {
 
 /***/ 9042:
@@ -70,13 +70,13 @@ limitations under the License.
 
 /***/ }),
 
-/***/ 8686:
+/***/ 7867:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "AddPrLateReviewLabels": () => (/* binding */ AddPrLateReviewLabels),
-/* harmony export */   "addPrLateReviewLabels": () => (/* binding */ addPrLateReviewLabels)
+/* harmony export */   "AddLateReviewLabel": () => (/* binding */ AddLateReviewLabel),
+/* harmony export */   "addLateReviewLabel": () => (/* binding */ addLateReviewLabel)
 /* harmony export */ });
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(3476);
@@ -110,14 +110,14 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-class AddPrLateReviewLabels extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
+class AddLateReviewLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
     constructor() {
         super(...arguments);
         this.owner = '';
         this.repo = '';
     }
 }
-const addPrLateReviewLabels = ({ owner, repo, days = '1' }) => __awaiter(void 0, void 0, void 0, function* () {
+const addLateReviewLabel = ({ owner, repo, days = '1' }) => __awaiter(void 0, void 0, void 0, function* () {
     const openPullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__/* .paginateAllOpenPullRequests */ .P)();
     return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(openPullRequests, pr => {
         if (!isLabelNeeded(pr, Number(days))) {
@@ -245,4 +245,4 @@ const paginateAllOpenPullRequests = (page = 1) => __awaiter(void 0, void 0, void
 
 };
 ;
-//# sourceMappingURL=686.index.js.map
+//# sourceMappingURL=867.index.js.map

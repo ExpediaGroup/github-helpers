@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import { LATE_REVIEW } from '../../src/constants';
-import { AddPrLateReviewLabels, addPrLateReviewLabels } from '../../src/helpers/add-pr-late-label';
+import { addLateReviewLabel } from '../../src/helpers/add-late-review-label';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
 import { Mocktokit } from '../types';
@@ -25,7 +25,7 @@ jest.mock('@actions/github', () => ({
 
 jest.spyOn(Date, 'now').mockImplementation(() => new Date('2022-08-04T10:00:00Z').getTime());
 
-describe('addPrLateReviewLabels', () => {
+describe('addLateReviewLabel', () => {
   describe('Late Review', () => {
     beforeEach(() => {
       (octokit.pulls.list as unknown as Mocktokit)
@@ -46,10 +46,10 @@ describe('addPrLateReviewLabels', () => {
     });
 
     it('should add Late Review label to the pr', async () => {
-      await addPrLateReviewLabels({
+      await addLateReviewLabel({
         days: '1',
         ...context.repo
-      } as AddPrLateReviewLabels);
+      });
 
       expect(octokit.pulls.list).toHaveBeenCalledWith({
         page: 1,
@@ -77,10 +77,10 @@ describe('addPrLateReviewLabels', () => {
     });
 
     it('should not add any labels to the pr', async () => {
-      await addPrLateReviewLabels({
+      await addLateReviewLabel({
         days: '1',
         ...context.repo
-      } as AddPrLateReviewLabels);
+      });
 
       expect(octokit.pulls.list).toHaveBeenCalledWith({
         page: 1,

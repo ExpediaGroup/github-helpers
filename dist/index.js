@@ -19904,6 +19904,18 @@ var map = {
 		832,
 		939
 	],
+	"./add-late-review-label": [
+		7867,
+		832,
+		710,
+		867
+	],
+	"./add-late-review-label.ts": [
+		7867,
+		832,
+		710,
+		867
+	],
 	"./add-pr-approval-label": [
 		905,
 		832,
@@ -19917,18 +19929,6 @@ var map = {
 		710,
 		445,
 		905
-	],
-	"./add-pr-late-label": [
-		8686,
-		832,
-		710,
-		686
-	],
-	"./add-pr-late-label.ts": [
-		8686,
-		832,
-		710,
-		686
 	],
 	"./approve-pr": [
 		6522,
