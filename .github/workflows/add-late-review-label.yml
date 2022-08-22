@@ -1,0 +1,25 @@
+name: Add Late Review Label
+
+on:
+  pull_request_review:
+    types: [ submitted ]
+    paths:
+      - 'src/helpers/add-late-review-label.ts'
+
+jobs:
+  test:
+    if: github.event.review.state == 'blocked'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+
+      - uses: ./
+        with:
+          helper: add-late-review-label
+          login: ${{ github.event.review.user.login }}
+          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }} # must have read:org permission
