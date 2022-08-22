@@ -19904,6 +19904,18 @@ var map = {
 		832,
 		939
 	],
+	"./add-late-review-label": [
+		7867,
+		832,
+		710,
+		867
+	],
+	"./add-late-review-label.ts": [
+		7867,
+		832,
+		710,
+		867
+	],
 	"./add-pr-approval-label": [
 		905,
 		832,

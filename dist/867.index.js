@@ -1,6 +1,6 @@
 "use strict";
-exports.id = 0;
-exports.ids = [0];
+exports.id = 867;
+exports.ids = [867];
 exports.modules = {
 
 /***/ 9042:
@@ -70,23 +70,22 @@ limitations under the License.
 
 /***/ }),
 
-/***/ 2000:
+/***/ 7867:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "SetLatestPipelineStatus": () => (/* binding */ SetLatestPipelineStatus),
-/* harmony export */   "setLatestPipelineStatus": () => (/* binding */ setLatestPipelineStatus)
+/* harmony export */   "AddLateReviewLabel": () => (/* binding */ AddLateReviewLabel),
+/* harmony export */   "addLateReviewLabel": () => (/* binding */ addLateReviewLabel)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9042);
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(3476);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6161);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8710);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5757);
 /*
-Copyright 2021 Expedia, Inc.
+Copyright 2022 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -111,32 +110,34 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-class SetLatestPipelineStatus extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
+class AddLateReviewLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
     constructor() {
         super(...arguments);
-        this.sha = '';
+        this.owner = '';
+        this.repo = '';
     }
 }
-const setLatestPipelineStatus = ({ sha, context = _constants__WEBPACK_IMPORTED_MODULE_1__/* .DEFAULT_PIPELINE_STATUS */ .$9, environment = _constants__WEBPACK_IMPORTED_MODULE_1__/* .PRODUCTION_ENVIRONMENT */ .Hc }) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
-    const { data: deployments } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listDeployments */ .K.repos.listDeployments(Object.assign(Object.assign({ environment }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_1__/* .GITHUB_OPTIONS */ .Cc));
-    const deployment_id = (_a = deployments.find(Boolean)) === null || _a === void 0 ? void 0 : _a.id;
-    if (!deployment_id) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('No deployments found. Pipeline is clear!');
-        return;
-    }
-    const { data: deploymentStatuses } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listDeploymentStatuses */ .K.repos.listDeploymentStatuses(Object.assign(Object.assign({ deployment_id }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_1__/* .GITHUB_OPTIONS */ .Cc));
-    const deploymentStatus = (_b = deploymentStatuses.find(Boolean)) !== null && _b !== void 0 ? _b : {};
-    const { state, description, target_url } = deploymentStatus;
-    return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
-        context, state: (_c = deploymentStateToPipelineStateMap[state]) !== null && _c !== void 0 ? _c : 'pending', description,
-        target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
+const addLateReviewLabel = ({ owner, repo, days = '1' }) => __awaiter(void 0, void 0, void 0, function* () {
+    const openPullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__/* .paginateAllOpenPullRequests */ .P)();
+    return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(openPullRequests, pr => {
+        if (!isLabelNeeded(pr, Number(days))) {
+            return;
+        }
+        return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.addLabels */ .K.issues.addLabels({
+            labels: [_constants__WEBPACK_IMPORTED_MODULE_0__/* .LATE_REVIEW */ .fy],
+            issue_number: pr.number,
+            owner,
+            repo
+        });
+    });
 });
-const deploymentStateToPipelineStateMap = {
-    in_progress: 'pending',
-    success: 'success',
-    failure: 'failure',
-    inactive: 'error'
+const isLabelNeeded = ({ requested_reviewers, requested_teams, updated_at }, days) => {
+    const last_updated = new Date(updated_at);
+    const now = new Date();
+    const timeSinceLastUpdated = now.getTime() - last_updated.getTime();
+    const dayThreshold = days * 86400000;
+    const isWaitingOnReviewers = Boolean(requested_reviewers || requested_teams);
+    return timeSinceLastUpdated > dayThreshold && isWaitingOnReviewers;
 };
 
 
@@ -197,8 +198,51 @@ class HelperInputs {
 }
 
 
+/***/ }),
+
+/***/ 5757:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "P": () => (/* binding */ paginateAllOpenPullRequests)
+/* harmony export */ });
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6161);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/*
+Copyright 2022 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+const paginateAllOpenPullRequests = (page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', sort: 'updated', direction: 'desc', per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    if (!response.data.length) {
+        return [];
+    }
+    return response.data.concat(yield paginateAllOpenPullRequests(page + 1));
+});
+
+
 /***/ })
 
 };
 ;
-//# sourceMappingURL=0.index.js.map
+//# sourceMappingURL=867.index.js.map

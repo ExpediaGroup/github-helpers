@@ -28,6 +28,7 @@ import { octokit } from '../octokit';
 import { removeLabelIfExists } from './remove-label';
 import { setCommitStatus } from './set-commit-status';
 import { updateMergeQueue } from '../utils/update-merge-queue';
+import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
 
 export class ManageMergeQueue extends HelperInputs {
   login?: string;
@@ -85,19 +86,4 @@ const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number) =>
 const getQueuedPullRequests = async (): Promise<PullRequestList> => {
   const openPullRequests = await paginateAllOpenPullRequests();
   return openPullRequests.filter(pr => pr.labels.some(label => label.name === READY_FOR_MERGE_PR_LABEL));
-};
-
-const paginateAllOpenPullRequests = async (page = 1): Promise<PullRequestList> => {
-  const response = await octokit.pulls.list({
-    state: 'open',
-    sort: 'updated',
-    direction: 'desc',
-    per_page: 100,
-    page,
-    ...context.repo
-  });
-  if (!response.data.length) {
-    return [];
-  }
-  return response.data.concat(await paginateAllOpenPullRequests(page + 1));
 };
