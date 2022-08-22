@@ -235,6 +235,12 @@ const removePrFromQueue = (pullRequest) => manage_merge_queue_awaiter(void 0, vo
     const queueLabel = (_a = pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
     if (queueLabel) {
         yield (0,bluebird.map)([constants/* READY_FOR_MERGE_PR_LABEL */.Ak, queueLabel], (label) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () { return (0,remove_label.removeLabelIfExists)(label, pullRequest.number); }));
+        yield (0,set_commit_status.setCommitStatus)({
+            sha: pullRequest.head.sha,
+            context: constants/* MERGE_QUEUE_STATUS */.Cb,
+            state: 'pending',
+            description: 'This PR is no longer in the merge queue.'
+        });
         const queuedPrs = yield getQueuedPullRequests();
         yield updateMergeQueue(queuedPrs);
     }

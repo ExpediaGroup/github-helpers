@@ -48,6 +48,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: {
           merged: true,
+          head: { sha: 'sha' },
           number: 123,
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
         }
@@ -74,6 +75,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: {
           merged: false,
+          head: { sha: 'sha' },
           number: 123,
           labels: [{ name: 'QUEUED FOR MERGE #2' }]
         }
@@ -84,6 +86,15 @@ describe('manageMergeQueue', () => {
     it('should call remove label with correct params', () => {
       expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 123);
       expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #2', 123);
+    });
+
+    it('should set commit status with correct params', () => {
+      expect(setCommitStatus).toHaveBeenCalledWith({
+        sha: 'sha',
+        context: MERGE_QUEUE_STATUS,
+        state: 'pending',
+        description: 'This PR is no longer in the merge queue.'
+      });
     });
 
     it('should call updateMergeQueue with correct params', () => {
@@ -307,6 +318,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: {
           merged: true,
+          head: { sha: 'sha' },
           number: 123,
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
         }
