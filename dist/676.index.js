@@ -239,7 +239,7 @@ const removePrFromQueue = (pullRequest) => manage_merge_queue_awaiter(void 0, vo
             sha: pullRequest.head.sha,
             context: constants/* MERGE_QUEUE_STATUS */.Cb,
             state: 'pending',
-            description: 'This PR is no longer in the merge queue.'
+            description: 'This PR is not in the merge queue.'
         });
         const queuedPrs = yield getQueuedPullRequests();
         yield updateMergeQueue(queuedPrs);

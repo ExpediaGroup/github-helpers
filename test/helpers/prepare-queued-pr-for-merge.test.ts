@@ -27,7 +27,7 @@ jest.mock('@actions/github', () => ({
   getOctokit: jest.fn(() => ({
     rest: {
       pulls: { list: jest.fn() },
-      repos: { merge: jest.fn(), mergeUpstream: jest.fn() },
+      repos: { merge: jest.fn(), mergeUpstream: jest.fn(), createCommitStatus: jest.fn() },
       issues: {
         removeLabel: jest.fn(),
         createComment: jest.fn()

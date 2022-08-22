@@ -75,7 +75,7 @@ export const removePrFromQueue = async (pullRequest: PullRequest) => {
       sha: pullRequest.head.sha,
       context: MERGE_QUEUE_STATUS,
       state: 'pending',
-      description: 'This PR is no longer in the merge queue.'
+      description: 'This PR is not in the merge queue.'
     });
     const queuedPrs = await getQueuedPullRequests();
     await updateMergeQueue(queuedPrs);
