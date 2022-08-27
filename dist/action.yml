@@ -103,6 +103,9 @@ inputs:
   days:
     description: 'Number of days a review is considered late'
     required: false
+  github_base_url:
+    description: 'GitHub base URL for GraphQL API use (only for enterprise server use)'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'

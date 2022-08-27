@@ -46,4 +46,5 @@ export class HelperInputs {
   base?: string;
   head?: string;
   days?: string;
+  github_base_url?: string;
 }

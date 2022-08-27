@@ -79,6 +79,7 @@ __webpack_require__.r(__webpack_exports__);
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
   "ManageMergeQueue": () => (/* binding */ ManageMergeQueue),
+  "enableAutoMerge": () => (/* binding */ enableAutoMerge),
   "manageMergeQueue": () => (/* binding */ manageMergeQueue),
   "removePrFromQueue": () => (/* binding */ removePrFromQueue)
 });
@@ -246,11 +247,23 @@ const removePrFromQueue = (pullRequest) => manage_merge_queue_awaiter(void 0, vo
     }
 });
 const addPrToQueue = (pullRequest, queuePosition) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
-    return octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`], issue_number: github.context.issue.number }, github.context.repo));
+    return Promise.all([
+        octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`], issue_number: github.context.issue.number }, github.context.repo)),
+        enableAutoMerge(pullRequest.id)
+    ]);
 });
 const getQueuedPullRequests = () => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
     const openPullRequests = yield (0,paginate_open_pull_requests/* paginateAllOpenPullRequests */.P)();
     return openPullRequests.filter(pr => pr.labels.some(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak));
+});
+const enableAutoMerge = (pullRequestId, mergeMethod = 'SQUASH') => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
+    return (0,octokit/* octokitGraphql */.o)(`
+    mutation {
+      enablePullRequestAutoMerge(input: { pullRequestId: ${pullRequestId}, mergeMethod: "${mergeMethod}" }) {
+        clientMutationId
+      }
+    }
+  `);
 });
 
 
@@ -461,12 +474,14 @@ const setCommitStatus = ({ sha, context, state, description, target_url }) => __
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "K": () => (/* binding */ octokit)
+/* harmony export */   "K": () => (/* binding */ octokit),
+/* harmony export */   "o": () => (/* binding */ octokitGraphql)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3006);
 /* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _octokit_graphql__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8467);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
 /*
@@ -484,8 +499,16 @@ limitations under the License.
 
 
 
+
 const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true });
 const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } }).rest;
+const baseUrl = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_base_url', { required: false });
+const octokitGraphql = _octokit_graphql__WEBPACK_IMPORTED_MODULE_3__.graphql.defaults({
+    baseUrl,
+    headers: {
+        authorization: `token ${githubToken}`
+    }
+});
 
 
 /***/ }),
