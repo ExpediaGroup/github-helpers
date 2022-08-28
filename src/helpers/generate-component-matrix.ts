@@ -15,14 +15,10 @@ import * as core from '@actions/core';
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { getChangedFiles } from '../utils/get-changed-files';
-import { CatalogClient } from '@backstage/catalog-client';
 import { Entity } from '@backstage/catalog-model';
 import * as path from 'path';
 import * as fs from 'fs';
-
-type DiscoveryApi = {
-  getBaseUrl(pluginId: string): Promise<string>;
-};
+import { getBackstageEntities } from '../utils/get-backstage-entities';
 
 export class GenerateComponentMatrix extends HelperInputs {
   backstage_url?: string;
@@ -66,27 +62,10 @@ function findRoot(fileName: string, rootFile: string) {
 }
 
 export const generateComponentMatrix = async ({ backstage_url }: GenerateComponentMatrix) => {
-  if (!backstage_url) {
-    throw new Error('BACKSTAGE_URL is required, make sure to set the secret');
-  }
-
-  core.info('Connecting to Backstage to fetch contract entities for the current repo');
-
-  const discoveryApi: DiscoveryApi = {
-    async getBaseUrl() {
-      return `${backstage_url}/api/catalog`;
-    }
-  };
-  const catalogClient = new CatalogClient({
-    discoveryApi
-  });
-
-  const entities = await catalogClient.getEntities({});
-
-  core.info(`Total backstage entities: ${entities.items.length}`);
+  const entities = await getBackstageEntities({ backstage_url });
   const repoUrl = `${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}`;
 
-  const contractItems = entities.items
+  const contractItems = entities
     .filter(item => sourceLocation(item)?.startsWith(`url:${repoUrl}`))
     .filter(item => item.spec?.type === 'contract');
 

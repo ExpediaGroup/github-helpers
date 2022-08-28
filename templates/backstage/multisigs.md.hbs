@@ -1,0 +1,49 @@
+# Multisigs
+
+{{#if disclaimer}}
+    {{disclaimer}}
+{{/if}}
+
+This is a list of all known multisigs used and managed by Aurora DAO and Aurora Labs. The information is stored in Backstage and
+periodically refreshed from the on-chain data. If you have any questions about the data, please contact the security team.
+
+{{#each multisigSystemComponents~}}
+
+    ## [{{title}}]({{backstageLink system}})
+
+    {{#if system.metadata.description~}}
+        {{system.metadata.description}}
+    {{/if}}
+
+    {{#each components~}}
+        ### [{{component.metadata.title}}]({{backstageLink component}})
+
+        {{#if component.metadata.description~}}
+            {{component.metadata.description}}
+        {{/if~}}
+
+        {{#each multisigs~}}
+            #### [{{entity.metadata.title}}]({{backstageLink entity}})
+
+            {{#if entity.metadata.description~}}
+                {{entity.metadata.description}}
+            {{/if~}}
+
+            ##### Signers
+
+            {{#each signers~}}
+                - [{{owner.metadata.name}}]({{backstageLink owner}}) ([{{signer.metadata.name}}]({{backstageLink signer}}))
+            {{/each}}
+
+            {{#if entity.metadata.links~}}
+                ##### External Links
+
+                {{#each entity.metadata.links~}}
+                    - [{{title}}]({{url}})
+                {{/each}}
+            {{/if}}
+
+        {{/each}}
+    {{/each}}
+
+{{/each}}

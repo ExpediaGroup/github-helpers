@@ -9,9 +9,12 @@
     "@backstage/catalog-client": "^1.0.4",
     "@octokit/request": "6.2.0",
     "@octokit/rest": "19.0.3",
+    "@types/glob": "^7.2.0",
     "axios": "0.27.2",
     "bluebird": "3.7.2",
     "codeowners-utils": "1.0.2",
+    "glob": "^8.0.3",
+    "handlebars": "^4.7.7",
     "js-yaml": "4.1.0",
     "lodash.camelcase": "4.3.0",
     "lodash.chunk": "4.2.0",
@@ -19,7 +22,9 @@
     "lodash.union": "4.6.0",
     "lodash.uniq": "4.5.0",
     "micromatch": "4.0.5",
-    "typescript": "4.6.4"
+    "simple-git": "^3.13.0",
+    "typescript": "4.6.4",
+    "yaml": "^2.1.1"
   },
   "devDependencies": {
     "@octokit/types": "6.40.0",

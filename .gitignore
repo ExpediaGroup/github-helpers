@@ -14,3 +14,4 @@ lib
 .idea
 .env
 *.log
+tmp/
