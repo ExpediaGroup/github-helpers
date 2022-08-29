@@ -34,13 +34,9 @@ jest.mock('@actions/github', () => ({
       issues: {
         addLabels: jest.fn()
       }
-    }
+    },
+    graphql: jest.fn()
   }))
-}));
-jest.mock('@octokit/graphql', () => ({
-  graphql: {
-    defaults: jest.fn(() => jest.fn())
-  }
 }));
 
 describe('manageMergeQueue', () => {

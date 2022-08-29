@@ -13,17 +13,7 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import * as fetch from '@adobe/node-fetch-retry';
-import { graphql } from '@octokit/graphql';
-import { Octokit } from '@octokit/rest';
 import { getOctokit } from '@actions/github';
 
 const githubToken = core.getInput('github_token', { required: true });
-export const octokit = getOctokit(githubToken, { request: { fetch } }).rest as unknown as Octokit;
-
-const baseUrl = core.getInput('github_base_url', { required: false });
-export const octokitGraphql = graphql.defaults({
-  baseUrl,
-  headers: {
-    authorization: `token ${githubToken}`
-  }
-});
+export const { rest: octokit, graphql: octokitGraphql } = getOctokit(githubToken, { request: { fetch } });
