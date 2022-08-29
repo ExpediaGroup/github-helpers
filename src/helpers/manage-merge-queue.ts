@@ -100,7 +100,7 @@ const getQueuedPullRequests = async (): Promise<PullRequestList> => {
 export const enableAutoMerge = async (pullRequestId: string, mergeMethod = 'SQUASH') => {
   return octokitGraphql(`
     mutation {
-      enablePullRequestAutoMerge(input: { pullRequestId: "${pullRequestId}", mergeMethod: "${mergeMethod}" }) {
+      enablePullRequestAutoMerge(input: { pullRequestId: "${pullRequestId}", mergeMethod: ${mergeMethod} }) {
         clientMutationId
       }
     }
