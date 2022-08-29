@@ -89,7 +89,7 @@ const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number) =>
       issue_number: context.issue.number,
       ...context.repo
     }),
-    enableAutoMerge(pullRequest.id)
+    enableAutoMerge(pullRequest.node_id)
   ]);
 
 const getQueuedPullRequests = async (): Promise<PullRequestList> => {
@@ -97,10 +97,10 @@ const getQueuedPullRequests = async (): Promise<PullRequestList> => {
   return openPullRequests.filter(pr => pr.labels.some(label => label.name === READY_FOR_MERGE_PR_LABEL));
 };
 
-export const enableAutoMerge = async (pullRequestId: number, mergeMethod = 'SQUASH') => {
+export const enableAutoMerge = async (pullRequestId: string, mergeMethod = 'SQUASH') => {
   return octokitGraphql(`
     mutation {
-      enablePullRequestAutoMerge(input: { pullRequestId: ${pullRequestId}, mergeMethod: "${mergeMethod}" }) {
+      enablePullRequestAutoMerge(input: { pullRequestId: "${pullRequestId}", mergeMethod: "${mergeMethod}" }) {
         clientMutationId
       }
     }
