@@ -16,7 +16,7 @@ import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { manageMergeQueue } from '../../src/helpers/manage-merge-queue';
 import { notifyUser } from '../../src/utils/notify-user';
-import { octokit } from '../../src/octokit';
+import { octokit, octokitGraphql } from '../../src/octokit';
 import { removeLabelIfExists } from '../../src/helpers/remove-label';
 import { setCommitStatus } from '../../src/helpers/set-commit-status';
 import { updateMergeQueue } from '../../src/utils/update-merge-queue';
@@ -34,7 +34,8 @@ jest.mock('@actions/github', () => ({
       issues: {
         addLabels: jest.fn()
       }
-    }
+    },
+    graphql: jest.fn()
   }))
 }));
 
@@ -134,6 +135,10 @@ describe('manageMergeQueue', () => {
         ...context.repo
       });
     });
+
+    it('should enable auto-merge', () => {
+      expect(octokitGraphql).toHaveBeenCalled();
+    });
   });
 
   describe('pr ready for merge case queued #1', () => {
@@ -168,6 +173,10 @@ describe('manageMergeQueue', () => {
         ...context.repo
       });
     });
+
+    it('should enable auto-merge', () => {
+      expect(octokitGraphql).toHaveBeenCalled();
+    });
   });
 
   describe('pr already in the queue case', () => {
@@ -194,6 +203,7 @@ describe('manageMergeQueue', () => {
 
     it('should do nothing', () => {
       expect(octokit.issues.addLabels).not.toHaveBeenCalled();
+      expect(octokitGraphql).not.toHaveBeenCalled();
       expect(updateMergeQueue).not.toHaveBeenCalled();
     });
   });

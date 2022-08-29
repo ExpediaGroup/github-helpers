@@ -24,7 +24,7 @@ import { PullRequest, PullRequestList } from '../types/github';
 import { context } from '@actions/github';
 import { map } from 'bluebird';
 import { notifyUser } from '../utils/notify-user';
-import { octokit } from '../octokit';
+import { octokit, octokitGraphql } from '../octokit';
 import { removeLabelIfExists } from './remove-label';
 import { setCommitStatus } from './set-commit-status';
 import { updateMergeQueue } from '../utils/update-merge-queue';
@@ -83,13 +83,26 @@ export const removePrFromQueue = async (pullRequest: PullRequest) => {
 };
 
 const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number) =>
-  octokit.issues.addLabels({
-    labels: [`${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`],
-    issue_number: context.issue.number,
-    ...context.repo
-  });
+  Promise.all([
+    octokit.issues.addLabels({
+      labels: [`${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`],
+      issue_number: context.issue.number,
+      ...context.repo
+    }),
+    enableAutoMerge(pullRequest.node_id)
+  ]);
 
 const getQueuedPullRequests = async (): Promise<PullRequestList> => {
   const openPullRequests = await paginateAllOpenPullRequests();
   return openPullRequests.filter(pr => pr.labels.some(label => label.name === READY_FOR_MERGE_PR_LABEL));
+};
+
+export const enableAutoMerge = async (pullRequestId: string, mergeMethod = 'SQUASH') => {
+  return octokitGraphql(`
+    mutation {
+      enablePullRequestAutoMerge(input: { pullRequestId: "${pullRequestId}", mergeMethod: "${mergeMethod}" }) {
+        clientMutationId
+      }
+    }
+  `);
 };
