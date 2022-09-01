@@ -277,35 +277,6 @@ describe('manageMergeQueue', () => {
   });
 
   describe('slack reminder integration', () => {
-    const auto_merge = true;
-    const login = 'test';
-    const slack_webhook_url = 'https://hooks.slack.com/workflows/1234567890';
-
-    it('should not notify user if queue position greater than 2', async () => {
-      const queuedPrs = [
-        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }
-      ];
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrs : []
-      }));
-      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          merged: false,
-          head: { sha: 'sha' },
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
-        }
-      }));
-      await manageMergeQueue({ login, slack_webhook_url, auto_merge });
-
-      expect(octokitGraphql).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('slack reminder integration', () => {
     const login = 'test';
     const slack_webhook_url = 'https://hooks.slack.com/workflows/1234567890';
     const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
