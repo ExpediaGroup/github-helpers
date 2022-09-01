@@ -86,14 +86,6 @@ export const removePrFromQueue = async (pullRequest: PullRequest) => {
 
 const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number, auto_merge: boolean) => {
   if (auto_merge) {
-    await Promise.resolve(
-      octokit.issues.addLabels({
-        labels: [`${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`],
-        issue_number: context.issue.number,
-        ...context.repo
-      })
-    );
-  } else {
     await Promise.all([
       octokit.issues.addLabels({
         labels: [`${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`],
@@ -102,6 +94,14 @@ const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number, aut
       }),
       enableAutoMerge(pullRequest.node_id)
     ]);
+  } else {
+    await Promise.resolve(
+      octokit.issues.addLabels({
+        labels: [`${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`],
+        issue_number: context.issue.number,
+        ...context.repo
+      })
+    );
   }
 };
 
