@@ -141,7 +141,7 @@ describe('manageMergeQueue', () => {
     });
   });
 
-  describe('pr ready for merge case queued #1', () => {
+  describe('pr ready for merge case queued #1 with auto-merge', () => {
     const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
     beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
@@ -176,6 +176,47 @@ describe('manageMergeQueue', () => {
 
     it('should enable auto-merge', () => {
       expect(octokitGraphql).toHaveBeenCalled();
+    });
+  });
+
+  describe('pr ready for merge case queued #1 without auto-merge', () => {
+    const auto_merge = false;
+    const login = 'test';
+    const slack_webhook_url = 'https://hooks.slack.com/workflows/1234567890';
+    const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
+    beforeEach(async () => {
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+        data: page === 1 ? queuedPrs : []
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          merged: false,
+          head: { sha: 'sha' },
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+        }
+      }));
+      await manageMergeQueue({ login, slack_webhook_url, auto_merge });
+    });
+
+    it('should call setCommitStatus', () => {
+      expect(setCommitStatus).toHaveBeenCalledWith({
+        sha: 'sha',
+        context: MERGE_QUEUE_STATUS,
+        state: 'success',
+        description: 'This PR is next to merge.'
+      });
+    });
+
+    it('should call addLabels with correct params', () => {
+      expect(octokit.issues.addLabels).toHaveBeenCalledWith({
+        labels: ['QUEUED FOR MERGE #1'],
+        issue_number: 123,
+        ...context.repo
+      });
+    });
+
+    it('should enable auto-merge', () => {
+      expect(octokitGraphql).not.toHaveBeenCalled();
     });
   });
 
@@ -232,6 +273,35 @@ describe('manageMergeQueue', () => {
 
     it('should call updateMergeQueue with correct params', () => {
       expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
+    });
+  });
+
+  describe('slack reminder integration', () => {
+    const auto_merge = true;
+    const login = 'test';
+    const slack_webhook_url = 'https://hooks.slack.com/workflows/1234567890';
+
+    it('should not notify user if queue position greater than 2', async () => {
+      const queuedPrs = [
+        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }
+      ];
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+        data: page === 1 ? queuedPrs : []
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          merged: false,
+          head: { sha: 'sha' },
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
+        }
+      }));
+      await manageMergeQueue({ login, slack_webhook_url, auto_merge });
+
+      expect(octokitGraphql).not.toHaveBeenCalled();
     });
   });
 
