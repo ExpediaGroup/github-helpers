@@ -49,11 +49,7 @@ export const manageMergeQueue = async ({ login, slack_webhook_url, auto_merge = 
   }
 
   if (!pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))) {
-    if (auto_merge) {
-      await addPrToQueueWithAutoMerge(pullRequest, queuePosition);
-    } else {
-      await addPrToQueue(queuePosition);
-    }
+    await addPrToQueue(pullRequest, queuePosition, auto_merge);
   }
 
   if (slack_webhook_url && login && queuePosition === 1) {
@@ -88,24 +84,26 @@ export const removePrFromQueue = async (pullRequest: PullRequest) => {
   }
 };
 
-const addPrToQueueWithAutoMerge = async (pullRequest: PullRequest, queuePosition: number) =>
-  Promise.all([
-    octokit.issues.addLabels({
-      labels: [`${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`],
-      issue_number: context.issue.number,
-      ...context.repo
-    }),
-    enableAutoMerge(pullRequest.node_id)
-  ]);
-
-const addPrToQueue = async (queuePosition: number) =>
-  Promise.resolve(
-    octokit.issues.addLabels({
-      labels: [`${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`],
-      issue_number: context.issue.number,
-      ...context.repo
-    })
-  );
+const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number, auto_merge: boolean) => {
+  if (auto_merge) {
+    await Promise.resolve(
+      octokit.issues.addLabels({
+        labels: [`${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`],
+        issue_number: context.issue.number,
+        ...context.repo
+      })
+    );
+  } else {
+    await Promise.all([
+      octokit.issues.addLabels({
+        labels: [`${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`],
+        issue_number: context.issue.number,
+        ...context.repo
+      }),
+      enableAutoMerge(pullRequest.node_id)
+    ]);
+  }
+};
 
 const getQueuedPullRequests = async (): Promise<PullRequestList> => {
   const openPullRequests = await paginateAllOpenPullRequests();
