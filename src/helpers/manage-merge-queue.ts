@@ -33,9 +33,10 @@ import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-request
 export class ManageMergeQueue extends HelperInputs {
   login?: string;
   slack_webhook_url?: string;
+  auto_merge?: boolean;
 }
 
-export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMergeQueue = {}) => {
+export const manageMergeQueue = async ({ login, slack_webhook_url, auto_merge = true }: ManageMergeQueue = {}) => {
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
   if (pullRequest.merged || !pullRequest.labels.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
     core.info('This PR is not in the merge queue.');
@@ -46,8 +47,13 @@ export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMerge
   if (pullRequest.labels.find(label => label.name === JUMP_THE_QUEUE_PR_LABEL)) {
     return updateMergeQueue(queuedPrs);
   }
+
   if (!pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))) {
-    await addPrToQueue(pullRequest, queuePosition);
+    if (auto_merge) {
+      await addPrToQueueWithAutoMerge(pullRequest, queuePosition);
+    } else {
+      await addPrToQueue(queuePosition);
+    }
   }
 
   if (slack_webhook_url && login && queuePosition === 1) {
@@ -82,7 +88,7 @@ export const removePrFromQueue = async (pullRequest: PullRequest) => {
   }
 };
 
-const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number) =>
+const addPrToQueueWithAutoMerge = async (pullRequest: PullRequest, queuePosition: number) =>
   Promise.all([
     octokit.issues.addLabels({
       labels: [`${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`],
@@ -91,6 +97,15 @@ const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number) =>
     }),
     enableAutoMerge(pullRequest.node_id)
   ]);
+
+const addPrToQueue = async (queuePosition: number) =>
+  Promise.resolve(
+    octokit.issues.addLabels({
+      labels: [`${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`],
+      issue_number: context.issue.number,
+      ...context.repo
+    })
+  );
 
 const getQueuedPullRequests = async (): Promise<PullRequestList> => {
   const openPullRequests = await paginateAllOpenPullRequests();
