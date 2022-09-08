@@ -17,7 +17,9 @@ jobs:
         uses: denoland/setup-deno@v1
 
       - name: Validate PR Title Contains Valid Descriptor
-        run: deno run -A scripts/verify-pr-title-has-valid-descriptor.ts --title "${{ github.event.pull_request.title }}"
+        run: deno run -A scripts/verify-pr-title-has-valid-descriptor.ts
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
 
       - uses: ./
         with:
