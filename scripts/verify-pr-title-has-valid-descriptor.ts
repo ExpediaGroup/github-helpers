@@ -1,7 +1,6 @@
-import { parse } from "https://deno.land/std/flags/mod.ts"
 import getFiles from "https://deno.land/x/getfiles@v1.0.0/fs.ts";
 
-const { title } = parse(Deno.args);
+const title = process.env.TITLE;
 
 const helpersPath = 'src/helpers/';
 const helpers = getFiles({ root: '.', include: [helpersPath] })
