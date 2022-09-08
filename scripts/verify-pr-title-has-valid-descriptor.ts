@@ -1,6 +1,6 @@
 import getFiles from "https://deno.land/x/getfiles@v1.0.0/fs.ts";
 
-const title = process.env.TITLE;
+const title = Deno.env.get('TITLE');
 
 const helpersPath = 'src/helpers/';
 const helpers = getFiles({ root: '.', include: [helpersPath] })
