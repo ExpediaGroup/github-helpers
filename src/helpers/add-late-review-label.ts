@@ -13,18 +13,17 @@ limitations under the License.
 
 import { LATE_REVIEW } from '../constants';
 import { HelperInputs } from '../types/generated';
+import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import { map } from 'bluebird';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
 import { SimplePullRequest } from '../types/github';
 
 export class AddLateReviewLabel extends HelperInputs {
-  owner = '';
-  repo = '';
   days?: string;
 }
 
-export const addLateReviewLabel = async ({ owner, repo, days = '1' }: AddLateReviewLabel) => {
+export const addLateReviewLabel = async ({ days = '1' }: AddLateReviewLabel) => {
   const openPullRequests = await paginateAllOpenPullRequests();
 
   return map(openPullRequests, pr => {
@@ -35,8 +34,7 @@ export const addLateReviewLabel = async ({ owner, repo, days = '1' }: AddLateRev
     return octokit.issues.addLabels({
       labels: [LATE_REVIEW],
       issue_number: pr.number,
-      owner,
-      repo
+      ...context.repo
     });
   });
 };

@@ -79,11 +79,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "addLateReviewLabel": () => (/* binding */ addLateReviewLabel)
 /* harmony export */ });
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(3476);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8710);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5757);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(3476);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8710);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(5757);
 /*
 Copyright 2022 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -110,25 +112,16 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-class AddLateReviewLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
-    constructor() {
-        super(...arguments);
-        this.owner = '';
-        this.repo = '';
-    }
+
+class AddLateReviewLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_5__/* .HelperInputs */ .s {
 }
-const addLateReviewLabel = ({ owner, repo, days = '1' }) => __awaiter(void 0, void 0, void 0, function* () {
-    const openPullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__/* .paginateAllOpenPullRequests */ .P)();
-    return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(openPullRequests, pr => {
+const addLateReviewLabel = ({ days = '1' }) => __awaiter(void 0, void 0, void 0, function* () {
+    const openPullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__/* .paginateAllOpenPullRequests */ .P)();
+    return (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(openPullRequests, pr => {
         if (!isLabelNeeded(pr, Number(days))) {
             return;
         }
-        return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.addLabels */ .K.issues.addLabels({
-            labels: [_constants__WEBPACK_IMPORTED_MODULE_0__/* .LATE_REVIEW */ .fy],
-            issue_number: pr.number,
-            owner,
-            repo
-        });
+        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: [_constants__WEBPACK_IMPORTED_MODULE_0__/* .LATE_REVIEW */ .fy], issue_number: pr.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     });
 });
 const isLabelNeeded = ({ requested_reviewers, requested_teams, updated_at }, days) => {
