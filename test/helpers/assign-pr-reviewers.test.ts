@@ -17,6 +17,7 @@ import { getCoreMemberLogins } from '../../src/utils/get-core-member-logins';
 import { notifyUser } from '../../src/utils/notify-user';
 import { octokit } from '../../src/octokit';
 import { sampleSize } from 'lodash';
+import {Mocktokit} from "../types";
 
 jest.mock('../../src/utils/get-core-member-logins');
 jest.mock('../../src/utils/notify-user');
@@ -26,7 +27,8 @@ jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({
     rest: {
-      issues: { addAssignees: jest.fn(async () => 'result') }
+      issues: { addAssignees: jest.fn(async () => 'result') },
+      pulls: { get: jest.fn() }
     }
   }))
 }));
@@ -36,6 +38,20 @@ jest.mock('@actions/github', () => ({
 describe('assignPrReviewer', () => {
   const teams = 'team1\nteam2';
   const pull_number = 123;
+
+  beforeEach(() => {
+    (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+      data: {
+        id: 1,
+        number: 123,
+        state: 'open',
+        title: 'feat: added feature to project',
+        user : {
+          login: "author"
+        }
+      }
+    }));
+  });
 
   describe('login provided', () => {
     describe('core member case', () => {
@@ -67,6 +83,28 @@ describe('assignPrReviewer', () => {
           issue_number: 123,
           ...context.repo
         });
+      });
+    });
+
+    describe('author is a core member', () => {
+      const login = 'user6';
+      beforeEach(() => {
+        (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+          data: {
+            id: 1,
+            number: 123,
+            state: 'open',
+            title: 'feat: added feature to project',
+            user : {
+              login: "user1"
+            }
+          }
+        }));
+        assignPrReviewers({ login, teams });
+      });
+
+      it('should not include author in the assignees list', () => {
+        expect(sampleSize).toHaveBeenCalledWith(['user2', 'user3'], 1);
       });
     });
 
