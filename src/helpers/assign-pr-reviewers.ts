@@ -36,7 +36,9 @@ export const assignPrReviewers = async ({
   pull_number = String(context.issue.number)
 }: AssignPrReviewer) => {
   const coreMemberLogins = await getCoreMemberLogins(context.issue.number, teams?.split('\n'));
-  const { data: { user } } = await octokit.pulls.get({pull_number: context.issue.number, ...context.repo});
+  const {
+    data: { user }
+  } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
 
   if (login && coreMemberLogins.includes(login)) {
     core.info('Already a core member, no need to assign.');
@@ -44,7 +46,7 @@ export const assignPrReviewers = async ({
   }
   let filteredCoreMemberLogins = coreMemberLogins;
   if (user) {
-    filteredCoreMemberLogins = coreMemberLogins.filter(userName => userName != user.login)
+    filteredCoreMemberLogins = coreMemberLogins.filter(userName => userName != user.login);
   }
   const assignees = sampleSize(filteredCoreMemberLogins, Number(number_of_assignees));
 

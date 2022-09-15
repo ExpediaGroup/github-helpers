@@ -17,7 +17,7 @@ import { getCoreMemberLogins } from '../../src/utils/get-core-member-logins';
 import { notifyUser } from '../../src/utils/notify-user';
 import { octokit } from '../../src/octokit';
 import { sampleSize } from 'lodash';
-import {Mocktokit} from "../types";
+import { Mocktokit } from '../types';
 
 jest.mock('../../src/utils/get-core-member-logins');
 jest.mock('../../src/utils/notify-user');
@@ -46,8 +46,8 @@ describe('assignPrReviewer', () => {
         number: 123,
         state: 'open',
         title: 'feat: added feature to project',
-        user : {
-          login: "author"
+        user: {
+          login: 'author'
         }
       }
     }));
@@ -95,8 +95,8 @@ describe('assignPrReviewer', () => {
             number: 123,
             state: 'open',
             title: 'feat: added feature to project',
-            user : {
-              login: "user1"
+            user: {
+              login: 'user1'
             }
           }
         }));
