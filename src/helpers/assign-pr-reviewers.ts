@@ -44,10 +44,8 @@ export const assignPrReviewers = async ({
     core.info('Already a core member, no need to assign.');
     return;
   }
-  let filteredCoreMemberLogins = coreMemberLogins;
-  if (user) {
-    filteredCoreMemberLogins = coreMemberLogins.filter(userName => userName != user.login);
-  }
+  const prAuthorUsername = user?.login;
+  const filteredCoreMemberLogins = coreMemberLogins.filter(userName => userName !== prAuthorUsername);
   const assignees = sampleSize(filteredCoreMemberLogins, Number(number_of_assignees));
 
   await octokit.issues.addAssignees({
