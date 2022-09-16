@@ -56,11 +56,14 @@ class AssignPrReviewer extends _types_generated__WEBPACK_IMPORTED_MODULE_7__/* .
 }
 const assignPrReviewers = ({ teams, login, number_of_assignees = '1', slack_webhook_url, pull_number = String(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number) }) => __awaiter(void 0, void 0, void 0, function* () {
     const coreMemberLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .c)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
+    const { data: { user } } = yield _octokit__WEBPACK_IMPORTED_MODULE_5__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     if (login && coreMemberLogins.includes(login)) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Already a core member, no need to assign.');
         return;
     }
-    const assignees = (0,lodash__WEBPACK_IMPORTED_MODULE_6__.sampleSize)(coreMemberLogins, Number(number_of_assignees));
+    const prAuthorUsername = user === null || user === void 0 ? void 0 : user.login;
+    const filteredCoreMemberLogins = coreMemberLogins.filter(userName => userName !== prAuthorUsername);
+    const assignees = (0,lodash__WEBPACK_IMPORTED_MODULE_6__.sampleSize)(filteredCoreMemberLogins, Number(number_of_assignees));
     yield _octokit__WEBPACK_IMPORTED_MODULE_5__/* .octokit.issues.addAssignees */ .K.issues.addAssignees(Object.assign({ assignees, issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     if (slack_webhook_url) {
         return (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(assignees, (assignee) => __awaiter(void 0, void 0, void 0, function* () {
