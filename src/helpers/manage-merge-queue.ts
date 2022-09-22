@@ -98,11 +98,16 @@ const getQueuedPullRequests = async (): Promise<PullRequestList> => {
 };
 
 export const enableAutoMerge = async (pullRequestId: string, mergeMethod = 'SQUASH') => {
-  return octokitGraphql(`
+  try {
+    return octokitGraphql(`
     mutation {
       enablePullRequestAutoMerge(input: { pullRequestId: "${pullRequestId}", mergeMethod: ${mergeMethod} }) {
         clientMutationId
       }
     }
   `);
+  } catch (error) {
+    core.warning('Auto merge could not be enabled. Perhaps you need to enable auto-merge on your repo?');
+    core.warning(error as Error);
+  }
 };
