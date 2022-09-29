@@ -50,6 +50,14 @@ export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMerge
     await addPrToQueue(pullRequest, queuePosition);
   }
 
+  const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === FIRST_QUEUED_PR_LABEL);
+  await setCommitStatus({
+    sha: pullRequest.head.sha,
+    context: MERGE_QUEUE_STATUS,
+    state: isFirstQueuePosition ? 'success' : 'pending',
+    description: isFirstQueuePosition ? 'This PR is next to merge.' : 'This PR is in line to merge.'
+  });
+
   if (slack_webhook_url && login && queuePosition === 1) {
     await notifyUser({
       login,
@@ -57,14 +65,6 @@ export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMerge
       slack_webhook_url
     });
   }
-
-  const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === FIRST_QUEUED_PR_LABEL);
-  return setCommitStatus({
-    sha: pullRequest.head.sha,
-    context: MERGE_QUEUE_STATUS,
-    state: isFirstQueuePosition ? 'success' : 'pending',
-    description: isFirstQueuePosition ? 'This PR is next to merge.' : 'This PR is in line to merge.'
-  });
 };
 
 export const removePrFromQueue = async (pullRequest: PullRequest) => {
