@@ -216,6 +216,13 @@ const manageMergeQueue = ({ login, slack_webhook_url } = {}) => manage_merge_que
     if (!pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) {
         yield addPrToQueue(pullRequest, queuePosition);
     }
+    const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH);
+    yield (0,set_commit_status.setCommitStatus)({
+        sha: pullRequest.head.sha,
+        context: constants/* MERGE_QUEUE_STATUS */.Cb,
+        state: isFirstQueuePosition ? 'success' : 'pending',
+        description: isFirstQueuePosition ? 'This PR is next to merge.' : 'This PR is in line to merge.'
+    });
     if (slack_webhook_url && login && queuePosition === 1) {
         yield (0,notify_user/* notifyUser */.b)({
             login,
@@ -223,13 +230,6 @@ const manageMergeQueue = ({ login, slack_webhook_url } = {}) => manage_merge_que
             slack_webhook_url
         });
     }
-    const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH);
-    return (0,set_commit_status.setCommitStatus)({
-        sha: pullRequest.head.sha,
-        context: constants/* MERGE_QUEUE_STATUS */.Cb,
-        state: isFirstQueuePosition ? 'success' : 'pending',
-        description: isFirstQueuePosition ? 'This PR is next to merge.' : 'This PR is in line to merge.'
-    });
 });
 const removePrFromQueue = (pullRequest) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
     var _a;
