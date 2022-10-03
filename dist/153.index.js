@@ -130,7 +130,7 @@ const assignPrReviewers = ({ teams, login, number_of_assignees = '1', slack_webh
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Already a core member, no need to assign.');
         return;
     }
-    if (labels && labels.find(label => label.name === _constants__WEBPACK_IMPORTED_MODULE_7__/* .CORE_APPROVED_PR_LABEL */ ._d)) {
+    if (labels === null || labels === void 0 ? void 0 : labels.find(label => label.name === _constants__WEBPACK_IMPORTED_MODULE_7__/* .CORE_APPROVED_PR_LABEL */ ._d)) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Already approved by a core member, no need to assign.');
         return;
     }
