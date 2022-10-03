@@ -18,6 +18,7 @@ import { notifyUser } from '../../src/utils/notify-user';
 import { octokit } from '../../src/octokit';
 import { sampleSize } from 'lodash';
 import { Mocktokit } from '../types';
+import { CORE_APPROVED_PR_LABEL, PEER_APPROVED_PR_LABEL } from '../../src/constants';
 
 jest.mock('../../src/utils/get-core-member-logins');
 jest.mock('../../src/utils/notify-user');
@@ -104,6 +105,60 @@ describe('assignPrReviewer', () => {
       });
 
       it('should not include author in the assignees list', () => {
+        expect(sampleSize).toHaveBeenCalledWith(['user2', 'user3'], 1);
+      });
+    });
+
+    describe('already core approved', () => {
+      const login = 'user6';
+      beforeEach(() => {
+        (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+          data: {
+            id: 1,
+            number: 123,
+            state: 'open',
+            title: 'feat: added feature to project',
+            user: {
+              login: 'user1'
+            },
+            labels: [
+              {
+                name: CORE_APPROVED_PR_LABEL
+              }
+            ]
+          }
+        }));
+        assignPrReviewers({ login, teams });
+      });
+
+      it('should not call addAssignees', () => {
+        expect(octokit.issues.addAssignees).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('not core approved', () => {
+      const login = 'user6';
+      beforeEach(() => {
+        (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+          data: {
+            id: 1,
+            number: 123,
+            state: 'open',
+            title: 'feat: added feature to project',
+            user: {
+              login: 'user1'
+            },
+            labels: [
+              {
+                name: PEER_APPROVED_PR_LABEL
+              }
+            ]
+          }
+        }));
+        assignPrReviewers({ login, teams });
+      });
+
+      it('should call addAssignee', () => {
         expect(sampleSize).toHaveBeenCalledWith(['user2', 'user3'], 1);
       });
     });

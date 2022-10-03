@@ -19,6 +19,7 @@ import { map } from 'bluebird';
 import { notifyUser } from '../utils/notify-user';
 import { octokit } from '../octokit';
 import { sampleSize } from 'lodash';
+import { CORE_APPROVED_PR_LABEL } from '../constants';
 
 export class AssignPrReviewer extends HelperInputs {
   teams?: string;
@@ -37,11 +38,16 @@ export const assignPrReviewers = async ({
 }: AssignPrReviewer) => {
   const coreMemberLogins = await getCoreMemberLogins(context.issue.number, teams?.split('\n'));
   const {
-    data: { user }
+    data: { user, labels }
   } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
 
   if (login && coreMemberLogins.includes(login)) {
     core.info('Already a core member, no need to assign.');
+    return;
+  }
+
+  if (labels?.find(label => label.name === CORE_APPROVED_PR_LABEL)) {
+    core.info('Already approved by a core member, no need to assign.');
     return;
   }
   const prAuthorUsername = user?.login;
