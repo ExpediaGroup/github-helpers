@@ -379,13 +379,18 @@ const notifyUser = ({ login, pull_number, slack_webhook_url }) => __awaiter(void
         return;
     }
     const { data: { title, html_url } } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
-    const { data } = yield axios__WEBPACK_IMPORTED_MODULE_1___default().post(slack_webhook_url, {
-        assignee: email,
-        title,
-        html_url,
-        repo: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo
-    });
-    return data;
+    try {
+        return axios__WEBPACK_IMPORTED_MODULE_1___default().post(slack_webhook_url, {
+            assignee: email,
+            title,
+            html_url,
+            repo: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo
+        });
+    }
+    catch (error) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.warning('User notification failed');
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.warning(error);
+    }
 });
 
 

@@ -216,6 +216,13 @@ const manageMergeQueue = ({ login, slack_webhook_url } = {}) => manage_merge_que
     if (!pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) {
         yield addPrToQueue(pullRequest, queuePosition);
     }
+    const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH);
+    yield (0,set_commit_status.setCommitStatus)({
+        sha: pullRequest.head.sha,
+        context: constants/* MERGE_QUEUE_STATUS */.Cb,
+        state: isFirstQueuePosition ? 'success' : 'pending',
+        description: isFirstQueuePosition ? 'This PR is next to merge.' : 'This PR is in line to merge.'
+    });
     if (slack_webhook_url && login && queuePosition === 1) {
         yield (0,notify_user/* notifyUser */.b)({
             login,
@@ -223,13 +230,6 @@ const manageMergeQueue = ({ login, slack_webhook_url } = {}) => manage_merge_que
             slack_webhook_url
         });
     }
-    const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH);
-    return (0,set_commit_status.setCommitStatus)({
-        sha: pullRequest.head.sha,
-        context: constants/* MERGE_QUEUE_STATUS */.Cb,
-        state: isFirstQueuePosition ? 'success' : 'pending',
-        description: isFirstQueuePosition ? 'This PR is next to merge.' : 'This PR is in line to merge.'
-    });
 });
 const removePrFromQueue = (pullRequest) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -257,13 +257,19 @@ const getQueuedPullRequests = () => manage_merge_queue_awaiter(void 0, void 0, v
     return openPullRequests.filter(pr => pr.labels.some(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak));
 });
 const enableAutoMerge = (pullRequestId, mergeMethod = 'SQUASH') => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
-    return (0,octokit/* octokitGraphql */.o)(`
+    try {
+        return (0,octokit/* octokitGraphql */.o)(`
     mutation {
       enablePullRequestAutoMerge(input: { pullRequestId: "${pullRequestId}", mergeMethod: ${mergeMethod} }) {
         clientMutationId
       }
     }
   `);
+    }
+    catch (error) {
+        core.warning('Auto merge could not be enabled. Perhaps you need to enable auto-merge on your repo?');
+        core.warning(error);
+    }
 });
 
 
@@ -573,13 +579,18 @@ const notifyUser = ({ login, pull_number, slack_webhook_url }) => __awaiter(void
         return;
     }
     const { data: { title, html_url } } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
-    const { data } = yield axios__WEBPACK_IMPORTED_MODULE_1___default().post(slack_webhook_url, {
-        assignee: email,
-        title,
-        html_url,
-        repo: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo
-    });
-    return data;
+    try {
+        return axios__WEBPACK_IMPORTED_MODULE_1___default().post(slack_webhook_url, {
+            assignee: email,
+            title,
+            html_url,
+            repo: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo
+        });
+    }
+    catch (error) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.warning('User notification failed');
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.warning(error);
+    }
 });
 
 

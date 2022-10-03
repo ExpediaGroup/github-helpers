@@ -34,12 +34,15 @@ export const notifyUser = async ({ login, pull_number, slack_webhook_url }: Noti
     data: { title, html_url }
   } = await octokit.pulls.get({ pull_number, ...context.repo });
 
-  const { data } = await axios.post(slack_webhook_url, {
-    assignee: email,
-    title,
-    html_url,
-    repo: context.repo.repo
-  });
-
-  return data;
+  try {
+    return axios.post(slack_webhook_url, {
+      assignee: email,
+      title,
+      html_url,
+      repo: context.repo.repo
+    });
+  } catch (error) {
+    core.warning('User notification failed');
+    core.warning(error as Error);
+  }
 };

@@ -35,7 +35,7 @@ jest.mock('@actions/github', () => ({
         addLabels: jest.fn()
       }
     },
-    graphql: jest.fn()
+    graphql: jest.fn(() => ({ catch: jest.fn() }))
   }))
 }));
 
