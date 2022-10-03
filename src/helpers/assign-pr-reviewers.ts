@@ -46,7 +46,7 @@ export const assignPrReviewers = async ({
     return;
   }
 
-  if (labels && labels.find(label => label.name === CORE_APPROVED_PR_LABEL)) {
+  if (labels?.find(label => label.name === CORE_APPROVED_PR_LABEL)) {
     core.info('Already approved by a core member, no need to assign.');
     return;
   }
