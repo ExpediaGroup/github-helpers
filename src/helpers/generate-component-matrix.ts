@@ -66,7 +66,7 @@ export const generateComponentMatrix = async ({ backstage_url }: GenerateCompone
   const repoUrl = `${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}`;
 
   const contractItems = entities
-    .filter(item => sourceLocation(item)?.startsWith(`url:${repoUrl}`))
+    .filter(item => sourceLocation(item)?.startsWith(`url:${repoUrl}/`))
     .filter(item => item.spec?.type === 'contract');
 
   const contractItemNames = contractItems.map(item => item.metadata.name);

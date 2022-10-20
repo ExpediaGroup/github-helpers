@@ -196,7 +196,7 @@ const generateComponentMatrix = ({ backstage_url }) => generate_component_matrix
     const entities = yield (0,get_backstage_entities/* getBackstageEntities */.g)({ backstage_url });
     const repoUrl = `${process.env.GITHUB_SERVER_URL}/${github.context.repo.owner}/${github.context.repo.repo}`;
     const contractItems = entities
-        .filter(item => { var _a; return (_a = sourceLocation(item)) === null || _a === void 0 ? void 0 : _a.startsWith(`url:${repoUrl}`); })
+        .filter(item => { var _a; return (_a = sourceLocation(item)) === null || _a === void 0 ? void 0 : _a.startsWith(`url:${repoUrl}/`); })
         .filter(item => { var _a; return ((_a = item.spec) === null || _a === void 0 ? void 0 : _a.type) === 'contract'; });
     const contractItemNames = contractItems.map(item => item.metadata.name);
     core.info(`Contract entities in this repo: ${contractItems.length} (${contractItemNames})`);
