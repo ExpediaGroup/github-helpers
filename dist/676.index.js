@@ -347,8 +347,10 @@ const updatePrWithMainline = (pullRequest) => __awaiter(void 0, void 0, void 0, 
         yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.merge */ .K.repos.merge(Object.assign({ base: pullRequest.head.ref, head: 'HEAD' }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
     }
     catch (error) {
+        const noEvictUponConflict = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('no_evict_upon_conflict');
         if (error.status === 409) {
-            yield (0,_manage_merge_queue__WEBPACK_IMPORTED_MODULE_4__.removePrFromQueue)(pullRequest);
+            if (!noEvictUponConflict)
+                yield (0,_manage_merge_queue__WEBPACK_IMPORTED_MODULE_4__.removePrFromQueue)(pullRequest);
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('The first PR in the queue has a merge conflict.');
         }
         else
