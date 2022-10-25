@@ -46,4 +46,5 @@ export class HelperInputs {
   base?: string;
   head?: string;
   days?: string;
+  no_evict_upon_conflict?: string;
 }
