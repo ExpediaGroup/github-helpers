@@ -103,6 +103,9 @@ inputs:
   days:
     description: 'Number of days a review is considered late'
     required: false
+  no_evict_upon_conflict:
+    description: 'Skip the default behavior of evicting a PR from the merge queue when there is a merge conflict'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'

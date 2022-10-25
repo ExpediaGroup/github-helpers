@@ -312,6 +312,56 @@ describe('prepareQueuedPrForMerge', () => {
     });
   });
 
+  describe('merge conflict with no_evict_upon_conflict', () => {
+    const firstInQueue = {
+      number: 123,
+      head: {
+        ref
+      },
+      state: 'open',
+      labels: [
+        {
+          name: READY_FOR_MERGE_PR_LABEL
+        },
+        {
+          name: FIRST_QUEUED_PR_LABEL
+        }
+      ]
+    };
+    beforeEach(async () => {
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) =>
+        page === 1 || !page
+          ? {
+              data: [
+                {
+                  head: {
+                    ref: 'other branch name'
+                  },
+                  state: 'open',
+                  labels: [
+                    {
+                      name: 'CORE APPROVED'
+                    }
+                  ]
+                },
+                firstInQueue
+              ]
+            }
+          : { data: [] }
+      );
+      (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
+      (core.getInput as jest.Mock).mockReturnValue(true);
+      await prepareQueuedPrForMerge();
+    });
+
+    it('should NOT remove PR from queue and call core.error', () => {
+      expect(removePrSpy).not.toHaveBeenCalled();
+      expect(removeLabelSpy).not.toHaveBeenCalled();
+      expect(updateQueueSpy).not.toHaveBeenCalled();
+      expect(core.setFailed).toHaveBeenCalled();
+    });
+  });
+
   describe('merge conflict when update fork default branch with upstream', () => {
     const firstInQueue = {
       head: {

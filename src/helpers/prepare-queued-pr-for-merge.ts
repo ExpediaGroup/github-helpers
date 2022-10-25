@@ -58,8 +58,9 @@ export const updatePrWithMainline = async (pullRequest: PullRequest | SimplePull
       ...context.repo
     });
   } catch (error) {
+    const noEvictUponConflict = core.getInput('no_evict_upon_conflict');
     if ((error as GithubError).status === 409) {
-      await removePrFromQueue(pullRequest as PullRequest);
+      if (!noEvictUponConflict) await removePrFromQueue(pullRequest as PullRequest);
       core.setFailed('The first PR in the queue has a merge conflict.');
     } else core.setFailed((error as GithubError).message);
   }
