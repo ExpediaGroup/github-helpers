@@ -350,7 +350,7 @@ describe('prepareQueuedPrForMerge', () => {
           : { data: [] }
       );
       (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
-      (core.getInput as jest.Mock).mockReturnValue(true);
+      (core.getInput as jest.Mock).mockReturnValue('true');
       await prepareQueuedPrForMerge();
     });
 
