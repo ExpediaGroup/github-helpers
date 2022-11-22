@@ -61,13 +61,15 @@ function findRoot(fileName: string, rootFile: string) {
   return dirs.length > 0 ? dirs.join('/') : '.';
 }
 
+export const CONTRACT_TYPES = ['contract', 'contract-library'];
+
 export const generateComponentMatrix = async ({ backstage_url }: GenerateComponentMatrix) => {
   const entities = await getBackstageEntities({ backstage_url });
   const repoUrl = `${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}`;
 
   const contractItems = entities
     .filter(item => sourceLocation(item)?.startsWith(`url:${repoUrl}/`))
-    .filter(item => item.spec?.type === 'contract');
+    .filter(item => item.spec?.type && CONTRACT_TYPES.includes(item.spec.type as string));
 
   const contractItemNames = contractItems.map(item => item.metadata.name);
 

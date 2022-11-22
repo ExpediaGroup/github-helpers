@@ -3439,7 +3439,7 @@ var _helpers = __webpack_require__(3066);
 
 var _decorators = __webpack_require__(4168);
 
-var _logger = __webpack_require__(8278);
+var _logger = __webpack_require__(7142);
 
 var _logger2 = _interopRequireDefault(_logger);
 
@@ -7712,7 +7712,7 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 var _createNewLookupObject = __webpack_require__(6025);
 
-var _logger = __webpack_require__(8278);
+var _logger = __webpack_require__(7142);
 
 var logger = _interopRequireWildcard(_logger);
 
@@ -7804,7 +7804,7 @@ function wrapHelper(helper, transformOptionsFn) {
 
 /***/ }),
 
-/***/ 8278:
+/***/ 7142:
 /***/ ((module, exports, __webpack_require__) => {
 
 "use strict";
@@ -12027,6 +12027,7 @@ var init_exit_codes = __esm({
     ExitCodes = /* @__PURE__ */ ((ExitCodes2) => {
       ExitCodes2[ExitCodes2["SUCCESS"] = 0] = "SUCCESS";
       ExitCodes2[ExitCodes2["ERROR"] = 1] = "ERROR";
+      ExitCodes2[ExitCodes2["NOT_FOUND"] = -2] = "NOT_FOUND";
       ExitCodes2[ExitCodes2["UNCLEAN"] = 128] = "UNCLEAN";
       return ExitCodes2;
     })(ExitCodes || {});
@@ -12172,7 +12173,7 @@ var init_task_options = __esm({
 function callTaskParser(parser3, streams) {
   return parser3(streams.stdOut, streams.stdErr);
 }
-function parseStringResponse(result, parsers11, texts, trim = true) {
+function parseStringResponse(result, parsers12, texts, trim = true) {
   asArray(texts).forEach((text) => {
     for (let lines = toLinesWithContent(text, trim), i = 0, max = lines.length; i < max; i++) {
       const line = (offset = 0) => {
@@ -12181,7 +12182,7 @@ function parseStringResponse(result, parsers11, texts, trim = true) {
         }
         return lines[i + offset];
       };
-      parsers11.some(({ parse }) => parse(line, result));
+      parsers12.some(({ parse }) => parse(line, result));
     }
   });
   return result;
@@ -13038,9 +13039,22 @@ var init_git_executor_chain = __esm({
           return new Promise((done) => {
             const stdOut = [];
             const stdErr = [];
-            let rejection;
             logger.info(`%s %o`, command, args);
             logger("%O", spawnOptions);
+            let rejection = this._beforeSpawn(task, args);
+            if (rejection) {
+              return done({
+                stdOut,
+                stdErr,
+                exitCode: 9901,
+                rejection
+              });
+            }
+            this._plugins.exec("spawn.before", void 0, __spreadProps(__spreadValues({}, pluginContext(task, args)), {
+              kill(reason) {
+                rejection = reason || rejection;
+              }
+            }));
             const spawned = (0,child_process__WEBPACK_IMPORTED_MODULE_2__.spawn)(command, args, spawnOptions);
             spawned.stdout.on("data", onDataReceived(stdOut, "stdOut", logger, outputLogger.step("stdOut")));
             spawned.stderr.on("data", onDataReceived(stdErr, "stdErr", logger, outputLogger.step("stdErr")));
@@ -13069,6 +13083,15 @@ var init_git_executor_chain = __esm({
             }));
           });
         });
+      }
+      _beforeSpawn(task, args) {
+        let rejection;
+        this._plugins.exec("spawn.before", void 0, __spreadProps(__spreadValues({}, pluginContext(task, args)), {
+          kill(reason) {
+            rejection = reason || rejection;
+          }
+        }));
+        return rejection;
       }
     };
   }
@@ -14177,6 +14200,64 @@ var init_status = __esm({
   }
 });
 
+// src/lib/tasks/version.ts
+function versionResponse(major = 0, minor = 0, patch = 0, agent = "", installed = true) {
+  return Object.defineProperty({
+    major,
+    minor,
+    patch,
+    agent,
+    installed
+  }, "toString", {
+    value() {
+      return `${this.major}.${this.minor}.${this.patch}`;
+    },
+    configurable: false,
+    enumerable: false
+  });
+}
+function notInstalledResponse() {
+  return versionResponse(0, 0, 0, "", false);
+}
+function version_default() {
+  return {
+    version() {
+      return this._runTask({
+        commands: ["--version"],
+        format: "utf-8",
+        parser: versionParser,
+        onError(result, error, done, fail) {
+          if (result.exitCode === -2 /* NOT_FOUND */) {
+            return done(Buffer.from(NOT_INSTALLED));
+          }
+          fail(error);
+        }
+      });
+    }
+  };
+}
+function versionParser(stdOut) {
+  if (stdOut === NOT_INSTALLED) {
+    return notInstalledResponse();
+  }
+  return parseStringResponse(versionResponse(0, 0, 0, stdOut), parsers7, stdOut);
+}
+var NOT_INSTALLED, parsers7;
+var init_version = __esm({
+  "src/lib/tasks/version.ts"() {
+    init_utils();
+    NOT_INSTALLED = "installed=false";
+    parsers7 = [
+      new LineParser(/version (\d+)\.(\d+)\.(\d+)(?:\s*\((.+)\))?/, (result, [major, minor, patch, agent = ""]) => {
+        Object.assign(result, versionResponse(asNumber(major), asNumber(minor), asNumber(patch), agent));
+      }),
+      new LineParser(/version (\d+)\.(\d+)\.(\D+)(.+)?$/, (result, [major, minor, patch, agent = ""]) => {
+        Object.assign(result, versionResponse(asNumber(major), asNumber(minor), patch, agent));
+      })
+    ];
+  }
+});
+
 // src/lib/simple-git-api.ts
 var simple_git_api_exports = {};
 __export(simple_git_api_exports, {
@@ -14197,6 +14278,7 @@ var init_simple_git_api = __esm({
     init_push();
     init_status();
     init_task();
+    init_version();
     init_utils();
     SimpleGitApi = class {
       constructor(_executor) {
@@ -14260,7 +14342,7 @@ var init_simple_git_api = __esm({
         return this._runTask(statusTask(getTrailingOptions(arguments)), trailingFunctionArgument(arguments));
       }
     };
-    Object.assign(SimpleGitApi.prototype, commit_default(), config_default(), grep_default(), log_default());
+    Object.assign(SimpleGitApi.prototype, commit_default(), config_default(), grep_default(), log_default(), version_default());
   }
 });
 
@@ -14367,14 +14449,14 @@ var init_BranchDeleteSummary = __esm({
 function hasBranchDeletionError(data, processExitCode) {
   return processExitCode === 1 /* ERROR */ && deleteErrorRegex.test(data);
 }
-var deleteSuccessRegex, deleteErrorRegex, parsers7, parseBranchDeletions;
+var deleteSuccessRegex, deleteErrorRegex, parsers8, parseBranchDeletions;
 var init_parse_branch_delete = __esm({
   "src/lib/parsers/parse-branch-delete.ts"() {
     init_BranchDeleteSummary();
     init_utils();
     deleteSuccessRegex = /(\S+)\s+\(\S+\s([^)]+)\)/;
     deleteErrorRegex = /^error[^']+'([^']+)'/m;
-    parsers7 = [
+    parsers8 = [
       new LineParser(deleteSuccessRegex, (result, [branch, hash]) => {
         const deletion = branchDeletionSuccess(branch, hash);
         result.all.push(deletion);
@@ -14388,7 +14470,7 @@ var init_parse_branch_delete = __esm({
       })
     ];
     parseBranchDeletions = (stdOut, stdErr) => {
-      return parseStringResponse(new BranchDeletionBatch(), parsers7, [stdOut, stdErr]);
+      return parseStringResponse(new BranchDeletionBatch(), parsers8, [stdOut, stdErr]);
     };
   }
 });
@@ -14427,14 +14509,14 @@ function branchStatus(input) {
   return input ? input.charAt(0) : "";
 }
 function parseBranchSummary(stdOut) {
-  return parseStringResponse(new BranchSummaryResult(), parsers8, stdOut);
+  return parseStringResponse(new BranchSummaryResult(), parsers9, stdOut);
 }
-var parsers8;
+var parsers9;
 var init_parse_branch = __esm({
   "src/lib/parsers/parse-branch.ts"() {
     init_BranchSummary();
     init_utils();
-    parsers8 = [
+    parsers9 = [
       new LineParser(/^([*+]\s)?\((?:HEAD )?detached (?:from|at) (\S+)\)\s+([a-z0-9]+)\s(.*)$/, (result, [current, name, commit, label]) => {
         result.push(branchStatus(current), true, name, commit, label);
       }),
@@ -14594,13 +14676,13 @@ function parseFetchResult(stdOut, stdErr) {
     updated: [],
     deleted: []
   };
-  return parseStringResponse(result, parsers9, [stdOut, stdErr]);
+  return parseStringResponse(result, parsers10, [stdOut, stdErr]);
 }
-var parsers9;
+var parsers10;
 var init_parse_fetch = __esm({
   "src/lib/parsers/parse-fetch.ts"() {
     init_utils();
-    parsers9 = [
+    parsers10 = [
       new LineParser(/From (.+)$/, (result, [remote]) => {
         result.remote = remote;
       }),
@@ -14665,13 +14747,13 @@ var init_fetch = __esm({
 
 // src/lib/parsers/parse-move.ts
 function parseMoveResult(stdOut) {
-  return parseStringResponse({ moves: [] }, parsers10, stdOut);
+  return parseStringResponse({ moves: [] }, parsers11, stdOut);
 }
-var parsers10;
+var parsers11;
 var init_parse_move = __esm({
   "src/lib/parsers/parse-move.ts"() {
     init_utils();
-    parsers10 = [
+    parsers11 = [
       new LineParser(/^Renaming (.+) to (.+)$/, (result, [from, to]) => {
         result.moves.push({ from, to });
       })
@@ -15270,6 +15352,60 @@ init_config();
 init_grep();
 init_reset();
 
+// src/lib/plugins/abort-plugin.ts
+function abortPlugin(signal) {
+  if (!signal) {
+    return;
+  }
+  const onSpawnAfter = {
+    type: "spawn.after",
+    action(_data, context) {
+      function kill() {
+        context.kill(new GitPluginError(void 0, "abort", "Abort signal received"));
+      }
+      signal.addEventListener("abort", kill);
+      context.spawned.on("close", () => signal.removeEventListener("abort", kill));
+    }
+  };
+  const onSpawnBefore = {
+    type: "spawn.before",
+    action(_data, context) {
+      if (signal.aborted) {
+        context.kill(new GitPluginError(void 0, "abort", "Abort already signaled"));
+      }
+    }
+  };
+  return [onSpawnBefore, onSpawnAfter];
+}
+
+// src/lib/plugins/block-unsafe-operations-plugin.ts
+function isConfigSwitch(arg) {
+  return arg.trim().toLowerCase() === "-c";
+}
+function preventProtocolOverride(arg, next) {
+  if (!isConfigSwitch(arg)) {
+    return;
+  }
+  if (!/^\s*protocol(.[a-z]+)?.allow/.test(next)) {
+    return;
+  }
+  throw new GitPluginError(void 0, "unsafe", "Configuring protocol.allow is not permitted without enabling allowUnsafeExtProtocol");
+}
+function blockUnsafeOperationsPlugin({
+  allowUnsafeProtocolOverride = false
+} = {}) {
+  return {
+    type: "spawn.args",
+    action(args, _context) {
+      args.forEach((current, index) => {
+        const next = index < args.length ? args[index + 1] : "";
+        allowUnsafeProtocolOverride || preventProtocolOverride(current, next);
+      });
+      return args;
+    }
+  };
+}
+
 // src/lib/plugins/command-config-prefixing-plugin.ts
 init_utils();
 function commandConfigPrefixingPlugin(configuration) {
@@ -15514,7 +15650,9 @@ function gitInstanceFactory(baseDir, options) {
   if (Array.isArray(config.config)) {
     plugins.add(commandConfigPrefixingPlugin(config.config));
   }
+  plugins.add(blockUnsafeOperationsPlugin(config.unsafe));
   plugins.add(completionDetectionPlugin(config.completion));
+  config.abort && plugins.add(abortPlugin(config.abort));
   config.progress && plugins.add(progressMonitorPlugin(config.progress));
   config.timeout && plugins.add(timeoutPlugin(config.timeout));
   config.spawnOptions && plugins.add(spawnOptionsPlugin(config.spawnOptions));

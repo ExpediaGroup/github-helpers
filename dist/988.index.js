@@ -19,7 +19,9 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var crossFetch__default = /*#__PURE__*/_interopDefaultLegacy(crossFetch);
 
-const CATALOG_FILTER_EXISTS = Symbol.for("CATALOG_FILTER_EXISTS_0e15b590c0b343a2bae3e787e84c2111");
+const CATALOG_FILTER_EXISTS = Symbol.for(
+  "CATALOG_FILTER_EXISTS_0e15b590c0b343a2bae3e787e84c2111"
+);
 
 class CatalogClient {
   constructor(options) {
@@ -28,10 +30,20 @@ class CatalogClient {
   }
   async getEntityAncestors(request, options) {
     const { kind, namespace, name } = catalogModel.parseEntityRef(request.entityRef);
-    return await this.requestRequired("GET", `/entities/by-name/${encodeURIComponent(kind)}/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/ancestry`, options);
+    return await this.requestRequired(
+      "GET",
+      `/entities/by-name/${encodeURIComponent(kind)}/${encodeURIComponent(
+        namespace
+      )}/${encodeURIComponent(name)}/ancestry`,
+      options
+    );
   }
   async getLocationById(id, options) {
-    return await this.requestOptional("GET", `/locations/${encodeURIComponent(id)}`, options);
+    return await this.requestOptional(
+      "GET",
+      `/locations/${encodeURIComponent(id)}`,
+      options
+    );
   }
   async getEntities(request, options) {
     const { filter = [], fields = [], offset, limit, after } = request != null ? request : {};
@@ -43,7 +55,9 @@ class CatalogClient {
           if (v === CATALOG_FILTER_EXISTS) {
             filterParts.push(encodeURIComponent(key));
           } else if (typeof v === "string") {
-            filterParts.push(`${encodeURIComponent(key)}=${encodeURIComponent(v)}`);
+            filterParts.push(
+              `${encodeURIComponent(key)}=${encodeURIComponent(v)}`
+            );
           }
         }
       }
@@ -64,7 +78,11 @@ class CatalogClient {
       params.push(`after=${encodeURIComponent(after)}`);
     }
     const query = params.length ? `?${params.join("&")}` : "";
-    const entities = await this.requestRequired("GET", `/entities${query}`, options);
+    const entities = await this.requestRequired(
+      "GET",
+      `/entities${query}`,
+      options
+    );
     const refCompare = (a, b) => {
       var _a, _b;
       if (((_a = a.metadata) == null ? void 0 : _a.name) === void 0 || a.kind === void 0 || ((_b = b.metadata) == null ? void 0 : _b.name) === void 0 || b.kind === void 0) {
@@ -84,21 +102,36 @@ class CatalogClient {
   }
   async getEntityByRef(entityRef, options) {
     const { kind, namespace, name } = catalogModel.parseEntityRef(entityRef);
-    return this.requestOptional("GET", `/entities/by-name/${encodeURIComponent(kind)}/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}`, options);
+    return this.requestOptional(
+      "GET",
+      `/entities/by-name/${encodeURIComponent(kind)}/${encodeURIComponent(
+        namespace
+      )}/${encodeURIComponent(name)}`,
+      options
+    );
   }
   async getEntityByName(compoundName, options) {
     const { kind, namespace = "default", name } = compoundName;
-    return this.requestOptional("GET", `/entities/by-name/${encodeURIComponent(kind)}/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}`, options);
+    return this.requestOptional(
+      "GET",
+      `/entities/by-name/${encodeURIComponent(kind)}/${encodeURIComponent(
+        namespace
+      )}/${encodeURIComponent(name)}`,
+      options
+    );
   }
   async refreshEntity(entityRef, options) {
-    const response = await this.fetchApi.fetch(`${await this.discoveryApi.getBaseUrl("catalog")}/refresh`, {
-      headers: {
-        "Content-Type": "application/json",
-        ...(options == null ? void 0 : options.token) && { Authorization: `Bearer ${options == null ? void 0 : options.token}` }
-      },
-      method: "POST",
-      body: JSON.stringify({ entityRef })
-    });
+    const response = await this.fetchApi.fetch(
+      `${await this.discoveryApi.getBaseUrl("catalog")}/refresh`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          ...(options == null ? void 0 : options.token) && { Authorization: `Bearer ${options == null ? void 0 : options.token}` }
+        },
+        method: "POST",
+        body: JSON.stringify({ entityRef })
+      }
+    );
     if (response.status !== 200) {
       throw new Error(await response.text());
     }
@@ -113,7 +146,9 @@ class CatalogClient {
           if (v === CATALOG_FILTER_EXISTS) {
             filterParts.push(encodeURIComponent(key));
           } else if (typeof v === "string") {
-            filterParts.push(`${encodeURIComponent(key)}=${encodeURIComponent(v)}`);
+            filterParts.push(
+              `${encodeURIComponent(key)}=${encodeURIComponent(v)}`
+            );
           }
         }
       }
@@ -127,15 +162,19 @@ class CatalogClient {
     const query = params.length ? `?${params.join("&")}` : "";
     return await this.requestOptional("GET", `/entity-facets${query}`, options);
   }
-  async addLocation({ type = "url", target, dryRun }, options) {
-    const response = await this.fetchApi.fetch(`${await this.discoveryApi.getBaseUrl("catalog")}/locations${dryRun ? "?dryRun=true" : ""}`, {
-      headers: {
-        "Content-Type": "application/json",
-        ...(options == null ? void 0 : options.token) && { Authorization: `Bearer ${options == null ? void 0 : options.token}` }
-      },
-      method: "POST",
-      body: JSON.stringify({ type, target })
-    });
+  async addLocation(request, options) {
+    const { type = "url", target, dryRun } = request;
+    const response = await this.fetchApi.fetch(
+      `${await this.discoveryApi.getBaseUrl("catalog")}/locations${dryRun ? "?dryRun=true" : ""}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          ...(options == null ? void 0 : options.token) && { Authorization: `Bearer ${options == null ? void 0 : options.token}` }
+        },
+        method: "POST",
+        body: JSON.stringify({ type, target })
+      }
+    );
     if (response.status !== 201) {
       throw new Error(await response.text());
     }
@@ -150,14 +189,52 @@ class CatalogClient {
     };
   }
   async getLocationByRef(locationRef, options) {
-    const all = await this.requestRequired("GET", "/locations", options);
+    const all = await this.requestRequired(
+      "GET",
+      "/locations",
+      options
+    );
     return all.map((r) => r.data).find((l) => locationRef === catalogModel.stringifyLocationRef(l));
   }
   async removeLocationById(id, options) {
-    await this.requestIgnored("DELETE", `/locations/${encodeURIComponent(id)}`, options);
+    await this.requestIgnored(
+      "DELETE",
+      `/locations/${encodeURIComponent(id)}`,
+      options
+    );
   }
   async removeEntityByUid(uid, options) {
-    await this.requestIgnored("DELETE", `/entities/by-uid/${encodeURIComponent(uid)}`, options);
+    await this.requestIgnored(
+      "DELETE",
+      `/entities/by-uid/${encodeURIComponent(uid)}`,
+      options
+    );
+  }
+  async validateEntity(entity, locationRef, options) {
+    const response = await this.fetchApi.fetch(
+      `${await this.discoveryApi.getBaseUrl("catalog")}/validate-entity`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          ...(options == null ? void 0 : options.token) && { Authorization: `Bearer ${options == null ? void 0 : options.token}` }
+        },
+        method: "POST",
+        body: JSON.stringify({ entity, location: locationRef })
+      }
+    );
+    if (response.ok) {
+      return {
+        valid: true
+      };
+    }
+    if (response.status !== 400) {
+      throw await errors.ResponseError.fromResponse(response);
+    }
+    const { errors: errors$1 = [] } = await response.json();
+    return {
+      valid: false,
+      errors: errors$1
+    };
   }
   async requestIgnored(method, path, options) {
     const url = `${await this.discoveryApi.getBaseUrl("catalog")}${path}`;
@@ -270,7 +347,9 @@ function parseRefString(ref) {
   const namespace = slashI === -1 ? void 0 : ref.slice(colonI + 1, slashI);
   const name = ref.slice(Math.max(colonI + 1, slashI + 1));
   if (kind === "" || namespace === "" || name === "") {
-    throw new TypeError(`Entity reference "${ref}" was not on the form [<kind>:][<namespace>/]<name>`);
+    throw new TypeError(
+      `Entity reference "${ref}" was not on the form [<kind>:][<namespace>/]<name>`
+    );
   }
   return { kind, namespace, name };
 }
@@ -303,10 +382,14 @@ function parseEntityRef(ref, context) {
   }
   if (!kind) {
     const textual = JSON.stringify(ref);
-    throw new Error(`Entity reference ${textual} had missing or empty kind (e.g. did not start with "component:" or similar)`);
+    throw new Error(
+      `Entity reference ${textual} had missing or empty kind (e.g. did not start with "component:" or similar)`
+    );
   } else if (!namespace) {
     const textual = JSON.stringify(ref);
-    throw new Error(`Entity reference ${textual} had missing or empty namespace`);
+    throw new Error(
+      `Entity reference ${textual} had missing or empty namespace`
+    );
   } else if (!name) {
     const textual = JSON.stringify(ref);
     throw new Error(`Entity reference ${textual} had missing or empty name`);
@@ -327,7 +410,9 @@ function stringifyEntityRef(ref) {
     namespace = (_b = ref.namespace) != null ? _b : DEFAULT_NAMESPACE;
     name = ref.name;
   }
-  return `${kind.toLocaleLowerCase("en-US")}:${namespace.toLocaleLowerCase("en-US")}/${name.toLocaleLowerCase("en-US")}`;
+  return `${kind.toLocaleLowerCase("en-US")}:${namespace.toLocaleLowerCase(
+    "en-US"
+  )}/${name.toLocaleLowerCase("en-US")}`;
 }
 
 class GroupDefaultParentEntityPolicy {
@@ -910,7 +995,9 @@ function throwAjvError(errors) {
     throw new TypeError("Unknown error");
   }
   const error = errors[0];
-  throw new TypeError(`${error.instancePath || "<root>"} ${error.message}${error.params ? ` - ${Object.entries(error.params).map(([key, val]) => `${key}: ${val}`).join(", ")}` : ""}`);
+  throw new TypeError(
+    `${error.instancePath || "<root>"} ${error.message}${error.params ? ` - ${Object.entries(error.params).map(([key, val]) => `${key}: ${val}`).join(", ")}` : ""}`
+  );
 }
 function compileAjvSchema(schema, options = {}) {
   var _a;
@@ -979,7 +1066,9 @@ function* getAllRefs(schema) {
 }
 
 function entityEnvelopeSchemaValidator(schema) {
-  const validate = compileAjvSchema(schema ? schema : entityEnvelopeSchema);
+  const validate = compileAjvSchema(
+    schema ? schema : entityEnvelopeSchema
+  );
   return (data) => {
     const result = validate(data);
     if (result === true) {
@@ -997,7 +1086,9 @@ function entityKindSchemaValidator(schema) {
     if (result === true) {
       return data;
     }
-    const softCandidates = (_a = validate.errors) == null ? void 0 : _a.filter((e) => ["/kind", "/apiVersion"].includes(e.instancePath));
+    const softCandidates = (_a = validate.errors) == null ? void 0 : _a.filter(
+      (e) => ["/kind", "/apiVersion"].includes(e.instancePath)
+    );
     if ((softCandidates == null ? void 0 : softCandidates.length) && softCandidates.every((e) => e.keyword === "enum")) {
       return false;
     }
@@ -1018,7 +1109,12 @@ function entitySchemaValidator(schema) {
 
 class KubernetesValidatorFunctions {
   static isValidApiVersion(value) {
-    return CommonValidatorFunctions.isValidPrefixAndOrSuffix(value, "/", CommonValidatorFunctions.isValidDnsSubdomain, (n) => n.length >= 1 && n.length <= 63 && /^[a-z0-9A-Z]+$/.test(n));
+    return CommonValidatorFunctions.isValidPrefixAndOrSuffix(
+      value,
+      "/",
+      CommonValidatorFunctions.isValidDnsSubdomain,
+      (n) => n.length >= 1 && n.length <= 63 && /^[a-z0-9A-Z]+$/.test(n)
+    );
   }
   static isValidKind(value) {
     return typeof value === "string" && value.length >= 1 && value.length <= 63 && /^[a-zA-Z][a-z0-9A-Z]*$/.test(value);
@@ -1030,13 +1126,23 @@ class KubernetesValidatorFunctions {
     return CommonValidatorFunctions.isValidDnsLabel(value);
   }
   static isValidLabelKey(value) {
-    return CommonValidatorFunctions.isValidPrefixAndOrSuffix(value, "/", CommonValidatorFunctions.isValidDnsSubdomain, KubernetesValidatorFunctions.isValidObjectName);
+    return CommonValidatorFunctions.isValidPrefixAndOrSuffix(
+      value,
+      "/",
+      CommonValidatorFunctions.isValidDnsSubdomain,
+      KubernetesValidatorFunctions.isValidObjectName
+    );
   }
   static isValidLabelValue(value) {
     return value === "" || KubernetesValidatorFunctions.isValidObjectName(value);
   }
   static isValidAnnotationKey(value) {
-    return CommonValidatorFunctions.isValidPrefixAndOrSuffix(value, "/", CommonValidatorFunctions.isValidDnsSubdomain, KubernetesValidatorFunctions.isValidObjectName);
+    return CommonValidatorFunctions.isValidPrefixAndOrSuffix(
+      value,
+      "/",
+      CommonValidatorFunctions.isValidDnsSubdomain,
+      KubernetesValidatorFunctions.isValidObjectName
+    );
   }
   static isValidAnnotationValue(value) {
     return typeof value === "string";
@@ -1116,7 +1222,9 @@ class FieldFormatEntityPolicy {
             break;
         }
         const message = expectation ? ` expected ${expectation} but found "${value}".` : "";
-        throw new Error(`"${field}" is not valid;${message} To learn more about catalog file format, visit: https://github.com/backstage/backstage/blob/master/docs/architecture-decisions/adr002-default-catalog-file-format.md`);
+        throw new Error(
+          `"${field}" is not valid;${message} To learn more about catalog file format, visit: https://github.com/backstage/backstage/blob/master/docs/architecture-decisions/adr002-default-catalog-file-format.md`
+        );
       }
     }
     function optional(field, value, validator) {
@@ -1125,7 +1233,11 @@ class FieldFormatEntityPolicy {
     require("apiVersion", entity.apiVersion, this.validators.isValidApiVersion);
     require("kind", entity.kind, this.validators.isValidKind);
     require("metadata.name", entity.metadata.name, this.validators.isValidEntityName);
-    optional("metadata.namespace", entity.metadata.namespace, this.validators.isValidNamespace);
+    optional(
+      "metadata.namespace",
+      entity.metadata.namespace,
+      this.validators.isValidNamespace
+    );
     for (const [k, v] of Object.entries((_a = entity.metadata.labels) != null ? _a : [])) {
       require(`labels.${k}`, k, this.validators.isValidLabelKey);
       require(`labels.${k}`, v, this.validators.isValidLabelValue);
@@ -1141,8 +1253,16 @@ class FieldFormatEntityPolicy {
     const links = (_d = entity.metadata.links) != null ? _d : [];
     for (let i = 0; i < links.length; ++i) {
       require(`links.${i}.url`, (_e = links[i]) == null ? void 0 : _e.url, CommonValidatorFunctions.isValidUrl);
-      optional(`links.${i}.title`, (_f = links[i]) == null ? void 0 : _f.title, CommonValidatorFunctions.isNonEmptyString);
-      optional(`links.${i}.icon`, (_g = links[i]) == null ? void 0 : _g.icon, KubernetesValidatorFunctions.isValidObjectName);
+      optional(
+        `links.${i}.title`,
+        (_f = links[i]) == null ? void 0 : _f.title,
+        CommonValidatorFunctions.isNonEmptyString
+      );
+      optional(
+        `links.${i}.icon`,
+        (_g = links[i]) == null ? void 0 : _g.icon,
+        KubernetesValidatorFunctions.isValidObjectName
+      );
     }
     return entity;
   }
@@ -1177,7 +1297,9 @@ class SchemaValidEntityPolicy {
     if (!error) {
       throw new Error(`Malformed envelope, Unknown error`);
     }
-    throw new Error(`Malformed envelope, ${error.instancePath || "<root>"} ${error.message}`);
+    throw new Error(
+      `Malformed envelope, ${error.instancePath || "<root>"} ${error.message}`
+    );
   }
 }
 
@@ -1190,7 +1312,9 @@ class AllEntityPolicies {
     for (const policy of this.policies) {
       const output = await policy.enforce(result);
       if (!output) {
-        throw new Error(`Policy ${policy.constructor.name} did not return a result`);
+        throw new Error(
+          `Policy ${policy.constructor.name} did not return a result`
+        );
       }
       result = output;
     }
@@ -1330,9 +1454,12 @@ var schema$7 = {
 };
 
 function ajvCompiledJsonSchemaValidator(schema) {
-  const validator = entityKindSchemaValidator(schema);
+  let validator;
   return {
     async check(data) {
+      if (!validator) {
+        validator = entityKindSchemaValidator(schema);
+      }
       return validator(data) === data;
     }
   };
@@ -2076,19 +2203,27 @@ const ANNOTATION_SOURCE_LOCATION = "backstage.io/source-location";
 
 function parseLocationRef(ref) {
   if (typeof ref !== "string") {
-    throw new TypeError(`Unable to parse location ref '${ref}', unexpected argument ${typeof ref}`);
+    throw new TypeError(
+      `Unable to parse location ref '${ref}', unexpected argument ${typeof ref}`
+    );
   }
   const splitIndex = ref.indexOf(":");
   if (splitIndex < 0) {
-    throw new TypeError(`Unable to parse location ref '${ref}', expected '<type>:<target>', e.g. 'url:https://host/path'`);
+    throw new TypeError(
+      `Unable to parse location ref '${ref}', expected '<type>:<target>', e.g. 'url:https://host/path'`
+    );
   }
   const type = ref.substring(0, splitIndex).trim();
   const target = ref.substring(splitIndex + 1).trim();
   if (!type || !target) {
-    throw new TypeError(`Unable to parse location ref '${ref}', expected '<type>:<target>', e.g. 'url:https://host/path'`);
+    throw new TypeError(
+      `Unable to parse location ref '${ref}', expected '<type>:<target>', e.g. 'url:https://host/path'`
+    );
   }
   if (type === "http" || type === "https") {
-    throw new TypeError(`Invalid location ref '${ref}', please prefix it with 'url:', e.g. 'url:${ref}'`);
+    throw new TypeError(
+      `Invalid location ref '${ref}', please prefix it with 'url:', e.g. 'url:${ref}'`
+    );
   }
   return { type, target };
 }
@@ -2105,7 +2240,9 @@ function getEntitySourceLocation(entity) {
   var _a, _b, _c, _d, _e;
   const locationRef = (_e = (_b = (_a = entity.metadata) == null ? void 0 : _a.annotations) == null ? void 0 : _b[ANNOTATION_SOURCE_LOCATION]) != null ? _e : (_d = (_c = entity.metadata) == null ? void 0 : _c.annotations) == null ? void 0 : _d[ANNOTATION_LOCATION];
   if (!locationRef) {
-    throw new Error(`Entity '${stringifyEntityRef(entity)}' is missing location`);
+    throw new Error(
+      `Entity '${stringifyEntityRef(entity)}' is missing location`
+    );
   }
   return parseLocationRef(locationRef);
 }
@@ -2178,7 +2315,7 @@ exports.userEntityV1alpha1Validator = userEntityV1alpha1Validator;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CodeGen = exports.Name = exports.nil = exports.stringify = exports.str = exports._ = exports.KeywordCxt = void 0;
+exports.MissingRefError = exports.ValidationError = exports.CodeGen = exports.Name = exports.nil = exports.stringify = exports.str = exports._ = exports.KeywordCxt = void 0;
 const core_1 = __webpack_require__(7941);
 const draft7_1 = __webpack_require__(2752);
 const discriminator_1 = __webpack_require__(885);
@@ -2219,6 +2356,10 @@ Object.defineProperty(exports, "stringify", ({ enumerable: true, get: function (
 Object.defineProperty(exports, "nil", ({ enumerable: true, get: function () { return codegen_1.nil; } }));
 Object.defineProperty(exports, "Name", ({ enumerable: true, get: function () { return codegen_1.Name; } }));
 Object.defineProperty(exports, "CodeGen", ({ enumerable: true, get: function () { return codegen_1.CodeGen; } }));
+var validation_error_1 = __webpack_require__(8249);
+Object.defineProperty(exports, "ValidationError", ({ enumerable: true, get: function () { return validation_error_1.default; } }));
+var ref_error_1 = __webpack_require__(280);
+Object.defineProperty(exports, "MissingRefError", ({ enumerable: true, get: function () { return ref_error_1.default; } }));
 //# sourceMappingURL=ajv.js.map
 
 /***/ }),
@@ -7983,7 +8124,9 @@ function assertError(value) {
     throw new Error(`Encountered error object without a name, got '${value}'`);
   }
   if (typeof maybe.message !== "string") {
-    throw new Error(`Encountered error object without a message, got '${value}'`);
+    throw new Error(
+      `Encountered error object without a message, got '${value}'`
+    );
   }
 }
 

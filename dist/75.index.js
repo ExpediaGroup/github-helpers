@@ -11,6 +11,7 @@ __webpack_require__.r(__webpack_exports__);
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
+  "CONTRACT_TYPES": () => (/* binding */ CONTRACT_TYPES),
   "GenerateComponentMatrix": () => (/* binding */ GenerateComponentMatrix),
   "generateComponentMatrix": () => (/* binding */ generateComponentMatrix)
 });
@@ -192,12 +193,13 @@ function findRoot(fileName, rootFile) {
     }
     return dirs.length > 0 ? dirs.join('/') : '.';
 }
+const CONTRACT_TYPES = ['contract', 'contract-library'];
 const generateComponentMatrix = ({ backstage_url }) => generate_component_matrix_awaiter(void 0, void 0, void 0, function* () {
     const entities = yield (0,get_backstage_entities/* getBackstageEntities */.g)({ backstage_url });
     const repoUrl = `${process.env.GITHUB_SERVER_URL}/${github.context.repo.owner}/${github.context.repo.repo}`;
     const contractItems = entities
         .filter(item => { var _a; return (_a = sourceLocation(item)) === null || _a === void 0 ? void 0 : _a.startsWith(`url:${repoUrl}/`); })
-        .filter(item => { var _a; return ((_a = item.spec) === null || _a === void 0 ? void 0 : _a.type) === 'contract'; });
+        .filter(item => { var _a; return ((_a = item.spec) === null || _a === void 0 ? void 0 : _a.type) && CONTRACT_TYPES.includes(item.spec.type); });
     const contractItemNames = contractItems.map(item => item.metadata.name);
     core.info(`Contract entities in this repo: ${contractItems.length} (${contractItemNames})`);
     const eventName = process.env.GITHUB_EVENT_NAME;
