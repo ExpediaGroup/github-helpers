@@ -1,21 +1,25 @@
 "use strict";
-exports.id = 150;
-exports.ids = [150];
+exports.id = 180;
+exports.ids = [180];
 exports.modules = {
 
-/***/ 9150:
+/***/ 2180:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "CreatePR": () => (/* binding */ CreatePR),
-/* harmony export */   "createPr": () => (/* binding */ createPr)
+/* harmony export */   "CheckMergeSafety": () => (/* binding */ CheckMergeSafety),
+/* harmony export */   "checkMergeSafety": () => (/* binding */ checkMergeSafety)
 /* harmony export */ });
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3476);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(3476);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
 /* harmony import */ var _utils_get_default_branch__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(977);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(250);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var micromatch__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6228);
+/* harmony import */ var micromatch__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(micromatch__WEBPACK_IMPORTED_MODULE_4__);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,21 +45,32 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-class CreatePR extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .s {
+
+
+class CheckMergeSafety extends _types_generated__WEBPACK_IMPORTED_MODULE_5__/* .HelperInputs */ .s {
     constructor() {
         super(...arguments);
-        this.title = '';
-        this.body = '';
+        this.base = '';
     }
 }
-const createPr = ({ title, body, head = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.ref.replace('refs/heads/', ''), base }) => __awaiter(void 0, void 0, void 0, function* () {
-    const pr_base = base || (yield (0,_utils_get_default_branch__WEBPACK_IMPORTED_MODULE_2__/* .getDefaultBranch */ ._)());
-    yield updateHeadWithBaseBranch(pr_base, head);
-    const { data: { number } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.create */ .K.pulls.create(Object.assign({ title,
-        head, base: pr_base, body, maintainer_can_modify: true }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-    return number;
+const checkMergeSafety = ({ base, override_filter_paths, override_filter_globs }) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const defaultBranch = yield (0,_utils_get_default_branch__WEBPACK_IMPORTED_MODULE_2__/* .getDefaultBranch */ ._)();
+    const { data: { files: filesWhichBranchIsBehindOn } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${base}...${defaultBranch}` }));
+    const fileNamesWhichBranchIsBehindOn = (_a = filesWhichBranchIsBehindOn === null || filesWhichBranchIsBehindOn === void 0 ? void 0 : filesWhichBranchIsBehindOn.map(file => file.filename)) !== null && _a !== void 0 ? _a : [];
+    const shouldOverrideSafetyCheck = override_filter_globs
+        ? micromatch__WEBPACK_IMPORTED_MODULE_4___default()(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n')).length > 0
+        : fileNamesWhichBranchIsBehindOn.some(changedFile => override_filter_paths === null || override_filter_paths === void 0 ? void 0 : override_filter_paths.split(/[\n,]/).includes(changedFile));
+    if (shouldOverrideSafetyCheck) {
+        throw new Error(`Please update ${base} with ${defaultBranch}`);
+    }
+    const { data: { files: changedFiles } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${defaultBranch}...${base}` }));
+    const changedFileNames = changedFiles === null || changedFiles === void 0 ? void 0 : changedFiles.map(file => file.filename);
+    const changedFilesIntersect = (0,lodash__WEBPACK_IMPORTED_MODULE_3__.intersection)(fileNamesWhichBranchIsBehindOn, changedFileNames).length > 0;
+    if (changedFilesIntersect) {
+        throw new Error(`Please update ${base} with ${defaultBranch}`);
+    }
 });
-const updateHeadWithBaseBranch = (base, head) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.merge */ .K.repos.merge(Object.assign({ base: head, head: base }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
 
 
 /***/ }),
@@ -148,4 +163,4 @@ const getDefaultBranch = () => __awaiter(void 0, void 0, void 0, function* () {
 
 };
 ;
-//# sourceMappingURL=150.index.js.map
+//# sourceMappingURL=180.index.js.map

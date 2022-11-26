@@ -56,6 +56,9 @@ Each of the following helpers are defined in a file of the same name in `src/hel
   * Randomly assigns members of a github team to review a PR. If `login` is provided, it does nothing if that user is already part of the team
   * You can also pass a `slack_webhook_url` to notify the assignees that they are assigned to the PR!
 
+### [check-merge-safety](.github/workflows/check-merge-safety.yml)
+  * Checks if a PR branch needs to update with the default branch prior to merging (useful for monorepos)
+
 ### [create-pr](.github/workflows/create-pr.yml)
   * Opens a pull request
 

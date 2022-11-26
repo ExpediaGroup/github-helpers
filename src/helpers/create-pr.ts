@@ -14,6 +14,7 @@ limitations under the License.
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
+import { getDefaultBranch } from '../utils/get-default-branch';
 
 export class CreatePR extends HelperInputs {
   title = '';
@@ -44,10 +45,3 @@ const updateHeadWithBaseBranch = (base: string, head: string) =>
     head: base,
     ...context.repo
   });
-
-const getDefaultBranch = async () => {
-  const {
-    data: { default_branch }
-  } = await octokit.repos.get({ ...context.repo });
-  return default_branch;
-};

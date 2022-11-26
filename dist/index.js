@@ -19971,6 +19971,18 @@ var map = {
 		445,
 		153
 	],
+	"./check-merge-safety": [
+		2180,
+		832,
+		228,
+		180
+	],
+	"./check-merge-safety.ts": [
+		2180,
+		832,
+		228,
+		180
+	],
 	"./check-pr-title": [
 		2956,
 		832,
