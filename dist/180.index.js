@@ -59,20 +59,23 @@ class CheckMergeSafety extends _types_generated__WEBPACK_IMPORTED_MODULE_7__/* .
     }
 }
 const checkMergeSafety = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
-    const prNumber = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number;
-    if (!prNumber) {
-        const pullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__/* .paginateAllOpenPullRequests */ .P)();
-        return (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(pullRequests, (pullRequest) => __awaiter(void 0, void 0, void 0, function* () {
-            const isSafeToMerge = yield prIsSafeToMerge(pullRequest, inputs);
-            yield (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_6__.setCommitStatus)(Object.assign({ sha: pullRequest.head.sha, state: isSafeToMerge ? 'success' : 'failure', context: 'Merge Safety' }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-        }));
+    const isPrWorkflow = Boolean(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number);
+    if (!isPrWorkflow) {
+        return handlePushWorkflow(inputs);
     }
-    const { data: pullRequest } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: prNumber }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    const { data: pullRequest } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     const isSafeToMerge = yield prIsSafeToMerge(pullRequest, inputs);
     if (!isSafeToMerge) {
         throw new Error();
     }
     _actions_core__WEBPACK_IMPORTED_MODULE_3__.info('This PR is safe to merge!');
+});
+const handlePushWorkflow = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
+    const pullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__/* .paginateAllOpenPullRequests */ .P)();
+    return (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(pullRequests, (pullRequest) => __awaiter(void 0, void 0, void 0, function* () {
+        const isSafeToMerge = yield prIsSafeToMerge(pullRequest, inputs);
+        yield (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_6__.setCommitStatus)(Object.assign({ sha: pullRequest.head.sha, state: isSafeToMerge ? 'success' : 'failure', context: 'Merge Safety' }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    }));
 });
 const prIsSafeToMerge = (pullRequest, { paths, override_filter_paths, override_filter_globs }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;

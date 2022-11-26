@@ -28,20 +28,11 @@ export class CheckMergeSafety extends HelperInputs {
 }
 
 export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
-  const prNumber = context.issue.number;
-  if (!prNumber) {
-    const pullRequests = await paginateAllOpenPullRequests();
-    return map(pullRequests, async pullRequest => {
-      const isSafeToMerge = await prIsSafeToMerge(pullRequest, inputs);
-      await setCommitStatus({
-        sha: pullRequest.head.sha,
-        state: isSafeToMerge ? 'success' : 'failure',
-        context: 'Merge Safety',
-        ...context.repo
-      });
-    });
+  const isPrWorkflow = Boolean(context.issue.number);
+  if (!isPrWorkflow) {
+    return handlePushWorkflow(inputs);
   }
-  const { data: pullRequest } = await octokit.pulls.get({ pull_number: prNumber, ...context.repo });
+  const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
 
   const isSafeToMerge = await prIsSafeToMerge(pullRequest, inputs);
 
@@ -50,6 +41,19 @@ export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
   }
 
   core.info('This PR is safe to merge!');
+};
+
+const handlePushWorkflow = async (inputs: CheckMergeSafety) => {
+  const pullRequests = await paginateAllOpenPullRequests();
+  return map(pullRequests, async pullRequest => {
+    const isSafeToMerge = await prIsSafeToMerge(pullRequest, inputs);
+    await setCommitStatus({
+      sha: pullRequest.head.sha,
+      state: isSafeToMerge ? 'success' : 'failure',
+      context: 'Merge Safety',
+      ...context.repo
+    });
+  });
 };
 
 const prIsSafeToMerge = async (
