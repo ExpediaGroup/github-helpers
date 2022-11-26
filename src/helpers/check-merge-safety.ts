@@ -34,6 +34,7 @@ export const checkMergeSafety = async ({ base, override_filter_paths, override_f
     basehead: `${base}...${defaultBranch}`
   });
   const fileNamesWhichBranchIsBehindOn = filesWhichBranchIsBehindOn?.map(file => file.filename) ?? [];
+  core.info(JSON.stringify(fileNamesWhichBranchIsBehindOn));
 
   const shouldOverrideSafetyCheck = override_filter_globs
     ? micromatch(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n')).length > 0
@@ -49,6 +50,7 @@ export const checkMergeSafety = async ({ base, override_filter_paths, override_f
     basehead: `${defaultBranch}...${base}`
   });
   const changedFileNames = changedFiles?.map(file => file.filename);
+  core.info(JSON.stringify(changedFileNames));
   const changedFilesIntersect = intersection(fileNamesWhichBranchIsBehindOn, changedFileNames).length > 0;
 
   if (changedFilesIntersect) {
