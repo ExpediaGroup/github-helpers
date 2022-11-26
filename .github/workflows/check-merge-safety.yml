@@ -8,15 +8,9 @@ on:
 
 jobs:
   test:
+    name: Merge Safety
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-
       - uses: ./
         with:
           helper: check-merge-safety
