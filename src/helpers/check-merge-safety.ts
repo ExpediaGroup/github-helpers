@@ -52,7 +52,9 @@ export const checkMergeSafety = async ({ base, paths, override_filter_paths, ove
   const changedFileNames = changedFiles?.map(file => file.filename);
   core.info(JSON.stringify(changedFileNames));
   const projectDirectories = paths.split(/[\n,]/);
-  const isUnsafeToMerge = changedFileNames?.some(changedFile => projectDirectories.some(dir => changedFile.includes(dir)));
+  const isUnsafeToMerge = projectDirectories.some(
+    dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && changedFileNames?.some(file => file.includes(dir))
+  );
 
   if (isUnsafeToMerge) {
     throw new Error(`Please update ${base} with ${defaultBranch}`);

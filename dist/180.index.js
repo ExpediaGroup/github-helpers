@@ -70,7 +70,7 @@ const checkMergeSafety = ({ base, paths, override_filter_paths, override_filter_
     const changedFileNames = changedFiles === null || changedFiles === void 0 ? void 0 : changedFiles.map(file => file.filename);
     _actions_core__WEBPACK_IMPORTED_MODULE_4__.info(JSON.stringify(changedFileNames));
     const projectDirectories = paths.split(/[\n,]/);
-    const isUnsafeToMerge = changedFileNames === null || changedFileNames === void 0 ? void 0 : changedFileNames.some(changedFile => projectDirectories.some(dir => changedFile.includes(dir)));
+    const isUnsafeToMerge = projectDirectories.some(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && (changedFileNames === null || changedFileNames === void 0 ? void 0 : changedFileNames.some(file => file.includes(dir))));
     if (isUnsafeToMerge) {
         throw new Error(`Please update ${base} with ${defaultBranch}`);
     }

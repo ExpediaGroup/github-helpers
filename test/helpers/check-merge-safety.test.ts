@@ -32,7 +32,7 @@ jest.mock('@actions/github', () => ({
 const base = 'some-branch-name';
 
 describe('checkMergeSafety', () => {
-  it('should throw error when changed files intersect', async () => {
+  it('should throw error when branch is behind on provided path', async () => {
     (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
       const changedFiles = basehead.startsWith(base)
         ? ['packages/package-1/src/file1.ts', 'packages/package-2']
@@ -50,6 +50,24 @@ describe('checkMergeSafety', () => {
         ...context.repo
       })
     ).rejects.toThrowError('Please update some-branch-name with master');
+  });
+
+  it('should not throw error when branch is up to date', async () => {
+    (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
+      const changedFiles = basehead.startsWith(base) ? [] : ['README.md', 'packages/package-1/src/file2.ts'];
+      return {
+        data: {
+          files: changedFiles.map(file => ({ filename: file }))
+        }
+      };
+    });
+    await expect(
+      checkMergeSafety({
+        base,
+        paths: 'packages/package-1',
+        ...context.repo
+      })
+    ).resolves.not.toThrowError('Please update some-branch-name with master');
   });
 
   it('should throw error when override files match even when files do not intersect', async () => {
