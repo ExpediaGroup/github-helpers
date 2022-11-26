@@ -60,7 +60,6 @@ class CheckMergeSafety extends _types_generated__WEBPACK_IMPORTED_MODULE_7__/* .
 }
 const checkMergeSafety = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
     const prNumber = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number;
-    _actions_core__WEBPACK_IMPORTED_MODULE_3__.info(String(prNumber));
     if (!prNumber) {
         const pullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__/* .paginateAllOpenPullRequests */ .P)();
         return (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(pullRequests, (pullRequest) => __awaiter(void 0, void 0, void 0, function* () {

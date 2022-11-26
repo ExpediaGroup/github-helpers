@@ -16,9 +16,13 @@ import { context } from '@actions/github';
 import { checkMergeSafety } from '../../src/helpers/check-merge-safety';
 import { octokit } from '../../src/octokit';
 import * as core from '@actions/core';
+import { setCommitStatus } from '../../src/helpers/set-commit-status';
+import { paginateAllOpenPullRequests } from '../../src/utils/paginate-open-pull-requests';
 
 const branchName = 'some-branch-name';
 
+jest.mock('../../src/utils/paginate-open-pull-requests');
+jest.mock('../../src/helpers/set-commit-status');
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
@@ -139,5 +143,40 @@ describe('checkMergeSafety', () => {
       })
     ).resolves.not.toThrowError();
     expect(core.error).not.toHaveBeenCalled();
+  });
+
+  it('should set commit status on all open prs', async () => {
+    (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
+      const changedFiles = basehead.startsWith(branchName)
+        ? ['packages/package-1/src/file1.ts', 'packages/package-2/src/file2.ts']
+        : ['README.md', 'packages/package-3/src/file3.ts'];
+      return {
+        data: {
+          files: changedFiles.map(file => ({ filename: file }))
+        }
+      };
+    });
+    // eslint-disable-next-line functional/immutable-data,@typescript-eslint/no-explicit-any
+    context.issue.number = undefined as any;
+    (paginateAllOpenPullRequests as jest.Mock).mockResolvedValue([
+      { head: { sha: '123' }, base: { repo: { default_branch: 'master' } } },
+      { head: { sha: '456' }, base: { repo: { default_branch: 'master' } } }
+    ]);
+    await checkMergeSafety({
+      paths: 'packages/package-1',
+      ...context.repo
+    });
+    expect(setCommitStatus).toHaveBeenCalledWith({
+      sha: '123',
+      state: 'success',
+      context: 'Merge Safety',
+      ...context.repo
+    });
+    expect(setCommitStatus).toHaveBeenCalledWith({
+      sha: '456',
+      state: 'success',
+      context: 'Merge Safety',
+      ...context.repo
+    });
   });
 });

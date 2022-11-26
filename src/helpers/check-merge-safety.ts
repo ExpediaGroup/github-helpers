@@ -29,7 +29,6 @@ export class CheckMergeSafety extends HelperInputs {
 
 export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
   const prNumber = context.issue.number;
-  core.info(String(prNumber));
   if (!prNumber) {
     const pullRequests = await paginateAllOpenPullRequests();
     return map(pullRequests, async pullRequest => {
