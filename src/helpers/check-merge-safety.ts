@@ -39,8 +39,6 @@ export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
   if (!isSafeToMerge) {
     throw new Error();
   }
-
-  core.info('This PR is safe to merge!');
 };
 
 const handlePushWorkflow = async (inputs: CheckMergeSafety) => {
@@ -79,7 +77,7 @@ const prIsSafeToMerge = async (
     : fileNamesWhichBranchIsBehindOn.some(changedFile => override_filter_paths?.split(/[\n,]/).includes(changedFile));
 
   if (shouldOverrideSafetyCheck) {
-    core.error(`This branch is out of date on one ore more files critical to the repo! Please update ${ref} with ${default_branch}.`);
+    core.error(`This branch has one or more outdated files that must be rebased on! Please update ${ref} with ${default_branch}.`);
     return false;
   }
 
@@ -96,9 +94,12 @@ const prIsSafeToMerge = async (
   );
 
   if (isUnsafeToMerge) {
-    core.error(`This branch is out of date on a project being changed in this PR. Please update ${ref} with ${default_branch}.`);
+    core.error(
+      `This branch has one or more outdated projects which are being changed in this PR. Please update ${ref} with ${default_branch}.`
+    );
     return false;
   }
 
+  core.info(`The PR from branch ${ref} is safe to merge!`);
   return true;
 };
