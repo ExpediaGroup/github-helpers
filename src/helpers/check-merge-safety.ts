@@ -15,17 +15,17 @@ import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import { getDefaultBranch } from '../utils/get-default-branch';
-import { intersection } from 'lodash';
 import micromatch from 'micromatch';
 import * as core from '@actions/core';
 
 export class CheckMergeSafety extends HelperInputs {
   base = '';
+  paths = '';
   override_filter_paths?: string;
   override_filter_globs?: string;
 }
 
-export const checkMergeSafety = async ({ base, override_filter_paths, override_filter_globs }: CheckMergeSafety) => {
+export const checkMergeSafety = async ({ base, paths, override_filter_paths, override_filter_globs }: CheckMergeSafety) => {
   const defaultBranch = await getDefaultBranch();
   const {
     data: { files: filesWhichBranchIsBehindOn }
@@ -51,9 +51,10 @@ export const checkMergeSafety = async ({ base, override_filter_paths, override_f
   });
   const changedFileNames = changedFiles?.map(file => file.filename);
   core.info(JSON.stringify(changedFileNames));
-  const changedFilesIntersect = intersection(fileNamesWhichBranchIsBehindOn, changedFileNames).length > 0;
+  const projectDirectories = paths.split(/[\n,]/);
+  const isUnsafeToMerge = changedFileNames?.some(changedFile => projectDirectories.some(dir => changedFile.includes(dir)));
 
-  if (changedFilesIntersect) {
+  if (isUnsafeToMerge) {
     throw new Error(`Please update ${base} with ${defaultBranch}`);
   }
 

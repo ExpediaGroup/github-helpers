@@ -34,7 +34,9 @@ const base = 'some-branch-name';
 describe('checkMergeSafety', () => {
   it('should throw error when changed files intersect', async () => {
     (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-      const changedFiles = basehead.startsWith(base) ? ['packages/package-1', 'packages/package-2'] : ['README.md', 'packages/package-1'];
+      const changedFiles = basehead.startsWith(base)
+        ? ['packages/package-1/src/file1.ts', 'packages/package-2']
+        : ['README.md', 'packages/package-1/src/file2.ts'];
       return {
         data: {
           files: changedFiles.map(file => ({ filename: file }))
@@ -44,6 +46,7 @@ describe('checkMergeSafety', () => {
     await expect(
       checkMergeSafety({
         base,
+        paths: 'packages/package-1',
         ...context.repo
       })
     ).rejects.toThrowError('Please update some-branch-name with master');
@@ -51,7 +54,9 @@ describe('checkMergeSafety', () => {
 
   it('should throw error when override files match even when files do not intersect', async () => {
     (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-      const changedFiles = basehead.startsWith(base) ? ['packages/package-1', 'package.json'] : ['README.md', 'packages/package-3'];
+      const changedFiles = basehead.startsWith(base)
+        ? ['packages/package-1/src/file1.ts', 'package.json']
+        : ['README.md', 'packages/package-3/src/file3.ts'];
       return {
         data: {
           files: changedFiles.map(file => ({ filename: file }))
@@ -61,6 +66,7 @@ describe('checkMergeSafety', () => {
     await expect(
       checkMergeSafety({
         base,
+        paths: 'packages/package-1',
         override_filter_paths: 'package.json\npackage-lock.json',
         ...context.repo
       })
@@ -69,7 +75,9 @@ describe('checkMergeSafety', () => {
 
   it('should throw error when override globs match even when files do not intersect', async () => {
     (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-      const changedFiles = basehead.startsWith(base) ? ['packages/package-1', 'package.json'] : ['README.md', 'packages/package-3'];
+      const changedFiles = basehead.startsWith(base)
+        ? ['packages/package-1/src/file1.ts', 'package.json']
+        : ['README.md', 'packages/package-3/src/file3.ts'];
       return {
         data: {
           files: changedFiles.map(file => ({ filename: file }))
@@ -79,6 +87,7 @@ describe('checkMergeSafety', () => {
     await expect(
       checkMergeSafety({
         base,
+        paths: 'packages/package-1',
         override_filter_globs: 'packages/**',
         ...context.repo
       })
@@ -87,7 +96,9 @@ describe('checkMergeSafety', () => {
 
   it('should not throw error when changed files do not intersect', async () => {
     (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-      const changedFiles = basehead.startsWith(base) ? ['packages/package-1', 'packages/package-2'] : ['README.md', 'packages/package-3'];
+      const changedFiles = basehead.startsWith(base)
+        ? ['packages/package-1/src/file1.ts', 'packages/package-2/src/file2.ts']
+        : ['README.md', 'packages/package-3/src/file3.ts'];
       return {
         data: {
           files: changedFiles.map(file => ({ filename: file }))
@@ -97,6 +108,7 @@ describe('checkMergeSafety', () => {
     await expect(
       checkMergeSafety({
         base,
+        paths: 'packages/package-1',
         ...context.repo
       })
     ).resolves.not.toThrowError();
