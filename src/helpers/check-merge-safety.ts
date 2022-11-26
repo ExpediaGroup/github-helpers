@@ -17,6 +17,7 @@ import { octokit } from '../octokit';
 import { getDefaultBranch } from '../utils/get-default-branch';
 import { intersection } from 'lodash';
 import micromatch from 'micromatch';
+import * as core from '@actions/core';
 
 export class CheckMergeSafety extends HelperInputs {
   base = '';
@@ -53,4 +54,6 @@ export const checkMergeSafety = async ({ base, override_filter_paths, override_f
   if (changedFilesIntersect) {
     throw new Error(`Please update ${base} with ${defaultBranch}`);
   }
+
+  core.info('This PR is safe to merge!');
 };

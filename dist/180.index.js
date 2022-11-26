@@ -11,7 +11,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "CheckMergeSafety": () => (/* binding */ CheckMergeSafety),
 /* harmony export */   "checkMergeSafety": () => (/* binding */ checkMergeSafety)
 /* harmony export */ });
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(3476);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(3476);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
@@ -20,6 +20,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var micromatch__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6228);
 /* harmony import */ var micromatch__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(micromatch__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(2186);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_5__);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,7 +49,8 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-class CheckMergeSafety extends _types_generated__WEBPACK_IMPORTED_MODULE_5__/* .HelperInputs */ .s {
+
+class CheckMergeSafety extends _types_generated__WEBPACK_IMPORTED_MODULE_6__/* .HelperInputs */ .s {
     constructor() {
         super(...arguments);
         this.base = '';
@@ -70,6 +73,7 @@ const checkMergeSafety = ({ base, override_filter_paths, override_filter_globs }
     if (changedFilesIntersect) {
         throw new Error(`Please update ${base} with ${defaultBranch}`);
     }
+    _actions_core__WEBPACK_IMPORTED_MODULE_5__.info('This PR is safe to merge!');
 });
 
 
