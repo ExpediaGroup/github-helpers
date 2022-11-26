@@ -59,20 +59,18 @@ const checkMergeSafety = ({ base, paths, override_filter_paths, override_filter_
     const defaultBranch = yield (0,_utils_get_default_branch__WEBPACK_IMPORTED_MODULE_2__/* .getDefaultBranch */ ._)();
     const { data: { files: filesWhichBranchIsBehindOn } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${base}...${defaultBranch}` }));
     const fileNamesWhichBranchIsBehindOn = (_a = filesWhichBranchIsBehindOn === null || filesWhichBranchIsBehindOn === void 0 ? void 0 : filesWhichBranchIsBehindOn.map(file => file.filename)) !== null && _a !== void 0 ? _a : [];
-    _actions_core__WEBPACK_IMPORTED_MODULE_4__.info(JSON.stringify(fileNamesWhichBranchIsBehindOn));
     const shouldOverrideSafetyCheck = override_filter_globs
         ? micromatch__WEBPACK_IMPORTED_MODULE_3___default()(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n')).length > 0
         : fileNamesWhichBranchIsBehindOn.some(changedFile => override_filter_paths === null || override_filter_paths === void 0 ? void 0 : override_filter_paths.split(/[\n,]/).includes(changedFile));
     if (shouldOverrideSafetyCheck) {
-        throw new Error(`Please update ${base} with ${defaultBranch}`);
+        throw new Error(`This branch is out of date on one ore more files critical to the repo! Please update ${base} with ${defaultBranch}.`);
     }
     const { data: { files: changedFiles } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${defaultBranch}...${base}` }));
     const changedFileNames = changedFiles === null || changedFiles === void 0 ? void 0 : changedFiles.map(file => file.filename);
-    _actions_core__WEBPACK_IMPORTED_MODULE_4__.info(JSON.stringify(changedFileNames));
     const projectDirectories = paths.split(/[\n,]/);
     const isUnsafeToMerge = projectDirectories.some(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && (changedFileNames === null || changedFileNames === void 0 ? void 0 : changedFileNames.some(file => file.includes(dir))));
     if (isUnsafeToMerge) {
-        throw new Error(`Please update ${base} with ${defaultBranch}`);
+        throw new Error(`This branch is out of date on a project being changed in this PR. Please update ${base} with ${defaultBranch}.`);
     }
     _actions_core__WEBPACK_IMPORTED_MODULE_4__.info('This PR is safe to merge!');
 });

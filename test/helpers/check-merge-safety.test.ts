@@ -49,7 +49,7 @@ describe('checkMergeSafety', () => {
         paths: 'packages/package-1',
         ...context.repo
       })
-    ).rejects.toThrowError('Please update some-branch-name with master');
+    ).rejects.toThrowError('This branch is out of date on a project being changed in this PR. Please update some-branch-name with master.');
   });
 
   it('should not throw error when branch is up to date', async () => {
@@ -67,7 +67,7 @@ describe('checkMergeSafety', () => {
         paths: 'packages/package-1',
         ...context.repo
       })
-    ).resolves.not.toThrowError('Please update some-branch-name with master');
+    ).resolves.not.toThrowError('Please update some-branch-name with master.');
   });
 
   it('should throw error when override files match even when files do not intersect', async () => {
@@ -88,7 +88,9 @@ describe('checkMergeSafety', () => {
         override_filter_paths: 'package.json\npackage-lock.json',
         ...context.repo
       })
-    ).rejects.toThrowError('Please update some-branch-name with master');
+    ).rejects.toThrowError(
+      'This branch is out of date on one ore more files critical to the repo! Please update some-branch-name with master.'
+    );
   });
 
   it('should throw error when override globs match even when files do not intersect', async () => {
@@ -109,7 +111,9 @@ describe('checkMergeSafety', () => {
         override_filter_globs: 'packages/**',
         ...context.repo
       })
-    ).rejects.toThrowError('Please update some-branch-name with master');
+    ).rejects.toThrowError(
+      'This branch is out of date on one ore more files critical to the repo! Please update some-branch-name with master.'
+    );
   });
 
   it('should not throw error when changed files do not intersect', async () => {
