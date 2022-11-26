@@ -14,24 +14,60 @@ limitations under the License.
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
-import { getDefaultBranch } from '../utils/get-default-branch';
 import micromatch from 'micromatch';
 import * as core from '@actions/core';
+import { PullRequest, SimplePullRequest } from '../types/github';
+import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
+import { map } from 'bluebird';
+import { setCommitStatus } from './set-commit-status';
 
 export class CheckMergeSafety extends HelperInputs {
-  base = '';
   paths = '';
   override_filter_paths?: string;
   override_filter_globs?: string;
 }
 
-export const checkMergeSafety = async ({ base, paths, override_filter_paths, override_filter_globs }: CheckMergeSafety) => {
-  const defaultBranch = await getDefaultBranch();
+export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
+  const prNumber = context.issue.number;
+  core.info(String(prNumber));
+  if (!prNumber) {
+    const pullRequests = await paginateAllOpenPullRequests();
+    return map(pullRequests, async pullRequest => {
+      const isSafeToMerge = await prIsSafeToMerge(pullRequest, inputs);
+      await setCommitStatus({
+        sha: pullRequest.head.sha,
+        state: isSafeToMerge ? 'success' : 'failure',
+        context: 'Merge Safety',
+        ...context.repo
+      });
+    });
+  }
+  const { data: pullRequest } = await octokit.pulls.get({ pull_number: prNumber, ...context.repo });
+
+  const isSafeToMerge = await prIsSafeToMerge(pullRequest, inputs);
+
+  if (!isSafeToMerge) {
+    throw new Error();
+  }
+
+  core.info('This PR is safe to merge!');
+};
+
+const prIsSafeToMerge = async (
+  pullRequest: SimplePullRequest | PullRequest,
+  { paths, override_filter_paths, override_filter_globs }: CheckMergeSafety
+) => {
+  const {
+    base: {
+      repo: { default_branch }
+    },
+    head: { ref }
+  } = pullRequest;
   const {
     data: { files: filesWhichBranchIsBehindOn }
   } = await octokit.repos.compareCommitsWithBasehead({
     ...context.repo,
-    basehead: `${base}...${defaultBranch}`
+    basehead: `${ref}...${default_branch}`
   });
   const fileNamesWhichBranchIsBehindOn = filesWhichBranchIsBehindOn?.map(file => file.filename) ?? [];
 
@@ -40,14 +76,15 @@ export const checkMergeSafety = async ({ base, paths, override_filter_paths, ove
     : fileNamesWhichBranchIsBehindOn.some(changedFile => override_filter_paths?.split(/[\n,]/).includes(changedFile));
 
   if (shouldOverrideSafetyCheck) {
-    throw new Error(`This branch is out of date on one ore more files critical to the repo! Please update ${base} with ${defaultBranch}.`);
+    core.error(`This branch is out of date on one ore more files critical to the repo! Please update ${ref} with ${default_branch}.`);
+    return false;
   }
 
   const {
     data: { files: changedFiles }
   } = await octokit.repos.compareCommitsWithBasehead({
     ...context.repo,
-    basehead: `${defaultBranch}...${base}`
+    basehead: `${default_branch}...${ref}`
   });
   const changedFileNames = changedFiles?.map(file => file.filename);
   const projectDirectories = paths.split(/[\n,]/);
@@ -56,8 +93,9 @@ export const checkMergeSafety = async ({ base, paths, override_filter_paths, ove
   );
 
   if (isUnsafeToMerge) {
-    throw new Error(`This branch is out of date on a project being changed in this PR. Please update ${base} with ${defaultBranch}.`);
+    core.error(`This branch is out of date on a project being changed in this PR. Please update ${ref} with ${default_branch}.`);
+    return false;
   }
 
-  core.info('This PR is safe to merge!');
+  return true;
 };

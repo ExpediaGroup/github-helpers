@@ -1,21 +1,44 @@
 "use strict";
-exports.id = 150;
-exports.ids = [150];
+exports.id = 66;
+exports.ids = [66];
 exports.modules = {
 
-/***/ 9150:
+/***/ 1066:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+// ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "CreatePR": () => (/* binding */ CreatePR),
-/* harmony export */   "createPr": () => (/* binding */ createPr)
-/* harmony export */ });
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3476);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
-/* harmony import */ var _utils_get_default_branch__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(977);
+
+// EXPORTS
+__webpack_require__.d(__webpack_exports__, {
+  "CreatePR": () => (/* binding */ CreatePR),
+  "createPr": () => (/* binding */ createPr)
+});
+
+// EXTERNAL MODULE: ./src/types/generated.ts
+var generated = __webpack_require__(3476);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
+var github = __webpack_require__(5438);
+// EXTERNAL MODULE: ./src/octokit.ts
+var octokit = __webpack_require__(6161);
+;// CONCATENATED MODULE: ./src/utils/get-default-branch.ts
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+const getDefaultBranch = () => __awaiter(void 0, void 0, void 0, function* () {
+    const { data: { default_branch } } = yield octokit/* octokit.repos.get */.K.repos.get(Object.assign({}, github.context.repo));
+    return default_branch;
+});
+
+;// CONCATENATED MODULE: ./src/helpers/create-pr.ts
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +51,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+var create_pr_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -41,21 +64,21 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-class CreatePR extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .s {
+class CreatePR extends generated/* HelperInputs */.s {
     constructor() {
         super(...arguments);
         this.title = '';
         this.body = '';
     }
 }
-const createPr = ({ title, body, head = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.ref.replace('refs/heads/', ''), base }) => __awaiter(void 0, void 0, void 0, function* () {
-    const pr_base = base || (yield (0,_utils_get_default_branch__WEBPACK_IMPORTED_MODULE_2__/* .getDefaultBranch */ ._)());
+const createPr = ({ title, body, head = github.context.ref.replace('refs/heads/', ''), base }) => create_pr_awaiter(void 0, void 0, void 0, function* () {
+    const pr_base = base || (yield getDefaultBranch());
     yield updateHeadWithBaseBranch(pr_base, head);
-    const { data: { number } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.create */ .K.pulls.create(Object.assign({ title,
-        head, base: pr_base, body, maintainer_can_modify: true }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    const { data: { number } } = yield octokit/* octokit.pulls.create */.K.pulls.create(Object.assign({ title,
+        head, base: pr_base, body, maintainer_can_modify: true }, github.context.repo));
     return number;
 });
-const updateHeadWithBaseBranch = (base, head) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.merge */ .K.repos.merge(Object.assign({ base: head, head: base }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+const updateHeadWithBaseBranch = (base, head) => octokit/* octokit.repos.merge */.K.repos.merge(Object.assign({ base: head, head: base }, github.context.repo));
 
 
 /***/ }),
@@ -116,36 +139,8 @@ class HelperInputs {
 }
 
 
-/***/ }),
-
-/***/ 977:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "_": () => (/* binding */ getDefaultBranch)
-/* harmony export */ });
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6161);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-
-
-const getDefaultBranch = () => __awaiter(void 0, void 0, void 0, function* () {
-    const { data: { default_branch } } = yield _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.repos.get */ .K.repos.get(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
-    return default_branch;
-});
-
-
 /***/ })
 
 };
 ;
-//# sourceMappingURL=150.index.js.map
+//# sourceMappingURL=66.index.js.map

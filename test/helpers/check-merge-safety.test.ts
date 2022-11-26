@@ -15,6 +15,9 @@ import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { checkMergeSafety } from '../../src/helpers/check-merge-safety';
 import { octokit } from '../../src/octokit';
+import * as core from '@actions/core';
+
+const branchName = 'some-branch-name';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
@@ -22,19 +25,19 @@ jest.mock('@actions/github', () => ({
   getOctokit: jest.fn(() => ({
     rest: {
       repos: {
-        get: jest.fn(() => ({ data: { default_branch: 'master' } })),
         compareCommitsWithBasehead: jest.fn()
+      },
+      pulls: {
+        get: jest.fn(() => ({ data: { base: { repo: { default_branch: 'master' } }, head: { ref: branchName } } }))
       }
     }
   }))
 }));
 
-const base = 'some-branch-name';
-
 describe('checkMergeSafety', () => {
   it('should throw error when branch is behind on provided path', async () => {
     (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-      const changedFiles = basehead.startsWith(base)
+      const changedFiles = basehead.startsWith(branchName)
         ? ['packages/package-1/src/file1.ts', 'packages/package-2']
         : ['README.md', 'packages/package-1/src/file2.ts'];
       return {
@@ -45,16 +48,18 @@ describe('checkMergeSafety', () => {
     });
     await expect(
       checkMergeSafety({
-        base,
         paths: 'packages/package-1',
         ...context.repo
       })
-    ).rejects.toThrowError('This branch is out of date on a project being changed in this PR. Please update some-branch-name with master.');
+    ).rejects.toThrowError();
+    expect(core.error).toHaveBeenCalledWith(
+      'This branch is out of date on a project being changed in this PR. Please update some-branch-name with master.'
+    );
   });
 
   it('should not throw error when branch is up to date', async () => {
     (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-      const changedFiles = basehead.startsWith(base) ? [] : ['README.md', 'packages/package-1/src/file2.ts'];
+      const changedFiles = basehead.startsWith(branchName) ? [] : ['README.md', 'packages/package-1/src/file2.ts'];
       return {
         data: {
           files: changedFiles.map(file => ({ filename: file }))
@@ -63,16 +68,16 @@ describe('checkMergeSafety', () => {
     });
     await expect(
       checkMergeSafety({
-        base,
         paths: 'packages/package-1',
         ...context.repo
       })
-    ).resolves.not.toThrowError('Please update some-branch-name with master.');
+    ).resolves.not.toThrowError();
+    expect(core.error).not.toHaveBeenCalled();
   });
 
   it('should throw error when override files match even when files do not intersect', async () => {
     (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-      const changedFiles = basehead.startsWith(base)
+      const changedFiles = basehead.startsWith(branchName)
         ? ['packages/package-1/src/file1.ts', 'package.json']
         : ['README.md', 'packages/package-3/src/file3.ts'];
       return {
@@ -83,19 +88,19 @@ describe('checkMergeSafety', () => {
     });
     await expect(
       checkMergeSafety({
-        base,
         paths: 'packages/package-1',
         override_filter_paths: 'package.json\npackage-lock.json',
         ...context.repo
       })
-    ).rejects.toThrowError(
+    ).rejects.toThrowError();
+    expect(core.error).toHaveBeenCalledWith(
       'This branch is out of date on one ore more files critical to the repo! Please update some-branch-name with master.'
     );
   });
 
   it('should throw error when override globs match even when files do not intersect', async () => {
     (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-      const changedFiles = basehead.startsWith(base)
+      const changedFiles = basehead.startsWith(branchName)
         ? ['packages/package-1/src/file1.ts', 'package.json']
         : ['README.md', 'packages/package-3/src/file3.ts'];
       return {
@@ -106,19 +111,19 @@ describe('checkMergeSafety', () => {
     });
     await expect(
       checkMergeSafety({
-        base,
         paths: 'packages/package-1',
         override_filter_globs: 'packages/**',
         ...context.repo
       })
-    ).rejects.toThrowError(
+    ).rejects.toThrowError();
+    expect(core.error).toHaveBeenCalledWith(
       'This branch is out of date on one ore more files critical to the repo! Please update some-branch-name with master.'
     );
   });
 
   it('should not throw error when changed files do not intersect', async () => {
     (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-      const changedFiles = basehead.startsWith(base)
+      const changedFiles = basehead.startsWith(branchName)
         ? ['packages/package-1/src/file1.ts', 'packages/package-2/src/file2.ts']
         : ['README.md', 'packages/package-3/src/file3.ts'];
       return {
@@ -129,10 +134,10 @@ describe('checkMergeSafety', () => {
     });
     await expect(
       checkMergeSafety({
-        base,
         paths: 'packages/package-1',
         ...context.repo
       })
     ).resolves.not.toThrowError();
+    expect(core.error).not.toHaveBeenCalled();
   });
 });
