@@ -81,7 +81,7 @@ const prIsSafeToMerge = (pullRequest, { paths, override_filter_paths, override_f
         ? micromatch__WEBPACK_IMPORTED_MODULE_2___default()(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n')).length > 0
         : fileNamesWhichBranchIsBehindOn.some(changedFile => override_filter_paths === null || override_filter_paths === void 0 ? void 0 : override_filter_paths.split(/[\n,]/).includes(changedFile));
     if (shouldOverrideSafetyCheck) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_3__.error(`This branch has one or more outdated files that must be rebased on! Please update ${ref} with ${default_branch}.`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_3__.error(`This branch has one or more outdated files that must be rebased on! Please update "${ref}" with the "${default_branch}" branch.`);
         return false;
     }
     const { data: { files: changedFiles } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${default_branch}...${ref}` }));
@@ -89,7 +89,7 @@ const prIsSafeToMerge = (pullRequest, { paths, override_filter_paths, override_f
     const projectDirectories = paths === null || paths === void 0 ? void 0 : paths.split(/[\n,]/);
     const isUnsafeToMerge = projectDirectories === null || projectDirectories === void 0 ? void 0 : projectDirectories.some(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && (changedFileNames === null || changedFileNames === void 0 ? void 0 : changedFileNames.some(file => file.includes(dir))));
     if (isUnsafeToMerge) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_3__.error(`This branch has one or more outdated projects which are being changed in this PR. Please update ${ref} with ${default_branch}.`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_3__.error(`This branch has one or more outdated projects which are being changed in this PR. Please update "${ref}" with the "${default_branch}" branch.`);
         return false;
     }
     _actions_core__WEBPACK_IMPORTED_MODULE_3__.info(`The PR from branch ${ref} is safe to merge!`);
