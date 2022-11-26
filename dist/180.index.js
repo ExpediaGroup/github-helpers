@@ -53,10 +53,6 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 class CheckMergeSafety extends _types_generated__WEBPACK_IMPORTED_MODULE_7__/* .HelperInputs */ .s {
-    constructor() {
-        super(...arguments);
-        this.paths = '';
-    }
 }
 const checkMergeSafety = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
     const isPrWorkflow = Boolean(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number);
@@ -91,8 +87,8 @@ const prIsSafeToMerge = (pullRequest, { paths, override_filter_paths, override_f
     }
     const { data: { files: changedFiles } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${default_branch}...${ref}` }));
     const changedFileNames = changedFiles === null || changedFiles === void 0 ? void 0 : changedFiles.map(file => file.filename);
-    const projectDirectories = paths.split(/[\n,]/);
-    const isUnsafeToMerge = projectDirectories.some(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && (changedFileNames === null || changedFileNames === void 0 ? void 0 : changedFileNames.some(file => file.includes(dir))));
+    const projectDirectories = paths === null || paths === void 0 ? void 0 : paths.split(/[\n,]/);
+    const isUnsafeToMerge = projectDirectories === null || projectDirectories === void 0 ? void 0 : projectDirectories.some(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && (changedFileNames === null || changedFileNames === void 0 ? void 0 : changedFileNames.some(file => file.includes(dir))));
     if (isUnsafeToMerge) {
         _actions_core__WEBPACK_IMPORTED_MODULE_3__.error(`This branch is out of date on a project being changed in this PR. Please update ${ref} with ${default_branch}.`);
         return false;

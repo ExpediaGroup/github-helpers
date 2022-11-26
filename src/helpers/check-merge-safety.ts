@@ -22,7 +22,7 @@ import { map } from 'bluebird';
 import { setCommitStatus } from './set-commit-status';
 
 export class CheckMergeSafety extends HelperInputs {
-  paths = '';
+  paths?: string;
   override_filter_paths?: string;
   override_filter_globs?: string;
 }
@@ -90,8 +90,8 @@ const prIsSafeToMerge = async (
     basehead: `${default_branch}...${ref}`
   });
   const changedFileNames = changedFiles?.map(file => file.filename);
-  const projectDirectories = paths.split(/[\n,]/);
-  const isUnsafeToMerge = projectDirectories.some(
+  const projectDirectories = paths?.split(/[\n,]/);
+  const isUnsafeToMerge = projectDirectories?.some(
     dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && changedFileNames?.some(file => file.includes(dir))
   );
 
