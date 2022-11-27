@@ -64,6 +64,8 @@ const prIsSafeToMerge = async (
     },
     head: { ref }
   } = pullRequest;
+  core.info(`ref: ${ref}`);
+  core.info(`default_branch: ${default_branch}`);
   const {
     data: { files: filesWhichBranchIsBehindOn }
   } = await octokit.repos.compareCommitsWithBasehead({
