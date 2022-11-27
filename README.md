@@ -90,7 +90,7 @@ This workflow should be run on both `pull_request` and `push` events:
 
 The following parameters can be used for additional control over when it is safe to merge a PR:
 
-* `paths` defines file paths to each of the standalone projects in a repo
+* `paths` defines file paths to all of a repo's co-dependent projects which could be affected by a PR
   * This is useful for monorepos with multiple projects which are decoupled from each other but are affected by global dependencies.
 * `override_filter_paths` defines file paths that, if out of date on a PR, will prevent merge no matter what files the PR is changing
     * example: `override_filter_paths: package.json,package-lock.json`

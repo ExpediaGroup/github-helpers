@@ -47,7 +47,7 @@ describe('checkMergeSafety', () => {
     (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
       const changedFiles =
         basehead === 'some-branch-name...main'
-          ? ['packages/package-1/src/file1.ts', 'packages/package-2']
+          ? ['packages/package-1/src/file1.ts', 'packages/package-2/src/file.ts']
           : ['README.md', 'packages/package-1/src/file2.ts'];
       return {
         data: {
@@ -58,6 +58,24 @@ describe('checkMergeSafety', () => {
     await expect(
       checkMergeSafety({
         paths: 'packages/package-1',
+        ...context.repo
+      })
+    ).rejects.toThrowError('This branch has one or more outdated projects. Please update with main.');
+  });
+
+  it('should throw error when branch is out of date on a co-dependent project path', async () => {
+    (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
+      const changedFiles =
+        basehead === 'some-branch-name...main' ? ['packages/package-2/src/file.ts'] : ['README.md', 'packages/package-1/src/file.ts'];
+      return {
+        data: {
+          files: changedFiles.map(file => ({ filename: file }))
+        }
+      };
+    });
+    await expect(
+      checkMergeSafety({
+        paths: 'packages/package-1\npackages/package-2',
         ...context.repo
       })
     ).rejects.toThrowError('This branch has one or more outdated projects. Please update with main.');
