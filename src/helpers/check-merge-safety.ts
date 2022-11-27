@@ -16,7 +16,7 @@ import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import micromatch from 'micromatch';
 import * as core from '@actions/core';
-import { PullRequest, SimplePullRequest } from '../types/github';
+import { PullRequest } from '../types/github';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
 import { map } from 'bluebird';
 import { setCommitStatus } from './set-commit-status';
@@ -44,7 +44,7 @@ export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
 const handlePushWorkflow = async (inputs: CheckMergeSafety) => {
   const pullRequests = await paginateAllOpenPullRequests();
   return map(pullRequests, async pullRequest => {
-    const isSafeToMerge = await prIsSafeToMerge(pullRequest, inputs);
+    const isSafeToMerge = await prIsSafeToMerge(pullRequest as PullRequest, inputs);
     await setCommitStatus({
       sha: pullRequest.head.sha,
       state: isSafeToMerge ? 'success' : 'failure',
@@ -54,23 +54,25 @@ const handlePushWorkflow = async (inputs: CheckMergeSafety) => {
   });
 };
 
-const prIsSafeToMerge = async (
-  pullRequest: SimplePullRequest | PullRequest,
-  { paths, override_filter_paths, override_filter_globs }: CheckMergeSafety
-) => {
+const prIsSafeToMerge = async (pullRequest: PullRequest, { paths, override_filter_paths, override_filter_globs }: CheckMergeSafety) => {
   const {
     base: {
       repo: { default_branch }
     },
-    head: { ref }
+    head: {
+      ref,
+      user: { login: owner }
+    }
   } = pullRequest;
   core.info(`ref: ${ref}`);
+  core.info(`owner: ${owner}`);
   core.info(`default_branch: ${default_branch}`);
   const {
     data: { files: filesWhichBranchIsBehindOn }
   } = await octokit.repos.compareCommitsWithBasehead({
     ...context.repo,
-    basehead: `danadajian2:${ref}...origin:${default_branch}`
+    owner,
+    basehead: `${ref}...${default_branch}`
   });
   const fileNamesWhichBranchIsBehindOn = filesWhichBranchIsBehindOn?.map(file => file.filename) ?? [];
   core.info(`fileNamesWhichBranchIsBehindOn: ${fileNamesWhichBranchIsBehindOn}`);
