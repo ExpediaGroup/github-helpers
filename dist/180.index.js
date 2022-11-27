@@ -77,8 +77,9 @@ const prIsSafeToMerge = (pullRequest, { paths, override_filter_paths, override_f
     const { base: { repo: { default_branch } }, head: { ref } } = pullRequest;
     _actions_core__WEBPACK_IMPORTED_MODULE_3__.info(`ref: ${ref}`);
     _actions_core__WEBPACK_IMPORTED_MODULE_3__.info(`default_branch: ${default_branch}`);
-    const { data: { files: filesWhichBranchIsBehindOn } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${ref}...${default_branch}` }));
+    const { data: { files: filesWhichBranchIsBehindOn } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `danadajian2/${ref}...origin/${default_branch}` }));
     const fileNamesWhichBranchIsBehindOn = (_a = filesWhichBranchIsBehindOn === null || filesWhichBranchIsBehindOn === void 0 ? void 0 : filesWhichBranchIsBehindOn.map(file => file.filename)) !== null && _a !== void 0 ? _a : [];
+    _actions_core__WEBPACK_IMPORTED_MODULE_3__.info(`fileNamesWhichBranchIsBehindOn: ${fileNamesWhichBranchIsBehindOn}`);
     const shouldOverrideSafetyCheck = override_filter_globs
         ? micromatch__WEBPACK_IMPORTED_MODULE_2___default()(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n')).length > 0
         : fileNamesWhichBranchIsBehindOn.some(changedFile => override_filter_paths === null || override_filter_paths === void 0 ? void 0 : override_filter_paths.split(/[\n,]/).includes(changedFile));
