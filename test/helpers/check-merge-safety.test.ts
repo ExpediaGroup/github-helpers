@@ -32,7 +32,7 @@ jest.mock('@actions/github', () => ({
         compareCommitsWithBasehead: jest.fn()
       },
       pulls: {
-        get: jest.fn(() => ({ data: { base: { repo: { default_branch: 'main' } }, head: { ref: branchName } } }))
+        get: jest.fn(() => ({ data: { base: { repo: { default_branch: 'main' } }, head: { ref: branchName, user: { login: 'owner' } } } }))
       }
     }
   }))
@@ -164,8 +164,8 @@ describe('checkMergeSafety', () => {
     // eslint-disable-next-line functional/immutable-data,@typescript-eslint/no-explicit-any
     context.issue.number = undefined as any; // couldn't figure out a way to mock out this issue number in a cleaner way ¯\_(ツ)_/¯
     (paginateAllOpenPullRequests as jest.Mock).mockResolvedValue([
-      { head: { sha: '123' }, base: { repo: { default_branch: 'main' } } },
-      { head: { sha: '456' }, base: { repo: { default_branch: 'main' } } }
+      { head: { sha: '123', user: { login: 'owner' } }, base: { repo: { default_branch: 'main' } } },
+      { head: { sha: '456', user: { login: 'owner' } }, base: { repo: { default_branch: 'main' } } }
     ]);
     await checkMergeSafety({
       paths: 'packages/package-1',
