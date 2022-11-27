@@ -75,7 +75,6 @@ const prIsSafeToMerge = async (pullRequest: PullRequest, { paths, override_filte
     basehead: `${ref}...${default_branch}`
   });
   const fileNamesWhichBranchIsBehindOn = filesWhichBranchIsBehindOn?.map(file => file.filename) ?? [];
-  core.info(`fileNamesWhichBranchIsBehindOn: ${fileNamesWhichBranchIsBehindOn}`);
 
   const shouldOverrideSafetyCheck = override_filter_globs
     ? micromatch(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n')).length > 0
@@ -92,6 +91,7 @@ const prIsSafeToMerge = async (pullRequest: PullRequest, { paths, override_filte
     data: { files: changedFiles }
   } = await octokit.repos.compareCommitsWithBasehead({
     ...context.repo,
+    owner,
     basehead: `${default_branch}...${ref}`
   });
   const changedFileNames = changedFiles?.map(file => file.filename);
