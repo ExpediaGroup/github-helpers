@@ -165,7 +165,10 @@ limitations under the License.
 
 
 const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true });
-const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
+const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, {
+    request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ },
+    log: { debug: _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug, info: _actions_core__WEBPACK_IMPORTED_MODULE_0__.info, warn: _actions_core__WEBPACK_IMPORTED_MODULE_0__.warning, error: _actions_core__WEBPACK_IMPORTED_MODULE_0__.error }
+});
 
 
 /***/ }),

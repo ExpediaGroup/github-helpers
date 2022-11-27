@@ -16,4 +16,7 @@ import * as fetch from '@adobe/node-fetch-retry';
 import { getOctokit } from '@actions/github';
 
 const githubToken = core.getInput('github_token', { required: true });
-export const { rest: octokit, graphql: octokitGraphql } = getOctokit(githubToken, { request: { fetch } });
+export const { rest: octokit, graphql: octokitGraphql } = getOctokit(githubToken, {
+  request: { fetch },
+  log: { debug: core.debug, info: core.info, warn: core.warning, error: core.error }
+});
