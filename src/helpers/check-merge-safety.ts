@@ -67,9 +67,6 @@ const prIsSafeToMerge = async (pullRequest: PullRequest, { paths, override_filte
       user: { login: username }
     }
   } = pullRequest;
-  core.info(`context: ${context.repo.repo} ${context.repo.owner}`);
-  core.info(`baseOwner: ${baseOwner}`);
-  core.info(`username: ${username}`);
   const {
     data: { files: filesWhichBranchIsBehindOn }
   } = await octokit.repos.compareCommitsWithBasehead({

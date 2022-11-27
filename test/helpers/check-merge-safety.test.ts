@@ -32,7 +32,12 @@ jest.mock('@actions/github', () => ({
         compareCommitsWithBasehead: jest.fn()
       },
       pulls: {
-        get: jest.fn(() => ({ data: { base: { repo: { default_branch: 'main' } }, head: { ref: branchName, user: { login: 'owner' } } } }))
+        get: jest.fn(() => ({
+          data: {
+            base: { repo: { default_branch: 'main', owner: { login: 'owner' } } },
+            head: { ref: branchName, user: { login: 'username' } }
+          }
+        }))
       }
     }
   }))
@@ -64,7 +69,7 @@ describe('checkMergeSafety', () => {
 
   it('should not throw error when branch is fully up to date', async () => {
     (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-      const changedFiles = basehead === 'some-branch-name...main' ? [] : ['README.md', 'packages/package-1/src/file2.ts'];
+      const changedFiles = basehead === 'username:some-branch-name...owner:main' ? [] : ['README.md', 'packages/package-1/src/file2.ts'];
       return {
         data: {
           files: changedFiles.map(file => ({ filename: file }))
@@ -83,7 +88,7 @@ describe('checkMergeSafety', () => {
   it('should throw error when branch is out of date on override filter paths, even when project paths are up to date', async () => {
     (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
       const changedFiles =
-        basehead === 'some-branch-name...main'
+        basehead === 'username:some-branch-name...owner:main'
           ? ['packages/package-1/src/file1.ts', 'package.json']
           : ['README.md', 'packages/package-3/src/file3.ts'];
       return {
@@ -107,7 +112,7 @@ describe('checkMergeSafety', () => {
   it('should throw error when branch is out of date on override glob paths, even when project paths are up to date', async () => {
     (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
       const changedFiles =
-        basehead === 'some-branch-name...main'
+        basehead === 'username:some-branch-name...owner:main'
           ? ['packages/package-1/src/file1.ts', 'package.json']
           : ['README.md', 'packages/package-3/src/file3.ts'];
       return {
@@ -131,7 +136,7 @@ describe('checkMergeSafety', () => {
   it('should not throw error when project paths are up to date', async () => {
     (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
       const changedFiles =
-        basehead === 'some-branch-name...main'
+        basehead === 'username:some-branch-name...owner:main'
           ? ['packages/package-1/src/file1.ts', 'packages/package-2/src/file2.ts']
           : ['README.md', 'packages/package-3/src/file3.ts'];
       return {
@@ -152,7 +157,7 @@ describe('checkMergeSafety', () => {
   it('should set merge safety commit status on all open prs', async () => {
     (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
       const changedFiles =
-        basehead === 'some-branch-name...main'
+        basehead === 'username:some-branch-name...owner:main'
           ? ['packages/package-1/src/file1.ts', 'packages/package-2/src/file2.ts']
           : ['README.md', 'packages/package-3/src/file3.ts'];
       return {
@@ -164,8 +169,8 @@ describe('checkMergeSafety', () => {
     // eslint-disable-next-line functional/immutable-data,@typescript-eslint/no-explicit-any
     context.issue.number = undefined as any; // couldn't figure out a way to mock out this issue number in a cleaner way ¯\_(ツ)_/¯
     (paginateAllOpenPullRequests as jest.Mock).mockResolvedValue([
-      { head: { sha: '123', user: { login: 'owner' } }, base: { repo: { default_branch: 'main' } } },
-      { head: { sha: '456', user: { login: 'owner' } }, base: { repo: { default_branch: 'main' } } }
+      { head: { sha: '123', user: { login: 'owner' } }, base: { repo: { default_branch: 'main', owner: { login: 'owner' } } } },
+      { head: { sha: '456', user: { login: 'owner' } }, base: { repo: { default_branch: 'main', owner: { login: 'owner' } } } }
     ]);
     await checkMergeSafety({
       paths: 'packages/package-1',
