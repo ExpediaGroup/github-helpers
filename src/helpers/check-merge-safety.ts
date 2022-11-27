@@ -70,7 +70,7 @@ const prIsSafeToMerge = async (
     data: { files: filesWhichBranchIsBehindOn }
   } = await octokit.repos.compareCommitsWithBasehead({
     ...context.repo,
-    basehead: `danadajian2/${ref}...origin/${default_branch}`
+    basehead: `danadajian2:${ref}...origin:${default_branch}`
   });
   const fileNamesWhichBranchIsBehindOn = filesWhichBranchIsBehindOn?.map(file => file.filename) ?? [];
   core.info(`fileNamesWhichBranchIsBehindOn: ${fileNamesWhichBranchIsBehindOn}`);
