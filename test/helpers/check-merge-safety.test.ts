@@ -15,7 +15,6 @@ import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { checkMergeSafety } from '../../src/helpers/check-merge-safety';
 import { octokit } from '../../src/octokit';
-import * as core from '@actions/core';
 import { setCommitStatus } from '../../src/helpers/set-commit-status';
 import { paginateAllOpenPullRequests } from '../../src/utils/paginate-open-pull-requests';
 
@@ -61,8 +60,7 @@ describe('checkMergeSafety', () => {
         paths: 'packages/package-1',
         ...context.repo
       })
-    ).rejects.toThrowError();
-    expect(core.error).toHaveBeenCalledWith(
+    ).rejects.toThrowError(
       'This branch has one or more outdated projects which are being changed in this PR. Please update "some-branch-name" with the "main" branch.'
     );
   });
@@ -82,7 +80,6 @@ describe('checkMergeSafety', () => {
         ...context.repo
       })
     ).resolves.not.toThrowError();
-    expect(core.error).not.toHaveBeenCalled();
   });
 
   it('should throw error when branch is out of date on override filter paths, even when project paths are up to date', async () => {
@@ -103,8 +100,7 @@ describe('checkMergeSafety', () => {
         override_filter_paths: 'package.json\npackage-lock.json',
         ...context.repo
       })
-    ).rejects.toThrowError();
-    expect(core.error).toHaveBeenCalledWith(
+    ).rejects.toThrowError(
       'This branch has one or more outdated files that must be rebased on! Please update "some-branch-name" with the "main" branch.'
     );
   });
@@ -127,8 +123,7 @@ describe('checkMergeSafety', () => {
         override_filter_globs: 'packages/**',
         ...context.repo
       })
-    ).rejects.toThrowError();
-    expect(core.error).toHaveBeenCalledWith(
+    ).rejects.toThrowError(
       'This branch has one or more outdated files that must be rebased on! Please update "some-branch-name" with the "main" branch.'
     );
   });
@@ -151,7 +146,6 @@ describe('checkMergeSafety', () => {
         ...context.repo
       })
     ).resolves.not.toThrowError();
-    expect(core.error).not.toHaveBeenCalled();
   });
 
   it('should set merge safety commit status on all open prs', async () => {
@@ -180,12 +174,14 @@ describe('checkMergeSafety', () => {
       sha: '123',
       state: 'success',
       context: 'Merge Safety',
+      description: 'The PR from this branch is safe to merge!',
       ...context.repo
     });
     expect(setCommitStatus).toHaveBeenCalledWith({
       sha: '456',
       state: 'success',
       context: 'Merge Safety',
+      description: 'The PR from this branch is safe to merge!',
       ...context.repo
     });
   });

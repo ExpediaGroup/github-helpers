@@ -15,7 +15,6 @@ import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import micromatch from 'micromatch';
-import * as core from '@actions/core';
 import { PullRequest } from '../types/github';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
 import { map } from 'bluebird';
@@ -34,27 +33,31 @@ export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
   }
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
 
-  const isSafeToMerge = await prIsSafeToMerge(pullRequest, inputs);
+  const message = await getMergeSafetyMessage(pullRequest, inputs);
 
-  if (!isSafeToMerge) {
-    throw new Error();
+  if (message) {
+    throw new Error(message);
   }
 };
 
 const handlePushWorkflow = async (inputs: CheckMergeSafety) => {
   const pullRequests = await paginateAllOpenPullRequests();
   return map(pullRequests, async pullRequest => {
-    const isSafeToMerge = await prIsSafeToMerge(pullRequest as PullRequest, inputs);
+    const message = await getMergeSafetyMessage(pullRequest as PullRequest, inputs);
     await setCommitStatus({
       sha: pullRequest.head.sha,
-      state: isSafeToMerge ? 'success' : 'failure',
+      state: message ? 'failure' : 'success',
       context: 'Merge Safety',
+      description: message ?? 'The PR from this branch is safe to merge!',
       ...context.repo
     });
   });
 };
 
-const prIsSafeToMerge = async (pullRequest: PullRequest, { paths, override_filter_paths, override_filter_globs }: CheckMergeSafety) => {
+const getMergeSafetyMessage = async (
+  pullRequest: PullRequest,
+  { paths, override_filter_paths, override_filter_globs }: CheckMergeSafety
+) => {
   const {
     base: {
       repo: {
@@ -80,10 +83,7 @@ const prIsSafeToMerge = async (pullRequest: PullRequest, { paths, override_filte
     : fileNamesWhichBranchIsBehindOn.some(changedFile => override_filter_paths?.split(/[\n,]/).includes(changedFile));
 
   if (shouldOverrideSafetyCheck) {
-    core.error(
-      `This branch has one or more outdated files that must be rebased on! Please update "${ref}" with the "${default_branch}" branch.`
-    );
-    return false;
+    return `This branch has one or more outdated files that must be rebased on! Please update "${ref}" with the "${default_branch}" branch.`;
   }
 
   const {
@@ -99,12 +99,6 @@ const prIsSafeToMerge = async (pullRequest: PullRequest, { paths, override_filte
   );
 
   if (isUnsafeToMerge) {
-    core.error(
-      `This branch has one or more outdated projects which are being changed in this PR. Please update "${ref}" with the "${default_branch}" branch.`
-    );
-    return false;
+    return `This branch has one or more outdated projects which are being changed in this PR. Please update "${ref}" with the "${default_branch}" branch.`;
   }
-
-  core.info(`The PR from branch ${ref} is safe to merge!`);
-  return true;
 };
