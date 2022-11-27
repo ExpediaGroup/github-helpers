@@ -57,21 +57,24 @@ const handlePushWorkflow = async (inputs: CheckMergeSafety) => {
 const prIsSafeToMerge = async (pullRequest: PullRequest, { paths, override_filter_paths, override_filter_globs }: CheckMergeSafety) => {
   const {
     base: {
-      repo: { default_branch, owner }
+      repo: {
+        default_branch,
+        owner: { login: baseOwner }
+      }
     },
     head: {
       ref,
-      user: { login }
+      user: { login: username }
     }
   } = pullRequest;
   core.info(`context: ${context.repo.repo} ${context.repo.owner}`);
-  core.info(`owner: ${owner}`);
-  core.info(`login: ${login}`);
+  core.info(`baseOwner: ${baseOwner}`);
+  core.info(`username: ${username}`);
   const {
     data: { files: filesWhichBranchIsBehindOn }
   } = await octokit.repos.compareCommitsWithBasehead({
     ...context.repo,
-    basehead: `${login}:${ref}...${owner}:${default_branch}`
+    basehead: `${username}:${ref}...${baseOwner}:${default_branch}`
   });
   const fileNamesWhichBranchIsBehindOn = filesWhichBranchIsBehindOn?.map(file => file.filename) ?? [];
 
@@ -90,7 +93,7 @@ const prIsSafeToMerge = async (pullRequest: PullRequest, { paths, override_filte
     data: { files: changedFiles }
   } = await octokit.repos.compareCommitsWithBasehead({
     ...context.repo,
-    basehead: `${owner}:${default_branch}...${login}:${ref}`
+    basehead: `${baseOwner}:${default_branch}...${username}:${ref}`
   });
   const changedFileNames = changedFiles?.map(file => file.filename);
   const projectDirectories = paths?.split(/[\n,]/);
