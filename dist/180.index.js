@@ -66,7 +66,7 @@ const handlePushWorkflow = (inputs) => __awaiter(void 0, void 0, void 0, functio
     const pullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__/* .paginateAllOpenPullRequests */ .P)();
     return (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(pullRequests, (pullRequest) => __awaiter(void 0, void 0, void 0, function* () {
         const message = yield getMergeSafetyMessage(pullRequest, inputs);
-        yield (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_5__.setCommitStatus)(Object.assign({ sha: pullRequest.head.sha, state: message ? 'failure' : 'success', context: 'Merge Safety', description: message !== null && message !== void 0 ? message : 'The PR from this branch is safe to merge!' }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+        yield (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_5__.setCommitStatus)(Object.assign({ sha: pullRequest.head.sha, state: message ? 'failure' : 'success', context: 'Merge Safety', description: message !== null && message !== void 0 ? message : 'This branch is safe to merge!' }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     }));
 });
 const getMergeSafetyMessage = (pullRequest, { paths, override_filter_paths, override_filter_globs }) => __awaiter(void 0, void 0, void 0, function* () {
@@ -78,14 +78,14 @@ const getMergeSafetyMessage = (pullRequest, { paths, override_filter_paths, over
         ? micromatch__WEBPACK_IMPORTED_MODULE_2___default()(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n')).length > 0
         : fileNamesWhichBranchIsBehindOn.some(changedFile => override_filter_paths === null || override_filter_paths === void 0 ? void 0 : override_filter_paths.split(/[\n,]/).includes(changedFile));
     if (shouldOverrideSafetyCheck) {
-        return `This branch has one or more outdated files that must be rebased on! Please update "${ref}" with the "${default_branch}" branch.`;
+        return `This branch has one or more outdated global files. Please update with ${default_branch}.`;
     }
     const { data: { files: changedFiles } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${baseOwner}:${default_branch}...${username}:${ref}` }));
     const changedFileNames = changedFiles === null || changedFiles === void 0 ? void 0 : changedFiles.map(file => file.filename);
     const projectDirectories = paths === null || paths === void 0 ? void 0 : paths.split(/[\n,]/);
     const isUnsafeToMerge = projectDirectories === null || projectDirectories === void 0 ? void 0 : projectDirectories.some(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && (changedFileNames === null || changedFileNames === void 0 ? void 0 : changedFileNames.some(file => file.includes(dir))));
     if (isUnsafeToMerge) {
-        return `This branch has one or more outdated projects which are being changed in this PR. Please update "${ref}" with the "${default_branch}" branch.`;
+        return `This branch has one or more outdated projects. Please update with ${default_branch}.`;
     }
 });
 

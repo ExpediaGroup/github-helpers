@@ -48,7 +48,7 @@ const handlePushWorkflow = async (inputs: CheckMergeSafety) => {
       sha: pullRequest.head.sha,
       state: message ? 'failure' : 'success',
       context: 'Merge Safety',
-      description: message ?? 'The PR from this branch is safe to merge!',
+      description: message ?? 'This branch is safe to merge!',
       ...context.repo
     });
   });
@@ -83,7 +83,7 @@ const getMergeSafetyMessage = async (
     : fileNamesWhichBranchIsBehindOn.some(changedFile => override_filter_paths?.split(/[\n,]/).includes(changedFile));
 
   if (shouldOverrideSafetyCheck) {
-    return `This branch has one or more outdated files that must be rebased on! Please update "${ref}" with the "${default_branch}" branch.`;
+    return `This branch has one or more outdated global files. Please update with ${default_branch}.`;
   }
 
   const {
@@ -99,6 +99,6 @@ const getMergeSafetyMessage = async (
   );
 
   if (isUnsafeToMerge) {
-    return `This branch has one or more outdated projects which are being changed in this PR. Please update "${ref}" with the "${default_branch}" branch.`;
+    return `This branch has one or more outdated projects. Please update with ${default_branch}.`;
   }
 };

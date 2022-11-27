@@ -60,9 +60,7 @@ describe('checkMergeSafety', () => {
         paths: 'packages/package-1',
         ...context.repo
       })
-    ).rejects.toThrowError(
-      'This branch has one or more outdated projects which are being changed in this PR. Please update "some-branch-name" with the "main" branch.'
-    );
+    ).rejects.toThrowError('This branch has one or more outdated projects. Please update with main.');
   });
 
   it('should not throw error when branch is fully up to date', async () => {
@@ -100,9 +98,7 @@ describe('checkMergeSafety', () => {
         override_filter_paths: 'package.json\npackage-lock.json',
         ...context.repo
       })
-    ).rejects.toThrowError(
-      'This branch has one or more outdated files that must be rebased on! Please update "some-branch-name" with the "main" branch.'
-    );
+    ).rejects.toThrowError('This branch has one or more outdated global files. Please update with main.');
   });
 
   it('should throw error when branch is out of date on override glob paths, even when project paths are up to date', async () => {
@@ -123,9 +119,7 @@ describe('checkMergeSafety', () => {
         override_filter_globs: 'packages/**',
         ...context.repo
       })
-    ).rejects.toThrowError(
-      'This branch has one or more outdated files that must be rebased on! Please update "some-branch-name" with the "main" branch.'
-    );
+    ).rejects.toThrowError('This branch has one or more outdated global files. Please update with main.');
   });
 
   it('should not throw error when project paths are up to date', async () => {
@@ -174,14 +168,14 @@ describe('checkMergeSafety', () => {
       sha: '123',
       state: 'success',
       context: 'Merge Safety',
-      description: 'The PR from this branch is safe to merge!',
+      description: 'This branch is safe to merge!',
       ...context.repo
     });
     expect(setCommitStatus).toHaveBeenCalledWith({
       sha: '456',
       state: 'success',
       context: 'Merge Safety',
-      description: 'The PR from this branch is safe to merge!',
+      description: 'This branch is safe to merge!',
       ...context.repo
     });
   });
