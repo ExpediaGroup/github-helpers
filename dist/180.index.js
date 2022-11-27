@@ -74,8 +74,11 @@ const handlePushWorkflow = (inputs) => __awaiter(void 0, void 0, void 0, functio
 });
 const prIsSafeToMerge = (pullRequest, { paths, override_filter_paths, override_filter_globs }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const { base: { repo: { default_branch } }, head: { ref, user: { login: owner } } } = pullRequest;
-    const { data: { files: filesWhichBranchIsBehindOn } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { owner, basehead: `${ref}...${default_branch}` }));
+    const { base: { repo: { default_branch, owner } }, head: { ref, user: { login } } } = pullRequest;
+    _actions_core__WEBPACK_IMPORTED_MODULE_3__.info(`context: ${_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo} ${_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner}`);
+    _actions_core__WEBPACK_IMPORTED_MODULE_3__.info(`owner: ${owner}`);
+    _actions_core__WEBPACK_IMPORTED_MODULE_3__.info(`login: ${login}`);
+    const { data: { files: filesWhichBranchIsBehindOn } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${login}:${ref}...${owner}:${default_branch}` }));
     const fileNamesWhichBranchIsBehindOn = (_a = filesWhichBranchIsBehindOn === null || filesWhichBranchIsBehindOn === void 0 ? void 0 : filesWhichBranchIsBehindOn.map(file => file.filename)) !== null && _a !== void 0 ? _a : [];
     const shouldOverrideSafetyCheck = override_filter_globs
         ? micromatch__WEBPACK_IMPORTED_MODULE_2___default()(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n')).length > 0
@@ -84,7 +87,7 @@ const prIsSafeToMerge = (pullRequest, { paths, override_filter_paths, override_f
         _actions_core__WEBPACK_IMPORTED_MODULE_3__.error(`This branch has one or more outdated files that must be rebased on! Please update "${ref}" with the "${default_branch}" branch.`);
         return false;
     }
-    const { data: { files: changedFiles } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { owner, basehead: `${default_branch}...${ref}` }));
+    const { data: { files: changedFiles } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${owner}:${default_branch}...${login}:${ref}` }));
     const changedFileNames = changedFiles === null || changedFiles === void 0 ? void 0 : changedFiles.map(file => file.filename);
     const projectDirectories = paths === null || paths === void 0 ? void 0 : paths.split(/[\n,]/);
     const isUnsafeToMerge = projectDirectories === null || projectDirectories === void 0 ? void 0 : projectDirectories.some(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && (changedFileNames === null || changedFileNames === void 0 ? void 0 : changedFileNames.some(file => file.includes(dir))));
