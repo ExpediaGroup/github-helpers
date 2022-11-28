@@ -11,6 +11,9 @@ jobs:
     name: Merge Safety
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - uses: ./
         with:
           helper: check-merge-safety
