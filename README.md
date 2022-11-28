@@ -80,7 +80,7 @@ stale (specifically when files are changed that could impact the result of build
 
 The `check-merge-safety` helper offers a middle-ground between the "Strict" and "Loose" options, giving us the best of
 both worlds! Using this helper allows us to uncheck the "Require branches to be up to date before merging" checkbox
-while enforcing that PRs are incorporating the latest relevant changes into the CI process. This way, we can ensure that
+while forcing PRs to incorporate the latest relevant changes into the CI process. This way, we can ensure that
 only the _necessary_ iterations of PR check runs occur, allowing contributors touching unrelated parts of the codebase
 to ship code in quick succession!
 
