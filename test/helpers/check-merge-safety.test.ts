@@ -175,8 +175,23 @@ describe('checkMergeSafety', () => {
     // eslint-disable-next-line functional/immutable-data,@typescript-eslint/no-explicit-any
     context.issue.number = undefined as any; // couldn't figure out a way to mock out this issue number in a cleaner way ¯\_(ツ)_/¯
     (paginateAllOpenPullRequests as jest.Mock).mockResolvedValue([
-      { head: { sha: '123', user: { login: 'owner' } }, base: { repo: { default_branch: 'main', owner: { login: 'owner' } } } },
-      { head: { sha: '456', user: { login: 'owner' } }, base: { repo: { default_branch: 'main', owner: { login: 'owner' } } } }
+      {
+        head: { sha: '123', user: { login: 'owner' } },
+        base: { ref: 'main', repo: { default_branch: 'main', owner: { login: 'owner' } } }
+      },
+      {
+        head: { sha: '456', user: { login: 'owner' } },
+        base: { ref: 'main', repo: { default_branch: 'main', owner: { login: 'owner' } } }
+      },
+      {
+        head: { sha: '789', user: { login: 'owner' } },
+        base: { ref: 'some-other-branch', repo: { default_branch: 'main', owner: { login: 'owner' } } }
+      },
+      {
+        head: { sha: '000', user: { login: 'owner' } },
+        base: { ref: 'main', repo: { default_branch: 'main', owner: { login: 'owner' } } },
+        draft: true
+      }
     ]);
     await checkMergeSafety({
       paths: 'packages/package-1',
@@ -191,6 +206,20 @@ describe('checkMergeSafety', () => {
     });
     expect(setCommitStatus).toHaveBeenCalledWith({
       sha: '456',
+      state: 'success',
+      context: 'Merge Safety',
+      description: 'This branch is safe to merge!',
+      ...context.repo
+    });
+    expect(setCommitStatus).not.toHaveBeenCalledWith({
+      sha: '789',
+      state: 'success',
+      context: 'Merge Safety',
+      description: 'This branch is safe to merge!',
+      ...context.repo
+    });
+    expect(setCommitStatus).not.toHaveBeenCalledWith({
+      sha: '000',
       state: 'success',
       context: 'Merge Safety',
       description: 'This branch is safe to merge!',

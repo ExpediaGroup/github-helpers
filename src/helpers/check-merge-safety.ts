@@ -42,7 +42,8 @@ export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
 
 const handlePushWorkflow = async (inputs: CheckMergeSafety) => {
   const pullRequests = await paginateAllOpenPullRequests();
-  return map(pullRequests, async pullRequest => {
+  const filteredPullRequests = pullRequests.filter(({ base, draft }) => !draft && base.ref === base.repo.default_branch);
+  return map(filteredPullRequests, async pullRequest => {
     const message = await getMergeSafetyMessage(pullRequest as PullRequest, inputs);
     await setCommitStatus({
       sha: pullRequest.head.sha,
@@ -80,7 +81,9 @@ const getMergeSafetyMessage = async (
 
   const shouldOverrideSafetyCheck = override_filter_globs
     ? micromatch(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n')).length > 0
-    : fileNamesWhichBranchIsBehindOn.some(changedFile => override_filter_paths?.split(/[\n,]/).includes(changedFile));
+    : override_filter_paths
+    ? fileNamesWhichBranchIsBehindOn.some(changedFile => override_filter_paths.split(/[\n,]/).includes(changedFile))
+    : false;
 
   if (shouldOverrideSafetyCheck) {
     return `This branch has one or more outdated global files. Please update with ${default_branch}.`;

@@ -64,7 +64,8 @@ const checkMergeSafety = (inputs) => __awaiter(void 0, void 0, void 0, function*
 });
 const handlePushWorkflow = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
     const pullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__/* .paginateAllOpenPullRequests */ .P)();
-    return (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(pullRequests, (pullRequest) => __awaiter(void 0, void 0, void 0, function* () {
+    const filteredPullRequests = pullRequests.filter(({ base, draft }) => !draft && base.ref === base.repo.default_branch);
+    return (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(filteredPullRequests, (pullRequest) => __awaiter(void 0, void 0, void 0, function* () {
         const message = yield getMergeSafetyMessage(pullRequest, inputs);
         yield (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_5__.setCommitStatus)(Object.assign({ sha: pullRequest.head.sha, state: message ? 'failure' : 'success', context: 'Merge Safety', description: message !== null && message !== void 0 ? message : 'This branch is safe to merge!' }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     }));
@@ -76,7 +77,9 @@ const getMergeSafetyMessage = (pullRequest, { paths, override_filter_paths, over
     const fileNamesWhichBranchIsBehindOn = (_a = filesWhichBranchIsBehindOn === null || filesWhichBranchIsBehindOn === void 0 ? void 0 : filesWhichBranchIsBehindOn.map(file => file.filename)) !== null && _a !== void 0 ? _a : [];
     const shouldOverrideSafetyCheck = override_filter_globs
         ? micromatch__WEBPACK_IMPORTED_MODULE_2___default()(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n')).length > 0
-        : fileNamesWhichBranchIsBehindOn.some(changedFile => override_filter_paths === null || override_filter_paths === void 0 ? void 0 : override_filter_paths.split(/[\n,]/).includes(changedFile));
+        : override_filter_paths
+            ? fileNamesWhichBranchIsBehindOn.some(changedFile => override_filter_paths.split(/[\n,]/).includes(changedFile))
+            : false;
     if (shouldOverrideSafetyCheck) {
         return `This branch has one or more outdated global files. Please update with ${default_branch}.`;
     }
