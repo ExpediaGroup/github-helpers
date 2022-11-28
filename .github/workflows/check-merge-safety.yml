@@ -1,0 +1,20 @@
+name: Check Merge Safety
+
+on:
+  push:
+    branches: [ main ]
+  pull_request_target:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Merge Safety
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./
+        with:
+          helper: check-merge-safety
+          override_filter_paths: |
+            package.json
+            package-lock.json
+          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
