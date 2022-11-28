@@ -56,6 +56,46 @@ Each of the following helpers are defined in a file of the same name in `src/hel
   * Randomly assigns members of a github team to review a PR. If `login` is provided, it does nothing if that user is already part of the team
   * You can also pass a `slack_webhook_url` to notify the assignees that they are assigned to the PR!
 
+### [check-merge-safety](.github/workflows/check-merge-safety.yml)
+  * Checks if a PR branch needs to update with the default branch prior to merging (great for monorepos!)
+  * If this check succeeds for a PR, the PR is safe to merge right away!
+  * If this check fails for a PR, the PR must either merge in the default branch or rebase onto the default branch.
+
+"Merge safety" is defined as a PR's branch being up to date with all files that could impact the validity of the PR checks that run.
+This merge safety check is designed to be a smarter alternative to GitHub's "[require branches to be up to date before merging](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/about-protected-branches#require-status-checks-before-merging)"
+branch protection rule.
+
+The below table (taken from the above link) outlines the current branch protection rule settings GitHub provides:
+
+| Type of required status check | 	Setting                                                                       | 	Merge requirements                                                            | 	Considerations                                                                                                                                                                                                                                     |
+|-------------------------------|--------------------------------------------------------------------------------|--------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Strict                        | 	The Require branches to be up to date before merging checkbox is checked.     | 	The branch must be up to date with the base branch before merging.            | 	This is the default behavior for required status checks. More builds may be required, as you'll need to bring the head branch up to date after other collaborators merge pull requests to the protected base branch.                               |
+| Loose	                        | The Require branches to be up to date before merging checkbox is not checked.	 | The branch does not have to be up to date with the base branch before merging. | 	You'll have fewer required builds, as you won't need to bring the head branch up to date after other collaborators merge pull requests. Status checks may fail after you merge your branch if there are incompatible changes with the base branch. |
+
+The "Strict" option is too strict! It opens the door to needless additional PR check runs when a PR is updated
+with commits that changes files completely unrelated to the scope of the PR's change.
+
+The "Loose" option is too loose! There are times when a commit is made to the default branch that renders PR checks
+stale (specifically when files are changed that could impact the result of builds or tests).
+
+The `check-merge-safety` helper offers a middle-ground between the "Strict" and "Loose" options, giving us the best of
+both worlds! Using this helper allows us to uncheck the "Require branches to be up to date before merging" checkbox
+while forcing PRs to incorporate the latest relevant changes into the CI process. This way, we can ensure that
+only the _necessary_ iterations of PR check runs occur, allowing contributors touching unrelated parts of the codebase
+to ship code in quick succession!
+
+This workflow should be run on both `pull_request` and `push` events:
+* On `pull_request` events, this serves as a PR check
+* On `push` events, this effectively re-runs this PR check for all open PRs and sets a commit status according to the result
+
+The following parameters can be used for additional control over when it is safe to merge a PR:
+
+* `paths` defines file paths to all of a repo's co-dependent projects which could be affected by a PR
+  * This is useful for monorepos with multiple projects which are decoupled from each other but are affected by global dependencies.
+* `override_filter_paths` defines file paths that, if out of date on a PR, will prevent merge no matter what files the PR is changing
+    * example: `override_filter_paths: package.json,package-lock.json`
+* `override_filter_globs` defines glob patterns for `override_filter_paths`
+
 ### [create-pr](.github/workflows/create-pr.yml)
   * Opens a pull request
 
