@@ -42,47 +42,39 @@ jest.mock('@actions/github', () => ({
   }))
 }));
 
+const mockGithubRequests = (filesOutOfDate: string[], changedFilesOnPr: string[]) => {
+  (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
+    const changedFiles = basehead === 'username:some-branch-name...owner:main' ? filesOutOfDate : changedFilesOnPr;
+    return {
+      data: {
+        files: changedFiles.map(file => ({ filename: file }))
+      }
+    };
+  });
+};
+
+const allProjectPaths = ['packages/package-1/', 'packages/package-2/', 'packages/package-3/'].join('\n');
+
 describe('checkMergeSafety', () => {
-  it('should throw error when branch is out of date on the provided project path', async () => {
-    const filesOutOfDate = ['packages/some-package/src/file1.ts', 'packages/another-package/src/file.ts'];
-    (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockResolvedValue({
-      data: {
-        files: filesOutOfDate.map(file => ({ filename: file }))
-      }
-    });
+  it('should throw error when branch is out of date for a changed project', async () => {
+    const filesOutOfDate = ['packages/package-1/src/another-file.ts'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     await expect(
       checkMergeSafety({
-        paths: 'packages/some-package/',
+        paths: allProjectPaths,
         ...context.repo
       })
     ).rejects.toThrowError('This branch has one or more outdated projects. Please update with main.');
   });
 
-  it('should throw error when branch is out of date on a dependent project path', async () => {
-    const filesOutOfDate = ['packages/dependent-package/src/file.ts'];
-    (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockResolvedValue({
-      data: {
-        files: filesOutOfDate.map(file => ({ filename: file }))
-      }
-    });
+  it('should not throw error when branch is only out of date for an unchanged project', async () => {
+    const filesOutOfDate = ['packages/package-2/src/another-file.ts'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     await expect(
       checkMergeSafety({
-        paths: 'packages/some-package/\npackages/dependent-package/',
-        ...context.repo
-      })
-    ).rejects.toThrowError('This branch has one or more outdated projects. Please update with main.');
-  });
-
-  it('should not throw error when branch is only out of date on a non-dependent project path', async () => {
-    const filesOutOfDate = ['packages/other-package/src/file1.ts'];
-    (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockResolvedValue({
-      data: {
-        files: filesOutOfDate.map(file => ({ filename: file }))
-      }
-    });
-    await expect(
-      checkMergeSafety({
-        paths: 'packages/package-with-no-dependencies',
+        paths: allProjectPaths,
         ...context.repo
       })
     ).resolves.not.toThrowError();
@@ -90,58 +82,46 @@ describe('checkMergeSafety', () => {
 
   it('should not throw error when branch is fully up to date', async () => {
     const filesOutOfDate: string[] = [];
-    (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockResolvedValue({
-      data: {
-        files: filesOutOfDate
-      }
-    });
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     await expect(
       checkMergeSafety({
-        paths: 'packages/any-package',
+        paths: allProjectPaths,
         ...context.repo
       })
     ).resolves.not.toThrowError();
   });
 
-  it('should throw error when branch is out of date on override filter paths, even when project paths are up to date', async () => {
-    const filesOutOfDate = ['packages/other-package/src/file1.ts', 'package.json'];
-    (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockResolvedValue({
-      data: {
-        files: filesOutOfDate.map(file => ({ filename: file }))
-      }
-    });
+  it('should throw error when branch is out of date on override filter paths, even when changed project paths are up to date', async () => {
+    const filesOutOfDate = ['packages/package-2/src/file1.ts', 'package.json'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     await expect(
       checkMergeSafety({
-        paths: 'packages/some-package',
+        paths: allProjectPaths,
         override_filter_paths: 'package.json\npackage-lock.json',
         ...context.repo
       })
     ).rejects.toThrowError('This branch has one or more outdated global files. Please update with main.');
   });
 
-  it('should throw error when branch is out of date on override glob paths, even when project paths are up to date', async () => {
-    const filesOutOfDate = ['packages/other-package/src/file1.ts', 'README.md'];
-    (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockResolvedValue({
-      data: {
-        files: filesOutOfDate.map(file => ({ filename: file }))
-      }
-    });
+  it('should throw error when branch is out of date on override glob paths, even when changed project paths are up to date', async () => {
+    const filesOutOfDate = ['packages/package-2/src/file1.ts', 'README.md'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     await expect(
       checkMergeSafety({
         paths: 'packages/some-package',
-        override_filter_globs: 'packages/**',
+        override_filter_globs: '**.md',
         ...context.repo
       })
     ).rejects.toThrowError('This branch has one or more outdated global files. Please update with main.');
   });
 
   it('should set merge safety commit status on all open prs', async () => {
-    const filesOutOfDate = ['packages/other-package/src/file1.ts', 'packages/another-package/src/file2.ts'];
-    (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockResolvedValue({
-      data: {
-        files: filesOutOfDate.map(file => ({ filename: file }))
-      }
-    });
+    const filesOutOfDate = ['packages/package-2/src/file1.ts', 'packages/another-package/src/file2.ts'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     // eslint-disable-next-line functional/immutable-data,@typescript-eslint/no-explicit-any
     context.issue.number = undefined as any; // couldn't figure out a way to mock out this issue number in a cleaner way ¯\_(ツ)_/¯
     (paginateAllOpenPullRequests as jest.Mock).mockResolvedValue([
