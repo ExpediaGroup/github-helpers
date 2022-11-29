@@ -19,6 +19,7 @@ import { PullRequest } from '../types/github';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
 import { map } from 'bluebird';
 import { setCommitStatus } from './set-commit-status';
+import * as core from '@actions/core';
 
 export class CheckMergeSafety extends HelperInputs {
   paths?: string;
@@ -38,6 +39,8 @@ export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
   if (message) {
     throw new Error(message);
   }
+
+  core.info('This branch is safe to merge!');
 };
 
 const handlePushWorkflow = async (inputs: CheckMergeSafety) => {
