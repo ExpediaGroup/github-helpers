@@ -121,6 +121,19 @@ describe('checkMergeSafety', () => {
     ).rejects.toThrowError('This branch has one or more outdated global files. Please update with main.');
   });
 
+  it('should throw error when branch is out of date on override glob paths using negation glob pattern', async () => {
+    const filesOutOfDate = ['README.md'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
+    await expect(
+      checkMergeSafety({
+        paths: allProjectPaths,
+        override_filter_globs: '!packages/**',
+        ...context.repo
+      })
+    ).rejects.toThrowError('This branch has one or more outdated global files. Please update with main.');
+  });
+
   it('should set merge safety commit status on all open prs', async () => {
     const filesOutOfDate = ['packages/package-2/src/file1.ts', 'packages/package-3/src/file2.ts'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
