@@ -19,6 +19,9 @@ import { setCommitStatus } from '../../src/helpers/set-commit-status';
 import { paginateAllOpenPullRequests } from '../../src/utils/paginate-open-pull-requests';
 
 const branchName = 'some-branch-name';
+const username = 'username';
+const baseOwner = 'owner';
+const defaultBranch = 'main';
 
 jest.mock('../../src/utils/paginate-open-pull-requests');
 jest.mock('../../src/helpers/set-commit-status');
@@ -33,8 +36,8 @@ jest.mock('@actions/github', () => ({
       pulls: {
         get: jest.fn(() => ({
           data: {
-            base: { repo: { default_branch: 'main', owner: { login: 'owner' } } },
-            head: { ref: branchName, user: { login: 'username' } }
+            base: { repo: { default_branch: defaultBranch, owner: { login: baseOwner } } },
+            head: { ref: branchName, user: { login: username } }
           }
         }))
       }
@@ -44,7 +47,7 @@ jest.mock('@actions/github', () => ({
 
 const mockGithubRequests = (filesOutOfDate: string[], changedFilesOnPr: string[]) => {
   (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-    const changedFiles = basehead === 'username:some-branch-name...owner:main' ? filesOutOfDate : changedFilesOnPr;
+    const changedFiles = basehead === `${username}:${branchName}...${baseOwner}:${defaultBranch}` ? filesOutOfDate : changedFilesOnPr;
     return {
       data: {
         files: changedFiles.map(file => ({ filename: file }))
@@ -111,7 +114,7 @@ describe('checkMergeSafety', () => {
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     await expect(
       checkMergeSafety({
-        paths: 'packages/some-package',
+        paths: allProjectPaths,
         override_filter_globs: '**.md',
         ...context.repo
       })
@@ -119,32 +122,32 @@ describe('checkMergeSafety', () => {
   });
 
   it('should set merge safety commit status on all open prs', async () => {
-    const filesOutOfDate = ['packages/package-2/src/file1.ts', 'packages/another-package/src/file2.ts'];
+    const filesOutOfDate = ['packages/package-2/src/file1.ts', 'packages/package-3/src/file2.ts'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     // eslint-disable-next-line functional/immutable-data,@typescript-eslint/no-explicit-any
     context.issue.number = undefined as any; // couldn't figure out a way to mock out this issue number in a cleaner way ¯\_(ツ)_/¯
     (paginateAllOpenPullRequests as jest.Mock).mockResolvedValue([
       {
-        head: { sha: '123', user: { login: 'owner' } },
-        base: { ref: 'main', repo: { default_branch: 'main', owner: { login: 'owner' } } }
+        head: { sha: '123', ref: branchName, user: { login: username } },
+        base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }
       },
       {
-        head: { sha: '456', user: { login: 'owner' } },
-        base: { ref: 'main', repo: { default_branch: 'main', owner: { login: 'owner' } } }
+        head: { sha: '456', ref: branchName, user: { login: username } },
+        base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }
       },
       {
-        head: { sha: '789', user: { login: 'owner' } },
-        base: { ref: 'some-other-branch', repo: { default_branch: 'main', owner: { login: 'owner' } } }
+        head: { sha: '789', ref: branchName, user: { login: username } },
+        base: { ref: 'some-other-branch', repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }
       },
       {
-        head: { sha: '000', user: { login: 'owner' } },
-        base: { ref: 'main', repo: { default_branch: 'main', owner: { login: 'owner' } } },
+        head: { sha: '000', ref: branchName, user: { login: username } },
+        base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } },
         draft: true
       }
     ]);
     await checkMergeSafety({
-      paths: 'packages/some-package',
+      paths: allProjectPaths,
       ...context.repo
     });
     expect(setCommitStatus).toHaveBeenCalledWith({
