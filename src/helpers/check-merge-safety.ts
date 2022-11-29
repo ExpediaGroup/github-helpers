@@ -98,12 +98,11 @@ const getMergeSafetyMessage = async (
   const changedFileNames = changedFiles?.map(file => file.filename);
   const projectDirectories = paths?.split(/[\n,]/);
 
-  // unsafe to merge if the PR branch is behind on a project that it is changing
-  const isUnsafeToMerge = projectDirectories?.some(
+  const prIsBehindOnAProjectItIsChanging = projectDirectories?.some(
     dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && changedFileNames?.some(file => file.includes(dir))
   );
 
-  if (isUnsafeToMerge) {
+  if (prIsBehindOnAProjectItIsChanging) {
     return `This branch has one or more outdated projects. Please update with ${default_branch}.`;
   }
 };

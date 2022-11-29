@@ -86,9 +86,8 @@ const getMergeSafetyMessage = (pullRequest, { paths, override_filter_paths, over
     const { data: { files: changedFiles } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${baseOwner}:${default_branch}...${username}:${ref}` }));
     const changedFileNames = changedFiles === null || changedFiles === void 0 ? void 0 : changedFiles.map(file => file.filename);
     const projectDirectories = paths === null || paths === void 0 ? void 0 : paths.split(/[\n,]/);
-    // unsafe to merge if the PR branch is behind on a project that it is changing
-    const isUnsafeToMerge = projectDirectories === null || projectDirectories === void 0 ? void 0 : projectDirectories.some(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && (changedFileNames === null || changedFileNames === void 0 ? void 0 : changedFileNames.some(file => file.includes(dir))));
-    if (isUnsafeToMerge) {
+    const prIsBehindOnAProjectItIsChanging = projectDirectories === null || projectDirectories === void 0 ? void 0 : projectDirectories.some(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && (changedFileNames === null || changedFileNames === void 0 ? void 0 : changedFileNames.some(file => file.includes(dir))));
+    if (prIsBehindOnAProjectItIsChanging) {
         return `This branch has one or more outdated projects. Please update with ${default_branch}.`;
     }
 });
