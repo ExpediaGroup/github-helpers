@@ -89,10 +89,14 @@ class MultisigsCollector {
                 component,
                 multisigs: this.multisigs
                     .filter(item => item.relations.some(r => r.type === 'apiProvidedBy' && r.targetRef === componentRef.targetRef))
-                    .map(ms => ({
-                    entity: ms,
-                    signers: this.collectSigners(ms)
-                }))
+                    .map(ms => {
+                    var _a;
+                    return ({
+                        entity: ms,
+                        signers: this.collectSigners(ms),
+                        multisig: (_a = ms.spec) === null || _a === void 0 ? void 0 : _a.multisig
+                    });
+                })
             };
         })
             .sort((a, b) => a.component.metadata.name.localeCompare(b.component.metadata.name));
