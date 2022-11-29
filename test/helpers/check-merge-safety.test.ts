@@ -58,8 +58,8 @@ describe('checkMergeSafety', () => {
     ).rejects.toThrowError('This branch has one or more outdated projects. Please update with main.');
   });
 
-  it('should throw error when branch is out of date on a co-dependent project path', async () => {
-    const filesOutOfDate = ['packages/co-dependent-package-2/src/file.ts'];
+  it('should throw error when branch is out of date on a dependent project path', async () => {
+    const filesOutOfDate = ['packages/dependent-package/src/file.ts'];
     (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockResolvedValue({
       data: {
         files: filesOutOfDate.map(file => ({ filename: file }))
@@ -67,7 +67,7 @@ describe('checkMergeSafety', () => {
     });
     await expect(
       checkMergeSafety({
-        paths: 'packages/co-dependent-package-1/\npackages/co-dependent-package-2/',
+        paths: 'packages/some-package/\npackages/dependent-package/',
         ...context.repo
       })
     ).rejects.toThrowError('This branch has one or more outdated projects. Please update with main.');
