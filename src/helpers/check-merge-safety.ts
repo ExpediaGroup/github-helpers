@@ -89,17 +89,8 @@ const getMergeSafetyMessage = async (
     return `This branch has one or more outdated global files. Please update with ${default_branch}.`;
   }
 
-  const {
-    data: { files: changedFiles }
-  } = await octokit.repos.compareCommitsWithBasehead({
-    ...context.repo,
-    basehead: `${baseOwner}:${default_branch}...${username}:${ref}`
-  });
-  const changedFileNames = changedFiles?.map(file => file.filename);
   const projectDirectories = paths?.split(/[\n,]/);
-  const isUnsafeToMerge = projectDirectories?.some(
-    dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && changedFileNames?.some(file => file.includes(dir))
-  );
+  const isUnsafeToMerge = projectDirectories?.some(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)));
 
   if (isUnsafeToMerge) {
     return `This branch has one or more outdated projects. Please update with ${default_branch}.`;
