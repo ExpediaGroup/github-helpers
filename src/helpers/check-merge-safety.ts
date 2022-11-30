@@ -19,6 +19,7 @@ import { PullRequest } from '../types/github';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
 import { map } from 'bluebird';
 import { setCommitStatus } from './set-commit-status';
+import * as core from '@actions/core';
 
 export class CheckMergeSafety extends HelperInputs {
   paths?: string;
@@ -38,6 +39,8 @@ export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
   if (message) {
     throw new Error(message);
   }
+
+  core.info('This branch is safe to merge!');
 };
 
 const handlePushWorkflow = async (inputs: CheckMergeSafety) => {
@@ -79,13 +82,14 @@ const getMergeSafetyMessage = async (
   });
   const fileNamesWhichBranchIsBehindOn = filesWhichBranchIsBehindOn?.map(file => file.filename) ?? [];
 
-  const shouldOverrideSafetyCheck = override_filter_globs
-    ? micromatch(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n')).length > 0
+  const globalFilesOutdatedOnBranch = override_filter_globs
+    ? micromatch(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n'))
     : override_filter_paths
-    ? fileNamesWhichBranchIsBehindOn.some(changedFile => override_filter_paths.split(/[\n,]/).includes(changedFile))
-    : false;
+    ? fileNamesWhichBranchIsBehindOn.filter(changedFile => override_filter_paths.split(/[\n,]/).includes(changedFile))
+    : [];
 
-  if (shouldOverrideSafetyCheck) {
+  if (globalFilesOutdatedOnBranch.length) {
+    core.error(buildErrorMessage(globalFilesOutdatedOnBranch, 'global files'));
     return `This branch has one or more outdated global files. Please update with ${default_branch}.`;
   }
 
@@ -96,12 +100,21 @@ const getMergeSafetyMessage = async (
     basehead: `${baseOwner}:${default_branch}...${username}:${ref}`
   });
   const changedFileNames = changedFiles?.map(file => file.filename);
-  const projectDirectories = paths?.split(/[\n,]/);
-  const isUnsafeToMerge = projectDirectories?.some(
+  const allProjectDirectories = paths?.split(/[\n,]/);
+
+  const changedProjectsOutdatedOnBranch = allProjectDirectories?.filter(
     dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && changedFileNames?.some(file => file.includes(dir))
   );
 
-  if (isUnsafeToMerge) {
+  if (changedProjectsOutdatedOnBranch?.length) {
+    core.error(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects'));
     return `This branch has one or more outdated projects. Please update with ${default_branch}.`;
   }
 };
+
+const buildErrorMessage = (paths: string[], pathType: 'projects' | 'global files') =>
+  `
+The following ${pathType} are outdated on this branch:
+
+${paths.map(path => `* ${path}`).join('\n')}
+`;
