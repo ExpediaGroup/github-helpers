@@ -89,7 +89,7 @@ const getMergeSafetyMessage = async (
     : [];
 
   if (globalFilesOutdatedOnBranch.length) {
-    core.error(buildError(globalFilesOutdatedOnBranch, default_branch));
+    core.error(buildErrorMessage(globalFilesOutdatedOnBranch));
     return `This branch has one or more outdated global files. Please update with ${default_branch}.`;
   }
 
@@ -107,16 +107,14 @@ const getMergeSafetyMessage = async (
   );
 
   if (changedProjectsOutdatedOnBranch?.length) {
-    core.error(buildError(changedProjectsOutdatedOnBranch, default_branch));
+    core.error(buildErrorMessage(changedProjectsOutdatedOnBranch));
     return `This branch has one or more outdated projects. Please update with ${default_branch}.`;
   }
 };
 
-const buildError = (paths: string[], defaultBranch: string) =>
+const buildErrorMessage = (paths: string[]) =>
   `
 The following projects are outdated on this branch:
 
 ${paths.map(path => `* ${path}`).join('\n')}
-
-Please update with ${defaultBranch}.
 `;
