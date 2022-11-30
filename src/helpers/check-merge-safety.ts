@@ -100,9 +100,9 @@ const getMergeSafetyMessage = async (
     basehead: `${baseOwner}:${default_branch}...${username}:${ref}`
   });
   const changedFileNames = changedFiles?.map(file => file.filename);
-  const changedProjectDirectories = paths?.split(/[\n,]/);
+  const allProjectDirectories = paths?.split(/[\n,]/);
 
-  const changedProjectsOutdatedOnBranch = changedProjectDirectories?.filter(
+  const changedProjectsOutdatedOnBranch = allProjectDirectories?.filter(
     dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && changedFileNames?.some(file => file.includes(dir))
   );
 
