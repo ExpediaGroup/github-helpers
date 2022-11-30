@@ -11,7 +11,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "CheckMergeSafety": () => (/* binding */ CheckMergeSafety),
 /* harmony export */   "checkMergeSafety": () => (/* binding */ checkMergeSafety)
 /* harmony export */ });
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(3476);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(3476);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
@@ -21,6 +21,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(8710);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _set_commit_status__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(2209);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(2186);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_6__);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,7 +51,8 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-class CheckMergeSafety extends _types_generated__WEBPACK_IMPORTED_MODULE_6__/* .HelperInputs */ .s {
+
+class CheckMergeSafety extends _types_generated__WEBPACK_IMPORTED_MODULE_7__/* .HelperInputs */ .s {
 }
 const checkMergeSafety = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
     const isPrWorkflow = Boolean(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number);
@@ -61,6 +64,7 @@ const checkMergeSafety = (inputs) => __awaiter(void 0, void 0, void 0, function*
     if (message) {
         throw new Error(message);
     }
+    _actions_core__WEBPACK_IMPORTED_MODULE_6__.info('This branch is safe to merge!');
 });
 const handlePushWorkflow = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
     const pullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__/* .paginateAllOpenPullRequests */ .P)();
@@ -75,22 +79,29 @@ const getMergeSafetyMessage = (pullRequest, { paths, override_filter_paths, over
     const { base: { repo: { default_branch, owner: { login: baseOwner } } }, head: { ref, user: { login: username } } } = pullRequest;
     const { data: { files: filesWhichBranchIsBehindOn } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${username}:${ref}...${baseOwner}:${default_branch}` }));
     const fileNamesWhichBranchIsBehindOn = (_a = filesWhichBranchIsBehindOn === null || filesWhichBranchIsBehindOn === void 0 ? void 0 : filesWhichBranchIsBehindOn.map(file => file.filename)) !== null && _a !== void 0 ? _a : [];
-    const shouldOverrideSafetyCheck = override_filter_globs
-        ? micromatch__WEBPACK_IMPORTED_MODULE_2___default()(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n')).length > 0
+    const globalFilesOutdatedOnBranch = override_filter_globs
+        ? micromatch__WEBPACK_IMPORTED_MODULE_2___default()(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n'))
         : override_filter_paths
-            ? fileNamesWhichBranchIsBehindOn.some(changedFile => override_filter_paths.split(/[\n,]/).includes(changedFile))
-            : false;
-    if (shouldOverrideSafetyCheck) {
+            ? fileNamesWhichBranchIsBehindOn.filter(changedFile => override_filter_paths.split(/[\n,]/).includes(changedFile))
+            : [];
+    if (globalFilesOutdatedOnBranch.length) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_6__.error(buildErrorMessage(globalFilesOutdatedOnBranch, 'global files'));
         return `This branch has one or more outdated global files. Please update with ${default_branch}.`;
     }
     const { data: { files: changedFiles } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${baseOwner}:${default_branch}...${username}:${ref}` }));
     const changedFileNames = changedFiles === null || changedFiles === void 0 ? void 0 : changedFiles.map(file => file.filename);
-    const projectDirectories = paths === null || paths === void 0 ? void 0 : paths.split(/[\n,]/);
-    const isUnsafeToMerge = projectDirectories === null || projectDirectories === void 0 ? void 0 : projectDirectories.some(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && (changedFileNames === null || changedFileNames === void 0 ? void 0 : changedFileNames.some(file => file.includes(dir))));
-    if (isUnsafeToMerge) {
+    const allProjectDirectories = paths === null || paths === void 0 ? void 0 : paths.split(/[\n,]/);
+    const changedProjectsOutdatedOnBranch = allProjectDirectories === null || allProjectDirectories === void 0 ? void 0 : allProjectDirectories.filter(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && (changedFileNames === null || changedFileNames === void 0 ? void 0 : changedFileNames.some(file => file.includes(dir))));
+    if (changedProjectsOutdatedOnBranch === null || changedProjectsOutdatedOnBranch === void 0 ? void 0 : changedProjectsOutdatedOnBranch.length) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_6__.error(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects'));
         return `This branch has one or more outdated projects. Please update with ${default_branch}.`;
     }
 });
+const buildErrorMessage = (paths, pathType) => `
+The following ${pathType} are outdated on this branch:
+
+${paths.map(path => `* ${path}`).join('\n')}
+`;
 
 
 /***/ }),

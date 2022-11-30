@@ -19,6 +19,9 @@ import { setCommitStatus } from '../../src/helpers/set-commit-status';
 import { paginateAllOpenPullRequests } from '../../src/utils/paginate-open-pull-requests';
 
 const branchName = 'some-branch-name';
+const username = 'username';
+const baseOwner = 'owner';
+const defaultBranch = 'main';
 
 jest.mock('../../src/utils/paginate-open-pull-requests');
 jest.mock('../../src/helpers/set-commit-status');
@@ -33,8 +36,8 @@ jest.mock('@actions/github', () => ({
       pulls: {
         get: jest.fn(() => ({
           data: {
-            base: { repo: { default_branch: 'main', owner: { login: 'owner' } } },
-            head: { ref: branchName, user: { login: 'username' } }
+            base: { repo: { default_branch: defaultBranch, owner: { login: baseOwner } } },
+            head: { ref: branchName, user: { login: username } }
           }
         }))
       }
@@ -42,159 +45,122 @@ jest.mock('@actions/github', () => ({
   }))
 }));
 
+const mockGithubRequests = (filesOutOfDate: string[], changedFilesOnPr: string[]) => {
+  (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
+    const changedFiles = basehead === `${username}:${branchName}...${baseOwner}:${defaultBranch}` ? filesOutOfDate : changedFilesOnPr;
+    return {
+      data: {
+        files: changedFiles.map(file => ({ filename: file }))
+      }
+    };
+  });
+};
+
+const allProjectPaths = ['packages/package-1/', 'packages/package-2/', 'packages/package-3/'].join('\n');
+
 describe('checkMergeSafety', () => {
-  it('should throw error when branch is out of date on the provided project path', async () => {
-    (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-      const changedFiles =
-        basehead === 'some-branch-name...main'
-          ? ['packages/package-1/src/file1.ts', 'packages/package-2/src/file.ts']
-          : ['README.md', 'packages/package-1/src/file2.ts'];
-      return {
-        data: {
-          files: changedFiles.map(file => ({ filename: file }))
-        }
-      };
-    });
+  it('should throw error when branch is out of date for a changed project', async () => {
+    const filesOutOfDate = ['packages/package-1/src/another-file.ts'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     await expect(
       checkMergeSafety({
-        paths: 'packages/package-1',
+        paths: allProjectPaths,
         ...context.repo
       })
     ).rejects.toThrowError('This branch has one or more outdated projects. Please update with main.');
   });
 
-  it('should throw error when branch is out of date on a co-dependent project path', async () => {
-    (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-      const changedFiles =
-        basehead === 'some-branch-name...main' ? ['packages/package-2/src/file.ts'] : ['README.md', 'packages/package-1/src/file.ts'];
-      return {
-        data: {
-          files: changedFiles.map(file => ({ filename: file }))
-        }
-      };
-    });
+  it('should not throw error when branch is only out of date for an unchanged project', async () => {
+    const filesOutOfDate = ['packages/package-2/src/another-file.ts'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     await expect(
       checkMergeSafety({
-        paths: 'packages/package-1\npackages/package-2',
-        ...context.repo
-      })
-    ).rejects.toThrowError('This branch has one or more outdated projects. Please update with main.');
-  });
-
-  it('should not throw error when branch is fully up to date', async () => {
-    (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-      const changedFiles = basehead === 'username:some-branch-name...owner:main' ? [] : ['README.md', 'packages/package-1/src/file2.ts'];
-      return {
-        data: {
-          files: changedFiles.map(file => ({ filename: file }))
-        }
-      };
-    });
-    await expect(
-      checkMergeSafety({
-        paths: 'packages/package-1',
+        paths: allProjectPaths,
         ...context.repo
       })
     ).resolves.not.toThrowError();
   });
 
-  it('should throw error when branch is out of date on override filter paths, even when project paths are up to date', async () => {
-    (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-      const changedFiles =
-        basehead === 'username:some-branch-name...owner:main'
-          ? ['packages/package-1/src/file1.ts', 'package.json']
-          : ['README.md', 'packages/package-3/src/file3.ts'];
-      return {
-        data: {
-          files: changedFiles.map(file => ({ filename: file }))
-        }
-      };
-    });
+  it('should not throw error when branch is fully up to date', async () => {
+    const filesOutOfDate: string[] = [];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     await expect(
       checkMergeSafety({
-        paths: 'packages/package-1',
+        paths: allProjectPaths,
+        ...context.repo
+      })
+    ).resolves.not.toThrowError();
+  });
+
+  it('should throw error when branch is out of date on override filter paths, even when changed project paths are up to date', async () => {
+    const filesOutOfDate = ['packages/package-2/src/file1.ts', 'package.json'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
+    await expect(
+      checkMergeSafety({
+        paths: allProjectPaths,
         override_filter_paths: 'package.json\npackage-lock.json',
         ...context.repo
       })
     ).rejects.toThrowError('This branch has one or more outdated global files. Please update with main.');
   });
 
-  it('should throw error when branch is out of date on override glob paths, even when project paths are up to date', async () => {
-    (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-      const changedFiles =
-        basehead === 'username:some-branch-name...owner:main'
-          ? ['packages/package-1/src/file1.ts', 'package.json']
-          : ['README.md', 'packages/package-3/src/file3.ts'];
-      return {
-        data: {
-          files: changedFiles.map(file => ({ filename: file }))
-        }
-      };
-    });
+  it('should throw error when branch is out of date on override glob paths, even when changed project paths are up to date', async () => {
+    const filesOutOfDate = ['packages/package-2/src/file1.ts', 'README.md'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     await expect(
       checkMergeSafety({
-        paths: 'packages/package-1',
-        override_filter_globs: 'packages/**',
+        paths: allProjectPaths,
+        override_filter_globs: '**.md',
         ...context.repo
       })
     ).rejects.toThrowError('This branch has one or more outdated global files. Please update with main.');
   });
 
-  it('should not throw error when project paths are up to date', async () => {
-    (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-      const changedFiles =
-        basehead === 'username:some-branch-name...owner:main'
-          ? ['packages/package-1/src/file1.ts', 'packages/package-2/src/file2.ts']
-          : ['README.md', 'packages/package-3/src/file3.ts'];
-      return {
-        data: {
-          files: changedFiles.map(file => ({ filename: file }))
-        }
-      };
-    });
+  it('should throw error when branch is out of date on override glob paths using negation glob pattern', async () => {
+    const filesOutOfDate = ['README.md'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     await expect(
       checkMergeSafety({
-        paths: 'packages/package-1',
+        paths: allProjectPaths,
+        override_filter_globs: '!packages/**',
         ...context.repo
       })
-    ).resolves.not.toThrowError();
+    ).rejects.toThrowError('This branch has one or more outdated global files. Please update with main.');
   });
 
   it('should set merge safety commit status on all open prs', async () => {
-    (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-      const changedFiles =
-        basehead === 'username:some-branch-name...owner:main'
-          ? ['packages/package-1/src/file1.ts', 'packages/package-2/src/file2.ts']
-          : ['README.md', 'packages/package-3/src/file3.ts'];
-      return {
-        data: {
-          files: changedFiles.map(file => ({ filename: file }))
-        }
-      };
-    });
+    const filesOutOfDate = ['packages/package-2/src/file1.ts', 'packages/package-3/src/file2.ts'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     // eslint-disable-next-line functional/immutable-data,@typescript-eslint/no-explicit-any
     context.issue.number = undefined as any; // couldn't figure out a way to mock out this issue number in a cleaner way ¯\_(ツ)_/¯
     (paginateAllOpenPullRequests as jest.Mock).mockResolvedValue([
       {
-        head: { sha: '123', user: { login: 'owner' } },
-        base: { ref: 'main', repo: { default_branch: 'main', owner: { login: 'owner' } } }
+        head: { sha: '123', ref: branchName, user: { login: username } },
+        base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }
       },
       {
-        head: { sha: '456', user: { login: 'owner' } },
-        base: { ref: 'main', repo: { default_branch: 'main', owner: { login: 'owner' } } }
+        head: { sha: '456', ref: branchName, user: { login: username } },
+        base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }
       },
       {
-        head: { sha: '789', user: { login: 'owner' } },
-        base: { ref: 'some-other-branch', repo: { default_branch: 'main', owner: { login: 'owner' } } }
+        head: { sha: '789', ref: branchName, user: { login: username } },
+        base: { ref: 'some-other-branch', repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }
       },
       {
-        head: { sha: '000', user: { login: 'owner' } },
-        base: { ref: 'main', repo: { default_branch: 'main', owner: { login: 'owner' } } },
+        head: { sha: '000', ref: branchName, user: { login: username } },
+        base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } },
         draft: true
       }
     ]);
     await checkMergeSafety({
-      paths: 'packages/package-1',
+      paths: allProjectPaths,
       ...context.repo
     });
     expect(setCommitStatus).toHaveBeenCalledWith({
