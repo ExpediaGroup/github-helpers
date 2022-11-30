@@ -97,7 +97,8 @@ const getMergeSafetyMessage = (pullRequest, { paths, override_filter_paths, over
         return `This branch has one or more outdated projects. Please update with ${default_branch}.`;
     }
 });
-const buildError = (paths, defaultBranch) => `The following projects are outdated on this branch:
+const buildError = (paths, defaultBranch) => `
+The following projects are outdated on this branch:
 
 ${paths.map(path => `* ${path}`).join('\n')}
 

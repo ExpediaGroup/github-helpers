@@ -113,7 +113,8 @@ const getMergeSafetyMessage = async (
 };
 
 const buildError = (paths: string[], defaultBranch: string) =>
-  `The following projects are outdated on this branch:
+  `
+The following projects are outdated on this branch:
 
 ${paths.map(path => `* ${path}`).join('\n')}
 
