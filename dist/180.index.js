@@ -79,20 +79,32 @@ const getMergeSafetyMessage = (pullRequest, { paths, override_filter_paths, over
     const { base: { repo: { default_branch, owner: { login: baseOwner } } }, head: { ref, user: { login: username } } } = pullRequest;
     const { data: { files: filesWhichBranchIsBehindOn } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${username}:${ref}...${baseOwner}:${default_branch}` }));
     const fileNamesWhichBranchIsBehindOn = (_a = filesWhichBranchIsBehindOn === null || filesWhichBranchIsBehindOn === void 0 ? void 0 : filesWhichBranchIsBehindOn.map(file => file.filename)) !== null && _a !== void 0 ? _a : [];
-    const shouldOverrideSafetyCheck = override_filter_globs
-        ? micromatch__WEBPACK_IMPORTED_MODULE_2___default()(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n')).length > 0
+    const globalFilesOutdatedOnBranch = override_filter_globs
+        ? micromatch__WEBPACK_IMPORTED_MODULE_2___default()(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n'))
         : override_filter_paths
-            ? fileNamesWhichBranchIsBehindOn.some(changedFile => override_filter_paths.split(/[\n,]/).includes(changedFile))
-            : false;
-    if (shouldOverrideSafetyCheck) {
-        return `This branch has one or more outdated global files. Please update with ${default_branch}.`;
+            ? fileNamesWhichBranchIsBehindOn.filter(changedFile => override_filter_paths.split(/[\n,]/).includes(changedFile))
+            : [];
+    if (globalFilesOutdatedOnBranch.length) {
+        return `
+The following global files are outdated on this branch:
+
+${globalFilesOutdatedOnBranch.map(item => `* ${item}`).join('\n')}
+
+Please update with ${default_branch}.
+`;
     }
     const { data: { files: changedFiles } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${baseOwner}:${default_branch}...${username}:${ref}` }));
     const changedFileNames = changedFiles === null || changedFiles === void 0 ? void 0 : changedFiles.map(file => file.filename);
-    const projectDirectories = paths === null || paths === void 0 ? void 0 : paths.split(/[\n,]/);
-    const prIsBehindOnAProjectItIsChanging = projectDirectories === null || projectDirectories === void 0 ? void 0 : projectDirectories.some(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && (changedFileNames === null || changedFileNames === void 0 ? void 0 : changedFileNames.some(file => file.includes(dir))));
-    if (prIsBehindOnAProjectItIsChanging) {
-        return `This branch has one or more outdated projects. Please update with ${default_branch}.`;
+    const changedProjectDirectories = paths === null || paths === void 0 ? void 0 : paths.split(/[\n,]/);
+    const changedProjectsOutdatedOnBranch = changedProjectDirectories === null || changedProjectDirectories === void 0 ? void 0 : changedProjectDirectories.filter(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && (changedFileNames === null || changedFileNames === void 0 ? void 0 : changedFileNames.some(file => file.includes(dir))));
+    if (changedProjectsOutdatedOnBranch === null || changedProjectsOutdatedOnBranch === void 0 ? void 0 : changedProjectsOutdatedOnBranch.length) {
+        return `
+The following projects are outdated on this branch:
+
+${changedProjectsOutdatedOnBranch.map(item => `* ${item}`).join('\n')}
+
+Please update with ${default_branch}.
+`;
     }
 });
 

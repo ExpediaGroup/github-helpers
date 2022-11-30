@@ -68,7 +68,13 @@ describe('checkMergeSafety', () => {
         paths: allProjectPaths,
         ...context.repo
       })
-    ).rejects.toThrowError('This branch has one or more outdated projects. Please update with main.');
+    ).rejects.toThrowError(`
+The following projects are outdated on this branch:
+
+* packages/package-1/
+
+Please update with main.
+`);
   });
 
   it('should not throw error when branch is only out of date for an unchanged project', async () => {
@@ -96,7 +102,7 @@ describe('checkMergeSafety', () => {
   });
 
   it('should throw error when branch is out of date on override filter paths, even when changed project paths are up to date', async () => {
-    const filesOutOfDate = ['packages/package-2/src/file1.ts', 'package.json'];
+    const filesOutOfDate = ['packages/package-2/src/file1.ts', 'package.json', 'package-lock.json'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     await expect(
@@ -105,7 +111,14 @@ describe('checkMergeSafety', () => {
         override_filter_paths: 'package.json\npackage-lock.json',
         ...context.repo
       })
-    ).rejects.toThrowError('This branch has one or more outdated global files. Please update with main.');
+    ).rejects.toThrowError(`
+The following global files are outdated on this branch:
+
+* package.json
+* package-lock.json
+
+Please update with main.
+`);
   });
 
   it('should throw error when branch is out of date on override glob paths, even when changed project paths are up to date', async () => {
@@ -118,7 +131,13 @@ describe('checkMergeSafety', () => {
         override_filter_globs: '**.md',
         ...context.repo
       })
-    ).rejects.toThrowError('This branch has one or more outdated global files. Please update with main.');
+    ).rejects.toThrowError(`
+The following global files are outdated on this branch:
+
+* README.md
+
+Please update with main.
+`);
   });
 
   it('should throw error when branch is out of date on override glob paths using negation glob pattern', async () => {
@@ -131,7 +150,13 @@ describe('checkMergeSafety', () => {
         override_filter_globs: '!packages/**',
         ...context.repo
       })
-    ).rejects.toThrowError('This branch has one or more outdated global files. Please update with main.');
+    ).rejects.toThrowError(`
+The following global files are outdated on this branch:
+
+* README.md
+
+Please update with main.
+`);
   });
 
   it('should set merge safety commit status on all open prs', async () => {

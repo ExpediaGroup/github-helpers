@@ -82,14 +82,20 @@ const getMergeSafetyMessage = async (
   });
   const fileNamesWhichBranchIsBehindOn = filesWhichBranchIsBehindOn?.map(file => file.filename) ?? [];
 
-  const shouldOverrideSafetyCheck = override_filter_globs
-    ? micromatch(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n')).length > 0
+  const globalFilesOutdatedOnBranch = override_filter_globs
+    ? micromatch(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n'))
     : override_filter_paths
-    ? fileNamesWhichBranchIsBehindOn.some(changedFile => override_filter_paths.split(/[\n,]/).includes(changedFile))
-    : false;
+    ? fileNamesWhichBranchIsBehindOn.filter(changedFile => override_filter_paths.split(/[\n,]/).includes(changedFile))
+    : [];
 
-  if (shouldOverrideSafetyCheck) {
-    return `This branch has one or more outdated global files. Please update with ${default_branch}.`;
+  if (globalFilesOutdatedOnBranch.length) {
+    return `
+The following global files are outdated on this branch:
+
+${globalFilesOutdatedOnBranch.map(item => `* ${item}`).join('\n')}
+
+Please update with ${default_branch}.
+`;
   }
 
   const {
@@ -99,13 +105,19 @@ const getMergeSafetyMessage = async (
     basehead: `${baseOwner}:${default_branch}...${username}:${ref}`
   });
   const changedFileNames = changedFiles?.map(file => file.filename);
-  const projectDirectories = paths?.split(/[\n,]/);
+  const changedProjectDirectories = paths?.split(/[\n,]/);
 
-  const prIsBehindOnAProjectItIsChanging = projectDirectories?.some(
+  const changedProjectsOutdatedOnBranch = changedProjectDirectories?.filter(
     dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && changedFileNames?.some(file => file.includes(dir))
   );
 
-  if (prIsBehindOnAProjectItIsChanging) {
-    return `This branch has one or more outdated projects. Please update with ${default_branch}.`;
+  if (changedProjectsOutdatedOnBranch?.length) {
+    return `
+The following projects are outdated on this branch:
+
+${changedProjectsOutdatedOnBranch.map(item => `* ${item}`).join('\n')}
+
+Please update with ${default_branch}.
+`;
   }
 };
