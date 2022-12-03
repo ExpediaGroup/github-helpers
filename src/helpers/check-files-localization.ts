@@ -15,11 +15,11 @@ import { HelperInputs } from '../types/generated';
 import { getChangedFiles } from './get-changed-files';
 
 export class CheckFilesLocalization extends HelperInputs {
-    namingConvention = 'src/main/resources/messages_[a-z]{2}_[A-Z]{2}.properties');
+  namingConvention?: string;
 }
 
-export const checkFilesLocalization = async ({ namingConvention }: CheckFilesLocalization) => {
-  (await getChangedFiles())
+export const checkFilesLocalization = async ({ namingConvention = 'src/main/resources/messages_[a-z]{2}_[A-Z]{2}.properties' }: CheckFilesLocalization) => {
+  return (await getChangedFiles())
     .split(',')
-    .map(fileName => fileName.match(namingConvention);
+    .map(fileName => fileName.match(namingConvention))?.some(localizationFile => localizationFile !== null);
 };
