@@ -71,4 +71,10 @@ describe('checkFilesLocalization', () => {
 
     expect(result).toEqual(true);
   });
+
+  it('should return false if files returned from getChangedFiles do not contain the properties file', async () => {
+    const result = await checkFilesLocalization({ namingConvention: 'a/fake/path/messages_[a-z]{2}_[A-Z]{2}.properties' });
+
+    expect(result).toEqual(false);
+  });
 });
