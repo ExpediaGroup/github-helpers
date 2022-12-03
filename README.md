@@ -40,6 +40,9 @@ with:
 
 ## Available Helpers
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
+### [check-files-for-regex](.github/workflows/check-files-for-regex.yml)
+  * Checks a PR for modified files matching the provided regular expression
+
 ### [add-labels](.github/workflows/add-labels.yml)
   * Adds one or more labels to a PR
 
@@ -60,6 +63,9 @@ Each of the following helpers are defined in a file of the same name in `src/hel
   * Creates a Project card into your GitHub Project repository by providing a `project_name` and `project_destination_column_name` in which the card should be created.
   * If `note` is provided, it will add that information into the card. If it is not provided, it will use the PR information details to populate it.
   * Useful when opening a pull request and want to track its information details into a GitHub Project.
+
+### [check-files-for-regex](.github/workflows/check-files-for-regex.yml)
+  * Checks a PR for a given regular expression
 
 ### [check-pr-title](.github/workflows/check-pr-title.yml)
   * Checks whether PR title matches a certain regular expression

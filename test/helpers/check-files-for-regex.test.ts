@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import { Mocktokit } from '../types';
-import { checkFilesLocalization } from '../../src/helpers/check-files-localization';
+import { checkFilesRegex } from '../../src/helpers/check-files-for-regex';
 import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
@@ -65,15 +65,15 @@ const mock_data2 = [
   data: page === 1 ? mock_data1 : page === 2 ? mock_data2 : []
 }));
 
-describe('checkFilesLocalization', () => {
+describe('checkFilesRegex', () => {
   it('should return true if files returned from getChangedFiles contains the properties file', async () => {
-    const result = await checkFilesLocalization({});
+    const result = await checkFilesRegex({ namingConvention: 'src/main/resources/messages_[a-z]{2}_[A-Z]{2}.properties' });
 
     expect(result).toEqual(true);
   });
 
   it('should return false if files returned from getChangedFiles do not contain the properties file', async () => {
-    const result = await checkFilesLocalization({ namingConvention: 'a/fake/path/messages_[a-z]{2}_[A-Z]{2}.properties' });
+    const result = await checkFilesRegex({ namingConvention: 'a/fake/path/arandotex.test' });
 
     expect(result).toEqual(false);
   });

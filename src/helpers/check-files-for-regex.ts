@@ -14,12 +14,13 @@ limitations under the License.
 import { HelperInputs } from '../types/generated';
 import { getChangedFiles } from './get-changed-files';
 
-export class CheckFilesLocalization extends HelperInputs {
+export class CheckFilesRegex extends HelperInputs {
   namingConvention?: string;
 }
 
-export const checkFilesLocalization = async ({ namingConvention = 'src/main/resources/messages_[a-z]{2}_[A-Z]{2}.properties' }: CheckFilesLocalization) => {
+export const checkFilesRegex = async ({ namingConvention = '' }) => {
   return (await getChangedFiles())
     .split(',')
-    .map(fileName => fileName.match(namingConvention))?.some(localizationFile => localizationFile !== null);
+    .map(fileName => fileName.match(namingConvention))
+    ?.some(localizationFile => localizationFile !== null);
 };
