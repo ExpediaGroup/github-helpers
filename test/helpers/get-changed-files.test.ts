@@ -24,7 +24,7 @@ jest.mock('@actions/github', () => ({
 const mock_data1 = [
   {
     sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
-    filename: 'file/path/1/file1.txt',
+    filename: 'src/main/resources/messages_en_US.properties',
     status: 'added',
     additions: 103,
     deletions: 21,
@@ -67,8 +67,20 @@ const mock_data2 = [
 
 describe('getChangedFiles', () => {
   it('should return true if one of the file paths match the file paths that octokit returns', async () => {
-    const result = await getChangedFiles();
+    const result = await getChangedFiles({});
 
     expect(result).toEqual(`${mock_data1[0].filename},${mock_data1[1].filename},${mock_data2[0].filename}`);
+  });
+
+  it('should return true if files returned from getChangedFiles contains the properties file', async () => {
+    const result = await getChangedFiles({ glob_filter_paths: 'src/main/resources/messages_[a-z]{2}_[A-Z]{2}.properties' });
+
+    expect(result).toEqual(`${mock_data1[0].filename}`);
+  });
+
+  it('should return false if files returned from getChangedFiles do not contain the properties file', async () => {
+    const result = await getChangedFiles({ glob_filter_paths: 'a/fake/path/arandotex.test' });
+
+    expect(result).toEqual('');
   });
 });

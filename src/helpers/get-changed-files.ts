@@ -11,10 +11,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { getChangedFilepaths } from '../utils/get-changed-filepaths';
 
-export const getChangedFiles = async () => {
-  const filePaths = await getChangedFilepaths(context.issue.number);
-  return filePaths.join(',');
-};
+export class checkChangedFiles extends HelperInputs {
+  glob_filter_paths?: string;
+}
+
+export const getChangedFiles = async ({ glob_filter_paths }: checkChangedFiles) =>
+  (await getChangedFilepaths(context.issue.number))
+    .map(fileName => fileName.match(glob_filter_paths || '[\\s\\S]*'))
+    ?.filter(localizationFile => localizationFile !== null)
+    .join(',');

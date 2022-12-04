@@ -104,9 +104,6 @@ The following parameters can be used for additional control over when it is safe
   * If `note` is provided, it will add that information into the card. If it is not provided, it will use the PR information details to populate it.
   * Useful when opening a pull request and want to track its information details into a GitHub Project.
 
-### [check-files-for-regex](.github/workflows/check-files-for-regex.yml)
-  * Checks a PR for modified files matching the provided regular expression
-
 ### [check-pr-title](.github/workflows/check-pr-title.yml)
   * Checks whether PR title matches a certain regular expression
 
@@ -142,6 +139,7 @@ Additionally, the following parameters can be used for additional control over t
 
 ### [get-changed-files](.github/workflows/get-changed-files.yml)
   * Returns a comma-separated list of changed files for a PR
+  * Include the regular expression parameter 'glob_filter_paths' to add a filter, it will return any filepath that matches.
 
 ### [initiate-deployment](.github/workflows/deployments.yml#L12)
   * Creates a new in-progress Github "deployment" for a commit. More information on Github deployment events can be found [here](https://docs.github.com/en/rest/reference/repos#deployments)
