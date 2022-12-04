@@ -21,7 +21,6 @@ jobs:
         id: changed
         with:
           helper: get-changed-files
-          namingConvention: 'src/main/resources/messages_[a-z]{2}_[A-Z]{2}.properties'
           github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
 
       - run: echo "Changed files are ${{ steps.changed.outputs.output }}"
