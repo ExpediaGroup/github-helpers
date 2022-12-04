@@ -40,9 +40,6 @@ with:
 
 ## Available Helpers
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
-### [check-files-for-regex](.github/workflows/check-files-for-regex.yml)
-  * Checks a PR for modified files matching the provided regular expression
-
 ### [add-labels](.github/workflows/add-labels.yml)
   * Adds one or more labels to a PR
 
@@ -108,7 +105,7 @@ The following parameters can be used for additional control over when it is safe
   * Useful when opening a pull request and want to track its information details into a GitHub Project.
 
 ### [check-files-for-regex](.github/workflows/check-files-for-regex.yml)
-  * Checks a PR for a given regular expression
+  * Checks a PR for modified files matching the provided regular expression
 
 ### [check-pr-title](.github/workflows/check-pr-title.yml)
   * Checks whether PR title matches a certain regular expression
