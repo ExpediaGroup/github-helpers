@@ -86,7 +86,8 @@ class MultisigsCollector {
             .filter(item => item.relations!.some(r => r.type === 'apiProvidedBy' && r.targetRef === componentRef.targetRef))
             .map(ms => ({
               entity: ms,
-              signers: this.collectSigners(ms)
+              signers: this.collectSigners(ms),
+              multisig: ms.spec?.multisig
             }))
         };
       })

@@ -29,6 +29,12 @@ periodically refreshed from the on-chain data. If you have any questions about t
                 {{entity.metadata.description}}
             {{/if~}}
 
+            ##### Policy
+            {{#if multisig.policy}}
+                - Owners: {{multisig.policy.owners}}
+                - Threshold: {{multisig.policy.threshold}}
+            {{/if}}
+
             ##### Signers
 
             {{#each signers~}}
