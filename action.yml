@@ -79,9 +79,6 @@ inputs:
   number_of_assignees:
     description: 'Number of people to assign a PR to'
     required: false
-  namingConvention:
-    description: 'Regular Expression for searching modified files'
-    required: false
   globs:
     description: 'A list of file paths (newline/comma separated) using glob syntax'
     required: false
