@@ -23,7 +23,7 @@
   "devDependencies": {
     "@octokit/types": "8.0.0",
     "@types/axios": "0.14.0",
-    "@types/bluebird": "3.5.37",
+    "@types/bluebird": "3.5.38",
     "@types/jest": "28.1.7",
     "@types/js-yaml": "4.0.5",
     "@types/lodash.camelcase": "4.3.7",
