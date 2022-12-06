@@ -72,14 +72,14 @@ describe('getChangedFiles', () => {
     expect(result).toEqual(`${mock_data1[0].filename},${mock_data1[1].filename},${mock_data2[0].filename}`);
   });
 
-  it('should return true if files returned from getChangedFiles contains the properties file', async () => {
-    const result = await getChangedFiles({ glob_filter_paths: 'file/path/1/file[0-9].txt' });
+  it('should return true if files returned from getChangedFiles matches the provided regex pattern', async () => {
+    const result = await getChangedFiles({ pattern: 'file/path/1/file[0-9].txt' });
 
     expect(result).toEqual(`${mock_data1[0].filename}`);
   });
 
-  it('should return false if files returned from getChangedFiles do not contain the properties file', async () => {
-    const result = await getChangedFiles({ glob_filter_paths: 'a/fake/path/arandotex.test' });
+  it('should return false if files returned from getChangedFiles does not match the provided regex pattern', async () => {
+    const result = await getChangedFiles({ pattern: 'a/fake/path/arandotex.test' });
 
     expect(result).toEqual('');
   });

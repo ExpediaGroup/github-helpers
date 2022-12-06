@@ -16,11 +16,11 @@ import { context } from '@actions/github';
 import { getChangedFilepaths } from '../utils/get-changed-filepaths';
 
 export class GetChangedFiles extends HelperInputs {
-  glob_filter_paths?: string;
+  pattern?: string;
 }
 
-export const getChangedFiles = async ({ glob_filter_paths }: GetChangedFiles) => {
+export const getChangedFiles = async ({ pattern }: GetChangedFiles) => {
   const filePaths = await getChangedFilepaths(context.issue.number);
-  const filteredFilePaths = glob_filter_paths ? filePaths.filter(fileName => fileName.match(glob_filter_paths)) : filePaths;
+  const filteredFilePaths = pattern ? filePaths.filter(fileName => fileName.match(pattern)) : filePaths;
   return filteredFilePaths.join(',');
 };

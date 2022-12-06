@@ -139,7 +139,7 @@ Additionally, the following parameters can be used for additional control over t
 
 ### [get-changed-files](.github/workflows/get-changed-files.yml)
   * Returns a comma-separated list of changed files for a PR
-  * Include the regular expression parameter 'glob_filter_paths' to add a filter, it will return any filepath that matches.
+  * Include the regular expression parameter 'pattern' to add a filter, it will return any filepath that matches.
 
 ### [initiate-deployment](.github/workflows/deployments.yml#L12)
   * Creates a new in-progress Github "deployment" for a commit. More information on Github deployment events can be found [here](https://docs.github.com/en/rest/reference/repos#deployments)
