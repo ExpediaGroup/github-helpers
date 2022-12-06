@@ -21,8 +21,6 @@ export class GetChangedFiles extends HelperInputs {
 
 export const getChangedFiles = async ({ glob_filter_paths }: GetChangedFiles) => {
   const filePaths = await getChangedFilepaths(context.issue.number);
-  const filteredFilePaths = glob_filter_paths
-    ? filePaths.map(fileName => fileName.match(glob_filter_paths))?.filter(localizationFile => localizationFile !== null)
-    : filePaths;
+  const filteredFilePaths = glob_filter_paths ? filePaths.filter(fileName => fileName.match(glob_filter_paths)) : filePaths;
   return filteredFilePaths.join(',');
 };
