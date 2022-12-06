@@ -53,7 +53,7 @@ jobs:
       - name: Compare the expected and actual dist/ directories
         run: |
           if [[ $(git status --porcelain) ]]; then
-            echo "Detected uncommitted changes after build. See status below:"
+            echo "Detected uncommitted changes after build. Please run npm run package and commit the changes!"
             git status
             git config user.name "${{ github.actor }}"
             git config user.email "${{ github.actor }}@users.noreply.github.com"
