@@ -11,10 +11,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { getChangedFilepaths } from '../utils/get-changed-filepaths';
 
-export const getChangedFiles = async () => {
+export class GetChangedFiles extends HelperInputs {
+  pattern?: string;
+}
+
+export const getChangedFiles = async ({ pattern }: GetChangedFiles) => {
   const filePaths = await getChangedFilepaths(context.issue.number);
-  return filePaths.join(',');
+  const filteredFilePaths = pattern ? filePaths.filter(fileName => fileName.match(pattern)) : filePaths;
+  return filteredFilePaths.join(',');
 };
