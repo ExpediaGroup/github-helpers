@@ -5,6 +5,8 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+    paths:
+      - 'src/helpers/check-merge-safety.ts'
 
 jobs:
   test:
