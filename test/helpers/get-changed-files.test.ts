@@ -24,7 +24,7 @@ jest.mock('@actions/github', () => ({
 const mock_data1 = [
   {
     sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
-    filename: 'src/main/resources/messages_en_US.properties',
+    filename: 'file/path/1/file1.txt',
     status: 'added',
     additions: 103,
     deletions: 21,
@@ -73,7 +73,7 @@ describe('getChangedFiles', () => {
   });
 
   it('should return true if files returned from getChangedFiles contains the properties file', async () => {
-    const result = await getChangedFiles({ glob_filter_paths: 'src/main/resources/messages_[a-z]{2}_[A-Z]{2}.properties' });
+    const result = await getChangedFiles({ glob_filter_paths: 'file/path/1/file[0-9].txt' });
 
     expect(result).toEqual(`${mock_data1[0].filename}`);
   });

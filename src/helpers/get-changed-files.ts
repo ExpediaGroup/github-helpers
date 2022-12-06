@@ -15,11 +15,11 @@ import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { getChangedFilepaths } from '../utils/get-changed-filepaths';
 
-export class checkChangedFiles extends HelperInputs {
+export class GetChangedFiles extends HelperInputs {
   glob_filter_paths?: string;
 }
 
-export const getChangedFiles = async ({ glob_filter_paths }: checkChangedFiles) =>
+export const getChangedFiles = async ({ glob_filter_paths }: GetChangedFiles) =>
   (await getChangedFilepaths(context.issue.number))
     .map(fileName => fileName.match(glob_filter_paths || '[\\s\\S]*'))
     ?.filter(localizationFile => localizationFile !== null)
