@@ -20,30 +20,33 @@ periodically refreshed from the on-chain data. If you have any questions about t
 
         {{#if component.metadata.description~}}
             {{component.metadata.description}}
-        {{/if~}}
+        {{/if}}
 
         {{#each multisigs~}}
             #### [{{entity.metadata.title}}]({{backstageLink entity}})
 
             {{#if entity.metadata.description~}}
                 {{entity.metadata.description}}
-            {{/if~}}
-
-            ##### Policy
-            {{#if multisig.policy}}
-                - Owners: {{multisig.policy.owners}}
-                - Threshold: {{multisig.policy.threshold}}
             {{/if}}
 
-            ##### Signers
+            {{#with entity.spec.multisig~}}
+                ##### Policy Threshold: {{policy.threshold}}/{{policy.owners}}
+            {{/with}}
 
-            {{#each signers~}}
-                - [{{owner.metadata.name}}]({{backstageLink owner}}) ([{{signer.metadata.name}}]({{backstageLink signer}}))
-            {{/each}}
+            {{#with entity.spec.multisig~}}
+                ##### Version: {{version}}
+            {{/with}}
+
+            {{#if signers~}}
+                ##### Signers
+
+                {{#each signers~}}
+                    - [{{owner.metadata.name}}]({{backstageLink owner}}) ([{{signer.metadata.name}}]({{backstageLink signer}}))
+                {{/each}}
+            {{/if}}
 
             {{#if entity.metadata.links~}}
                 ##### External Links
-
                 {{#each entity.metadata.links~}}
                     - [{{title}}]({{url}})
                 {{/each}}
