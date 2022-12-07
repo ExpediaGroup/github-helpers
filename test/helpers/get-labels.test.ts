@@ -18,7 +18,7 @@ import { octokit } from '../../src/octokit';
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({ rest: { issues: { addLabels: jest.fn() } } }))
+  getOctokit: jest.fn(() => ({ rest: { issues: { listLabelsOnIssue: jest.fn() } } }))
 }));
 
 describe('getLabels', () => {
@@ -26,8 +26,8 @@ describe('getLabels', () => {
     getLabels();
   });
 
-  it('should call addLabels with correct params', () => {
-    expect(octokit.issues.addLabels).toHaveBeenCalledWith({
+  it('should call listLabelsOnIssue with correct params', () => {
+    expect(octokit.issues.listLabelsOnIssue).toHaveBeenCalledWith({
       issue_number: 123,
       ...context.repo
     });
