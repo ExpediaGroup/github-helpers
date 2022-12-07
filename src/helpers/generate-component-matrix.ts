@@ -61,7 +61,7 @@ function findRoot(fileName: string, rootFile: string) {
   return dirs.length > 0 ? dirs.join('/') : '.';
 }
 
-export const CONTRACT_TYPES = ['contract', 'contract-library'];
+export const CONTRACT_TYPES = ['contract', 'contract-library', 'contract-backend'];
 
 export const generateComponentMatrix = async ({ backstage_url }: GenerateComponentMatrix) => {
   const entities = await getBackstageEntities({ backstage_url });

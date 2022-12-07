@@ -193,7 +193,7 @@ function findRoot(fileName, rootFile) {
     }
     return dirs.length > 0 ? dirs.join('/') : '.';
 }
-const CONTRACT_TYPES = ['contract', 'contract-library'];
+const CONTRACT_TYPES = ['contract', 'contract-library', 'contract-backend'];
 const generateComponentMatrix = ({ backstage_url }) => generate_component_matrix_awaiter(void 0, void 0, void 0, function* () {
     const entities = yield (0,get_backstage_entities/* getBackstageEntities */.g)({ backstage_url });
     const repoUrl = `${process.env.GITHUB_SERVER_URL}/${github.context.repo.owner}/${github.context.repo.repo}`;
