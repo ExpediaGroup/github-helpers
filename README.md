@@ -40,6 +40,9 @@ with:
 
 ## Available Helpers
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
+### [get-labels](.github/workflows/get-labels.yml)
+  * Gets labels from a specific PR
+
 ### [add-labels](.github/workflows/add-labels.yml)
   * Adds one or more labels to a PR
 
