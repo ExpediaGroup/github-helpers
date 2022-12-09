@@ -24,6 +24,18 @@ export class GenerateComponentMatrix extends HelperInputs {
   backstage_url?: string;
 }
 
+function securityTier(entity: Entity) {
+  if (!entity.metadata.annotations) return -1;
+  const tier = entity.metadata.annotations['aurora.dev/security-tier'];
+  if (!tier) return -1;
+  return parseInt(tier, 10);
+}
+
+function allowTestsToFail(entity: Entity) {
+  const tier = securityTier(entity);
+  return tier < 0 || !!entity.metadata.tags?.includes('disabled-security-checks');
+}
+
 function sourceLocation(entity: Entity) {
   if (!entity.metadata.annotations) return;
   const loc = entity.metadata.annotations['backstage.io/source-location'];
@@ -39,26 +51,37 @@ function sourceLocationDir(entity: Entity) {
  * Finds the first parent directory that contains rootFile.
  * If the rootFile is not found, returns ./
  */
-function findRoot(fileName: string, rootFile: string) {
-  const dirs = fileName.split('/');
-  core.info(`searching ${rootFile} for ${fileName}`);
+function findRoot(dirName: string, rootFile: string) {
+  const dirs = dirName.split('/');
+  core.info(`searching ${rootFile} for ${dirName}`);
 
   for (;;) {
     const testFile = path.join('./', ...dirs, rootFile);
     core.info(`checking: ${testFile}`);
     if (fs.existsSync(testFile)) {
-      core.info(`Found ${rootFile} root for ${fileName}:`);
+      core.info(`Found ${rootFile} root for ${dirName}:`);
       core.info(dirs.join('/'));
       break;
     }
     if (dirs.length === 0) {
-      core.info(`Unable to find ${rootFile} for ${fileName}, using the default`);
+      core.info(`Unable to find ${rootFile} for ${dirName}, using the default`);
       break;
     }
     // eslint-disable-next-line functional/immutable-data
     dirs.pop();
   }
   return dirs.length > 0 ? dirs.join('/') : '.';
+}
+
+function hasInRoot(dirName: string, rootFile: string) {
+  const dirs = dirName.split('/');
+  const testFile = path.join('./', ...dirs, rootFile);
+  if (fs.existsSync(testFile)) {
+    core.info(`Found ${rootFile} in ${dirName}:`);
+    return true;
+  }
+  core.info(`Unable to find ${rootFile} in ${dirName}`);
+  return false;
 }
 
 export const generateComponentMatrix = async ({ backstage_url }: GenerateComponentMatrix) => {
@@ -94,11 +117,11 @@ export const generateComponentMatrix = async ({ backstage_url }: GenerateCompone
 
   const matrix = {
     include: componentItems.map(item => {
-      const isSolidity = ['ethereum', 'aurora'].some(tag => item.metadata.tags!.includes(tag));
-      const isRust = item.metadata.tags!.includes('near');
+      const path = sourceLocationDir(item)!;
 
-      const goRoot = findRoot(sourceLocationDir(item)!, 'go.mod');
-      const isGo = !!goRoot;
+      const isSolidity = ['ethereum', 'aurora'].some(tag => item.metadata.tags!.includes(tag));
+      const isRust = item.metadata.tags!.includes('near') || hasInRoot(path, 'Cargo.toml');
+      const isGo = hasInRoot(path, 'go.mod');
 
       const runSlither = isSolidity && (forceAll || changedComponents.includes(item));
       const runClippy = isRust && (forceAll || changedComponents.includes(item));
@@ -107,9 +130,11 @@ export const generateComponentMatrix = async ({ backstage_url }: GenerateCompone
       return {
         name: item.metadata.name,
         tags: item.metadata.tags,
-        path: sourceLocationDir(item),
-        nodeRoot: findRoot(sourceLocationDir(item)!, 'package.json'),
-        goRoot,
+        path,
+        securityTier: securityTier(item),
+        allowTestsToFail: allowTestsToFail(item),
+
+        nodeRoot: findRoot(path, 'package.json'),
         runSlither,
         runClippy,
         runGoStaticChecks
