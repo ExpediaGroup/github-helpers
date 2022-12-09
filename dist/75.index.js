@@ -11,7 +11,6 @@ __webpack_require__.r(__webpack_exports__);
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
-  "CONTRACT_TYPES": () => (/* binding */ CONTRACT_TYPES),
   "GenerateComponentMatrix": () => (/* binding */ GenerateComponentMatrix),
   "generateComponentMatrix": () => (/* binding */ generateComponentMatrix)
 });
@@ -193,40 +192,44 @@ function findRoot(fileName, rootFile) {
     }
     return dirs.length > 0 ? dirs.join('/') : '.';
 }
-const CONTRACT_TYPES = ['contract', 'contract-library', 'contract-backend'];
 const generateComponentMatrix = ({ backstage_url }) => generate_component_matrix_awaiter(void 0, void 0, void 0, function* () {
     const entities = yield (0,get_backstage_entities/* getBackstageEntities */.g)({ backstage_url });
     const repoUrl = `${process.env.GITHUB_SERVER_URL}/${github.context.repo.owner}/${github.context.repo.repo}`;
-    const contractItems = entities
+    const componentItems = entities
         .filter(item => { var _a; return (_a = sourceLocation(item)) === null || _a === void 0 ? void 0 : _a.startsWith(`url:${repoUrl}/`); })
-        .filter(item => { var _a; return ((_a = item.spec) === null || _a === void 0 ? void 0 : _a.type) && CONTRACT_TYPES.includes(item.spec.type); });
-    const contractItemNames = contractItems.map(item => item.metadata.name);
-    core.info(`Contract entities in this repo: ${contractItems.length} (${contractItemNames})`);
+        .filter(item => item.kind === 'Component');
+    const componentItemNames = componentItems.map(item => item.metadata.name);
+    core.info(`Component entities in this repo: ${componentItems.length} (${componentItemNames})`);
     const eventName = process.env.GITHUB_EVENT_NAME;
     const changedFiles = yield getChangedFiles(eventName);
     core.info(`Changed files count: ${changedFiles.length}`);
-    const changedContracts = contractItems.filter(contractItem => changedFiles.some(file => {
-        const loc = sourceLocation(contractItem);
+    const changedComponents = componentItems.filter(item => changedFiles.some(file => {
+        const loc = sourceLocation(item);
         return file.file.startsWith(loc);
     }));
-    core.info(`Changed contracts: ${Object.keys(changedContracts).length} ({${Object.keys(changedContracts)}})`);
+    core.info(`Changed components: ${Object.keys(changedComponents).length} ({${Object.keys(changedComponents)}})`);
     const forceAll = eventName !== 'pull_request';
     if (forceAll)
         core.info('forcing CI runs for all components (not a pull request)');
     core.info('Generating component matrix...');
     const matrix = {
-        include: contractItems.map(item => {
+        include: componentItems.map(item => {
             const isSolidity = ['ethereum', 'aurora'].some(tag => item.metadata.tags.includes(tag));
             const isRust = item.metadata.tags.includes('near');
-            const runSlither = isSolidity && (forceAll || changedContracts.includes(item));
-            const runClippy = isRust && (forceAll || changedContracts.includes(item));
+            const goRoot = findRoot(sourceLocationDir(item), 'go.mod');
+            const isGo = !!goRoot;
+            const runSlither = isSolidity && (forceAll || changedComponents.includes(item));
+            const runClippy = isRust && (forceAll || changedComponents.includes(item));
+            const runGoStaticChecks = isGo && (forceAll || changedComponents.includes(item));
             return {
                 name: item.metadata.name,
                 tags: item.metadata.tags,
                 path: sourceLocationDir(item),
                 nodeRoot: findRoot(sourceLocationDir(item), 'package.json'),
+                goRoot,
                 runSlither,
-                runClippy
+                runClippy,
+                runGoStaticChecks
             };
         })
     };
