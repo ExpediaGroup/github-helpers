@@ -158,6 +158,17 @@ var generate_component_matrix_awaiter = (undefined && undefined.__awaiter) || fu
 
 class GenerateComponentMatrix extends generated/* HelperInputs */.s {
 }
+const DEFAULT_GO_VERSION = '1.18';
+function parseGoVersion(modFilePath) {
+    if (external_fs_.existsSync(modFilePath)) {
+        const regex = /^go\s+(\S+)/m;
+        const match = regex.exec(external_fs_.readFileSync(modFilePath, 'utf8'));
+        if (match)
+            return match[1];
+    }
+    core.warning('unable to detect go version');
+    return DEFAULT_GO_VERSION;
+}
 function securityTier(entity) {
     if (!entity.metadata.annotations)
         return -1;
@@ -251,6 +262,7 @@ const generateComponentMatrix = ({ backstage_url }) => generate_component_matrix
                 securityTier: securityTier(item),
                 allowTestsToFail: allowTestsToFail(item),
                 nodeRoot: findRoot(path, 'package.json'),
+                goVersion: parseGoVersion('go.mod'),
                 runSlither,
                 runClippy,
                 runGoStaticChecks

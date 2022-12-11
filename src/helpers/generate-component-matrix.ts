@@ -24,6 +24,18 @@ export class GenerateComponentMatrix extends HelperInputs {
   backstage_url?: string;
 }
 
+const DEFAULT_GO_VERSION = '1.18';
+
+function parseGoVersion(modFilePath: string): string {
+  if (fs.existsSync(modFilePath)) {
+    const regex = /^go\s+(\S+)/m;
+    const match = regex.exec(fs.readFileSync(modFilePath, 'utf8'));
+    if (match) return match[1];
+  }
+  core.warning('unable to detect go version');
+  return DEFAULT_GO_VERSION;
+}
+
 function securityTier(entity: Entity) {
   if (!entity.metadata.annotations) return -1;
   const tier = entity.metadata.annotations['aurora.dev/security-tier'];
@@ -135,6 +147,8 @@ export const generateComponentMatrix = async ({ backstage_url }: GenerateCompone
         allowTestsToFail: allowTestsToFail(item),
 
         nodeRoot: findRoot(path, 'package.json'),
+        goVersion: parseGoVersion('go.mod'),
+
         runSlither,
         runClippy,
         runGoStaticChecks
