@@ -49,9 +49,6 @@ const setMergeSafetyStatus = async (pullRequest: PullRequest, inputs: CheckMerge
     description: message,
     ...context.repo
   });
-  if (!isSafeToMerge) {
-    core.setFailed(message);
-  }
 };
 
 const handlePushWorkflow = async (inputs: CheckMergeSafety) => {
@@ -91,7 +88,7 @@ const getMergeSafetyMessage = async (
     : [];
 
   if (globalFilesOutdatedOnBranch.length) {
-    core.error(buildErrorMessage(globalFilesOutdatedOnBranch, 'global files'));
+    core.error(buildErrorMessage(globalFilesOutdatedOnBranch, 'global files', `${username}:${ref}`));
     return `This branch has one or more outdated global files. Please update with ${default_branch}.`;
   }
 
@@ -109,7 +106,7 @@ const getMergeSafetyMessage = async (
   );
 
   if (changedProjectsOutdatedOnBranch?.length) {
-    core.error(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects'));
+    core.error(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects', `${username}:${ref}`));
     return `This branch has one or more outdated projects. Please update with ${default_branch}.`;
   }
 
@@ -117,9 +114,9 @@ const getMergeSafetyMessage = async (
   return safeMessage;
 };
 
-const buildErrorMessage = (paths: string[], pathType: 'projects' | 'global files') =>
+const buildErrorMessage = (paths: string[], pathType: 'projects' | 'global files', branchName: string) =>
   `
-The following ${pathType} are outdated on this branch:
+The following ${pathType} are outdated on branch ${branchName}:
 
 ${paths.map(path => `* ${path}`).join('\n')}
 `;

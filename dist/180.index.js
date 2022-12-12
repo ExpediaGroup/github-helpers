@@ -68,9 +68,6 @@ const setMergeSafetyStatus = (pullRequest, inputs) => __awaiter(void 0, void 0, 
     const message = yield getMergeSafetyMessage(pullRequest, inputs);
     const isSafeToMerge = message === safeMessage;
     yield (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_5__.setCommitStatus)(Object.assign({ sha: pullRequest.head.sha, state: isSafeToMerge ? 'success' : 'failure', context: 'Merge Safety', description: message }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-    if (!isSafeToMerge) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_6__.setFailed(message);
-    }
 });
 const handlePushWorkflow = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
     const pullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__/* .paginateAllOpenPullRequests */ .P)();
@@ -88,7 +85,7 @@ const getMergeSafetyMessage = (pullRequest, { paths, override_filter_paths, over
             ? fileNamesWhichBranchIsBehindOn.filter(changedFile => override_filter_paths.split(/[\n,]/).includes(changedFile))
             : [];
     if (globalFilesOutdatedOnBranch.length) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_6__.error(buildErrorMessage(globalFilesOutdatedOnBranch, 'global files'));
+        _actions_core__WEBPACK_IMPORTED_MODULE_6__.error(buildErrorMessage(globalFilesOutdatedOnBranch, 'global files', `${username}:${ref}`));
         return `This branch has one or more outdated global files. Please update with ${default_branch}.`;
     }
     const { data: { files: changedFiles } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${baseOwner}:${default_branch}...${username}:${ref}` }));
@@ -96,14 +93,14 @@ const getMergeSafetyMessage = (pullRequest, { paths, override_filter_paths, over
     const allProjectDirectories = paths === null || paths === void 0 ? void 0 : paths.split(/[\n,]/);
     const changedProjectsOutdatedOnBranch = allProjectDirectories === null || allProjectDirectories === void 0 ? void 0 : allProjectDirectories.filter(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && (changedFileNames === null || changedFileNames === void 0 ? void 0 : changedFileNames.some(file => file.includes(dir))));
     if (changedProjectsOutdatedOnBranch === null || changedProjectsOutdatedOnBranch === void 0 ? void 0 : changedProjectsOutdatedOnBranch.length) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_6__.error(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects'));
+        _actions_core__WEBPACK_IMPORTED_MODULE_6__.error(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects', `${username}:${ref}`));
         return `This branch has one or more outdated projects. Please update with ${default_branch}.`;
     }
     _actions_core__WEBPACK_IMPORTED_MODULE_6__.info(safeMessage);
     return safeMessage;
 });
-const buildErrorMessage = (paths, pathType) => `
-The following ${pathType} are outdated on this branch:
+const buildErrorMessage = (paths, pathType, branchName) => `
+The following ${pathType} are outdated on branch ${branchName}:
 
 ${paths.map(path => `* ${path}`).join('\n')}
 `;
