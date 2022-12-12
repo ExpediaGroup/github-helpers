@@ -9,7 +9,8 @@ exports.modules = {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "CheckMergeSafety": () => (/* binding */ CheckMergeSafety),
-/* harmony export */   "checkMergeSafety": () => (/* binding */ checkMergeSafety)
+/* harmony export */   "checkMergeSafety": () => (/* binding */ checkMergeSafety),
+/* harmony export */   "safeMessage": () => (/* binding */ safeMessage)
 /* harmony export */ });
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(3476);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
@@ -60,19 +61,17 @@ const checkMergeSafety = (inputs) => __awaiter(void 0, void 0, void 0, function*
         return handlePushWorkflow(inputs);
     }
     const { data: pullRequest } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    return setMergeSafetyStatus(pullRequest, inputs);
+});
+const safeMessage = 'This branch is safe to merge!';
+const setMergeSafetyStatus = (pullRequest, inputs) => __awaiter(void 0, void 0, void 0, function* () {
     const message = yield getMergeSafetyMessage(pullRequest, inputs);
-    if (message) {
-        throw new Error(message);
-    }
-    _actions_core__WEBPACK_IMPORTED_MODULE_6__.info('This branch is safe to merge!');
+    yield (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_5__.setCommitStatus)(Object.assign({ sha: pullRequest.head.sha, state: message === safeMessage ? 'success' : 'failure', context: 'Merge Safety', description: message }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
 });
 const handlePushWorkflow = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
     const pullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__/* .paginateAllOpenPullRequests */ .P)();
     const filteredPullRequests = pullRequests.filter(({ base, draft }) => !draft && base.ref === base.repo.default_branch);
-    return (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(filteredPullRequests, (pullRequest) => __awaiter(void 0, void 0, void 0, function* () {
-        const message = yield getMergeSafetyMessage(pullRequest, inputs);
-        yield (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_5__.setCommitStatus)(Object.assign({ sha: pullRequest.head.sha, state: message ? 'failure' : 'success', context: 'Merge Safety', description: message !== null && message !== void 0 ? message : 'This branch is safe to merge!' }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-    }));
+    return (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(filteredPullRequests, pullRequest => setMergeSafetyStatus(pullRequest, inputs));
 });
 const getMergeSafetyMessage = (pullRequest, { paths, override_filter_paths, override_filter_globs }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -96,6 +95,8 @@ const getMergeSafetyMessage = (pullRequest, { paths, override_filter_paths, over
         _actions_core__WEBPACK_IMPORTED_MODULE_6__.error(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects'));
         return `This branch has one or more outdated projects. Please update with ${default_branch}.`;
     }
+    _actions_core__WEBPACK_IMPORTED_MODULE_6__.info(safeMessage);
+    return safeMessage;
 });
 const buildErrorMessage = (paths, pathType) => `
 The following ${pathType} are outdated on this branch:
