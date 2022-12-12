@@ -17,6 +17,7 @@ import { checkMergeSafety, safeMessage } from '../../src/helpers/check-merge-saf
 import { octokit } from '../../src/octokit';
 import { setCommitStatus } from '../../src/helpers/set-commit-status';
 import { paginateAllOpenPullRequests } from '../../src/utils/paginate-open-pull-requests';
+import * as core from '@actions/core';
 
 const branchName = 'some-branch-name';
 const username = 'username';
@@ -76,6 +77,7 @@ describe('checkMergeSafety', () => {
       repo: 'repo',
       owner: 'owner'
     });
+    expect(core.setFailed).toHaveBeenCalled();
   });
 
   it('should allow merge when branch is only out of date for an unchanged project', async () => {
@@ -94,6 +96,7 @@ describe('checkMergeSafety', () => {
       repo: 'repo',
       owner: 'owner'
     });
+    expect(core.setFailed).not.toHaveBeenCalled();
   });
 
   it('should allow merge when branch is fully up to date', async () => {
@@ -113,6 +116,7 @@ describe('checkMergeSafety', () => {
       repo: 'repo',
       owner: 'owner'
     });
+    expect(core.setFailed).not.toHaveBeenCalled();
   });
 
   it('should prevent merge when branch is out of date on override filter paths, even when changed project paths are up to date', async () => {
@@ -132,6 +136,7 @@ describe('checkMergeSafety', () => {
       repo: 'repo',
       owner: 'owner'
     });
+    expect(core.setFailed).toHaveBeenCalled();
   });
 
   it('should prevent merge when branch is out of date on override glob paths, even when changed project paths are up to date', async () => {
@@ -151,6 +156,7 @@ describe('checkMergeSafety', () => {
       repo: 'repo',
       owner: 'owner'
     });
+    expect(core.setFailed).toHaveBeenCalled();
   });
 
   it('should prevent merge when branch is out of date on override glob paths using negation glob pattern', async () => {
@@ -170,6 +176,7 @@ describe('checkMergeSafety', () => {
       repo: 'repo',
       owner: 'owner'
     });
+    expect(core.setFailed).toHaveBeenCalled();
   });
 
   it('should set merge safety commit status on all open prs', async () => {

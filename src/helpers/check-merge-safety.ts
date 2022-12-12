@@ -41,13 +41,17 @@ export const safeMessage = 'This branch is safe to merge!';
 
 const setMergeSafetyStatus = async (pullRequest: PullRequest, inputs: CheckMergeSafety) => {
   const message = await getMergeSafetyMessage(pullRequest, inputs);
+  const isSafeToMerge = message === safeMessage;
   await setCommitStatus({
     sha: pullRequest.head.sha,
-    state: message === safeMessage ? 'success' : 'failure',
+    state: isSafeToMerge ? 'success' : 'failure',
     context: 'Merge Safety',
     description: message,
     ...context.repo
   });
+  if (!isSafeToMerge) {
+    core.setFailed(message);
+  }
 };
 
 const handlePushWorkflow = async (inputs: CheckMergeSafety) => {

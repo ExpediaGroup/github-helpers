@@ -66,7 +66,11 @@ const checkMergeSafety = (inputs) => __awaiter(void 0, void 0, void 0, function*
 const safeMessage = 'This branch is safe to merge!';
 const setMergeSafetyStatus = (pullRequest, inputs) => __awaiter(void 0, void 0, void 0, function* () {
     const message = yield getMergeSafetyMessage(pullRequest, inputs);
-    yield (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_5__.setCommitStatus)(Object.assign({ sha: pullRequest.head.sha, state: message === safeMessage ? 'success' : 'failure', context: 'Merge Safety', description: message }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    const isSafeToMerge = message === safeMessage;
+    yield (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_5__.setCommitStatus)(Object.assign({ sha: pullRequest.head.sha, state: isSafeToMerge ? 'success' : 'failure', context: 'Merge Safety', description: message }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    if (!isSafeToMerge) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_6__.setFailed(message);
+    }
 });
 const handlePushWorkflow = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
     const pullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__/* .paginateAllOpenPullRequests */ .P)();
