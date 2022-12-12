@@ -5492,7 +5492,7 @@ var follow_redirects = __webpack_require__(7707);
 // EXTERNAL MODULE: external "zlib"
 var external_zlib_ = __webpack_require__(9796);
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/env/data.js
-const VERSION = "1.2.0";
+const VERSION = "1.2.1";
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/helpers/parseProtocol.js
 
 
@@ -5644,7 +5644,7 @@ function speedometer(samplesCount, min) {
 
     const passed = startedAt && now - startedAt;
 
-    return  passed ? Math.round(bytesCount * 1000 / passed) : undefined;
+    return passed ? Math.round(bytesCount * 1000 / passed) : undefined;
   };
 }
 
@@ -5867,6 +5867,11 @@ var external_events_ = __webpack_require__(2361);
 
 
 
+
+const zlibOptions = {
+  flush: external_zlib_.constants.Z_SYNC_FLUSH,
+  finishFlush: external_zlib_.constants.Z_SYNC_FLUSH
+}
 
 const isBrotliSupported = utils.isFunction(external_zlib_.createBrotliDecompress);
 
@@ -6110,7 +6115,7 @@ const isHttpAdapterSupported = typeof process !== 'undefined' && utils.kindOf(pr
       }
     }
 
-    const contentLength = +headers.getContentLength();
+    const contentLength = utils.toFiniteNumber(headers.getContentLength());
 
     if (utils.isArray(maxRate)) {
       maxUploadRate = maxRate[0];
@@ -6125,7 +6130,7 @@ const isHttpAdapterSupported = typeof process !== 'undefined' && utils.kindOf(pr
       }
 
       data = external_stream_.pipeline([data, new helpers_AxiosTransformStream({
-        length: utils.toFiniteNumber(contentLength),
+        length: contentLength,
         maxRate: utils.toFiniteNumber(maxUploadRate)
       })], utils.noop);
 
@@ -6168,7 +6173,10 @@ const isHttpAdapterSupported = typeof process !== 'undefined' && utils.kindOf(pr
       return reject(customErr);
     }
 
-    headers.set('Accept-Encoding', 'gzip, deflate, br', false);
+    headers.set(
+      'Accept-Encoding',
+      'gzip, compress, deflate' + (isBrotliSupported ? ', br' : ''), false
+      );
 
     const options = {
       path,
@@ -6240,17 +6248,17 @@ const isHttpAdapterSupported = typeof process !== 'undefined' && utils.kindOf(pr
         streams.push(transformStream);
       }
 
-      // uncompress the response body transparently if required
+      // decompress the response body transparently if required
       let responseStream = res;
 
       // return the last request in case of redirects
       const lastRequest = res.req || req;
 
       // if decompress disabled we should not decompress
-      if (config.decompress !== false) {
+      if (config.decompress !== false && res.headers['content-encoding']) {
         // if no content, but headers still say that it is encoded,
         // remove the header not confuse downstream operations
-        if ((!responseLength || res.statusCode === 204) && res.headers['content-encoding']) {
+        if (method === 'HEAD' || res.statusCode === 204) {
           delete res.headers['content-encoding'];
         }
 
@@ -6260,14 +6268,14 @@ const isHttpAdapterSupported = typeof process !== 'undefined' && utils.kindOf(pr
         case 'compress':
         case 'deflate':
           // add the unzipper to the body stream processing pipeline
-          streams.push(external_zlib_.createUnzip());
+          streams.push(external_zlib_.createUnzip(zlibOptions));
 
           // remove the content-encoding in order to not confuse downstream operations
           delete res.headers['content-encoding'];
           break;
         case 'br':
           if (isBrotliSupported) {
-            streams.push(external_zlib_.createBrotliDecompress());
+            streams.push(external_zlib_.createBrotliDecompress(zlibOptions));
             delete res.headers['content-encoding'];
           }
         }
@@ -6627,7 +6635,7 @@ const isXHRAdapterSupported = typeof XMLHttpRequest !== 'undefined';
       }
     }
 
-    if (utils.isFormData(requestData) && node.isStandardBrowserEnv) {
+    if (utils.isFormData(requestData) && (node.isStandardBrowserEnv || node.isStandardBrowserWebWorkerEnv)) {
       requestHeaders.setContentType(false); // Let the browser set it
     }
 
@@ -6655,7 +6663,7 @@ const isXHRAdapterSupported = typeof XMLHttpRequest !== 'undefined';
       const responseHeaders = core_AxiosHeaders.from(
         'getAllResponseHeaders' in request && request.getAllResponseHeaders()
       );
-      const responseData = !responseType || responseType === 'text' ||  responseType === 'json' ?
+      const responseData = !responseType || responseType === 'text' || responseType === 'json' ?
         request.responseText : request.response;
       const response = {
         data: responseData,
@@ -6898,7 +6906,7 @@ function throwIfCancellationRequested(config) {
   }
 
   if (config.signal && config.signal.aborted) {
-    throw new cancel_CanceledError();
+    throw new cancel_CanceledError(null, config);
   }
 }
 
@@ -7598,6 +7606,9 @@ axios.spread = spread;
 
 // Expose isAxiosError
 axios.isAxiosError = isAxiosError;
+
+// Expose mergeConfig
+axios.mergeConfig = mergeConfig;
 
 axios.AxiosHeaders = core_AxiosHeaders;
 
