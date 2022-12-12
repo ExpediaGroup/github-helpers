@@ -59,7 +59,7 @@ const mockGithubRequests = (filesOutOfDate: string[], changedFilesOnPr: string[]
 const allProjectPaths = ['packages/package-1/', 'packages/package-2/', 'packages/package-3/'].join('\n');
 
 describe('checkMergeSafety', () => {
-  it('should throw error when branch is out of date for a changed project', async () => {
+  it('should prevent merge when branch is out of date for a changed project', async () => {
     const filesOutOfDate = ['packages/package-1/src/another-file.ts'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
@@ -71,7 +71,7 @@ describe('checkMergeSafety', () => {
     ).rejects.toThrowError('This branch has one or more outdated projects. Please update with main.');
   });
 
-  it('should not throw error when branch is only out of date for an unchanged project', async () => {
+  it('should allow merge when branch is only out of date for an unchanged project', async () => {
     const filesOutOfDate = ['packages/package-2/src/another-file.ts'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
@@ -83,7 +83,7 @@ describe('checkMergeSafety', () => {
     ).resolves.not.toThrowError();
   });
 
-  it('should not throw error when branch is fully up to date', async () => {
+  it('should allow merge when branch is fully up to date', async () => {
     const filesOutOfDate: string[] = [];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
@@ -95,7 +95,7 @@ describe('checkMergeSafety', () => {
     ).resolves.not.toThrowError();
   });
 
-  it('should throw error when branch is out of date on override filter paths, even when changed project paths are up to date', async () => {
+  it('should prevent merge when branch is out of date on override filter paths, even when changed project paths are up to date', async () => {
     const filesOutOfDate = ['packages/package-2/src/file1.ts', 'package.json'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
@@ -108,7 +108,7 @@ describe('checkMergeSafety', () => {
     ).rejects.toThrowError('This branch has one or more outdated global files. Please update with main.');
   });
 
-  it('should throw error when branch is out of date on override glob paths, even when changed project paths are up to date', async () => {
+  it('should prevent merge when branch is out of date on override glob paths, even when changed project paths are up to date', async () => {
     const filesOutOfDate = ['packages/package-2/src/file1.ts', 'README.md'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
@@ -121,7 +121,7 @@ describe('checkMergeSafety', () => {
     ).rejects.toThrowError('This branch has one or more outdated global files. Please update with main.');
   });
 
-  it('should throw error when branch is out of date on override glob paths using negation glob pattern', async () => {
+  it('should prevent merge when branch is out of date on override glob paths using negation glob pattern', async () => {
     const filesOutOfDate = ['README.md'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
