@@ -34,28 +34,30 @@ export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
   }
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
 
+  return setMergeSafetyStatus(pullRequest, inputs);
+};
+
+export const safeMessage = 'This branch is safe to merge!';
+
+const setMergeSafetyStatus = async (pullRequest: PullRequest, inputs: CheckMergeSafety) => {
   const message = await getMergeSafetyMessage(pullRequest, inputs);
-
-  if (message) {
-    throw new Error(message);
+  const isSafeToMerge = message === safeMessage;
+  await setCommitStatus({
+    sha: pullRequest.head.sha,
+    state: isSafeToMerge ? 'success' : 'failure',
+    context: 'Merge Safety',
+    description: message,
+    ...context.repo
+  });
+  if (!isSafeToMerge) {
+    core.setFailed(message);
   }
-
-  core.info('This branch is safe to merge!');
 };
 
 const handlePushWorkflow = async (inputs: CheckMergeSafety) => {
   const pullRequests = await paginateAllOpenPullRequests();
   const filteredPullRequests = pullRequests.filter(({ base, draft }) => !draft && base.ref === base.repo.default_branch);
-  return map(filteredPullRequests, async pullRequest => {
-    const message = await getMergeSafetyMessage(pullRequest as PullRequest, inputs);
-    await setCommitStatus({
-      sha: pullRequest.head.sha,
-      state: message ? 'failure' : 'success',
-      context: 'Merge Safety',
-      description: message ?? 'This branch is safe to merge!',
-      ...context.repo
-    });
-  });
+  return map(filteredPullRequests, pullRequest => setMergeSafetyStatus(pullRequest as PullRequest, inputs));
 };
 
 const getMergeSafetyMessage = async (
@@ -110,6 +112,9 @@ const getMergeSafetyMessage = async (
     core.error(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects'));
     return `This branch has one or more outdated projects. Please update with ${default_branch}.`;
   }
+
+  core.info(safeMessage);
+  return safeMessage;
 };
 
 const buildErrorMessage = (paths: string[], pathType: 'projects' | 'global files') =>

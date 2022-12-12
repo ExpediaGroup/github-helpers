@@ -13,15 +13,17 @@ limitations under the License.
 
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
-import { checkMergeSafety } from '../../src/helpers/check-merge-safety';
+import { checkMergeSafety, safeMessage } from '../../src/helpers/check-merge-safety';
 import { octokit } from '../../src/octokit';
 import { setCommitStatus } from '../../src/helpers/set-commit-status';
 import { paginateAllOpenPullRequests } from '../../src/utils/paginate-open-pull-requests';
+import * as core from '@actions/core';
 
 const branchName = 'some-branch-name';
 const username = 'username';
 const baseOwner = 'owner';
 const defaultBranch = 'main';
+const sha = 'sha';
 
 jest.mock('../../src/utils/paginate-open-pull-requests');
 jest.mock('../../src/helpers/set-commit-status');
@@ -37,7 +39,7 @@ jest.mock('@actions/github', () => ({
         get: jest.fn(() => ({
           data: {
             base: { repo: { default_branch: defaultBranch, owner: { login: baseOwner } } },
-            head: { ref: branchName, user: { login: username } }
+            head: { sha, ref: branchName, user: { login: username } }
           }
         }))
       }
@@ -63,75 +65,118 @@ describe('checkMergeSafety', () => {
     const filesOutOfDate = ['packages/package-1/src/another-file.ts'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
-    await expect(
-      checkMergeSafety({
-        paths: allProjectPaths,
-        ...context.repo
-      })
-    ).rejects.toThrowError('This branch has one or more outdated projects. Please update with main.');
+    await checkMergeSafety({
+      paths: allProjectPaths,
+      ...context.repo
+    });
+    expect(setCommitStatus).toHaveBeenCalledWith({
+      sha,
+      state: 'failure',
+      context: 'Merge Safety',
+      description: 'This branch has one or more outdated projects. Please update with main.',
+      repo: 'repo',
+      owner: 'owner'
+    });
+    expect(core.setFailed).toHaveBeenCalled();
   });
 
   it('should allow merge when branch is only out of date for an unchanged project', async () => {
     const filesOutOfDate = ['packages/package-2/src/another-file.ts'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
-    await expect(
-      checkMergeSafety({
-        paths: allProjectPaths,
-        ...context.repo
-      })
-    ).resolves.not.toThrowError();
+    await checkMergeSafety({
+      paths: allProjectPaths,
+      ...context.repo
+    });
+    expect(setCommitStatus).toHaveBeenCalledWith({
+      sha,
+      state: 'success',
+      context: 'Merge Safety',
+      description: safeMessage,
+      repo: 'repo',
+      owner: 'owner'
+    });
+    expect(core.setFailed).not.toHaveBeenCalled();
   });
 
   it('should allow merge when branch is fully up to date', async () => {
     const filesOutOfDate: string[] = [];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
-    await expect(
-      checkMergeSafety({
-        paths: allProjectPaths,
-        ...context.repo
-      })
-    ).resolves.not.toThrowError();
+
+    await checkMergeSafety({
+      paths: allProjectPaths,
+      ...context.repo
+    });
+    expect(setCommitStatus).toHaveBeenCalledWith({
+      sha,
+      state: 'success',
+      context: 'Merge Safety',
+      description: safeMessage,
+      repo: 'repo',
+      owner: 'owner'
+    });
+    expect(core.setFailed).not.toHaveBeenCalled();
   });
 
   it('should prevent merge when branch is out of date on override filter paths, even when changed project paths are up to date', async () => {
     const filesOutOfDate = ['packages/package-2/src/file1.ts', 'package.json'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
-    await expect(
-      checkMergeSafety({
-        paths: allProjectPaths,
-        override_filter_paths: 'package.json\npackage-lock.json',
-        ...context.repo
-      })
-    ).rejects.toThrowError('This branch has one or more outdated global files. Please update with main.');
+    await checkMergeSafety({
+      paths: allProjectPaths,
+      override_filter_paths: 'package.json\npackage-lock.json',
+      ...context.repo
+    });
+    expect(setCommitStatus).toHaveBeenCalledWith({
+      sha,
+      state: 'failure',
+      context: 'Merge Safety',
+      description: 'This branch has one or more outdated global files. Please update with main.',
+      repo: 'repo',
+      owner: 'owner'
+    });
+    expect(core.setFailed).toHaveBeenCalled();
   });
 
   it('should prevent merge when branch is out of date on override glob paths, even when changed project paths are up to date', async () => {
     const filesOutOfDate = ['packages/package-2/src/file1.ts', 'README.md'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
-    await expect(
-      checkMergeSafety({
-        paths: allProjectPaths,
-        override_filter_globs: '**.md',
-        ...context.repo
-      })
-    ).rejects.toThrowError('This branch has one or more outdated global files. Please update with main.');
+    await checkMergeSafety({
+      paths: allProjectPaths,
+      override_filter_globs: '**.md',
+      ...context.repo
+    });
+    expect(setCommitStatus).toHaveBeenCalledWith({
+      sha,
+      state: 'failure',
+      context: 'Merge Safety',
+      description: 'This branch has one or more outdated global files. Please update with main.',
+      repo: 'repo',
+      owner: 'owner'
+    });
+    expect(core.setFailed).toHaveBeenCalled();
   });
 
   it('should prevent merge when branch is out of date on override glob paths using negation glob pattern', async () => {
     const filesOutOfDate = ['README.md'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
-    await expect(
-      checkMergeSafety({
-        paths: allProjectPaths,
-        override_filter_globs: '!packages/**',
-        ...context.repo
-      })
-    ).rejects.toThrowError('This branch has one or more outdated global files. Please update with main.');
+    await checkMergeSafety({
+      paths: allProjectPaths,
+      override_filter_globs: '!packages/**',
+      ...context.repo
+    });
+    expect(setCommitStatus).toHaveBeenCalledWith({
+      sha,
+      state: 'failure',
+      context: 'Merge Safety',
+      description: 'This branch has one or more outdated global files. Please update with main.',
+      repo: 'repo',
+      owner: 'owner'
+    });
+    expect(core.setFailed).toHaveBeenCalled();
   });
 
   it('should set merge safety commit status on all open prs', async () => {
@@ -167,28 +212,28 @@ describe('checkMergeSafety', () => {
       sha: '123',
       state: 'success',
       context: 'Merge Safety',
-      description: 'This branch is safe to merge!',
+      description: safeMessage,
       ...context.repo
     });
     expect(setCommitStatus).toHaveBeenCalledWith({
       sha: '456',
       state: 'success',
       context: 'Merge Safety',
-      description: 'This branch is safe to merge!',
+      description: safeMessage,
       ...context.repo
     });
     expect(setCommitStatus).not.toHaveBeenCalledWith({
       sha: '789',
       state: 'success',
       context: 'Merge Safety',
-      description: 'This branch is safe to merge!',
+      description: safeMessage,
       ...context.repo
     });
     expect(setCommitStatus).not.toHaveBeenCalledWith({
       sha: '000',
       state: 'success',
       context: 'Merge Safety',
-      description: 'This branch is safe to merge!',
+      description: safeMessage,
       ...context.repo
     });
   });
