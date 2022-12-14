@@ -232,8 +232,8 @@ const generateComponentMatrix = ({ backstage_url }) => generate_component_matrix
     const componentItems = entities
         .filter(item => { var _a; return (_a = sourceLocation(item)) === null || _a === void 0 ? void 0 : _a.startsWith(`url:${repoUrl}/`); })
         .filter(item => item.kind === 'Component');
-    const componentItemNames = componentItems.map(item => item.metadata.name);
-    core.info(`Component entities in this repo: ${componentItems.length} (${componentItemNames})`);
+    core.info(`Component entities in this repo (${componentItems.length}):`);
+    componentItems.forEach(item => core.info(` - ${item.metadata.name} at ${sourceLocationDir(item)}`));
     const eventName = process.env.GITHUB_EVENT_NAME;
     const changedFiles = yield getChangedFiles(eventName);
     core.info(`Changed files count: ${changedFiles.length}`);

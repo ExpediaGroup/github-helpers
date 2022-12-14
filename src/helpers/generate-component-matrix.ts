@@ -104,9 +104,8 @@ export const generateComponentMatrix = async ({ backstage_url }: GenerateCompone
     .filter(item => sourceLocation(item)?.startsWith(`url:${repoUrl}/`))
     .filter(item => item.kind === 'Component');
 
-  const componentItemNames = componentItems.map(item => item.metadata.name);
-
-  core.info(`Component entities in this repo: ${componentItems.length} (${componentItemNames})`);
+  core.info(`Component entities in this repo (${componentItems.length}):`);
+  componentItems.forEach(item => core.info(` - ${item.metadata.name} at ${sourceLocationDir(item)}`));
 
   const eventName = process.env.GITHUB_EVENT_NAME;
   const changedFiles = await getChangedFiles(eventName);
