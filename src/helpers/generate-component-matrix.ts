@@ -48,10 +48,16 @@ function allowTestsToFail(entity: Entity) {
   return tier < 0 || !!entity.metadata.tags?.includes('disabled-security-checks');
 }
 
+// the annotation will have "url:" prefix - not a relative path
 function sourceLocation(entity: Entity) {
   if (!entity.metadata.annotations) return;
   const loc = entity.metadata.annotations['backstage.io/source-location'];
   return loc;
+}
+
+function sourceLocationRelative(entity: Entity) {
+  const loc = sourceLocation(entity)!;
+  return loc.split('/').slice(7).join('/');
 }
 
 function sourceLocationDir(entity: Entity) {
@@ -105,7 +111,7 @@ export const generateComponentMatrix = async ({ backstage_url }: GenerateCompone
     .filter(item => item.kind === 'Component');
 
   core.info(`Component entities in this repo (${componentItems.length}):`);
-  componentItems.forEach(item => core.info(` - ${item.metadata.name} at ${sourceLocationDir(item)}`));
+  componentItems.forEach(item => core.info(` - ${item.metadata.name} at "${sourceLocationRelative(item)}"`));
 
   const eventName = process.env.GITHUB_EVENT_NAME;
   const changedFiles = await getChangedFiles(eventName);
@@ -114,7 +120,7 @@ export const generateComponentMatrix = async ({ backstage_url }: GenerateCompone
 
   const changedComponents = componentItems.filter(item =>
     changedFiles.some(file => {
-      const loc = sourceLocation(item)!;
+      const loc = sourceLocationRelative(item)!;
       return file.file.startsWith(loc);
     })
   );

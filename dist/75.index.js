@@ -182,11 +182,16 @@ function allowTestsToFail(entity) {
     const tier = securityTier(entity);
     return tier < 0 || !!((_a = entity.metadata.tags) === null || _a === void 0 ? void 0 : _a.includes('disabled-security-checks'));
 }
+// the annotation will have "url:" prefix - not a relative path
 function sourceLocation(entity) {
     if (!entity.metadata.annotations)
         return;
     const loc = entity.metadata.annotations['backstage.io/source-location'];
     return loc;
+}
+function sourceLocationRelative(entity) {
+    const loc = sourceLocation(entity);
+    return loc.split('/').slice(7).join('/');
 }
 function sourceLocationDir(entity) {
     const loc = sourceLocation(entity);
@@ -233,12 +238,12 @@ const generateComponentMatrix = ({ backstage_url }) => generate_component_matrix
         .filter(item => { var _a; return (_a = sourceLocation(item)) === null || _a === void 0 ? void 0 : _a.startsWith(`url:${repoUrl}/`); })
         .filter(item => item.kind === 'Component');
     core.info(`Component entities in this repo (${componentItems.length}):`);
-    componentItems.forEach(item => core.info(` - ${item.metadata.name} at ${sourceLocationDir(item)}`));
+    componentItems.forEach(item => core.info(` - ${item.metadata.name} at "${sourceLocationRelative(item)}"`));
     const eventName = process.env.GITHUB_EVENT_NAME;
     const changedFiles = yield getChangedFiles(eventName);
     core.info(`Changed files count: ${changedFiles.length}`);
     const changedComponents = componentItems.filter(item => changedFiles.some(file => {
-        const loc = sourceLocation(item);
+        const loc = sourceLocationRelative(item);
         return file.file.startsWith(loc);
     }));
     core.info(`Changed components: ${Object.keys(changedComponents).length} ({${Object.keys(changedComponents)}})`);
