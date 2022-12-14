@@ -231,14 +231,17 @@ function hasInRoot(dirName, rootFile) {
     core.info(`Unable to find ${rootFile} in ${dirName}`);
     return false;
 }
+function inspectComponents(message, items) {
+    core.info(`${message} (${items.length}):`);
+    items.forEach(item => core.info(` - ${item.metadata.name} at "${sourceLocationRelative(item)}"`));
+}
 const generateComponentMatrix = ({ backstage_url }) => generate_component_matrix_awaiter(void 0, void 0, void 0, function* () {
     const entities = yield (0,get_backstage_entities/* getBackstageEntities */.g)({ backstage_url });
     const repoUrl = `${process.env.GITHUB_SERVER_URL}/${github.context.repo.owner}/${github.context.repo.repo}`;
     const componentItems = entities
         .filter(item => { var _a; return (_a = sourceLocation(item)) === null || _a === void 0 ? void 0 : _a.startsWith(`url:${repoUrl}/`); })
         .filter(item => item.kind === 'Component');
-    core.info(`Component entities in this repo (${componentItems.length}):`);
-    componentItems.forEach(item => core.info(` - ${item.metadata.name} at "${sourceLocationRelative(item)}"`));
+    inspectComponents('Component entities in this repo', componentItems);
     const eventName = process.env.GITHUB_EVENT_NAME;
     const changedFiles = yield getChangedFiles(eventName);
     core.info(`Changed files count: ${changedFiles.length}`);
@@ -246,7 +249,7 @@ const generateComponentMatrix = ({ backstage_url }) => generate_component_matrix
         const loc = sourceLocationRelative(item);
         return file.file.startsWith(loc);
     }));
-    core.info(`Changed components: ${Object.keys(changedComponents).length} ({${Object.keys(changedComponents)}})`);
+    inspectComponents('Changed components', changedComponents);
     const forceAll = eventName !== 'pull_request';
     if (forceAll)
         core.info('forcing CI runs for all components (not a pull request)');

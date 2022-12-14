@@ -102,6 +102,11 @@ function hasInRoot(dirName: string, rootFile: string) {
   return false;
 }
 
+function inspectComponents(message: string, items: Entity[]) {
+  core.info(`${message} (${items.length}):`);
+  items.forEach(item => core.info(` - ${item.metadata.name} at "${sourceLocationRelative(item)}"`));
+}
+
 export const generateComponentMatrix = async ({ backstage_url }: GenerateComponentMatrix) => {
   const entities = await getBackstageEntities({ backstage_url });
   const repoUrl = `${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}`;
@@ -110,8 +115,7 @@ export const generateComponentMatrix = async ({ backstage_url }: GenerateCompone
     .filter(item => sourceLocation(item)?.startsWith(`url:${repoUrl}/`))
     .filter(item => item.kind === 'Component');
 
-  core.info(`Component entities in this repo (${componentItems.length}):`);
-  componentItems.forEach(item => core.info(` - ${item.metadata.name} at "${sourceLocationRelative(item)}"`));
+  inspectComponents('Component entities in this repo', componentItems);
 
   const eventName = process.env.GITHUB_EVENT_NAME;
   const changedFiles = await getChangedFiles(eventName);
@@ -125,7 +129,7 @@ export const generateComponentMatrix = async ({ backstage_url }: GenerateCompone
     })
   );
 
-  core.info(`Changed components: ${Object.keys(changedComponents).length} ({${Object.keys(changedComponents)}})`);
+  inspectComponents('Changed components', changedComponents);
 
   const forceAll = eventName !== 'pull_request';
   if (forceAll) core.info('forcing CI runs for all components (not a pull request)');
