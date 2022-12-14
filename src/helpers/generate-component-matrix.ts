@@ -106,6 +106,37 @@ function inspectComponents(message: string, items: Entity[]) {
   core.info(`${message} (${items.length}):`);
   items.forEach(item => core.info(` - ${item.metadata.name} at "${sourceLocationRelative(item)}"`));
 }
+function componentConfig(item: Entity, runTests: boolean) {
+  const path = sourceLocationDir(item)!;
+
+  const isSolidity = ['ethereum', 'aurora'].some(tag => item.metadata.tags!.includes(tag));
+  const isRust = item.metadata.tags!.includes('near') || hasInRoot(path, 'Cargo.toml');
+  const isGo = hasInRoot(path, 'go.mod');
+
+  const runSlither = isSolidity && runTests;
+  const runClippy = isRust && runTests;
+  const runGoStaticChecks = isGo && runTests;
+
+  const slitherArgs = hasInRoot(path, 'slither.config.json')
+    ? ''
+    : '--filter-paths "node_modules|testing|test|lib" --exclude timestamp,solc-version,naming-convention,assembly-usage';
+
+  return {
+    name: item.metadata.name,
+    tags: item.metadata.tags,
+    path,
+    securityTier: securityTier(item),
+    allowTestsToFail: allowTestsToFail(item),
+
+    nodeRoot: findRoot(path, 'package.json'),
+    goVersion: parseGoVersion('go.mod'),
+
+    runSlither,
+    slitherArgs,
+    runClippy,
+    runGoStaticChecks
+  };
+}
 
 export const generateComponentMatrix = async ({ backstage_url }: GenerateComponentMatrix) => {
   const entities = await getBackstageEntities({ backstage_url });
@@ -135,34 +166,8 @@ export const generateComponentMatrix = async ({ backstage_url }: GenerateCompone
   if (forceAll) core.info('forcing CI runs for all components (not a pull request)');
 
   core.info('Generating component matrix...');
-
   const matrix = {
-    include: componentItems.map(item => {
-      const path = sourceLocationDir(item)!;
-
-      const isSolidity = ['ethereum', 'aurora'].some(tag => item.metadata.tags!.includes(tag));
-      const isRust = item.metadata.tags!.includes('near') || hasInRoot(path, 'Cargo.toml');
-      const isGo = hasInRoot(path, 'go.mod');
-
-      const runSlither = isSolidity && (forceAll || changedComponents.includes(item));
-      const runClippy = isRust && (forceAll || changedComponents.includes(item));
-      const runGoStaticChecks = isGo && (forceAll || changedComponents.includes(item));
-
-      return {
-        name: item.metadata.name,
-        tags: item.metadata.tags,
-        path,
-        securityTier: securityTier(item),
-        allowTestsToFail: allowTestsToFail(item),
-
-        nodeRoot: findRoot(path, 'package.json'),
-        goVersion: parseGoVersion('go.mod'),
-
-        runSlither,
-        runClippy,
-        runGoStaticChecks
-      };
-    })
+    include: componentItems.map(item => componentConfig(item, forceAll || changedComponents.includes(item)))
   };
 
   core.info(JSON.stringify(matrix, null, 2));
