@@ -37,14 +37,11 @@ export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
   return setMergeSafetyStatus(pullRequest, inputs);
 };
 
-export const safeMessage = 'This branch is safe to merge!';
-
 const setMergeSafetyStatus = async (pullRequest: PullRequest, inputs: CheckMergeSafety) => {
-  const message = await getMergeSafetyMessage(pullRequest, inputs);
-  const isSafeToMerge = message === safeMessage;
+  const { state, message } = await getMergeSafetyStateAndMessage(pullRequest, inputs);
   await setCommitStatus({
     sha: pullRequest.head.sha,
-    state: isSafeToMerge ? 'success' : 'failure',
+    state,
     context: 'Merge Safety',
     description: message,
     ...context.repo
@@ -57,7 +54,7 @@ const handlePushWorkflow = async (inputs: CheckMergeSafety) => {
   return map(filteredPullRequests, pullRequest => setMergeSafetyStatus(pullRequest as PullRequest, inputs));
 };
 
-const getMergeSafetyMessage = async (
+const getMergeSafetyStateAndMessage = async (
   pullRequest: PullRequest,
   { paths, override_filter_paths, override_filter_globs }: CheckMergeSafety
 ) => {
@@ -73,11 +70,14 @@ const getMergeSafetyMessage = async (
       user: { login: username }
     }
   } = pullRequest;
+
+  const branchName = `${username}:${ref}`;
+
   const {
     data: { files: filesWhichBranchIsBehindOn }
   } = await octokit.repos.compareCommitsWithBasehead({
     ...context.repo,
-    basehead: `${username}:${ref}...${baseOwner}:${default_branch}`
+    basehead: `${branchName}...${baseOwner}:${default_branch}`
   });
   const fileNamesWhichBranchIsBehindOn = filesWhichBranchIsBehindOn?.map(file => file.filename) ?? [];
 
@@ -88,15 +88,18 @@ const getMergeSafetyMessage = async (
     : [];
 
   if (globalFilesOutdatedOnBranch.length) {
-    core.error(buildErrorMessage(globalFilesOutdatedOnBranch, 'global files', `${username}:${ref}`));
-    return `This branch has one or more outdated global files. Please update with ${default_branch}.`;
+    core.error(buildErrorMessage(globalFilesOutdatedOnBranch, 'global files', branchName));
+    return {
+      state: 'failure',
+      message: `This branch has one or more outdated global files. Please update with ${default_branch}.`
+    };
   }
 
   const {
     data: { files: changedFiles }
   } = await octokit.repos.compareCommitsWithBasehead({
     ...context.repo,
-    basehead: `${baseOwner}:${default_branch}...${username}:${ref}`
+    basehead: `${baseOwner}:${default_branch}...${branchName}`
   });
   const changedFileNames = changedFiles?.map(file => file.filename);
   const allProjectDirectories = paths?.split(/[\n,]/);
@@ -106,17 +109,26 @@ const getMergeSafetyMessage = async (
   );
 
   if (changedProjectsOutdatedOnBranch?.length) {
-    core.error(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects', `${username}:${ref}`));
-    return `This branch has one or more outdated projects. Please update with ${default_branch}.`;
+    core.error(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects', branchName));
+    return {
+      state: 'failure',
+      message: `This branch has one or more outdated projects. Please update with ${default_branch}.`
+    };
   }
 
+  const safeMessage = buildSuccessMessage(branchName);
   core.info(safeMessage);
-  return safeMessage;
+  return {
+    state: 'success',
+    message: safeMessage
+  };
 };
 
 const buildErrorMessage = (paths: string[], pathType: 'projects' | 'global files', branchName: string) =>
   `
-The following ${pathType} are outdated on branch ${branchName}:
+The following ${pathType} are outdated on branch ${branchName}
 
 ${paths.map(path => `* ${path}`).join('\n')}
 `;
+
+const buildSuccessMessage = (branchName: string) => `Branch ${branchName} is safe to merge!`;
