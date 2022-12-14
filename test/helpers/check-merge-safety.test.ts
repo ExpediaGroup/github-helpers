@@ -13,7 +13,7 @@ limitations under the License.
 
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
-import { checkMergeSafety, safeMessage } from '../../src/helpers/check-merge-safety';
+import { checkMergeSafety } from '../../src/helpers/check-merge-safety';
 import { octokit } from '../../src/octokit';
 import { setCommitStatus } from '../../src/helpers/set-commit-status';
 import { paginateAllOpenPullRequests } from '../../src/utils/paginate-open-pull-requests';
@@ -90,7 +90,7 @@ describe('checkMergeSafety', () => {
       sha,
       state: 'success',
       context: 'Merge Safety',
-      description: safeMessage,
+      description: 'Branch username:some-branch-name is safe to merge!',
       repo: 'repo',
       owner: 'owner'
     });
@@ -109,7 +109,7 @@ describe('checkMergeSafety', () => {
       sha,
       state: 'success',
       context: 'Merge Safety',
-      description: safeMessage,
+      description: 'Branch username:some-branch-name is safe to merge!',
       repo: 'repo',
       owner: 'owner'
     });
@@ -205,28 +205,28 @@ describe('checkMergeSafety', () => {
       sha: '123',
       state: 'success',
       context: 'Merge Safety',
-      description: safeMessage,
+      description: 'Branch username:some-branch-name is safe to merge!',
       ...context.repo
     });
     expect(setCommitStatus).toHaveBeenCalledWith({
       sha: '456',
       state: 'success',
       context: 'Merge Safety',
-      description: safeMessage,
+      description: 'Branch username:some-branch-name is safe to merge!',
       ...context.repo
     });
     expect(setCommitStatus).not.toHaveBeenCalledWith({
       sha: '789',
       state: 'success',
       context: 'Merge Safety',
-      description: safeMessage,
+      description: 'Branch username:some-branch-name is safe to merge!',
       ...context.repo
     });
     expect(setCommitStatus).not.toHaveBeenCalledWith({
       sha: '000',
       state: 'success',
       context: 'Merge Safety',
-      description: safeMessage,
+      description: 'Branch username:some-branch-name is safe to merge!',
       ...context.repo
     });
   });
