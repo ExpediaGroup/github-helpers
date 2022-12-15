@@ -49,6 +49,9 @@ Each of the following helpers are defined in a file of the same name in `src/hel
 ### [add-pr-approval-label](.github/workflows/add-pr-approval-label.yml)
   * Upon PR review, adds a `CORE APPROVED` label if the reviewer is a part of the provided Github team, otherwise adds the `PEER APPROVED` label
 
+### [approvals-satisfied](.github/workflows/approvals-satisfied.yml)
+  * Returns `true` if the PR has been approved by the specified GitHub teams, and `false` otherwise
+
 ### [approve-pr](.github/workflows/approve-pr.yml)
 * Approves a PR
 
