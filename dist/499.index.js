@@ -47,11 +47,10 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 class ApprovalsSatisfied extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
 }
 const approvalsSatisfied = ({ teams } = {}) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     const { data: reviews } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listReviews */ .K.pulls.listReviews(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-    const teamsAndLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreTeamsAndLogins */ .Fm)(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
+    const teamsAndLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreTeamsAndLogins */ .F)(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
     const approvers = reviews.filter(({ state }) => state === 'APPROVED').map(({ user }) => user === null || user === void 0 ? void 0 : user.login);
-    const codeOwners = (_a = teams === null || teams === void 0 ? void 0 : teams.split('\n')) !== null && _a !== void 0 ? _a : (yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCodeOwners */ .U$)(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number));
+    const codeOwners = (0,lodash__WEBPACK_IMPORTED_MODULE_3__.uniq)(teamsAndLogins.map(({ team }) => team));
     return codeOwners.every(codeOwner => {
         const membersOfCodeOwner = (0,lodash__WEBPACK_IMPORTED_MODULE_3__.groupBy)(teamsAndLogins, 'team')[codeOwner];
         return membersOfCodeOwner.some(({ login }) => approvers.includes(login));
@@ -170,9 +169,8 @@ const paginateAllChangedFilepaths = (pull_number, page = 1) => __awaiter(void 0,
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "Fm": () => (/* binding */ getCoreTeamsAndLogins),
-/* harmony export */   "U$": () => (/* binding */ getCodeOwners),
-/* harmony export */   "cp": () => (/* binding */ getCoreMemberLogins)
+/* harmony export */   "F": () => (/* binding */ getCoreTeamsAndLogins),
+/* harmony export */   "c": () => (/* binding */ getCoreMemberLogins)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);

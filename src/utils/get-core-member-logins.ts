@@ -45,7 +45,7 @@ export const getCoreTeamsAndLogins = async (pull_number: number, teams?: string[
   return teamsAndLogins.flat();
 };
 
-export const getCodeOwners = async (pull_number: number) => {
+const getCodeOwners = async (pull_number: number) => {
   const codeOwners = (await loadOwners(process.cwd())) ?? [];
   const changedFilePaths = await getChangedFilepaths(pull_number);
   const matchingCodeOwners = changedFilePaths.map(filePath => matchFile(filePath, codeOwners) ?? ({} as CodeOwnersEntry));
