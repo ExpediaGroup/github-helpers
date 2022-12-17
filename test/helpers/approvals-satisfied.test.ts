@@ -14,7 +14,7 @@ limitations under the License.
 import { Mocktokit } from '../types';
 import { approvalsSatisfied } from '../../src/helpers/approvals-satisfied';
 import { octokit } from '../../src/octokit';
-import { getCoreMemberLogins } from '../../src/utils/get-core-member-logins';
+import { getCoreTeamsAndLogins } from '../../src/utils/get-core-member-logins';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
@@ -28,27 +28,34 @@ jest.mock('@actions/github', () => ({
   }))
 }));
 jest.mock('../../src/utils/get-core-member-logins');
-(getCoreMemberLogins as jest.Mock).mockResolvedValue(['user1', 'user2']);
 
 describe('approvalsSatisfied', () => {
   it('should return false when a core member has not approved', async () => {
+    (getCoreTeamsAndLogins as jest.Mock).mockResolvedValue([
+      {
+        team: 'team1',
+        login: 'user1'
+      }
+    ]);
     (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
-        {
-          state: 'CHANGES_REQUESTED',
-          user: { login: 'user1' }
-        },
         {
           state: 'APPROVED',
           user: { login: 'user3' }
         }
       ]
     }));
-    const result = await approvalsSatisfied({ teams: 'some-maintainer-team' });
+    const result = await approvalsSatisfied({ teams: 'team1' });
     expect(result).toBe(false);
   });
 
   it('should return true when a core member has approved', async () => {
+    (getCoreTeamsAndLogins as jest.Mock).mockResolvedValue([
+      {
+        team: 'team1',
+        login: 'user1'
+      }
+    ]);
     (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
         {
@@ -61,7 +68,81 @@ describe('approvalsSatisfied', () => {
         }
       ]
     }));
-    const result = await approvalsSatisfied({ teams: 'some-maintainer-team' });
+    const result = await approvalsSatisfied({ teams: 'team1' });
+    expect(result).toBe(true);
+  });
+
+  it('should return false when not all core teams have approved', async () => {
+    (getCoreTeamsAndLogins as jest.Mock).mockResolvedValue([
+      {
+        team: 'team1',
+        login: 'user1'
+      },
+      {
+        team: 'team2',
+        login: 'user2'
+      },
+      {
+        team: 'team2',
+        login: 'user3'
+      },
+      {
+        team: 'team3',
+        login: 'user1'
+      }
+    ]);
+    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user1' }
+        },
+        {
+          state: 'CHANGES_REQUESTED',
+          user: { login: 'user3' }
+        }
+      ]
+    }));
+    const result = await approvalsSatisfied({ teams: 'team1\nteam2' });
+    expect(result).toBe(false);
+  });
+
+  it('should return true when a member from each core team has approved', async () => {
+    (getCoreTeamsAndLogins as jest.Mock).mockResolvedValue([
+      {
+        team: 'team1',
+        login: 'user1'
+      },
+      {
+        team: 'team2',
+        login: 'user2'
+      },
+      {
+        team: 'team2',
+        login: 'user3'
+      },
+      {
+        team: 'team3',
+        login: 'user1'
+      }
+    ]);
+    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user1' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user2' }
+        },
+        {
+          state: 'CHANGES_REQUESTED',
+          user: { login: 'user3' }
+        }
+      ]
+    }));
+    const result = await approvalsSatisfied({ teams: 'team1\nteam2\nteam3' });
     expect(result).toBe(true);
   });
 });

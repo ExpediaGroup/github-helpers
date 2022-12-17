@@ -117,7 +117,7 @@ class AddPrApprovalLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/*
     }
 }
 const addPrApprovalLabel = ({ teams, login }) => __awaiter(void 0, void 0, void 0, function* () {
-    const coreMemberLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .c)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
+    const coreMemberLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .cp)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
     const approvalLabel = coreMemberLogins.includes(login) ? _constants__WEBPACK_IMPORTED_MODULE_0__/* .CORE_APPROVED_PR_LABEL */ ._d : _constants__WEBPACK_IMPORTED_MODULE_0__/* .PEER_APPROVED_PR_LABEL */ .Xt;
     return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: [approvalLabel], issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
 });
@@ -234,7 +234,9 @@ const paginateAllChangedFilepaths = (pull_number, page = 1) => __awaiter(void 0,
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "c": () => (/* binding */ getCoreMemberLogins)
+/* harmony export */   "Fm": () => (/* binding */ getCoreTeamsAndLogins),
+/* harmony export */   "U$": () => (/* binding */ getCodeOwners),
+/* harmony export */   "cp": () => (/* binding */ getCoreMemberLogins)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
@@ -277,20 +279,24 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const getCoreMemberLogins = (pull_number, teams) => __awaiter(void 0, void 0, void 0, function* () {
+    const teamsAndLogins = yield getCoreTeamsAndLogins(pull_number, teams);
+    return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(teamsAndLogins.map(({ login }) => login));
+});
+const getCoreTeamsAndLogins = (pull_number, teams) => __awaiter(void 0, void 0, void 0, function* () {
     const codeOwners = teams !== null && teams !== void 0 ? teams : (yield getCodeOwners(pull_number));
     if (!(codeOwners === null || codeOwners === void 0 ? void 0 : codeOwners.length)) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No code owners found.');
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No code owners found. Please provide a "teams" input or set up a CODEOWNERS file in your repo.');
         throw new Error();
     }
-    const adminLogins = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(codeOwners, (team) => __awaiter(void 0, void 0, void 0, function* () {
+    const teamsAndLogins = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(codeOwners, (team) => __awaiter(void 0, void 0, void 0, function* () {
         return _octokit__WEBPACK_IMPORTED_MODULE_6__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
             org: _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo.owner,
             team_slug: team,
             per_page: 100
         })
-            .then(listMembersResponse => listMembersResponse.data.map(member => member.login));
+            .then(listMembersResponse => listMembersResponse.data.map(({ login }) => ({ team, login })));
     }));
-    return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.union)(...adminLogins);
+    return teamsAndLogins.flat();
 });
 const getCodeOwners = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;

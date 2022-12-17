@@ -14,15 +14,21 @@ limitations under the License.
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
-import { getCoreMemberLogins } from '../utils/get-core-member-logins';
+import { getCodeOwners, getCoreTeamsAndLogins } from '../utils/get-core-member-logins';
+import { groupBy } from 'lodash';
 
 export class ApprovalsSatisfied extends HelperInputs {
   teams?: string;
 }
 
 export const approvalsSatisfied = async ({ teams }: ApprovalsSatisfied = {}) => {
-  const coreMemberLogins = await getCoreMemberLogins(context.issue.number, teams?.split('\n'));
   const { data: reviews } = await octokit.pulls.listReviews({ pull_number: context.issue.number, ...context.repo });
+  const teamsAndLogins = await getCoreTeamsAndLogins(context.issue.number, teams?.split('\n'));
+  const approvers = reviews.filter(({ state }) => state === 'APPROVED').map(({ user }) => user?.login);
+  const codeOwners = teams?.split('\n') ?? (await getCodeOwners(context.issue.number));
 
-  return reviews.some(({ state, user }) => user?.login && coreMemberLogins.includes(user.login) && state === 'APPROVED');
+  return codeOwners.every(codeOwner => {
+    const membersOfCodeOwner = groupBy(teamsAndLogins, 'team')[codeOwner];
+    return membersOfCodeOwner.some(({ login }) => approvers.includes(login));
+  });
 };

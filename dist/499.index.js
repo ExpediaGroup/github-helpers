@@ -11,11 +11,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "ApprovalsSatisfied": () => (/* binding */ ApprovalsSatisfied),
 /* harmony export */   "approvalsSatisfied": () => (/* binding */ approvalsSatisfied)
 /* harmony export */ });
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3476);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(3476);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
 /* harmony import */ var _utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(7290);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(250);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_3__);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,12 +43,19 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-class ApprovalsSatisfied extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .s {
+
+class ApprovalsSatisfied extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
 }
 const approvalsSatisfied = ({ teams } = {}) => __awaiter(void 0, void 0, void 0, function* () {
-    const coreMemberLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .c)(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
+    var _a;
     const { data: reviews } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listReviews */ .K.pulls.listReviews(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-    return reviews.some(({ state, user }) => (user === null || user === void 0 ? void 0 : user.login) && coreMemberLogins.includes(user.login) && state === 'APPROVED');
+    const teamsAndLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreTeamsAndLogins */ .Fm)(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
+    const approvers = reviews.filter(({ state }) => state === 'APPROVED').map(({ user }) => user === null || user === void 0 ? void 0 : user.login);
+    const codeOwners = (_a = teams === null || teams === void 0 ? void 0 : teams.split('\n')) !== null && _a !== void 0 ? _a : (yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCodeOwners */ .U$)(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number));
+    return codeOwners.every(codeOwner => {
+        const membersOfCodeOwner = (0,lodash__WEBPACK_IMPORTED_MODULE_3__.groupBy)(teamsAndLogins, 'team')[codeOwner];
+        return membersOfCodeOwner.some(({ login }) => approvers.includes(login));
+    });
 });
 
 
@@ -161,7 +170,9 @@ const paginateAllChangedFilepaths = (pull_number, page = 1) => __awaiter(void 0,
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "c": () => (/* binding */ getCoreMemberLogins)
+/* harmony export */   "Fm": () => (/* binding */ getCoreTeamsAndLogins),
+/* harmony export */   "U$": () => (/* binding */ getCodeOwners),
+/* harmony export */   "cp": () => (/* binding */ getCoreMemberLogins)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
@@ -204,20 +215,24 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const getCoreMemberLogins = (pull_number, teams) => __awaiter(void 0, void 0, void 0, function* () {
+    const teamsAndLogins = yield getCoreTeamsAndLogins(pull_number, teams);
+    return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(teamsAndLogins.map(({ login }) => login));
+});
+const getCoreTeamsAndLogins = (pull_number, teams) => __awaiter(void 0, void 0, void 0, function* () {
     const codeOwners = teams !== null && teams !== void 0 ? teams : (yield getCodeOwners(pull_number));
     if (!(codeOwners === null || codeOwners === void 0 ? void 0 : codeOwners.length)) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No code owners found.');
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No code owners found. Please provide a "teams" input or set up a CODEOWNERS file in your repo.');
         throw new Error();
     }
-    const adminLogins = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(codeOwners, (team) => __awaiter(void 0, void 0, void 0, function* () {
+    const teamsAndLogins = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(codeOwners, (team) => __awaiter(void 0, void 0, void 0, function* () {
         return _octokit__WEBPACK_IMPORTED_MODULE_6__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
             org: _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo.owner,
             team_slug: team,
             per_page: 100
         })
-            .then(listMembersResponse => listMembersResponse.data.map(member => member.login));
+            .then(listMembersResponse => listMembersResponse.data.map(({ login }) => ({ team, login })));
     }));
-    return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.union)(...adminLogins);
+    return teamsAndLogins.flat();
 });
 const getCodeOwners = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
