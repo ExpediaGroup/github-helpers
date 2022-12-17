@@ -13,7 +13,7 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { CodeOwnersEntry, loadOwners, matchFile } from 'codeowners-utils';
-import { uniq } from 'lodash';
+import { uniq, union } from 'lodash';
 import { context } from '@actions/github';
 import { getChangedFilepaths } from './get-changed-filepaths';
 import { map } from 'bluebird';
@@ -41,8 +41,7 @@ export const getCoreTeamsAndLogins = async (pull_number: number, teams?: string[
       })
       .then(listMembersResponse => listMembersResponse.data.map(({ login }) => ({ team, login })))
   );
-
-  return teamsAndLogins.flat();
+  return union(...teamsAndLogins);
 };
 
 const getCodeOwners = async (pull_number: number) => {

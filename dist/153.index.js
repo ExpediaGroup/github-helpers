@@ -322,7 +322,7 @@ const getCoreTeamsAndLogins = (pull_number, teams) => __awaiter(void 0, void 0, 
         })
             .then(listMembersResponse => listMembersResponse.data.map(({ login }) => ({ team, login })));
     }));
-    return teamsAndLogins.flat();
+    return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.union)(...teamsAndLogins);
 });
 const getCodeOwners = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
