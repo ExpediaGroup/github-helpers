@@ -25,10 +25,10 @@ export const approvalsSatisfied = async ({ teams }: ApprovalsSatisfied = {}) => 
   const { data: reviews } = await octokit.pulls.listReviews({ pull_number: context.issue.number, ...context.repo });
   const teamsAndLogins = await getCoreTeamsAndLogins(context.issue.number, teams?.split('\n'));
   const approvers = reviews.filter(({ state }) => state === 'APPROVED').map(({ user }) => user?.login);
-  const codeOwners = uniq(teamsAndLogins.map(({ team }) => team));
+  const codeOwnerTeams = uniq(teamsAndLogins.map(({ team }) => team));
 
-  return codeOwners.every(codeOwner => {
-    const membersOfCodeOwner = groupBy(teamsAndLogins, 'team')[codeOwner];
-    return membersOfCodeOwner.some(({ login }) => approvers.includes(login));
+  return codeOwnerTeams.every(team => {
+    const membersOfCodeOwnerTeam = groupBy(teamsAndLogins, 'team')[team];
+    return membersOfCodeOwnerTeam.some(({ login }) => approvers.includes(login));
   });
 };
