@@ -13,37 +13,42 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { CodeOwnersEntry, loadOwners, matchFile } from 'codeowners-utils';
-import { union, uniq } from 'lodash';
+import { uniq, union } from 'lodash';
 import { context } from '@actions/github';
 import { getChangedFilepaths } from './get-changed-filepaths';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
 
 export const getCoreMemberLogins = async (pull_number: number, teams?: string[]) => {
+  const teamsAndLogins = await getCoreTeamsAndLogins(pull_number, teams);
+  return uniq(teamsAndLogins.map(({ login }) => login));
+};
+
+export const getCoreTeamsAndLogins = async (pull_number: number, teams?: string[]) => {
   const codeOwners = teams ?? (await getCodeOwners(pull_number));
 
   if (!codeOwners?.length) {
-    core.setFailed('No code owners found.');
+    core.setFailed('No code owners found. Please provide a "teams" input or set up a CODEOWNERS file in your repo.');
     throw new Error();
   }
 
-  const adminLogins = await map(codeOwners, async team =>
+  const teamsAndLogins = await map(codeOwners, async team =>
     octokit.teams
       .listMembersInOrg({
         org: context.repo.owner,
         team_slug: team,
         per_page: 100
       })
-      .then(listMembersResponse => listMembersResponse.data.map(member => member.login))
+      .then(listMembersResponse => listMembersResponse.data.map(({ login }) => ({ team, login })))
   );
-  return union(...adminLogins);
+  return union(...teamsAndLogins);
 };
 
 const getCodeOwners = async (pull_number: number) => {
   const codeOwners = (await loadOwners(process.cwd())) ?? [];
   const changedFilePaths = await getChangedFilepaths(pull_number);
   const matchingCodeOwners = changedFilePaths.map(filePath => matchFile(filePath, codeOwners) ?? ({} as CodeOwnersEntry));
-  return uniq(
+  return uniq<string>(
     matchingCodeOwners
       .map(owner => owner.owners)
       .flat()

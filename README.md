@@ -49,11 +49,17 @@ Each of the following helpers are defined in a file of the same name in `src/hel
 ### [add-pr-approval-label](.github/workflows/add-pr-approval-label.yml)
   * Upon PR review, adds a `CORE APPROVED` label if the reviewer is a part of the provided Github team, otherwise adds the `PEER APPROVED` label
 
+### [approvals-satisfied](.github/workflows/approvals-satisfied.yml)
+  * Returns `true` if the PR has been approved by the specified GitHub team(s) and `false` otherwise
+  * If GitHub teams are omitted, uses `CODEOWNERS.md` to determine teams to use
+
 ### [approve-pr](.github/workflows/approve-pr.yml)
-* Approves a PR
+  * Approves a PR
 
 ### [assign-pr-reviewers](.github/workflows/assign-pr-reviewers.yml)
-  * Randomly assigns members of a github team to review a PR. If `login` is provided, it does nothing if that user is already part of the team
+  * Randomly assigns members of the specified GitHub team(s) to review a PR.
+  * If GitHub teams are omitted, uses `CODEOWNERS.md` to determine teams to use
+  * If `login` is provided, it does nothing if that user is already part of the team
   * You can also pass a `slack_webhook_url` to notify the assignees that they are assigned to the PR!
 
 ### [check-merge-safety](.github/workflows/check-merge-safety.yml)
