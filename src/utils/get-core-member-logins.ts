@@ -48,7 +48,7 @@ const getCodeOwners = async (pull_number: number) => {
   const codeOwners = (await loadOwners(process.cwd())) ?? [];
   const changedFilePaths = await getChangedFilepaths(pull_number);
   const matchingCodeOwners = changedFilePaths.map(filePath => matchFile(filePath, codeOwners) ?? ({} as CodeOwnersEntry));
-  return uniq(
+  return uniq<string>(
     matchingCodeOwners
       .map(owner => owner.owners)
       .flat()

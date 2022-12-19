@@ -24,11 +24,14 @@ export class ApprovalsSatisfied extends HelperInputs {
 export const approvalsSatisfied = async ({ teams }: ApprovalsSatisfied = {}) => {
   const { data: reviews } = await octokit.pulls.listReviews({ pull_number: context.issue.number, ...context.repo });
   const teamsAndLogins = await getCoreTeamsAndLogins(context.issue.number, teams?.split('\n'));
-  const approvers = reviews.filter(({ state }) => state === 'APPROVED').map(({ user }) => user?.login);
+  const approverLogins = reviews
+    .filter(({ state }) => state === 'APPROVED')
+    .map(({ user }) => user?.login)
+    .filter((login): login is string => Boolean(login));
   const codeOwnerTeams = uniq(teamsAndLogins.map(({ team }) => team));
 
   return codeOwnerTeams.every(team => {
     const membersOfCodeOwnerTeam = groupBy(teamsAndLogins, 'team')[team];
-    return membersOfCodeOwnerTeam.some(({ login }) => approvers.includes(login));
+    return membersOfCodeOwnerTeam.some(({ login }) => approverLogins.includes(login));
   });
 };

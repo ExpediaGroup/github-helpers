@@ -49,11 +49,14 @@ class ApprovalsSatisfied extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/*
 const approvalsSatisfied = ({ teams } = {}) => __awaiter(void 0, void 0, void 0, function* () {
     const { data: reviews } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listReviews */ .K.pulls.listReviews(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     const teamsAndLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreTeamsAndLogins */ .F)(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
-    const approvers = reviews.filter(({ state }) => state === 'APPROVED').map(({ user }) => user === null || user === void 0 ? void 0 : user.login);
+    const approverLogins = reviews
+        .filter(({ state }) => state === 'APPROVED')
+        .map(({ user }) => user === null || user === void 0 ? void 0 : user.login)
+        .filter((login) => Boolean(login));
     const codeOwnerTeams = (0,lodash__WEBPACK_IMPORTED_MODULE_3__.uniq)(teamsAndLogins.map(({ team }) => team));
     return codeOwnerTeams.every(team => {
         const membersOfCodeOwnerTeam = (0,lodash__WEBPACK_IMPORTED_MODULE_3__.groupBy)(teamsAndLogins, 'team')[team];
-        return membersOfCodeOwnerTeam.some(({ login }) => approvers.includes(login));
+        return membersOfCodeOwnerTeam.some(({ login }) => approverLogins.includes(login));
     });
 });
 
