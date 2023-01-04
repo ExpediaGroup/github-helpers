@@ -260,7 +260,7 @@ function componentConfig(item, runTests) {
         runGoStaticChecks
     };
 }
-const generateComponentMatrix = ({ backstage_url }) => generate_component_matrix_awaiter(void 0, void 0, void 0, function* () {
+const generateComponentMatrix = ({ backstage_url, force_all_checks }) => generate_component_matrix_awaiter(void 0, void 0, void 0, function* () {
     const entities = yield (0,get_backstage_entities/* getBackstageEntities */.g)({ backstage_url });
     const repoUrl = `${process.env.GITHUB_SERVER_URL}/${github.context.repo.owner}/${github.context.repo.repo}`;
     const componentItems = entities
@@ -275,9 +275,9 @@ const generateComponentMatrix = ({ backstage_url }) => generate_component_matrix
         return file.file.startsWith(loc);
     }));
     inspectComponents('Changed components', changedComponents);
-    const forceAll = eventName !== 'pull_request';
+    const forceAll = !!force_all_checks || eventName !== 'pull_request';
     if (forceAll)
-        core.info('forcing CI runs for all components (not a pull request)');
+        core.info(`forcing CI runs for all components (${eventName})`);
     core.info('Generating component matrix...');
     const matrix = {
         include: componentItems.map(item => componentConfig(item, forceAll || changedComponents.includes(item)))

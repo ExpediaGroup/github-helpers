@@ -22,6 +22,7 @@ import { getBackstageEntities } from '../utils/get-backstage-entities';
 
 export class GenerateComponentMatrix extends HelperInputs {
   backstage_url?: string;
+  force_all_checks?: string;
 }
 
 const DEFAULT_GO_VERSION = '1.18';
@@ -106,6 +107,7 @@ function inspectComponents(message: string, items: Entity[]) {
   core.info(`${message} (${items.length}):`);
   items.forEach(item => core.info(` - ${item.metadata.name} at "${sourceLocationRelative(item)}"`));
 }
+
 function componentConfig(item: Entity, runTests: boolean) {
   const path = sourceLocationDir(item)!;
 
@@ -138,7 +140,7 @@ function componentConfig(item: Entity, runTests: boolean) {
   };
 }
 
-export const generateComponentMatrix = async ({ backstage_url }: GenerateComponentMatrix) => {
+export const generateComponentMatrix = async ({ backstage_url, force_all_checks }: GenerateComponentMatrix) => {
   const entities = await getBackstageEntities({ backstage_url });
   const repoUrl = `${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}`;
 
@@ -162,8 +164,8 @@ export const generateComponentMatrix = async ({ backstage_url }: GenerateCompone
 
   inspectComponents('Changed components', changedComponents);
 
-  const forceAll = eventName !== 'pull_request';
-  if (forceAll) core.info('forcing CI runs for all components (not a pull request)');
+  const forceAll = !!force_all_checks || eventName !== 'pull_request';
+  if (forceAll) core.info(`forcing CI runs for all components (${eventName})`);
 
   core.info('Generating component matrix...');
   const matrix = {

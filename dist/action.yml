@@ -103,6 +103,9 @@ inputs:
   backstage_url:
     description: 'Backstage URL'
     required: false
+  force_all_checks:
+    description: 'Force checks for all PRs even if files were not touched'
+    required: false
   template_path:
     description: 'Handlebars Template Path'
     required: false

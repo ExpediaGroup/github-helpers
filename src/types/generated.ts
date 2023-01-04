@@ -46,6 +46,7 @@ export class HelperInputs {
   base?: string;
   head?: string;
   backstage_url?: string;
+  force_all_checks?: string;
   template_path?: string;
   output_path?: string;
 }
