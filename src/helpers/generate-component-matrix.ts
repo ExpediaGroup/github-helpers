@@ -96,7 +96,7 @@ function hasInRoot(dirName: string, rootFile: string) {
   const dirs = dirName.split('/');
   const testFile = path.join('./', ...dirs, rootFile);
   if (fs.existsSync(testFile)) {
-    core.info(`Found ${rootFile} in ${dirName}:`);
+    core.info(`Found ${testFile}`);
     return true;
   }
   core.info(`Unable to find ${rootFile} in ${dirName}`);
@@ -119,8 +119,12 @@ function componentConfig(item: Entity, runTests: boolean) {
   const runClippy = isRust && runTests;
   const runGoStaticChecks = isGo && runTests;
 
+  // Slither is executed from monorepo's root, not from the "path"
+  // with the path passed as a target
+  // because of that the slither config will be in a subdir of the working dir
+  // and slither action won't find it automatically
   const slitherArgs = hasInRoot(path, 'slither.config.json')
-    ? ''
+    ? `--config-file ${path}/slither.config.json`
     : '--filter-paths "node_modules|testing|test|lib" --exclude timestamp,solc-version,naming-convention,assembly-usage';
 
   return {
