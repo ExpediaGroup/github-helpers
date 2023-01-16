@@ -197,6 +197,11 @@ function sourceLocationDir(entity) {
     const loc = sourceLocation(entity);
     return loc.split('/').slice(7, -1).join('/');
 }
+function explicitRelativeLocation(loc) {
+    if (loc.startsWith('./'))
+        return loc;
+    return ['.', ...loc.split('/')].join('/');
+}
 /**
  * Finds the first parent directory that contains rootFile.
  * If the rootFile is not found, returns ./
@@ -248,7 +253,7 @@ function componentConfig(item, runTests) {
     // because of that the slither config will be in a subdir of the working dir
     // and slither action won't find it automatically
     const slitherArgs = hasInRoot(path, 'slither.config.json')
-        ? `--config-file ${path}/slither.config.json`
+        ? `--config-file ${explicitRelativeLocation(path)}/slither.config.json`
         : '--filter-paths "node_modules|testing|test|lib" --exclude timestamp,solc-version,naming-convention,assembly-usage';
     return {
         name: item.metadata.name,
