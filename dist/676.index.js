@@ -337,7 +337,7 @@ var manage_merge_queue_awaiter = (undefined && undefined.__awaiter) || function 
 
 class ManageMergeQueue extends generated/* HelperInputs */.s {
 }
-const manageMergeQueue = ({ login, slack_webhook_url } = {}) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
+const manageMergeQueue = ({ login, slack_webhook_url, teams } = {}) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
     const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: github.context.issue.number }, github.context.repo));
     if (pullRequest.merged || !pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak)) {
         core.info('This PR is not in the merge queue.');
@@ -351,7 +351,7 @@ const manageMergeQueue = ({ login, slack_webhook_url } = {}) => manage_merge_que
     }
     const prAlreadyInQueue = pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); });
     if (!prAlreadyInQueue) {
-        const allRequiredApprovalsAreMet = yield (0,approvals_satisfied.approvalsSatisfied)();
+        const allRequiredApprovalsAreMet = yield (0,approvals_satisfied.approvalsSatisfied)({ teams });
         if (!allRequiredApprovalsAreMet) {
             core.info('This PR is missing required approvals.');
             yield (0,remove_label.removeLabelIfExists)(constants/* READY_FOR_MERGE_PR_LABEL */.Ak, pullRequest.number);

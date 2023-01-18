@@ -35,9 +35,10 @@ import { createPrComment } from './create-pr-comment';
 export class ManageMergeQueue extends HelperInputs {
   login?: string;
   slack_webhook_url?: string;
+  teams?: string;
 }
 
-export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMergeQueue = {}) => {
+export const manageMergeQueue = async ({ login, slack_webhook_url, teams }: ManageMergeQueue = {}) => {
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
   if (pullRequest.merged || !pullRequest.labels.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
     core.info('This PR is not in the merge queue.');
@@ -51,7 +52,7 @@ export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMerge
   }
   const prAlreadyInQueue = pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX));
   if (!prAlreadyInQueue) {
-    const allRequiredApprovalsAreMet = await approvalsSatisfied();
+    const allRequiredApprovalsAreMet = await approvalsSatisfied({ teams });
     if (!allRequiredApprovalsAreMet) {
       core.info('This PR is missing required approvals.');
       await removeLabelIfExists(READY_FOR_MERGE_PR_LABEL, pullRequest.number);
