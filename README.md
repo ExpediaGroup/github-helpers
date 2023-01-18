@@ -157,6 +157,7 @@ Additionally, the following parameters can be used for additional control over t
     * Merging a PR will update the positions of all PRs in the queue.
     * Adding the `JUMP THE QUEUE` label to a PR will make that PR first in the queue immediately.
     * When a PR is merged, it automatically updates the first-queued PR with the default branch.
+    * If a PR does not have all required approvals (as determined by `CODEOWNERS` if present), it will be denied entrance to the merge queue.
  * You can also pass `login` and `slack_webhook_url` to notify the PR author when they are in the 1st position of the merge queue.
 
 ### [move-project-card](.github/workflows/move-project-card.yml)
