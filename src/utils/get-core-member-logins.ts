@@ -28,8 +28,8 @@ export const getCoreTeamsAndLogins = async (pull_number: number, teams?: string[
   const codeOwners = teams ?? (await getCodeOwners(pull_number));
 
   if (!codeOwners?.length) {
-    core.warning('No code owners found. Please provide a "teams" input or set up a CODEOWNERS file in your repo.');
-    return [];
+    core.setFailed('No code owners found. Please provide a "teams" input or set up a CODEOWNERS file in your repo.');
+    throw new Error();
   }
 
   const teamsAndLogins = await map(codeOwners, async team =>

@@ -145,26 +145,4 @@ describe('approvalsSatisfied', () => {
     const result = await approvalsSatisfied({ teams: 'team1\nteam2\nteam3' });
     expect(result).toBe(true);
   });
-
-  it('should return true when no teams input provided and no CODEOWNERS found', async () => {
-    (getCoreTeamsAndLogins as jest.Mock).mockResolvedValue([]);
-    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
-      data: [
-        {
-          state: 'APPROVED',
-          user: { login: 'user1' }
-        },
-        {
-          state: 'APPROVED',
-          user: { login: 'user2' }
-        },
-        {
-          state: 'CHANGES_REQUESTED',
-          user: { login: 'user3' }
-        }
-      ]
-    }));
-    const result = await approvalsSatisfied();
-    expect(result).toBe(true);
-  });
 });
