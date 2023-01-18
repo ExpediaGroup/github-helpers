@@ -20,7 +20,11 @@ import { octokit, octokitGraphql } from '../../src/octokit';
 import { removeLabelIfExists } from '../../src/helpers/remove-label';
 import { setCommitStatus } from '../../src/helpers/set-commit-status';
 import { updateMergeQueue } from '../../src/utils/update-merge-queue';
+import { approvalsSatisfied } from '../../src/helpers/approvals-satisfied';
+import { createPrComment } from '../../src/helpers/create-pr-comment';
 
+jest.mock('../../src/helpers/approvals-satisfied');
+jest.mock('../../src/helpers/create-pr-comment');
 jest.mock('../../src/helpers/remove-label');
 jest.mock('../../src/helpers/set-commit-status');
 jest.mock('../../src/utils/notify-user');
@@ -40,6 +44,10 @@ jest.mock('@actions/github', () => ({
 }));
 
 describe('manageMergeQueue', () => {
+  beforeEach(() => {
+    (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+  });
+
   describe('pr merged case', () => {
     const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }, { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
     beforeEach(async () => {
@@ -100,6 +108,40 @@ describe('manageMergeQueue', () => {
 
     it('should call updateMergeQueue with correct params', () => {
       expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
+    });
+  });
+
+  describe('pr missing required approvals case', () => {
+    const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }, { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
+    beforeEach(async () => {
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+        data: page === 1 ? queuedPrs : []
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          merged: false,
+          head: { sha: 'sha' },
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }],
+          number: 123
+        }
+      }));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(false);
+      await manageMergeQueue();
+    });
+
+    it('should call removeLabel with correct params', () => {
+      expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 123);
+    });
+
+    it('should call createPrComment with correct params', () => {
+      expect(createPrComment).toHaveBeenCalledWith({
+        sha: 'sha',
+        body: 'This PR is missing required approvals. Please obtain all required approvals prior to entering the merge queue!'
+      });
+    });
+
+    it('should not enable auto-merge', () => {
+      expect(octokitGraphql).not.toHaveBeenCalled();
     });
   });
 
