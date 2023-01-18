@@ -29,6 +29,8 @@ import { removeLabelIfExists } from './remove-label';
 import { setCommitStatus } from './set-commit-status';
 import { updateMergeQueue } from '../utils/update-merge-queue';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
+import { approvalsSatisfied } from './approvals-satisfied';
+import { createPrComment } from './create-pr-comment';
 
 export class ManageMergeQueue extends HelperInputs {
   login?: string;
@@ -43,10 +45,21 @@ export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMerge
   }
   const queuedPrs = await getQueuedPullRequests();
   const queuePosition = queuedPrs.length;
-  if (pullRequest.labels.find(label => label.name === JUMP_THE_QUEUE_PR_LABEL)) {
+  const jumpQueueRequested = pullRequest.labels.find(label => label.name === JUMP_THE_QUEUE_PR_LABEL);
+  if (jumpQueueRequested) {
     return updateMergeQueue(queuedPrs);
   }
-  if (!pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))) {
+  const prAlreadyInQueue = pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX));
+  if (!prAlreadyInQueue) {
+    const allRequiredApprovalsAreMet = await approvalsSatisfied();
+    if (!allRequiredApprovalsAreMet) {
+      core.info('This PR is missing required approvals.');
+      await removeLabelIfExists(READY_FOR_MERGE_PR_LABEL, pullRequest.number);
+      return createPrComment({
+        sha: pullRequest.head.sha,
+        body: 'This PR is missing required approvals. Please obtain all required approvals prior to entering the merge queue!'
+      });
+    }
     await addPrToQueue(pullRequest, queuePosition);
   }
 
