@@ -158,13 +158,13 @@ const updateQueuePosition = (pr, index) => __awaiter(void 0, void 0, void 0, fun
     }
     if (newQueuePosition === 1) {
         const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: number }, github.context.repo));
-        yield Promise.all([(0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, number), (0,prepare_queued_pr_for_merge.updatePrWithMainline)(pullRequest)]);
         yield (0,set_commit_status.setCommitStatus)({
             sha: pullRequest.head.sha,
             context: constants/* MERGE_QUEUE_STATUS */.Cb,
             state: 'success',
             description: 'This PR is next to merge.'
         });
+        yield Promise.all([(0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, number), (0,prepare_queued_pr_for_merge.updatePrWithMainline)(pullRequest)]);
     }
     return Promise.all([
         octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${newQueuePosition}`], issue_number: number }, github.context.repo)),

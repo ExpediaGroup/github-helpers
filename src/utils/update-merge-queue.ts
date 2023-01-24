@@ -47,13 +47,13 @@ const updateQueuePosition = async (pr: QueuedPr, index: number) => {
   }
   if (newQueuePosition === 1) {
     const { data: pullRequest } = await octokit.pulls.get({ pull_number: number, ...context.repo });
-    await Promise.all([removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, number), updatePrWithMainline(pullRequest)]);
     await setCommitStatus({
       sha: pullRequest.head.sha,
       context: MERGE_QUEUE_STATUS,
       state: 'success',
       description: 'This PR is next to merge.'
     });
+    await Promise.all([removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, number), updatePrWithMainline(pullRequest)]);
   }
 
   return Promise.all([

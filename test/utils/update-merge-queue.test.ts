@@ -158,10 +158,6 @@ describe('updateMergeQueue', () => {
       expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #3', 456);
     });
 
-    it('should update pr with mainline', () => {
-      expect(updatePrWithMainline).toHaveBeenCalled();
-    });
-
     it('should set commit status on first PR in queue', () => {
       expect(setCommitStatus).toHaveBeenCalledWith({
         sha: 'sha123',
@@ -169,6 +165,10 @@ describe('updateMergeQueue', () => {
         state: 'success',
         description: 'This PR is next to merge.'
       });
+    });
+
+    it('should update pr with mainline', () => {
+      expect(updatePrWithMainline).toHaveBeenCalled();
     });
   });
 
