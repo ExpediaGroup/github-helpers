@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { JUMP_THE_QUEUE_PR_LABEL } from '../../src/constants';
+import { JUMP_THE_QUEUE_PR_LABEL, MERGE_QUEUE_STATUS } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { PullRequestList } from '../../src/types/github';
 import { context } from '@actions/github';
@@ -19,9 +19,11 @@ import { octokit } from '../../src/octokit';
 import { removeLabelIfExists } from '../../src/helpers/remove-label';
 import { updateMergeQueue } from '../../src/utils/update-merge-queue';
 import { updatePrWithMainline } from '../../src/helpers/prepare-queued-pr-for-merge';
+import { setCommitStatus } from '../../src/helpers/set-commit-status';
 
 jest.mock('../../src/helpers/remove-label');
 jest.mock('../../src/helpers/prepare-queued-pr-for-merge');
+jest.mock('../../src/helpers/set-commit-status');
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
@@ -81,13 +83,15 @@ describe('updateMergeQueue', () => {
     });
   });
 
-  describe('pr taken out of queue case', () => {
+  describe('middle pr taken out of queue case', () => {
     const queuedPrs = [
       {
+        head: { sha: 'sha1' },
         number: 123,
         labels: [{ name: 'QUEUED FOR MERGE #1' }]
       },
       {
+        head: { sha: 'sha3' },
         number: 456,
         labels: [{ name: 'QUEUED FOR MERGE #3' }]
       }
@@ -114,8 +118,57 @@ describe('updateMergeQueue', () => {
       expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #3', 456);
     });
 
-    it('should not call updatePrWithDefaultBranch', () => {
+    it('should not update pr with mainline', () => {
       expect(updatePrWithMainline).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('first pr taken out of queue case', () => {
+    const queuedPrs = [
+      {
+        head: { sha: 'sha2' },
+        number: 123,
+        labels: [{ name: 'QUEUED FOR MERGE #2' }]
+      },
+      {
+        head: { sha: 'sha3' },
+        number: 456,
+        labels: [{ name: 'QUEUED FOR MERGE #3' }]
+      }
+    ];
+    beforeEach(async () => {
+      await updateMergeQueue(queuedPrs as PullRequestList);
+    });
+
+    it('should call add labels with correct params', () => {
+      expect(octokit.issues.addLabels).toHaveBeenCalledWith({
+        labels: ['QUEUED FOR MERGE #1'],
+        issue_number: 123,
+        ...context.repo
+      });
+      expect(octokit.issues.addLabels).toHaveBeenCalledWith({
+        labels: ['QUEUED FOR MERGE #2'],
+        issue_number: 456,
+        ...context.repo
+      });
+    });
+
+    it('should call remove label with correct params', () => {
+      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #2', 123);
+      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #3', 456);
+    });
+
+    it('should update pr with mainline', () => {
+      expect(updatePrWithMainline).toHaveBeenCalled();
+    });
+
+    it('should set commit status on first PR in queue', () => {
+      expect(setCommitStatus).toHaveBeenCalledWith({
+        sha: 'sha123',
+        context: MERGE_QUEUE_STATUS,
+        state: 'success',
+        description: 'This PR is next to merge.'
+      });
     });
   });
 
