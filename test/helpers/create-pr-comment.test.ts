@@ -105,7 +105,7 @@ describe('createPrComment', () => {
     });
   });
 
-  describe('update comment case', () => {
+  describe('comment login case - update', () => {
     const body = 'body';
     const login = 'login';
 
@@ -130,6 +130,34 @@ describe('createPrComment', () => {
         body,
         ...context.repo
       });
+    });
+  });
+
+  describe('comment login case - create', () => {
+    const body = 'body';
+    const login = 'login-with-no-matching-comments';
+
+    beforeEach(() => {
+      createPrComment({ body, login });
+    });
+
+    it('should call createComment with correct params', () => {
+      expect(octokit.issues.createComment).toHaveBeenCalledWith({
+        body,
+        issue_number: 123,
+        ...context.repo
+      });
+    });
+
+    it('should call listComments with correct params', () => {
+      expect(octokit.issues.listComments).toHaveBeenCalledWith({
+        issue_number: 123,
+        ...context.repo
+      });
+    });
+
+    it('should call updateComment with correct params', () => {
+      expect(octokit.issues.updateComment).not.toHaveBeenCalled();
     });
   });
 });

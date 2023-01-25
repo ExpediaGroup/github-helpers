@@ -127,12 +127,14 @@ const createPrComment = ({ body, sha, login }) => __awaiter(void 0, void 0, void
         }
     }
     if (login) {
-        const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.listComments */ .K.issues.listComments(Object.assign({ issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+        const prNumber = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number;
+        const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.listComments */ .K.issues.listComments(Object.assign({ issue_number: prNumber }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
         const comment_id = (_b = data.find(comment => { var _a; return ((_a = comment === null || comment === void 0 ? void 0 : comment.user) === null || _a === void 0 ? void 0 : _a.login) === login; })) === null || _b === void 0 ? void 0 : _b.id;
         if (comment_id) {
             return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.updateComment */ .K.issues.updateComment(Object.assign({ comment_id,
                 body }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
         }
+        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: prNumber }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     }
 });
 

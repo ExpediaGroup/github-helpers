@@ -46,8 +46,9 @@ export const createPrComment = async ({ body, sha, login }: CreatePrComment) => 
     }
   }
   if (login) {
+    const prNumber = context.issue.number;
     const { data } = await octokit.issues.listComments({
-      issue_number: context.issue.number,
+      issue_number: prNumber,
       ...context.repo
     });
     const comment_id = data.find(comment => comment?.user?.login === login)?.id;
@@ -58,5 +59,10 @@ export const createPrComment = async ({ body, sha, login }: CreatePrComment) => 
         ...context.repo
       });
     }
+    return octokit.issues.createComment({
+      body,
+      issue_number: prNumber,
+      ...context.repo
+    });
   }
 };
