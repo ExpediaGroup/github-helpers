@@ -11,6 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import * as core from '@actions/core';
 import { PipelineState } from '../types/github';
 import { HelperInputs } from '../types/generated';
 import { context as githubContext } from '@actions/github';
@@ -23,10 +24,26 @@ export class SetCommitStatus extends HelperInputs {
   state = '';
   description?: string;
   target_url?: string;
+  skip_if_already_set?: string;
 }
 
-export const setCommitStatus = async ({ sha, context, state, description, target_url }: SetCommitStatus) => {
-  await map(context.split('\n').filter(Boolean), context =>
+export const setCommitStatus = async ({ sha, context, state, description, target_url, skip_if_already_set }: SetCommitStatus) => {
+  await map(context.split('\n').filter(Boolean), async context => {
+    if (skip_if_already_set === 'true') {
+      const check_runs = await octokit.checks.listForRef({
+        ...githubContext.repo,
+        ref: sha
+      });
+      const run = check_runs.data.check_runs.find(({ name }) => name === context);
+      if (run) {
+        const runCompletedAndIsValid = run.status === 'completed' && (run.conclusion === 'failure' || run.conclusion === 'success');
+        if (runCompletedAndIsValid) {
+          core.info(`${context} already completed with a ${run.conclusion} conclusion.`);
+          return;
+        }
+      }
+    }
+
     octokit.repos.createCommitStatus({
       sha,
       context,
@@ -34,6 +51,6 @@ export const setCommitStatus = async ({ sha, context, state, description, target
       description,
       target_url,
       ...githubContext.repo
-    })
-  );
+    });
+  });
 };
