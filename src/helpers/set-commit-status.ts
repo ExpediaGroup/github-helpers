@@ -34,15 +34,11 @@ export const setCommitStatus = async ({ sha, context, state, description, target
         ...githubContext.repo,
         ref: sha
       });
-      const run = check_runs.data.check_runs.find(({ name }) => name === context);
-      if (run) {
-        const runCompletedAndIsValid = run.status === 'completed' && (run.conclusion === 'failure' || run.conclusion === 'success');
-        if (runCompletedAndIsValid) {
-          core.info(`${context} already completed with a ${run.conclusion} conclusion.`);
-          return;
-        }
+      const runCompletedAndIsValid = run?.status === 'completed' && (run?.conclusion === 'failure' || run?.conclusion === 'success');
+      if (runCompletedAndIsValid) {
+        core.info(`${context} already completed with a ${run.conclusion} conclusion.`);
+        return;
       }
-    }
 
     octokit.repos.createCommitStatus({
       sha,
