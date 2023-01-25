@@ -106,6 +106,9 @@ inputs:
   no_evict_upon_conflict:
     description: 'Skip the default behavior of evicting a PR from the merge queue when there is a merge conflict'
     required: false
+  skip_if_already_set:
+    description: 'Skip setting a commit status if it has already been set to success or failure by a workflow'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'

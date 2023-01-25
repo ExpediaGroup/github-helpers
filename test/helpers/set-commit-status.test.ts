@@ -18,7 +18,22 @@ import { setCommitStatus } from '../../src/helpers/set-commit-status';
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: jest.fn(() => ({ rest: { repos: { createCommitStatus: jest.fn() } } }))
+  getOctokit: jest.fn(() => ({
+    rest: {
+      repos: { createCommitStatus: jest.fn() },
+      checks: {
+        listForRef: jest.fn(() => ({
+          data: {
+            check_runs: [
+              { name: 'context1', status: 'completed', conclusion: 'success' },
+              { name: 'context2', status: 'completed', conclusion: 'skipped' },
+              { name: 'context3', status: 'completed', conclusion: 'failure' }
+            ]
+          }
+        }))
+      }
+    }
+  }))
 }));
 
 describe('setCommitStatus', () => {
@@ -100,6 +115,59 @@ describe('setCommitStatus', () => {
 
     it('should skip blank line', () => {
       expect(octokit.repos.createCommitStatus).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('skip_if_already_set set to true', () => {
+    it('should skip as existing check run exited properly', async () => {
+      await setCommitStatus({
+        sha,
+        context: 'context1',
+        state,
+        description,
+        target_url,
+        skip_if_already_set: 'true'
+      });
+      expect(octokit.repos.createCommitStatus).not.toHaveBeenCalled();
+    });
+
+    it('should set status as check was skipped', async () => {
+      await setCommitStatus({
+        sha,
+        context: 'context2',
+        state,
+        description,
+        target_url,
+        skip_if_already_set: 'true'
+      });
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+        sha,
+        context: 'context2',
+        state,
+        description,
+        target_url,
+        ...githubContext.repo
+      });
+    });
+
+    it('should handle multiple inputs and only set the applicable status', async () => {
+      await setCommitStatus({
+        sha,
+        context: 'context3\ncontext2',
+        state,
+        description,
+        target_url,
+        skip_if_already_set: 'true'
+      });
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledTimes(1);
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+        sha,
+        context: 'context2',
+        state,
+        description,
+        target_url,
+        ...githubContext.repo
+      });
     });
   });
 });

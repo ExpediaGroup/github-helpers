@@ -180,6 +180,7 @@ Additionally, the following parameters can be used for additional control over t
 
 ### [set-commit-status](.github/workflows/set-commit-status.yml)
   * Sets a [commit status](https://github.blog/2012-09-04-commit-status-api/)
+  * You can pass in `skip_if_already_set: true` if you'd like to skip setting a status if it's already been set on the commit by a workflow
 
 ### [set-deployment-status](.github/workflows/deployments.yml#L31)
   * Updates a Github [deployment status](https://docs.github.com/en/rest/reference/repos#deployments)
