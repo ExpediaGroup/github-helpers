@@ -58,12 +58,10 @@ const setCommitStatus = ({ sha, context, state, description, target_url, skip_if
         if (skip_if_already_set === 'true') {
             const check_runs = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.checks.listForRef */ .K.checks.listForRef(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), { ref: sha }));
             const run = check_runs.data.check_runs.find(({ name }) => name === context);
-            if (run) {
-                const runCompletedAndIsValid = run.status === 'completed' && (run.conclusion === 'failure' || run.conclusion === 'success');
-                if (runCompletedAndIsValid) {
-                    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`${context} already completed with a ${run.conclusion} conclusion.`);
-                    return;
-                }
+            const runCompletedAndIsValid = (run === null || run === void 0 ? void 0 : run.status) === 'completed' && ((run === null || run === void 0 ? void 0 : run.conclusion) === 'failure' || (run === null || run === void 0 ? void 0 : run.conclusion) === 'success');
+            if (runCompletedAndIsValid) {
+                _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`${context} already completed with a ${run.conclusion} conclusion.`);
+                return;
             }
         }
         _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
