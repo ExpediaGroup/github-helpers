@@ -80,7 +80,7 @@ describe('createPrComment', () => {
     });
   });
 
-  describe('commit sha case', () => {
+  describe('create comment case - sha supplied', () => {
     const body = 'body';
     const sha = 'sha';
 
@@ -103,18 +103,26 @@ describe('createPrComment', () => {
         ...context.repo
       });
     });
+
+    it('should not call updateComment', () => {
+      expect(octokit.issues.updateComment).not.toHaveBeenCalled();
+    });
   });
 
-  describe('update comment case', () => {
+  describe('create comment case - login supplied', () => {
     const body = 'body';
-    const login = 'login';
+    const login = 'login-with-no-matching-comments';
 
     beforeEach(() => {
       createPrComment({ body, login });
     });
 
-    it('should not call createComment with correct params', () => {
-      expect(octokit.issues.createComment).not.toHaveBeenCalled();
+    it('should call createComment with correct params', () => {
+      expect(octokit.issues.createComment).toHaveBeenCalledWith({
+        body,
+        issue_number: 123,
+        ...context.repo
+      });
     });
 
     it('should call listComments with correct params', () => {
@@ -124,12 +132,73 @@ describe('createPrComment', () => {
       });
     });
 
+    it('should not call updateComment', () => {
+      expect(octokit.issues.updateComment).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('update comment case - sha and login supplied', () => {
+    const body = 'body';
+    const sha = 'sha';
+    const login = 'login';
+
+    beforeEach(() => {
+      createPrComment({ body, sha, login });
+    });
+
+    it('should call listPullRequestsAssociatedWithCommit with correct params', () => {
+      expect(octokit.repos.listPullRequestsAssociatedWithCommit).toHaveBeenCalledWith({
+        commit_sha: 'sha',
+        ...context.repo,
+        ...GITHUB_OPTIONS
+      });
+    });
+
     it('should call updateComment with correct params', () => {
       expect(octokit.issues.updateComment).toHaveBeenCalledWith({
         comment_id: 12345,
         body,
         ...context.repo
       });
+    });
+
+    it('should call listComments with correct params', () => {
+      expect(octokit.issues.listComments).toHaveBeenCalledWith({
+        issue_number: 123,
+        ...context.repo
+      });
+    });
+
+    it('should not call createComment', () => {
+      expect(octokit.issues.createComment).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('update comment case - login supplied', () => {
+    const body = 'body';
+    const login = 'login';
+
+    beforeEach(() => {
+      createPrComment({ body, login });
+    });
+
+    it('should call updateComment with correct params', () => {
+      expect(octokit.issues.updateComment).toHaveBeenCalledWith({
+        comment_id: 12345,
+        body,
+        ...context.repo
+      });
+    });
+
+    it('should call listComments with correct params', () => {
+      expect(octokit.issues.listComments).toHaveBeenCalledWith({
+        issue_number: 123,
+        ...context.repo
+      });
+    });
+
+    it('should not call createComment', () => {
+      expect(octokit.issues.createComment).not.toHaveBeenCalled();
     });
   });
 });

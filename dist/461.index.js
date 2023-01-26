@@ -114,25 +114,34 @@ class CreatePrComment extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .H
         this.body = '';
     }
 }
+const emptyResponse = { data: [] };
+const getPrsByCommit = (sha) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const prs = (sha &&
+        (yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.listPullRequestsAssociatedWithCommit */ .K.repos.listPullRequestsAssociatedWithCommit(Object.assign(Object.assign({ commit_sha: sha }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc)))) ||
+        emptyResponse;
+    return (_a = prs.data.find(Boolean)) === null || _a === void 0 ? void 0 : _a.number;
+});
+const getCommentByUser = (login) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
+    const comments = (login &&
+        (yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.listComments */ .K.issues.listComments(Object.assign({ issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo)))) ||
+        emptyResponse;
+    return (_b = comments.data.find(comment => { var _a; return ((_a = comment === null || comment === void 0 ? void 0 : comment.user) === null || _a === void 0 ? void 0 : _a.login) === login; })) === null || _b === void 0 ? void 0 : _b.id;
+});
 const createPrComment = ({ body, sha, login }) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _c;
     if (!sha && !login) {
         return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     }
-    if (sha) {
-        const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.listPullRequestsAssociatedWithCommit */ .K.repos.listPullRequestsAssociatedWithCommit(Object.assign(Object.assign({ commit_sha: sha }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
-        const prNumber = (_a = data.find(Boolean)) === null || _a === void 0 ? void 0 : _a.number;
-        if (prNumber) {
-            return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: prNumber }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
-        }
+    const defaultPrNumber = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number;
+    const prNumber = (_c = (yield getPrsByCommit(sha))) !== null && _c !== void 0 ? _c : defaultPrNumber;
+    const commentId = yield getCommentByUser(login);
+    if (commentId) {
+        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.updateComment */ .K.issues.updateComment(Object.assign({ comment_id: commentId, body }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     }
-    if (login) {
-        const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.listComments */ .K.issues.listComments(Object.assign({ issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
-        const comment_id = (_b = data.find(comment => { var _a; return ((_a = comment === null || comment === void 0 ? void 0 : comment.user) === null || _a === void 0 ? void 0 : _a.login) === login; })) === null || _b === void 0 ? void 0 : _b.id;
-        if (comment_id) {
-            return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.updateComment */ .K.issues.updateComment(Object.assign({ comment_id,
-                body }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
-        }
+    else {
+        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: prNumber }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     }
 });
 

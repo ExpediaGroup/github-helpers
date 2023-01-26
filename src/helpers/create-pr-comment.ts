@@ -22,6 +22,33 @@ export class CreatePrComment extends HelperInputs {
   login?: string;
 }
 
+const emptyResponse = { data: [] };
+
+const getPrsByCommit = async (sha?: string) => {
+  const prs =
+    (sha &&
+      (await octokit.repos.listPullRequestsAssociatedWithCommit({
+        commit_sha: sha,
+        ...context.repo,
+        ...GITHUB_OPTIONS
+      }))) ||
+    emptyResponse;
+
+  return prs.data.find(Boolean)?.number;
+};
+
+const getCommentByUser = async (login?: string) => {
+  const comments =
+    (login &&
+      (await octokit.issues.listComments({
+        issue_number: context.issue.number,
+        ...context.repo
+      }))) ||
+    emptyResponse;
+
+  return comments.data.find(comment => comment?.user?.login === login)?.id;
+};
+
 export const createPrComment = async ({ body, sha, login }: CreatePrComment) => {
   if (!sha && !login) {
     return octokit.issues.createComment({
@@ -30,33 +57,22 @@ export const createPrComment = async ({ body, sha, login }: CreatePrComment) => 
       ...context.repo
     });
   }
-  if (sha) {
-    const { data } = await octokit.repos.listPullRequestsAssociatedWithCommit({
-      commit_sha: sha,
-      ...context.repo,
-      ...GITHUB_OPTIONS
-    });
-    const prNumber = data.find(Boolean)?.number;
-    if (prNumber) {
-      return octokit.issues.createComment({
-        body,
-        issue_number: prNumber,
-        ...context.repo
-      });
-    }
-  }
-  if (login) {
-    const { data } = await octokit.issues.listComments({
-      issue_number: context.issue.number,
+
+  const defaultPrNumber = context.issue.number;
+  const prNumber = (await getPrsByCommit(sha)) ?? defaultPrNumber;
+  const commentId = await getCommentByUser(login);
+
+  if (commentId) {
+    return octokit.issues.updateComment({
+      comment_id: commentId,
+      body,
       ...context.repo
     });
-    const comment_id = data.find(comment => comment?.user?.login === login)?.id;
-    if (comment_id) {
-      return octokit.issues.updateComment({
-        comment_id,
-        body,
-        ...context.repo
-      });
-    }
+  } else {
+    return octokit.issues.createComment({
+      body,
+      issue_number: prNumber,
+      ...context.repo
+    });
   }
 };
