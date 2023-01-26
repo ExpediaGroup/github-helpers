@@ -1,8 +1,8 @@
 name: Add Labels
 
 on:
-  pull_request:
-    branches: [ main ]
+  pull_request_target:
+    branches: [main]
     paths:
       - 'src/helpers/add-labels.ts'
 

@@ -1,8 +1,8 @@
 name: Approvals Satisfied
 
 on:
-  pull_request:
-    branches: [ main ]
+  pull_request_target:
+    branches: [main]
     paths:
       - 'src/helpers/approvals-satisfied.ts'
 

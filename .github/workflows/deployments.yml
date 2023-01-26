@@ -1,8 +1,8 @@
 name: Deployments
 
 on:
-  pull_request:
-    branches: [ main ]
+  pull_request_target:
+    branches: [main]
     paths:
       - 'src/helpers/delete-deployment.ts'
       - 'src/helpers/initiate-deployment.ts'
@@ -30,7 +30,7 @@ jobs:
 
   set-deployment-status:
     name: Set Deployment Status
-    needs: [ initiate-deployment ]
+    needs: [initiate-deployment]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -52,7 +52,7 @@ jobs:
 
   delete-deployment:
     name: Delete Deployment
-    needs: [ initiate-deployment, set-deployment-status ]
+    needs: [initiate-deployment, set-deployment-status]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

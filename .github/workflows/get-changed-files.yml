@@ -1,8 +1,8 @@
 name: Get Changed Files
 
 on:
-  pull_request:
-    branches: [ main ]
+  pull_request_target:
+    branches: [main]
     paths:
       - 'src/helpers/get-changed-files.ts'
 

@@ -1,9 +1,9 @@
 name: Manage Merge Queue
 
 on:
-  pull_request:
-    branches: [ main ]
-    types: [ labeled, unlabeled, closed ]
+  pull_request_target:
+    branches: [main]
+    types: [labeled, unlabeled, closed]
 
 jobs:
   test:

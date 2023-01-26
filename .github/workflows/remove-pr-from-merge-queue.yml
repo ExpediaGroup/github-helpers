@@ -1,8 +1,8 @@
 name: Remove Pr From Merge Queue
 
 on:
-  pull_request:
-    branches: [ main ]
+  pull_request_target:
+    branches: [main]
     paths:
       - 'src/helpers/remove-pr-from-merge-queue.ts'
 

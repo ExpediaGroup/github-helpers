@@ -1,8 +1,8 @@
 name: Filter Paths
 
 on:
-  pull_request:
-    branches: [ main ]
+  pull_request_target:
+    branches: [main]
     paths:
       - 'src/helpers/filter-paths.ts'
 

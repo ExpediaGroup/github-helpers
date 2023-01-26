@@ -1,8 +1,8 @@
 name: Set Latest Pipeline Status
 
 on:
-  pull_request:
-    branches: [ main ]
+  pull_request_target:
+    branches: [main]
     paths:
       - 'src/helpers/set-latest-pipeline-status.ts'
 
