@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import { HelperInputs } from '../types/generated';
-import { context } from '@actions/github';
+import { context as githubContext } from '@actions/github';
 import { octokit } from '../octokit';
 import micromatch from 'micromatch';
 import { PullRequest } from '../types/github';
@@ -22,29 +22,30 @@ import { setCommitStatus } from './set-commit-status';
 import * as core from '@actions/core';
 
 export class CheckMergeSafety extends HelperInputs {
+  context?: string;
   paths?: string;
   override_filter_paths?: string;
   override_filter_globs?: string;
 }
 
 export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
-  const isPrWorkflow = Boolean(context.issue.number);
+  const isPrWorkflow = Boolean(githubContext.issue.number);
   if (!isPrWorkflow) {
     return handlePushWorkflow(inputs);
   }
-  const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
+  const { data: pullRequest } = await octokit.pulls.get({ pull_number: githubContext.issue.number, ...githubContext.repo });
 
   return setMergeSafetyStatus(pullRequest, inputs);
 };
 
-const setMergeSafetyStatus = async (pullRequest: PullRequest, inputs: CheckMergeSafety) => {
+const setMergeSafetyStatus = async (pullRequest: PullRequest, { context = 'Merge Safety', ...inputs }: CheckMergeSafety) => {
   const { state, message } = await getMergeSafetyStateAndMessage(pullRequest, inputs);
   await setCommitStatus({
     sha: pullRequest.head.sha,
     state,
-    context: 'Merge Safety',
+    context,
     description: message,
-    ...context.repo
+    ...githubContext.repo
   });
 };
 
@@ -76,7 +77,7 @@ const getMergeSafetyStateAndMessage = async (
   const {
     data: { files: filesWhichBranchIsBehindOn }
   } = await octokit.repos.compareCommitsWithBasehead({
-    ...context.repo,
+    ...githubContext.repo,
     basehead: `${branchName}...${baseOwner}:${default_branch}`
   });
   const fileNamesWhichBranchIsBehindOn = filesWhichBranchIsBehindOn?.map(file => file.filename) ?? [];
@@ -98,7 +99,7 @@ const getMergeSafetyStateAndMessage = async (
   const {
     data: { files: changedFiles }
   } = await octokit.repos.compareCommitsWithBasehead({
-    ...context.repo,
+    ...githubContext.repo,
     basehead: `${baseOwner}:${default_branch}...${branchName}`
   });
   const changedFileNames = changedFiles?.map(file => file.filename);

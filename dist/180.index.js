@@ -44,6 +44,17 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __rest = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 
 
 
@@ -62,9 +73,11 @@ const checkMergeSafety = (inputs) => __awaiter(void 0, void 0, void 0, function*
     const { data: pullRequest } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     return setMergeSafetyStatus(pullRequest, inputs);
 });
-const setMergeSafetyStatus = (pullRequest, inputs) => __awaiter(void 0, void 0, void 0, function* () {
+const setMergeSafetyStatus = (pullRequest, _a) => __awaiter(void 0, void 0, void 0, function* () {
+    var { context = 'Merge Safety' } = _a, inputs = __rest(_a, ["context"]);
     const { state, message } = yield getMergeSafetyStateAndMessage(pullRequest, inputs);
-    yield (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_5__.setCommitStatus)(Object.assign({ sha: pullRequest.head.sha, state, context: 'Merge Safety', description: message }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    yield (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_5__.setCommitStatus)(Object.assign({ sha: pullRequest.head.sha, state,
+        context, description: message }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
 });
 const handlePushWorkflow = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
     const pullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__/* .paginateAllOpenPullRequests */ .P)();
@@ -72,11 +85,11 @@ const handlePushWorkflow = (inputs) => __awaiter(void 0, void 0, void 0, functio
     return (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(filteredPullRequests, pullRequest => setMergeSafetyStatus(pullRequest, inputs));
 });
 const getMergeSafetyStateAndMessage = (pullRequest, { paths, override_filter_paths, override_filter_globs }) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _b;
     const { base: { repo: { default_branch, owner: { login: baseOwner } } }, head: { ref, user: { login: username } } } = pullRequest;
     const branchName = `${username}:${ref}`;
     const { data: { files: filesWhichBranchIsBehindOn } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${branchName}...${baseOwner}:${default_branch}` }));
-    const fileNamesWhichBranchIsBehindOn = (_a = filesWhichBranchIsBehindOn === null || filesWhichBranchIsBehindOn === void 0 ? void 0 : filesWhichBranchIsBehindOn.map(file => file.filename)) !== null && _a !== void 0 ? _a : [];
+    const fileNamesWhichBranchIsBehindOn = (_b = filesWhichBranchIsBehindOn === null || filesWhichBranchIsBehindOn === void 0 ? void 0 : filesWhichBranchIsBehindOn.map(file => file.filename)) !== null && _b !== void 0 ? _b : [];
     const globalFilesOutdatedOnBranch = override_filter_globs
         ? micromatch__WEBPACK_IMPORTED_MODULE_2___default()(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n'))
         : override_filter_paths
