@@ -129,62 +129,49 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 const configuration = _datadog_datadog_api_client__WEBPACK_IMPORTED_MODULE_1__.client.createConfiguration();
 const apiInstance = new _datadog_datadog_api_client__WEBPACK_IMPORTED_MODULE_1__.v2.MetricsApi(configuration);
 const submitMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!backstage_url)
+        return;
     const entities = yield (0,_utils_get_backstage_entities__WEBPACK_IMPORTED_MODULE_3__/* .getBackstageEntities */ .g)({ backstage_url });
     const multisigsCollector = new _core_multisigs_collector__WEBPACK_IMPORTED_MODULE_2__/* .MultisigsCollector */ .d(entities);
-    const result = multisigsCollector.getMultisigs().map(ms => {
-        var _a;
+    const series = multisigsCollector.getMultisigs().map(ms => {
+        // entities are typically emitted as API kind,
+        // tracking for inconsistencies
         const { kind, metadata } = ms.entity;
-        const { name, uid, etag } = metadata;
-        const titleParts = (_a = ms.entity.metadata.name) === null || _a === void 0 ? void 0 : _a.split('-');
+        const { name } = metadata;
+        // name follows this format: <network>-<type>-<address>
+        const titleParts = name === null || name === void 0 ? void 0 : name.split('-');
         const [network, type] = titleParts;
-        // core.info(`${name} ${kind} ${network} ${type}`);
+        // inferred type is JsonObject, this converts to any
+        const spec = JSON.parse(JSON.stringify(ms.entity.spec));
+        const version = spec.multisig.version;
+        const timestamp = Math.round(new Date(spec.multisig.fetchDate).getTime() / 1000);
+        // this tags timeseries with distinguishing
+        // properties for filtering purposes
+        const resources = [
+            {
+                type: 'host',
+                name: backstage_url.split('@')[1]
+            },
+            { type: 'api', name },
+            { type: 'kind', name: kind },
+            { type: 'network', name: network },
+            { type: 'type', name: type }
+        ];
+        // datadog requires point value to be scalar
+        const value = getCompliance({ version, network });
+        const points = [{ timestamp, value }];
         return {
-            name,
-            uid,
-            etag,
-            network,
-            type,
-            kind,
-            spec: JSON.parse(JSON.stringify(ms.entity.spec))
+            metric: 'backstage.multisigs.versions',
+            type: 0,
+            points,
+            resources
         };
     });
-    const points = result.map(multisig => {
-        const timestamp = Math.round(new Date(multisig.spec.multisig.fetchDate).getTime() / 1000);
-        if (multisig.network === 'near') {
-            if (parseFloat(multisig.spec.multisig.version) >= 3.0) {
-                return { timestamp, value: 1 };
-            }
-        }
-        else {
-            if (parseFloat(multisig.spec.multisig.version) >= 1.2) {
-                return { timestamp, value: 1 };
-            }
-        }
-        return {
-            timestamp,
-            value: 0
-        };
-    });
-    const resources = [
-        {
-            type: 'host',
-            name: backstage_url === null || backstage_url === void 0 ? void 0 : backstage_url.split('@')[1]
-        },
-        ...result.map(multisig => ({ name: multisig.name, type: multisig.kind }))
-    ];
     const params = {
         body: {
-            series: [
-                {
-                    metric: 'backstage.multisigs.versions',
-                    type: 0,
-                    points,
-                    resources
-                }
-            ]
+            series
         }
     };
-    // core.info(JSON.stringify(params));
     try {
         const data = yield apiInstance.submitMetrics(params);
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
@@ -195,6 +182,23 @@ const submitMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0, v
         return;
     }
 });
+/**
+ * Helper function that checks multisig version and returns a compliance value.
+ * `1` representing compliance and `0` for non compliance.
+ */
+function getCompliance({ version, network }) {
+    if (network === 'near') {
+        if (parseFloat(version) >= 2) {
+            return 1;
+        }
+    }
+    else if (network === 'ethereum' || network === 'aurora') {
+        if (parseFloat(version) >= 1.3) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 
 /***/ }),
