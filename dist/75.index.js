@@ -3,7 +3,7 @@ exports.id = 75;
 exports.ids = [75];
 exports.modules = {
 
-/***/ 7075:
+/***/ 67075:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 // ESM COMPAT FLAG
@@ -16,11 +16,11 @@ __webpack_require__.d(__webpack_exports__, {
 });
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
-var core = __webpack_require__(2186);
+var core = __webpack_require__(42186);
 // EXTERNAL MODULE: ./src/types/generated.ts
-var generated = __webpack_require__(3476);
+var generated = __webpack_require__(33476);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
-var github = __webpack_require__(5438);
+var github = __webpack_require__(95438);
 // EXTERNAL MODULE: ./src/octokit.ts
 var octokit = __webpack_require__(6161);
 ;// CONCATENATED MODULE: ./src/utils/get-changed-files.ts
@@ -122,11 +122,11 @@ function parseStatus(status) {
 }
 
 // EXTERNAL MODULE: external "path"
-var external_path_ = __webpack_require__(1017);
+var external_path_ = __webpack_require__(71017);
 // EXTERNAL MODULE: external "fs"
-var external_fs_ = __webpack_require__(7147);
+var external_fs_ = __webpack_require__(57147);
 // EXTERNAL MODULE: ./src/utils/get-backstage-entities.ts
-var get_backstage_entities = __webpack_require__(1027);
+var get_backstage_entities = __webpack_require__(81027);
 ;// CONCATENATED MODULE: ./src/helpers/generate-component-matrix.ts
 /*
 Copyright 2022 Aurora Labs
@@ -304,11 +304,11 @@ const generateComponentMatrix = ({ backstage_url, force_all_checks }) => generat
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "K": () => (/* binding */ octokit)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(42186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3006);
+/* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(43006);
 /* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(95438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
 /*
 Copyright 2021 Expedia, Inc.
@@ -331,7 +331,7 @@ const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(gith
 
 /***/ }),
 
-/***/ 3476:
+/***/ 33476:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
@@ -355,15 +355,15 @@ class HelperInputs {
 
 /***/ }),
 
-/***/ 1027:
+/***/ 81027:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "g": () => (/* binding */ getBackstageEntities)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(42186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _backstage_catalog_client__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(8988);
+/* harmony import */ var _backstage_catalog_client__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(78988);
 /*
 Copyright 2022 Aurora Labs
 Licensed under the Apache License, Version 2.0 (the "License");

@@ -14,99 +14,14 @@ limitations under the License.
 import * as core from '@actions/core';
 import * as glob from 'glob';
 import { HelperInputs } from '../types/generated';
-import { Entity, stringifyEntityRef, RELATION_OWNED_BY, RELATION_HAS_PART, parseEntityRef } from '@backstage/catalog-model';
+import { Entity } from '@backstage/catalog-model';
 import * as fs from 'fs';
 //import YAML from 'yaml';
 import { simpleGit } from 'simple-git';
 import handlebars from 'handlebars';
+
+import { MultisigsCollector } from '../core/multisigs-collector';
 import { getBackstageEntities } from '../utils/get-backstage-entities';
-
-type MultisigSigner = {
-  signer: Entity;
-  owner?: Entity;
-};
-
-type MultisigInfo = {
-  entity: Entity;
-  signers: MultisigSigner[];
-};
-
-type ComponentMultisigs = {
-  title: string;
-  component: Entity;
-  multisigs: MultisigInfo[];
-};
-
-type SystemComponents = {
-  title: string;
-  system: Entity;
-  components: ComponentMultisigs[];
-};
-
-class MultisigsCollector {
-  systemComponents: SystemComponents[] = [];
-  private entities: Entity[] = [];
-  private multisigs: Entity[] = [];
-
-  constructor(entities: Entity[]) {
-    this.entities = entities;
-    this.multisigs = this.entities.filter(item => item.kind === 'API' && item?.spec?.type === 'multisig-deployment');
-    this.systemComponents = this.collectSystems();
-  }
-
-  normalizeEntities(list: string[]) {
-    return [...new Set(list)].sort((a, b) => a.localeCompare(b));
-  }
-
-  collectSystems() {
-    const systemRefs = this.normalizeEntities(this.multisigs.map(item => item.spec!.system! as string));
-    return systemRefs
-      .map(systemRef => {
-        const system = this.entities.find(item => stringifyEntityRef(item) === systemRef)!;
-        const components = this.collectComponents(system);
-
-        return {
-          title: system.metadata.title || system.metadata.name,
-          system,
-          components
-        };
-      })
-      .sort((a, b) => a.system.metadata.name.localeCompare(b.system.metadata.name));
-  }
-
-  collectComponents(system: Entity) {
-    const componentRefs = system.relations!.filter(r => r.type === RELATION_HAS_PART && parseEntityRef(r.targetRef).kind === 'component');
-    return componentRefs
-      .map(componentRef => {
-        const component = this.entities.find(item => stringifyEntityRef(item) === componentRef.targetRef)!;
-        return {
-          title: component.metadata.title || component.metadata.name,
-          component,
-          multisigs: this.multisigs
-            .filter(item => item.relations!.some(r => r.type === 'apiProvidedBy' && r.targetRef === componentRef.targetRef))
-            .map(ms => ({
-              entity: ms,
-              signers: this.collectSigners(ms)
-            }))
-        };
-      })
-      .sort((a, b) => a.component.metadata.name.localeCompare(b.component.metadata.name));
-  }
-
-  collectSigners(multisig: Entity) {
-    return multisig
-      .relations!.filter(r => r.type === RELATION_OWNED_BY && parseEntityRef(r.targetRef).kind !== 'group')
-      .map(r => {
-        const signer = this.entities.find(e => stringifyEntityRef(e) === r.targetRef)!;
-        const owner = this.entities.find(e => stringifyEntityRef(e) === signer.spec!.owner)!;
-        return {
-          signer,
-          owner
-        };
-      })
-      .sort((a, b) => a.owner.metadata.name.localeCompare(b.owner.metadata.name));
-  }
-}
 
 export class BackstageExport extends HelperInputs {
   backstage_url?: string;

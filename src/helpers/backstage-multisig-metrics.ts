@@ -12,124 +12,82 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import fs from 'node:fs/promises';
-import { Entity, stringifyEntityRef, RELATION_OWNED_BY, RELATION_HAS_PART, parseEntityRef } from '@backstage/catalog-model';
-//import YAML from 'yaml';
+import { client, v2 } from '@datadog/datadog-api-client';
+
+import { MultisigsCollector } from '../core/multisigs-collector';
 import { getBackstageEntities } from '../utils/get-backstage-entities';
 
-type MultisigSigner = {
-  signer: Entity;
-  owner?: Entity;
-};
-
-type MultisigInfo = {
-  entity: Entity;
-  signers: MultisigSigner[];
-};
-
-type ComponentMultisigs = {
-  title: string;
-  component: Entity;
-  multisigs: MultisigInfo[];
-};
-
-type SystemComponents = {
-  title: string;
-  system: Entity;
-  components: ComponentMultisigs[];
-};
-
-class MultisigsCollector {
-  systemComponents: SystemComponents[] = [];
-  private entities: Entity[] = [];
-  private multisigs: Entity[] = [];
-
-  constructor(entities: Entity[]) {
-    this.entities = entities;
-    this.multisigs = this.entities.filter(item => item.kind === 'API' && item?.spec?.type === 'multisig-deployment');
-    this.systemComponents = this.collectSystems();
-  }
-
-  normalizeEntities(list: string[]) {
-    return [...new Set(list)].sort((a, b) => a.localeCompare(b));
-  }
-
-  collectSystems() {
-    const systemRefs = this.normalizeEntities(this.multisigs.map(item => item.spec!.system! as string));
-    return systemRefs
-      .map(systemRef => {
-        const system = this.entities.find(item => stringifyEntityRef(item) === systemRef)!;
-        const components = this.collectComponents(system);
-
-        return {
-          title: system.metadata.title || system.metadata.name,
-          system,
-          components
-        };
-      })
-      .sort((a, b) => a.system.metadata.name.localeCompare(b.system.metadata.name));
-  }
-
-  collectComponents(system: Entity) {
-    const componentRefs = (system.relations || []).filter(
-      r => r.type === RELATION_HAS_PART && parseEntityRef(r.targetRef).kind === 'component'
-    );
-    return componentRefs
-      .map(componentRef => {
-        const component = this.entities.find(item => stringifyEntityRef(item) === componentRef.targetRef)!;
-        return {
-          title: component.metadata.title || component.metadata.name,
-          component,
-          multisigs: this.multisigs
-            .filter(item => (item.relations || []).some(r => r.type === 'apiProvidedBy' && r.targetRef === componentRef.targetRef))
-            .map(ms => ({
-              entity: ms,
-              signers: this.collectSigners(ms)
-            }))
-        };
-      })
-      .sort((a, b) => a.component.metadata.name.localeCompare(b.component.metadata.name));
-  }
-
-  collectSigners(multisig: Entity) {
-    return (multisig.relations || [])
-      .filter(r => r.type === RELATION_OWNED_BY && parseEntityRef(r.targetRef).kind !== 'group')
-      .map(r => {
-        const signer = this.entities.find(e => stringifyEntityRef(e) === r.targetRef)!;
-        const owner = this.entities.find(e => stringifyEntityRef(e) === signer.spec!.owner)!;
-        return {
-          signer,
-          owner
-        };
-      })
-      .sort((a, b) => a.owner.metadata.name.localeCompare(b.owner.metadata.name));
-  }
-}
-
-type BackstageExport = {
+type MultisigMetricsParams = {
   backstage_url?: string;
-  output_path?: string;
 };
 
-export const collectMultisigs = async ({ backstage_url, output_path }: BackstageExport) => {
+const configuration = client.createConfiguration();
+const apiInstance = new v2.MetricsApi(configuration);
+
+export const submitMultisigMetrics = async ({ backstage_url }: MultisigMetricsParams) => {
   const entities = await getBackstageEntities({ backstage_url });
 
   const multisigsCollector = new MultisigsCollector(entities);
-  const result = multisigsCollector.systemComponents.flatMap(system =>
-    system.components.flatMap(component =>
-      component.multisigs.map(ms => {
-        return {
-          name: ms.entity.metadata.name,
-          network: ms.entity.metadata.name?.split('-')[0],
-          spec: ms.entity.spec?.multisig
-        };
-      })
-    )
-  );
-  core.info(`Writing ${output_path}`);
+  const result = multisigsCollector.getMultisigs().map(ms => {
+    const { kind, metadata } = ms.entity;
+    const { name, uid, etag } = metadata;
+    const titleParts = ms.entity.metadata.name?.split('-');
+    const [network, type] = titleParts;
+    // core.info(`${name} ${kind} ${network} ${type}`);
+    return {
+      name,
+      uid,
+      etag,
+      network,
+      type,
+      kind,
+      spec: JSON.parse(JSON.stringify(ms.entity.spec))
+    };
+  });
 
-  const jsonData = JSON.stringify(result);
-  await fs.writeFile(output_path || '', jsonData);
+  const points = result.map(multisig => {
+    const timestamp = Math.round(new Date(multisig.spec.multisig.fetchDate).getTime() / 1000);
+    if (multisig.network === 'near') {
+      if (parseFloat(multisig.spec.multisig.version) >= 3.0) {
+        return { timestamp, value: 1 };
+      }
+    } else {
+      if (parseFloat(multisig.spec.multisig.version) >= 1.2) {
+        return { timestamp, value: 1 };
+      }
+    }
+    return {
+      timestamp,
+      value: 0
+    };
+  });
+  const resources = [
+    {
+      type: 'host',
+      name: backstage_url?.split('@')[1]
+    },
+    ...result.map(multisig => ({ name: multisig.name, type: multisig.kind }))
+  ];
+  const params: v2.MetricsApiSubmitMetricsRequest = {
+    body: {
+      series: [
+        {
+          metric: 'backstage.multisigs.versions',
+          type: 0,
+          points,
+          resources
+        }
+      ]
+    }
+  };
+  // core.info(JSON.stringify(params));
 
-  return true;
+  try {
+    const data = await apiInstance.submitMetrics(params);
+    core.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
+    return data;
+  } catch (error: unknown) {
+    core.error(error as Error);
+    return;
+  }
 };

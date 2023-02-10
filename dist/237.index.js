@@ -2,7 +2,7 @@ exports.id = 237;
 exports.ids = [237];
 exports.modules = {
 
-/***/ 8222:
+/***/ 28222:
 /***/ ((module, exports, __webpack_require__) => {
 
 /* eslint-env browser */
@@ -259,7 +259,7 @@ function localstorage() {
 	}
 }
 
-module.exports = __webpack_require__(6243)(exports);
+module.exports = __webpack_require__(46243)(exports);
 
 const {formatters} = module.exports;
 
@@ -278,7 +278,7 @@ formatters.j = function (v) {
 
 /***/ }),
 
-/***/ 6243:
+/***/ 46243:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 
@@ -294,7 +294,7 @@ function setup(env) {
 	createDebug.disable = disable;
 	createDebug.enable = enable;
 	createDebug.enabled = enabled;
-	createDebug.humanize = __webpack_require__(900);
+	createDebug.humanize = __webpack_require__(80900);
 	createDebug.destroy = destroy;
 
 	Object.keys(env).forEach(key => {
@@ -559,7 +559,7 @@ module.exports = setup;
 
 /***/ }),
 
-/***/ 8237:
+/***/ 38237:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -568,23 +568,23 @@ module.exports = setup;
  */
 
 if (typeof process === 'undefined' || process.type === 'renderer' || process.browser === true || process.__nwjs) {
-	module.exports = __webpack_require__(8222);
+	module.exports = __webpack_require__(28222);
 } else {
-	module.exports = __webpack_require__(5332);
+	module.exports = __webpack_require__(35332);
 }
 
 
 /***/ }),
 
-/***/ 5332:
+/***/ 35332:
 /***/ ((module, exports, __webpack_require__) => {
 
 /**
  * Module dependencies.
  */
 
-const tty = __webpack_require__(6224);
-const util = __webpack_require__(3837);
+const tty = __webpack_require__(76224);
+const util = __webpack_require__(73837);
 
 /**
  * This is the Node.js implementation of `debug()`.
@@ -610,7 +610,7 @@ exports.colors = [6, 2, 3, 4, 5, 1];
 try {
 	// Optional dependency (as in, doesn't need to be installed, NOT like optionalDependencies in package.json)
 	// eslint-disable-next-line import/no-extraneous-dependencies
-	const supportsColor = __webpack_require__(9318);
+	const supportsColor = __webpack_require__(59318);
 
 	if (supportsColor && (supportsColor.stderr || supportsColor).level >= 2) {
 		exports.colors = [
@@ -818,7 +818,7 @@ function init(debug) {
 	}
 }
 
-module.exports = __webpack_require__(6243)(exports);
+module.exports = __webpack_require__(46243)(exports);
 
 const {formatters} = module.exports;
 
@@ -846,7 +846,7 @@ formatters.O = function (v) {
 
 /***/ }),
 
-/***/ 1621:
+/***/ 31621:
 /***/ ((module) => {
 
 "use strict";
@@ -862,7 +862,7 @@ module.exports = (flag, argv = process.argv) => {
 
 /***/ }),
 
-/***/ 900:
+/***/ 80900:
 /***/ ((module) => {
 
 /**
@@ -1031,14 +1031,14 @@ function plural(ms, msAbs, n, name) {
 
 /***/ }),
 
-/***/ 9318:
+/***/ 59318:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
 
-const os = __webpack_require__(2037);
-const tty = __webpack_require__(6224);
-const hasFlag = __webpack_require__(1621);
+const os = __webpack_require__(22037);
+const tty = __webpack_require__(76224);
+const hasFlag = __webpack_require__(31621);
 
 const {env} = process;
 
