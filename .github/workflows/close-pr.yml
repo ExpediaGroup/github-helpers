@@ -3,6 +3,7 @@ name: Close Pr
 on:
   pull_request:
     branches: [ main ]
+    types: [ opened, reopened ]
     paths:
       - 'src/helpers/close-pr.ts'
 
