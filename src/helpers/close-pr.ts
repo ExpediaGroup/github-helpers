@@ -11,12 +11,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
+import { createPrComment } from './create-pr-comment';
 
-export const closePr = async () =>
-  octokit.pulls.update({
+export class ClosePr extends HelperInputs {
+  body?: string;
+}
+
+export const closePr = async ({ body }: ClosePr = {}) => {
+  if (body) {
+    await createPrComment({ body });
+  }
+
+  return octokit.pulls.update({
     pull_number: context.issue.number,
     state: 'closed',
     ...context.repo
   });
+};

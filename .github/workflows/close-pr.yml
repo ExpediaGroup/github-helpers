@@ -21,4 +21,5 @@ jobs:
       - uses: ./
         with:
           helper: close-pr
+          body: Closing this PR for testing purposes!
           github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}

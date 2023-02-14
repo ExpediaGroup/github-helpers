@@ -14,7 +14,9 @@ limitations under the License.
 import { context } from '@actions/github';
 import { closePr } from '../../src/helpers/close-pr';
 import { octokit } from '../../src/octokit';
+import { createPrComment } from '../../src/helpers/create-pr-comment';
 
+jest.mock('../../src/helpers/create-pr-comment');
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
@@ -26,15 +28,41 @@ jest.mock('@actions/github', () => ({
 }));
 
 describe('closePr', () => {
-  beforeEach(() => {
-    closePr();
+  describe('without comment', () => {
+    beforeEach(() => {
+      closePr();
+    });
+
+    it('should not call createPrComment', () => {
+      expect(createPrComment).not.toHaveBeenCalled();
+    });
+
+    it('should call pulls.update with correct params', () => {
+      expect(octokit.pulls.update).toHaveBeenCalledWith({
+        pull_number: 123,
+        state: 'closed',
+        ...context.repo
+      });
+    });
   });
 
-  it('should call octokit with correct params', () => {
-    expect(octokit.pulls.update).toHaveBeenCalledWith({
-      pull_number: 123,
-      state: 'closed',
-      ...context.repo
+  describe('with comment', () => {
+    const body = 'some comment';
+
+    beforeEach(() => {
+      closePr({ body });
+    });
+
+    it('should call createPrComment with correct params', () => {
+      expect(createPrComment).toHaveBeenCalledWith({ body });
+    });
+
+    it('should call pulls.update with correct params', () => {
+      expect(octokit.pulls.update).toHaveBeenCalledWith({
+        pull_number: 123,
+        state: 'closed',
+        ...context.repo
+      });
     });
   });
 });
