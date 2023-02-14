@@ -83,11 +83,18 @@ class CreatePR extends generated/* HelperInputs */.s {
         this.body = '';
     }
 }
-const createPr = ({ title, body, head = github.context.ref.replace('refs/heads/', ''), base }) => create_pr_awaiter(void 0, void 0, void 0, function* () {
+const createPr = ({ title, body, head = github.context.ref.replace('refs/heads/', ''), base, repo = github.context.repo.repo, owner = github.context.repo.owner }) => create_pr_awaiter(void 0, void 0, void 0, function* () {
     const pr_base = base || (yield getDefaultBranch());
     yield updateHeadWithBaseBranch(pr_base, head);
-    const { data: { number } } = yield octokit/* octokit.pulls.create */.K.pulls.create(Object.assign({ title,
-        head, base: pr_base, body, maintainer_can_modify: true }, github.context.repo));
+    const { data: { number } } = yield octokit/* octokit.pulls.create */.K.pulls.create({
+        title,
+        head,
+        base: pr_base,
+        body,
+        maintainer_can_modify: true,
+        repo,
+        owner
+    });
     return number;
 });
 const updateHeadWithBaseBranch = (base, head) => octokit/* octokit.repos.merge */.K.repos.merge(Object.assign({ base: head, head: base }, github.context.repo));

@@ -109,6 +109,12 @@ inputs:
   skip_if_already_set:
     description: 'Skip setting a commit status if it has already been set to success or failure by a workflow'
     required: false
+  repo:
+    description: 'Repository name if different from current repository'
+    required: false
+  owner:
+    description: 'Repository owner if different from current repository'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'

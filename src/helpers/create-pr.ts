@@ -21,9 +21,18 @@ export class CreatePR extends HelperInputs {
   body = '';
   head?: string;
   base?: string;
+  repo?: string;
+  owner?: string;
 }
 
-export const createPr = async ({ title, body, head = context.ref.replace('refs/heads/', ''), base }: CreatePR) => {
+export const createPr = async ({
+  title,
+  body,
+  head = context.ref.replace('refs/heads/', ''),
+  base,
+  repo = context.repo.repo,
+  owner = context.repo.owner
+}: CreatePR) => {
   const pr_base = base || (await getDefaultBranch());
   await updateHeadWithBaseBranch(pr_base, head);
   const {
@@ -34,7 +43,8 @@ export const createPr = async ({ title, body, head = context.ref.replace('refs/h
     base: pr_base,
     body,
     maintainer_can_modify: true,
-    ...context.repo
+    repo,
+    owner
   });
   return number;
 };

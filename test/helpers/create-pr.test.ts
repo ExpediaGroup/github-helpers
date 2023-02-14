@@ -126,4 +126,24 @@ describe('createPr', () => {
     // Since the base was provided, the repos PR should not be called.
     expect(octokit.repos.get).not.toHaveBeenCalled();
   });
+
+  it('should create pull onto specified repository', async () => {
+    const owner = 'user1';
+    await createPr({
+      title,
+      body,
+      owner
+    });
+    expect(octokit.pulls.create).toHaveBeenCalledWith({
+      title,
+      head: 'source',
+      base: 'default branch',
+      body,
+      maintainer_can_modify: true,
+      draft: undefined,
+      issue: undefined,
+      repo: context.repo.repo,
+      owner
+    });
+  });
 });

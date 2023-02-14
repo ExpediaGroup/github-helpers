@@ -7,19 +7,19 @@ exports.modules = {
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Cc": () => (/* binding */ GITHUB_OPTIONS),
 /* harmony export */   "$9": () => (/* binding */ DEFAULT_PIPELINE_STATUS),
+/* harmony export */   "Km": () => (/* binding */ DEFAULT_PIPELINE_DESCRIPTION),
+/* harmony export */   "Hc": () => (/* binding */ PRODUCTION_ENVIRONMENT),
+/* harmony export */   "fy": () => (/* binding */ LATE_REVIEW),
+/* harmony export */   "_d": () => (/* binding */ CORE_APPROVED_PR_LABEL),
+/* harmony export */   "Xt": () => (/* binding */ PEER_APPROVED_PR_LABEL),
 /* harmony export */   "Ak": () => (/* binding */ READY_FOR_MERGE_PR_LABEL),
 /* harmony export */   "Cb": () => (/* binding */ MERGE_QUEUE_STATUS),
-/* harmony export */   "Cc": () => (/* binding */ GITHUB_OPTIONS),
 /* harmony export */   "Ee": () => (/* binding */ QUEUED_FOR_MERGE_PREFIX),
-/* harmony export */   "HW": () => (/* binding */ DEFAULT_PR_TITLE_REGEX),
-/* harmony export */   "Hc": () => (/* binding */ PRODUCTION_ENVIRONMENT),
 /* harmony export */   "IH": () => (/* binding */ FIRST_QUEUED_PR_LABEL),
-/* harmony export */   "Km": () => (/* binding */ DEFAULT_PIPELINE_DESCRIPTION),
-/* harmony export */   "Xt": () => (/* binding */ PEER_APPROVED_PR_LABEL),
-/* harmony export */   "_d": () => (/* binding */ CORE_APPROVED_PR_LABEL),
-/* harmony export */   "fy": () => (/* binding */ LATE_REVIEW),
-/* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL)
+/* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL),
+/* harmony export */   "HW": () => (/* binding */ DEFAULT_PR_TITLE_REGEX)
 /* harmony export */ });
 /* unused harmony exports DEFAULT_EXEMPT_DESCRIPTION, COPYRIGHT_HEADER */
 /*
@@ -261,8 +261,8 @@ const paginateAllChangedFilepaths = (pull_number, page = 1) => __awaiter(void 0,
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "F": () => (/* binding */ getCoreTeamsAndLogins),
-/* harmony export */   "c": () => (/* binding */ getCoreMemberLogins)
+/* harmony export */   "c": () => (/* binding */ getCoreMemberLogins),
+/* harmony export */   "F": () => (/* binding */ getCoreTeamsAndLogins)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
@@ -347,10 +347,11 @@ const getCodeOwners = (pull_number) => __awaiter(void 0, void 0, void 0, functio
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(9462);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6545);
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6161);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -377,18 +378,18 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const notifyUser = ({ login, pull_number, slack_webhook_url }) => __awaiter(void 0, void 0, void 0, function* () {
-    const { data: { email } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.users.getByUsername */ .K.users.getByUsername({ username: login });
+    const { data: { email } } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.users.getByUsername */ .K.users.getByUsername({ username: login });
     if (!email) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`No github email found for user ${login}. Ensure you have set your email to be publicly visible on your Github profile.`);
         return;
     }
-    const { data: { title, html_url } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    const { data: { title, html_url } } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
     try {
-        return axios__WEBPACK_IMPORTED_MODULE_3__/* ["default"].post */ .Z.post(slack_webhook_url, {
+        return axios__WEBPACK_IMPORTED_MODULE_1___default().post(slack_webhook_url, {
             assignee: email,
             title,
             html_url,
-            repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo
+            repo: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo
         });
     }
     catch (error) {

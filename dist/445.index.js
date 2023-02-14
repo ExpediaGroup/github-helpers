@@ -17,7 +17,7 @@ const path_1 = __importDefault(__webpack_require__(1017));
 const fs_1 = __importDefault(__webpack_require__(7147));
 const util_1 = __importDefault(__webpack_require__(3837));
 const ignore_1 = __importDefault(__webpack_require__(1230));
-const cross_spawn_1 = __importDefault(__webpack_require__(7881));
+const cross_spawn_1 = __importDefault(__webpack_require__(2746));
 let readFile = util_1.default.promisify(fs_1.default.readFile);
 /**
  * Parse a CODEOWNERS file into an array of entries (will be in reverse order
@@ -162,7 +162,7 @@ exports.findUnmatchedFiles = findUnmatchedFiles;
 
 /***/ }),
 
-/***/ 7881:
+/***/ 2746:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";

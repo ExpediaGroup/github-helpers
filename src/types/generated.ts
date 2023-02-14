@@ -48,4 +48,6 @@ export class HelperInputs {
   days?: string;
   no_evict_upon_conflict?: string;
   skip_if_already_set?: string;
+  repo?: string;
+  owner?: string;
 }
