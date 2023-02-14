@@ -102,6 +102,9 @@ The following parameters can be used for additional control over when it is safe
     * example: `override_filter_paths: package.json,package-lock.json`
 * `override_filter_globs`: These are glob patterns for `override_filter_paths`
 
+### [close-pr](.github/workflows/close-pr.yml)
+  * Closes a pull request
+
 ### [create-pr](.github/workflows/create-pr.yml)
   * Opens a pull request
 

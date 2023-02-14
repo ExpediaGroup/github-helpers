@@ -1,0 +1,26 @@
+name: Close Pr
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [ opened, reopened ]
+    paths:
+      - 'src/helpers/close-pr.ts'
+
+jobs:
+  test:
+    if: contains(github.event.pull_request.labels.*.name, 'CLOSE ME')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+
+      - uses: ./
+        with:
+          helper: close-pr
+          body: Closing this PR for testing purposes!
+          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
