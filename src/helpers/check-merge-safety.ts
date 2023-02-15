@@ -24,6 +24,7 @@ import * as core from '@actions/core';
 export class CheckMergeSafety extends HelperInputs {
   context?: string;
   paths?: string;
+  ignore_globs?: string;
   override_filter_paths?: string;
   override_filter_globs?: string;
 }
@@ -57,7 +58,7 @@ const handlePushWorkflow = async (inputs: CheckMergeSafety) => {
 
 const getMergeSafetyStateAndMessage = async (
   pullRequest: PullRequest,
-  { paths, override_filter_paths, override_filter_globs }: CheckMergeSafety
+  { paths, ignore_globs, override_filter_paths, override_filter_globs }: CheckMergeSafety
 ) => {
   const {
     base: {
@@ -83,7 +84,7 @@ const getMergeSafetyStateAndMessage = async (
   const fileNamesWhichBranchIsBehindOn = filesWhichBranchIsBehindOn?.map(file => file.filename) ?? [];
 
   const globalFilesOutdatedOnBranch = override_filter_globs
-    ? micromatch(fileNamesWhichBranchIsBehindOn, override_filter_globs.split('\n'))
+    ? micromatch(fileNamesWhichBranchIsBehindOn, override_filter_globs.split(/[\n,]/))
     : override_filter_paths
     ? fileNamesWhichBranchIsBehindOn.filter(changedFile => override_filter_paths.split(/[\n,]/).includes(changedFile))
     : [];
@@ -103,10 +104,12 @@ const getMergeSafetyStateAndMessage = async (
     basehead: `${baseOwner}:${default_branch}...${branchName}`
   });
   const changedFileNames = changedFiles?.map(file => file.filename);
+  const changedFilesToIgnore = changedFileNames && ignore_globs ? micromatch(changedFileNames, ignore_globs.split(/[\n,]/)) : [];
+  const filteredFileNames = changedFileNames?.filter(file => !changedFilesToIgnore.includes(file));
   const allProjectDirectories = paths?.split(/[\n,]/);
 
   const changedProjectsOutdatedOnBranch = allProjectDirectories?.filter(
-    dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && changedFileNames?.some(file => file.includes(dir))
+    dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && filteredFileNames?.some(file => file.includes(dir))
   );
 
   if (changedProjectsOutdatedOnBranch?.length) {

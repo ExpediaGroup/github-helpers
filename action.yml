@@ -52,6 +52,9 @@ inputs:
   paths:
     description: 'A list of file paths (newline/comma separated)'
     required: false
+  ignore_globs:
+    description: 'A list of file path globs to ignore (newline/comma separated)'
+    required: false
   extensions:
     description: 'A list of file extensions (new line separated)'
     required: false

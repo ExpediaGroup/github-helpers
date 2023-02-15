@@ -172,6 +172,25 @@ describe('checkMergeSafety', () => {
     });
   });
 
+  it('should allow merge when branch is not out of date on paths ignore globs', async () => {
+    const filesOutOfDate = ['packages/package-1/sub-dir/package.json'];
+    const changedFilesOnPr = ['packages/package-1/sub-dir/package.json'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
+    await checkMergeSafety({
+      paths: allProjectPaths,
+      ignore_globs: 'packages/**/package.json',
+      ...context.repo
+    });
+    expect(setCommitStatus).toHaveBeenCalledWith({
+      sha,
+      state: 'success',
+      context: 'Merge Safety',
+      description: 'Branch username:some-branch-name is safe to merge!',
+      repo: 'repo',
+      owner: 'owner'
+    });
+  });
+
   it('should set merge safety commit status on all open prs', async () => {
     const filesOutOfDate = ['packages/package-2/src/file1.ts', 'packages/package-3/src/file2.ts'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
