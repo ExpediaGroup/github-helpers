@@ -98,8 +98,10 @@ The following parameters can be used for additional control over when it is safe
 
 * `paths`: These are the file paths to all of a repo's projects (usually paths to standalone packages)
   * This is useful for monorepos with multiple projects which are decoupled from each other but are affected by global dependencies.
+* `paths_ignore_globs`: These are glob patterns that, if out of date on a PR, will not prevent merge
+  * example: `paths_ignore_globs: **.md`
 * `override_filter_paths`: These are the file paths that, if out of date on a PR, will prevent merge no matter what files the PR is changing
-    * example: `override_filter_paths: package.json,package-lock.json`
+  * example: `override_filter_paths: package.json,package-lock.json`
 * `override_filter_globs`: These are glob patterns for `override_filter_paths`
 
 ### [close-pr](.github/workflows/close-pr.yml)
