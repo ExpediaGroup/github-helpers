@@ -24,7 +24,7 @@ import * as core from '@actions/core';
 export class CheckMergeSafety extends HelperInputs {
   context?: string;
   paths?: string;
-  paths_ignore_globs?: string;
+  ignore_globs?: string;
   override_filter_paths?: string;
   override_filter_globs?: string;
 }
@@ -58,7 +58,7 @@ const handlePushWorkflow = async (inputs: CheckMergeSafety) => {
 
 const getMergeSafetyStateAndMessage = async (
   pullRequest: PullRequest,
-  { paths, paths_ignore_globs, override_filter_paths, override_filter_globs }: CheckMergeSafety
+  { paths, ignore_globs, override_filter_paths, override_filter_globs }: CheckMergeSafety
 ) => {
   const {
     base: {
@@ -104,8 +104,7 @@ const getMergeSafetyStateAndMessage = async (
     basehead: `${baseOwner}:${default_branch}...${branchName}`
   });
   const changedFileNames = changedFiles?.map(file => file.filename);
-  const changedFilesToIgnore =
-    changedFileNames && paths_ignore_globs ? micromatch(changedFileNames, paths_ignore_globs.split(/[\n,]/)) : [];
+  const changedFilesToIgnore = changedFileNames && ignore_globs ? micromatch(changedFileNames, ignore_globs.split(/[\n,]/)) : [];
   const filteredFileNames = changedFileNames?.filter(file => !changedFilesToIgnore.includes(file));
   const allProjectDirectories = paths?.split(/[\n,]/);
 

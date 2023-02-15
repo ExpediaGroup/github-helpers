@@ -178,7 +178,7 @@ describe('checkMergeSafety', () => {
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     await checkMergeSafety({
       paths: allProjectPaths,
-      paths_ignore_globs: 'packages/**/package.json',
+      ignore_globs: 'packages/**/package.json',
       ...context.repo
     });
     expect(setCommitStatus).toHaveBeenCalledWith({

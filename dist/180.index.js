@@ -84,7 +84,7 @@ const handlePushWorkflow = (inputs) => __awaiter(void 0, void 0, void 0, functio
     const filteredPullRequests = pullRequests.filter(({ base, draft }) => !draft && base.ref === base.repo.default_branch);
     return (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(filteredPullRequests, pullRequest => setMergeSafetyStatus(pullRequest, inputs));
 });
-const getMergeSafetyStateAndMessage = (pullRequest, { paths, paths_ignore_globs, override_filter_paths, override_filter_globs }) => __awaiter(void 0, void 0, void 0, function* () {
+const getMergeSafetyStateAndMessage = (pullRequest, { paths, ignore_globs, override_filter_paths, override_filter_globs }) => __awaiter(void 0, void 0, void 0, function* () {
     var _b;
     const { base: { repo: { default_branch, owner: { login: baseOwner } } }, head: { ref, user: { login: username } } } = pullRequest;
     const branchName = `${username}:${ref}`;
@@ -104,7 +104,7 @@ const getMergeSafetyStateAndMessage = (pullRequest, { paths, paths_ignore_globs,
     }
     const { data: { files: changedFiles } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${baseOwner}:${default_branch}...${branchName}` }));
     const changedFileNames = changedFiles === null || changedFiles === void 0 ? void 0 : changedFiles.map(file => file.filename);
-    const changedFilesToIgnore = changedFileNames && paths_ignore_globs ? micromatch__WEBPACK_IMPORTED_MODULE_2___default()(changedFileNames, paths_ignore_globs.split(/[\n,]/)) : [];
+    const changedFilesToIgnore = changedFileNames && ignore_globs ? micromatch__WEBPACK_IMPORTED_MODULE_2___default()(changedFileNames, ignore_globs.split(/[\n,]/)) : [];
     const filteredFileNames = changedFileNames === null || changedFileNames === void 0 ? void 0 : changedFileNames.filter(file => !changedFilesToIgnore.includes(file));
     const allProjectDirectories = paths === null || paths === void 0 ? void 0 : paths.split(/[\n,]/);
     const changedProjectsOutdatedOnBranch = allProjectDirectories === null || allProjectDirectories === void 0 ? void 0 : allProjectDirectories.filter(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && (filteredFileNames === null || filteredFileNames === void 0 ? void 0 : filteredFileNames.some(file => file.includes(dir))));

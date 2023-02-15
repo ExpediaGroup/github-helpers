@@ -29,7 +29,7 @@ export class HelperInputs {
   label?: string;
   labels?: string;
   paths?: string;
-  paths_ignore_globs?: string;
+  ignore_globs?: string;
   extensions?: string;
   override_filter_paths?: string;
   batches?: string;
