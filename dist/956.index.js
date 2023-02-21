@@ -119,7 +119,7 @@ const checkPrTitle = ({ pattern = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEF
     if (regex.test(title)) {
         return true;
     }
-    (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.setFailed)(`Pull request title does not meet requirements. Must match regex ${pattern}`);
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.setFailed)(`Pull request title does not meet requirements. The title must match the following regex: ${pattern}`);
     return false;
 });
 
