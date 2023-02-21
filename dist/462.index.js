@@ -5115,13 +5115,9 @@ function isValidHeaderName(str) {
   return /^[-_a-zA-Z]+$/.test(str.trim());
 }
 
-function matchHeaderValue(context, value, header, filter, isHeaderNameFilter) {
+function matchHeaderValue(context, value, header, filter) {
   if (utils.isFunction(filter)) {
     return filter.call(this, value, header);
-  }
-
-  if (isHeaderNameFilter) {
-    value = header;
   }
 
   if (!utils.isString(value)) return;
@@ -5267,7 +5263,7 @@ class AxiosHeaders {
 
     while (i--) {
       const key = keys[i];
-      if(!matcher || matchHeaderValue(this, this[key], key, matcher, true)) {
+      if(!matcher || matchHeaderValue(this, this[key], key, matcher)) {
         delete this[key];
         deleted = true;
       }
@@ -5534,7 +5530,7 @@ var follow_redirects = __webpack_require__(7707);
 // EXTERNAL MODULE: external "zlib"
 var external_zlib_ = __webpack_require__(9796);
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/env/data.js
-const VERSION = "1.3.3";
+const VERSION = "1.3.2";
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/helpers/parseProtocol.js
 
 
@@ -6314,7 +6310,7 @@ const isHttpAdapterSupported = typeof process !== 'undefined' && utils.kindOf(pr
       if (!headers.hasContentLength()) {
         try {
           const knownLength = await external_util_.promisify(data.getLength).call(data);
-          Number.isFinite(knownLength) && knownLength >= 0 && headers.setContentLength(knownLength);
+          headers.setContentLength(knownLength);
           /*eslint no-empty:0*/
         } catch (e) {
         }
