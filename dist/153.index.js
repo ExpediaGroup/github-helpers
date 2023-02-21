@@ -385,7 +385,7 @@ const notifyUser = ({ login, pull_number, slack_webhook_url }) => __awaiter(void
     }
     const { data: { title, html_url } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     try {
-        return axios__WEBPACK_IMPORTED_MODULE_3__/* ["default"].post */ .Z.post(slack_webhook_url, {
+        yield axios__WEBPACK_IMPORTED_MODULE_3__/* ["default"].post */ .Z.post(slack_webhook_url, {
             assignee: email,
             title,
             html_url,
