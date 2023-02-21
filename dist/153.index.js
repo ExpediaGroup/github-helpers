@@ -139,7 +139,7 @@ const assignPrReviewers = ({ teams, login, number_of_assignees = '1', slack_webh
     const assignees = (0,lodash__WEBPACK_IMPORTED_MODULE_6__.sampleSize)(filteredCoreMemberLogins, Number(number_of_assignees));
     yield _octokit__WEBPACK_IMPORTED_MODULE_5__/* .octokit.issues.addAssignees */ .K.issues.addAssignees(Object.assign({ assignees, issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     if (slack_webhook_url) {
-        return (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(assignees, (assignee) => __awaiter(void 0, void 0, void 0, function* () {
+        yield (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(assignees, (assignee) => __awaiter(void 0, void 0, void 0, function* () {
             return (0,_utils_notify_user__WEBPACK_IMPORTED_MODULE_4__/* .notifyUser */ .b)({
                 login: assignee,
                 pull_number: Number(pull_number),

@@ -61,7 +61,7 @@ export const assignPrReviewers = async ({
   });
 
   if (slack_webhook_url) {
-    return map(
+    await map(
       assignees,
       async assignee =>
         notifyUser({
