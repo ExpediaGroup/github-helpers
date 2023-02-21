@@ -32,6 +32,6 @@ export const checkPrTitle = async ({ pattern = DEFAULT_PR_TITLE_REGEX }: CheckPr
   if (regex.test(title)) {
     return true;
   }
-  setFailed('Pull request title does not meet requirements.');
+  setFailed(`Pull request title does not meet requirements. The title must match the following regex: ${pattern}`);
   return false;
 };
