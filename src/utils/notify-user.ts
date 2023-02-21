@@ -23,6 +23,7 @@ interface NotifyUser {
 }
 
 export const notifyUser = async ({ login, pull_number, slack_webhook_url }: NotifyUser) => {
+  core.info(`Notifying user ${login}...`);
   const {
     data: { email }
   } = await octokit.users.getByUsername({ username: login });

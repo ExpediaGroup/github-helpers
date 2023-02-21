@@ -145,7 +145,7 @@ const assignPrReviewers = ({ teams, login, number_of_assignees = '1', slack_webh
                 pull_number: Number(pull_number),
                 slack_webhook_url
             });
-        }));
+        }), { concurrency: 1 });
     }
 });
 
@@ -377,6 +377,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const notifyUser = ({ login, pull_number, slack_webhook_url }) => __awaiter(void 0, void 0, void 0, function* () {
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Notifying user ${login}...`);
     const { data: { email } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.users.getByUsername */ .K.users.getByUsername({ username: login });
     if (!email) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`No github email found for user ${login}. Ensure you have set your email to be publicly visible on your Github profile.`);

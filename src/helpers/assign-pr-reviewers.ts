@@ -61,12 +61,15 @@ export const assignPrReviewers = async ({
   });
 
   if (slack_webhook_url) {
-    return map(assignees, async assignee =>
-      notifyUser({
-        login: assignee,
-        pull_number: Number(pull_number),
-        slack_webhook_url
-      })
+    return map(
+      assignees,
+      async assignee =>
+        notifyUser({
+          login: assignee,
+          pull_number: Number(pull_number),
+          slack_webhook_url
+        }),
+      { concurrency: 1 }
     );
   }
 };
