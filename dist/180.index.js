@@ -71,18 +71,22 @@ const checkMergeSafety = (inputs) => __awaiter(void 0, void 0, void 0, function*
         return handlePushWorkflow(inputs);
     }
     const { data: pullRequest } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-    return setMergeSafetyStatus(pullRequest, inputs);
+    const { state, message } = yield setMergeSafetyStatus(pullRequest, inputs);
+    if (state === 'failure') {
+        _actions_core__WEBPACK_IMPORTED_MODULE_6__.setFailed(message);
+    }
 });
 const setMergeSafetyStatus = (pullRequest, _a) => __awaiter(void 0, void 0, void 0, function* () {
     var { context = 'Merge Safety' } = _a, inputs = __rest(_a, ["context"]);
     const { state, message } = yield getMergeSafetyStateAndMessage(pullRequest, inputs);
     yield (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_5__.setCommitStatus)(Object.assign({ sha: pullRequest.head.sha, state,
         context, description: message }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    return { state, message };
 });
 const handlePushWorkflow = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
     const pullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__/* .paginateAllOpenPullRequests */ .P)();
     const filteredPullRequests = pullRequests.filter(({ base, draft }) => !draft && base.ref === base.repo.default_branch);
-    return (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(filteredPullRequests, pullRequest => setMergeSafetyStatus(pullRequest, inputs));
+    yield (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(filteredPullRequests, pullRequest => setMergeSafetyStatus(pullRequest, inputs));
 });
 const getMergeSafetyStateAndMessage = (pullRequest, { paths, ignore_globs, override_filter_paths, override_filter_globs }) => __awaiter(void 0, void 0, void 0, function* () {
     var _b;
