@@ -13,6 +13,7 @@ limitations under the License.
 
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
+import * as core from '@actions/core';
 import { checkMergeSafety } from '../../src/helpers/check-merge-safety';
 import { octokit } from '../../src/octokit';
 import { setCommitStatus } from '../../src/helpers/set-commit-status';
@@ -76,6 +77,7 @@ describe('checkMergeSafety', () => {
       repo: 'repo',
       owner: 'owner'
     });
+    expect(core.setFailed).toHaveBeenCalledWith('This branch has one or more outdated projects. Please update with main.');
   });
 
   it('should allow merge when branch is only out of date for an unchanged project', async () => {
@@ -94,6 +96,7 @@ describe('checkMergeSafety', () => {
       repo: 'repo',
       owner: 'owner'
     });
+    expect(core.setFailed).not.toHaveBeenCalled();
   });
 
   it('should allow merge when branch is fully up to date', async () => {

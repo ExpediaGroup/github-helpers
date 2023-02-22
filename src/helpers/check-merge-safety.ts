@@ -36,7 +36,10 @@ export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
   }
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: githubContext.issue.number, ...githubContext.repo });
 
-  return setMergeSafetyStatus(pullRequest, inputs);
+  const { state, message } = await setMergeSafetyStatus(pullRequest, inputs);
+  if (state === 'failure') {
+    core.setFailed(message);
+  }
 };
 
 const setMergeSafetyStatus = async (pullRequest: PullRequest, { context = 'Merge Safety', ...inputs }: CheckMergeSafety) => {
@@ -48,12 +51,14 @@ const setMergeSafetyStatus = async (pullRequest: PullRequest, { context = 'Merge
     description: message,
     ...githubContext.repo
   });
+
+  return { state, message };
 };
 
 const handlePushWorkflow = async (inputs: CheckMergeSafety) => {
   const pullRequests = await paginateAllOpenPullRequests();
   const filteredPullRequests = pullRequests.filter(({ base, draft }) => !draft && base.ref === base.repo.default_branch);
-  return map(filteredPullRequests, pullRequest => setMergeSafetyStatus(pullRequest as PullRequest, inputs));
+  await map(filteredPullRequests, pullRequest => setMergeSafetyStatus(pullRequest as PullRequest, inputs));
 };
 
 const getMergeSafetyStateAndMessage = async (
@@ -94,7 +99,7 @@ const getMergeSafetyStateAndMessage = async (
     return {
       state: 'failure',
       message: `This branch has one or more outdated global files. Please update with ${default_branch}.`
-    };
+    } as const;
   }
 
   const {
@@ -117,7 +122,7 @@ const getMergeSafetyStateAndMessage = async (
     return {
       state: 'failure',
       message: `This branch has one or more outdated projects. Please update with ${default_branch}.`
-    };
+    } as const;
   }
 
   const safeMessage = buildSuccessMessage(branchName);
@@ -125,7 +130,7 @@ const getMergeSafetyStateAndMessage = async (
   return {
     state: 'success',
     message: safeMessage
-  };
+  } as const;
 };
 
 const buildErrorMessage = (paths: string[], pathType: 'projects' | 'global files', branchName: string) =>
