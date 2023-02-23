@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@octokit/types": "9.0.0",
+    "@total-typescript/ts-reset": "0.3.7",
     "@types/axios": "0.14.0",
     "@types/bluebird": "3.5.38",
     "@types/jest": "28.1.7",

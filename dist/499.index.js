@@ -52,7 +52,7 @@ const approvalsSatisfied = ({ teams } = {}) => __awaiter(void 0, void 0, void 0,
     const approverLogins = reviews
         .filter(({ state }) => state === 'APPROVED')
         .map(({ user }) => user === null || user === void 0 ? void 0 : user.login)
-        .filter((login) => Boolean(login));
+        .filter(Boolean);
     const codeOwnerTeams = (0,lodash__WEBPACK_IMPORTED_MODULE_3__.uniq)(teamsAndLogins.map(({ team }) => team));
     return codeOwnerTeams.every(team => {
         const membersOfCodeOwnerTeam = (0,lodash__WEBPACK_IMPORTED_MODULE_3__.groupBy)(teamsAndLogins, 'team')[team];
