@@ -27,7 +27,7 @@ export const approvalsSatisfied = async ({ teams }: ApprovalsSatisfied = {}) => 
   const approverLogins = reviews
     .filter(({ state }) => state === 'APPROVED')
     .map(({ user }) => user?.login)
-    .filter((login): login is string => Boolean(login));
+    .filter(Boolean);
   const codeOwnerTeams = uniq(teamsAndLogins.map(({ team }) => team));
 
   return codeOwnerTeams.every(team => {
