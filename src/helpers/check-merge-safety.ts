@@ -79,8 +79,9 @@ const getMergeSafetyStateAndMessage = async (
   } = pullRequest;
 
   const maxBranchNameLength = 50;
+  const branchName = `${username}:${ref}`;
   const truncatedRef = ref.length > maxBranchNameLength ? `${ref.substring(0, maxBranchNameLength)}...` : ref;
-  const branchName = `${username}:${truncatedRef}`;
+  const truncatedBranchName = `${username}:${truncatedRef}`;
 
   const {
     data: { files: filesWhichBranchIsBehindOn }
@@ -97,7 +98,7 @@ const getMergeSafetyStateAndMessage = async (
     : [];
 
   if (globalFilesOutdatedOnBranch.length) {
-    core.error(buildErrorMessage(globalFilesOutdatedOnBranch, 'global files', branchName));
+    core.error(buildErrorMessage(globalFilesOutdatedOnBranch, 'global files', truncatedBranchName));
     return {
       state: 'failure',
       message: `This branch has one or more outdated global files. Please update with ${default_branch}.`
@@ -120,14 +121,14 @@ const getMergeSafetyStateAndMessage = async (
   );
 
   if (changedProjectsOutdatedOnBranch?.length) {
-    core.error(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects', branchName));
+    core.error(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects', truncatedBranchName));
     return {
       state: 'failure',
       message: `This branch has one or more outdated projects. Please update with ${default_branch}.`
     } as const;
   }
 
-  const safeMessage = buildSuccessMessage(branchName);
+  const safeMessage = buildSuccessMessage(truncatedBranchName);
   core.info(safeMessage);
   return {
     state: 'success',
