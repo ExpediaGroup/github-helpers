@@ -47,9 +47,9 @@ jest.mock('@actions/github', () => ({
   }))
 }));
 
-const mockGithubRequests = (filesOutOfDate: string[], changedFilesOnPr: string[]) => {
+const mockGithubRequests = (filesOutOfDate: string[], changedFilesOnPr: string[], branch = branchName) => {
   (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
-    const changedFiles = basehead === `${username}:${branchName}...${baseOwner}:${defaultBranch}` ? filesOutOfDate : changedFilesOnPr;
+    const changedFiles = basehead === `${username}:${branch}...${baseOwner}:${defaultBranch}` ? filesOutOfDate : changedFilesOnPr;
     return {
       data: {
         files: changedFiles.map(file => ({ filename: file }))
@@ -189,6 +189,32 @@ describe('checkMergeSafety', () => {
       state: 'success',
       context: 'Merge Safety',
       description: 'Branch username:some-branch-name is safe to merge!',
+      repo: 'repo',
+      owner: 'owner'
+    });
+  });
+
+  it('should set merge safety status with truncated description length if branch name is too long', async () => {
+    const reallyLongBranchName = 'x'.repeat(200);
+    (octokit.pulls.get as unknown as Mocktokit).mockImplementation(() => ({
+      data: {
+        base: { repo: { default_branch: defaultBranch, owner: { login: baseOwner } } },
+        head: { sha, ref: reallyLongBranchName, user: { login: username } }
+      }
+    }));
+    const filesOutOfDate = ['packages/package-1/sub-dir/package.json'];
+    const changedFilesOnPr = ['packages/package-1/sub-dir/package.json'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr, reallyLongBranchName);
+    await checkMergeSafety({
+      paths: allProjectPaths,
+      ignore_globs: 'packages/**/package.json',
+      ...context.repo
+    });
+    expect(setCommitStatus).toHaveBeenCalledWith({
+      sha,
+      state: 'success',
+      context: 'Merge Safety',
+      description: `Branch username:${'x'.repeat(50)}... is safe to merge!`,
       repo: 'repo',
       owner: 'owner'
     });
