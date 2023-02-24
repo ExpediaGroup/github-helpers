@@ -78,7 +78,9 @@ const getMergeSafetyStateAndMessage = async (
     }
   } = pullRequest;
 
-  const branchName = `${username}:${ref}`;
+  const maxBranchNameLength = 50;
+  const truncatedRef = ref.length > maxBranchNameLength ? `${ref.substring(0, maxBranchNameLength)}...` : ref;
+  const branchName = `${username}:${truncatedRef}`;
 
   const {
     data: { files: filesWhichBranchIsBehindOn }

@@ -91,7 +91,9 @@ const handlePushWorkflow = (inputs) => __awaiter(void 0, void 0, void 0, functio
 const getMergeSafetyStateAndMessage = (pullRequest, { paths, ignore_globs, override_filter_paths, override_filter_globs }) => __awaiter(void 0, void 0, void 0, function* () {
     var _b;
     const { base: { repo: { default_branch, owner: { login: baseOwner } } }, head: { ref, user: { login: username } } } = pullRequest;
-    const branchName = `${username}:${ref}`;
+    const maxBranchNameLength = 50;
+    const truncatedRef = ref.length > maxBranchNameLength ? `${ref.substring(0, maxBranchNameLength)}...` : ref;
+    const branchName = `${username}:${truncatedRef}`;
     const { data: { files: filesWhichBranchIsBehindOn } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${branchName}...${baseOwner}:${default_branch}` }));
     const fileNamesWhichBranchIsBehindOn = (_b = filesWhichBranchIsBehindOn === null || filesWhichBranchIsBehindOn === void 0 ? void 0 : filesWhichBranchIsBehindOn.map(file => file.filename)) !== null && _b !== void 0 ? _b : [];
     const globalFilesOutdatedOnBranch = override_filter_globs
