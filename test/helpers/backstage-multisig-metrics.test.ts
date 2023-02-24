@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { submitMultisigMetrics } from '../../src/helpers/backstage-multisig-metrics';
+import { backstageMultisigMetrics } from '../../src/helpers/backstage-multisig-metrics';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
@@ -19,9 +19,9 @@ jest.mock('@actions/github', () => ({
   getOctokit: jest.fn(() => ({ rest: { pulls: { listFiles: jest.fn() } } }))
 }));
 
-describe('submitMultisigMetrics', () => {
+describe('backstageMultisigMetrics', () => {
   it('returns data', async () => {
-    const data = await submitMultisigMetrics({
+    const data = await backstageMultisigMetrics({
       backstage_url: process.env.BACKSTAGE_URL
     });
     expect(data).toBeTruthy();

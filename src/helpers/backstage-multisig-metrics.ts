@@ -25,7 +25,7 @@ type MultisigMetricsParams = {
 const configuration = client.createConfiguration();
 const apiInstance = new v2.MetricsApi(configuration);
 
-export const submitMultisigMetrics = async ({ backstage_url }: MultisigMetricsParams) => {
+export const backstageMultisigMetrics = async ({ backstage_url }: MultisigMetricsParams) => {
   if (!backstage_url) return;
   const entities = await getBackstageEntities({ backstage_url });
 
