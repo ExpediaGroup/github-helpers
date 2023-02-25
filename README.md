@@ -122,7 +122,7 @@ The following parameters can be used for additional control over when it is safe
   * Comments on a pull request or other issue
 
 ### [delete-stale-branches](.github/workflows/delete-stale-branches.yml)
-  * Deletes all repository branches not associated with an open PR and which have been inactive for a certain number of days
+  * Deletes all of a repository's unprotected branches not associated with an open PR and which have been inactive for a certain number of days
 
 ### [delete-deployment](.github/workflows/deployments.yml#L53)
 * Deletes a Github [deployment](https://docs.github.com/en/rest/reference/repos#deployments) and [environment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment#about-environments)
