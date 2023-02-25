@@ -61,15 +61,15 @@ describe('deleteStaleBranches', () => {
     await deleteStaleBranches({ days: '1' });
 
     expect(octokit.git.deleteRef).not.toHaveBeenCalledWith({
-      ref: 'new-branch-no-open-pr',
+      ref: 'heads/new-branch-no-open-pr',
       ...context.repo
     });
     expect(octokit.git.deleteRef).not.toHaveBeenCalledWith({
-      ref: 'branch-with-open-pr',
+      ref: 'heads/branch-with-open-pr',
       ...context.repo
     });
     expect(octokit.git.deleteRef).toHaveBeenCalledWith({
-      ref: 'old-branch-with-no-open-pr',
+      ref: 'heads/old-branch-with-no-open-pr',
       ...context.repo
     });
   });
