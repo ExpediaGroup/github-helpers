@@ -20,4 +20,5 @@ jobs:
       - uses: ./
         with:
           helper: delete-stale-branches
+          days: 1
           github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
