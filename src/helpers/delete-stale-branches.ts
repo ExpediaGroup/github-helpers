@@ -62,7 +62,7 @@ const branchIsTooOld = (dateLastUpdated: string, daysThreshold: string) => {
   return timeSinceLastUpdated > threshold;
 };
 
-export const paginateAllUnprotectedBranches = async (page = 1): Promise<PullRequestBranchesList> => {
+const paginateAllUnprotectedBranches = async (page = 1): Promise<PullRequestBranchesList> => {
   const response = await octokit.repos.listBranches({
     protected: false,
     per_page: 100,
