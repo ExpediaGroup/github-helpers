@@ -12,13 +12,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "deleteStaleBranches": () => (/* binding */ deleteStaleBranches),
 /* harmony export */   "paginateAllUnprotectedBranches": () => (/* binding */ paginateAllUnprotectedBranches)
 /* harmony export */ });
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(3476);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(3476);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8710);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5757);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2186);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8710);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(5757);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,23 +47,25 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-class DeleteStaleBranches extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
+
+class DeleteStaleBranches extends _types_generated__WEBPACK_IMPORTED_MODULE_5__/* .HelperInputs */ .s {
 }
 const deleteStaleBranches = ({ days = '30' } = {}) => __awaiter(void 0, void 0, void 0, function* () {
-    const openPullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__/* .paginateAllOpenPullRequests */ .P)();
+    const openPullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__/* .paginateAllOpenPullRequests */ .P)();
     const openPullRequestBranches = openPullRequests.map(pr => pr.head.ref);
     const allBranches = yield paginateAllUnprotectedBranches();
     const branchesWithNoOpenPullRequest = allBranches.filter(({ name }) => !openPullRequestBranches.includes(name));
-    const branchesWithUpdatedDates = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(branchesWithNoOpenPullRequest, ({ name, commit: { sha } }) => __awaiter(void 0, void 0, void 0, function* () {
-        const { data: { committer: { date } } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.git.getCommit */ .K.git.getCommit(Object.assign({ commit_sha: sha }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    const branchesWithUpdatedDates = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(branchesWithNoOpenPullRequest, ({ name, commit: { sha } }) => __awaiter(void 0, void 0, void 0, function* () {
+        const { data: { committer: { date } } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.git.getCommit */ .K.git.getCommit(Object.assign({ commit_sha: sha }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
         return {
             name,
             date
         };
     }));
     const branchesToDelete = branchesWithUpdatedDates.filter(({ date }) => branchIsTooOld(date, days)).map(({ name }) => name);
-    yield (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(branchesToDelete, (branch) => __awaiter(void 0, void 0, void 0, function* () {
-        yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.git.deleteRef */ .K.git.deleteRef(Object.assign({ ref: branch }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    yield (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(branchesToDelete, (branch) => __awaiter(void 0, void 0, void 0, function* () {
+        _actions_core__WEBPACK_IMPORTED_MODULE_1__.info(`Deleting branch ${branch}...`);
+        yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.git.deleteRef */ .K.git.deleteRef(Object.assign({ ref: branch }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     }));
 });
 const branchIsTooOld = (dateLastUpdated, daysThreshold) => {
@@ -72,7 +76,7 @@ const branchIsTooOld = (dateLastUpdated, daysThreshold) => {
     return timeSinceLastUpdated > threshold;
 };
 const paginateAllUnprotectedBranches = (page = 1) => __awaiter(void 0, void 0, void 0, function* () {
-    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.listBranches */ .K.repos.listBranches(Object.assign({ protected: false, per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.listBranches */ .K.repos.listBranches(Object.assign({ protected: false, per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     if (!response.data.length) {
         return [];
     }

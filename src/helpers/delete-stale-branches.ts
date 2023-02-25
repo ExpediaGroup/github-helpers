@@ -13,6 +13,7 @@ limitations under the License.
 
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
+import * as core from '@actions/core';
 import { octokit } from '../octokit';
 import { map } from 'bluebird';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
@@ -44,6 +45,7 @@ export const deleteStaleBranches = async ({ days = '30' }: DeleteStaleBranches =
 
   const branchesToDelete = branchesWithUpdatedDates.filter(({ date }) => branchIsTooOld(date, days)).map(({ name }) => name);
   await map(branchesToDelete, async branch => {
+    core.info(`Deleting branch ${branch}...`);
     await octokit.git.deleteRef({
       ref: branch,
       ...context.repo
