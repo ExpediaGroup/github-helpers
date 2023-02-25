@@ -47,7 +47,7 @@ export const deleteStaleBranches = async ({ days = '30' }: DeleteStaleBranches =
   await map(branchesToDelete, async branch => {
     core.info(`Deleting branch ${branch}...`);
     await octokit.git.deleteRef({
-      ref: branch,
+      ref: `heads/${branch}`,
       ...context.repo
     });
   });

@@ -64,7 +64,7 @@ const deleteStaleBranches = ({ days = '30' } = {}) => __awaiter(void 0, void 0, 
     const branchesToDelete = branchesWithUpdatedDates.filter(({ date }) => branchIsTooOld(date, days)).map(({ name }) => name);
     yield (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(branchesToDelete, (branch) => __awaiter(void 0, void 0, void 0, function* () {
         _actions_core__WEBPACK_IMPORTED_MODULE_1__.info(`Deleting branch ${branch}...`);
-        yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.git.deleteRef */ .K.git.deleteRef(Object.assign({ ref: branch }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+        yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.git.deleteRef */ .K.git.deleteRef(Object.assign({ ref: `heads/${branch}` }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     }));
 });
 const branchIsTooOld = (dateLastUpdated, daysThreshold) => {
