@@ -51,9 +51,9 @@ class DeleteStaleBranches extends _types_generated__WEBPACK_IMPORTED_MODULE_5__/
 }
 const deleteStaleBranches = ({ days = '30' } = {}) => __awaiter(void 0, void 0, void 0, function* () {
     const openPullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__/* .paginateAllOpenPullRequests */ .P)();
-    const openPullRequestBranches = openPullRequests.map(pr => pr.head.ref);
+    const openPullRequestBranches = new Set(openPullRequests.map(pr => pr.head.ref));
     const allBranches = yield paginateAllUnprotectedBranches();
-    const branchesWithNoOpenPullRequest = allBranches.filter(({ name }) => !openPullRequestBranches.includes(name));
+    const branchesWithNoOpenPullRequest = allBranches.filter(({ name }) => !openPullRequestBranches.has(name));
     const branchesWithUpdatedDates = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(branchesWithNoOpenPullRequest, ({ name, commit: { sha } }) => __awaiter(void 0, void 0, void 0, function* () {
         const { data: { committer: { date } } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.git.getCommit */ .K.git.getCommit(Object.assign({ commit_sha: sha }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
         return {
