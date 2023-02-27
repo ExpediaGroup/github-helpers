@@ -6,7 +6,8 @@ inputs:
     required: true
   github_token:
     description: 'The github token'
-    required: true
+    required: false
+    default: github.token
   body:
     description: 'The comment body'
     required: false

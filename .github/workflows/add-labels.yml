@@ -3,8 +3,8 @@ name: Add Labels
 on:
   pull_request:
     branches: [ main ]
-    paths:
-      - 'src/helpers/add-labels.ts'
+#    paths:
+#      - 'src/helpers/add-labels.ts'
 
 jobs:
   test:
