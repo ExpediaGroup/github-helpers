@@ -8,12 +8,10 @@
 ```yaml
 uses: ExpediaGroup/github-helpers@v1
 with:
-  helper: < HELPER NAME >
-  ...
-  github_token: ${{ secrets.GITHUB_TOKEN }}
+  helper: <HELPER NAME>
 ```
 
-The `helper` and `github_token` inputs are required for all helpers. Additional inputs vary by helper. Each helper file in `src/helpers` contains an interface that defines which additional inputs are required or optional. If a required input is ommitted, the helper will throw a descriptive error.
+The `helper` input is required for all helpers, and the `github_token` input defaults to the included workflow token `${{ github.token }}`. Additional inputs vary by helper. Each helper file in `src/helpers` contains an interface that defines which additional inputs are required or optional. If a required input is ommitted, the helper will throw a descriptive error.
 
 ### Example
 Input interface in `src/helpers/set-commit-status.ts`:
@@ -35,7 +33,6 @@ with:
   context: My Context
   state: success
   description: My Description
-  github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ## Available Helpers

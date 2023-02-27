@@ -22,7 +22,6 @@ jobs:
             src/helpers/generate-path-matrix.ts
             package/two
             package/three
-          github_token: ${{ secrets.GITHUB_TOKEN }}
 
     outputs:
       matrix: ${{ steps.path_matrix.outputs.output }}

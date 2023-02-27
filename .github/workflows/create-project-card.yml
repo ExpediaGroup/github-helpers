@@ -12,14 +12,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
 
       - uses: ./
         with:
           helper: create-project-card
           project_name: Test Project
           project_destination_column_name: Test Column 1
-          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}

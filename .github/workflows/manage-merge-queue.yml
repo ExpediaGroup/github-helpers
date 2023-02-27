@@ -15,12 +15,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
 
       - uses: ./
         with:
           helper: manage-merge-queue
-          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }} # must have repo:write permission

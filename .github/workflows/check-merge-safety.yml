@@ -22,4 +22,3 @@ jobs:
           override_filter_paths: |
             package.json
             package-lock.json
-          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
