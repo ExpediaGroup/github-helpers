@@ -5534,7 +5534,7 @@ var follow_redirects = __webpack_require__(7707);
 // EXTERNAL MODULE: external "zlib"
 var external_zlib_ = __webpack_require__(9796);
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/env/data.js
-const VERSION = "1.3.3";
+const VERSION = "1.3.4";
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/helpers/parseProtocol.js
 
 
@@ -6166,15 +6166,39 @@ function setProxy(options, configProxy, location) {
 
 const isHttpAdapterSupported = typeof process !== 'undefined' && utils.kindOf(process) === 'process';
 
+// temporary hotfix
+
+const wrapAsync = (asyncExecutor) => {
+  return new Promise((resolve, reject) => {
+    let onDone;
+    let isDone;
+
+    const done = (value, isRejected) => {
+      if (isDone) return;
+      isDone = true;
+      onDone && onDone(value, isRejected);
+    }
+
+    const _resolve = (value) => {
+      done(value);
+      resolve(value);
+    };
+
+    const _reject = (reason) => {
+      done(reason, true);
+      reject(reason);
+    }
+
+    asyncExecutor(_resolve, _reject, (onDoneHandler) => (onDone = onDoneHandler)).catch(_reject);
+  })
+};
+
 /*eslint consistent-return:0*/
 /* harmony default export */ const http = (isHttpAdapterSupported && function httpAdapter(config) {
-  /*eslint no-async-promise-executor:0*/
-  return new Promise(async function dispatchHttpRequest(resolvePromise, rejectPromise) {
-    let data = config.data;
-    const responseType = config.responseType;
-    const responseEncoding = config.responseEncoding;
+  return wrapAsync(async function dispatchHttpRequest(resolve, reject, onDone) {
+    let {data} = config;
+    const {responseType, responseEncoding} = config;
     const method = config.method.toUpperCase();
-    let isFinished;
     let isDone;
     let rejected = false;
     let req;
@@ -6182,10 +6206,7 @@ const isHttpAdapterSupported = typeof process !== 'undefined' && utils.kindOf(pr
     // temporary internal emitter until the AxiosRequest class will be implemented
     const emitter = new external_events_();
 
-    function onFinished() {
-      if (isFinished) return;
-      isFinished = true;
-
+    const onFinished = () => {
       if (config.cancelToken) {
         config.cancelToken.unsubscribe(abort);
       }
@@ -6197,26 +6218,13 @@ const isHttpAdapterSupported = typeof process !== 'undefined' && utils.kindOf(pr
       emitter.removeAllListeners();
     }
 
-    function done(value, isRejected) {
-      if (isDone) return;
-
+    onDone((value, isRejected) => {
       isDone = true;
-
       if (isRejected) {
         rejected = true;
         onFinished();
       }
-
-      isRejected ? rejectPromise(value) : resolvePromise(value);
-    }
-
-    const resolve = function resolve(value) {
-      done(value);
-    };
-
-    const reject = function reject(value) {
-      done(value, true);
-    };
+    });
 
     function abort(reason) {
       emitter.emit('abort', !reason || reason.type ? new cancel_CanceledError(null, config, req) : reason);
