@@ -25,9 +25,9 @@ export class DeleteStaleBranches extends HelperInputs {
 
 export const deleteStaleBranches = async ({ days = '30' }: DeleteStaleBranches = {}) => {
   const openPullRequests = await paginateAllOpenPullRequests();
-  const openPullRequestBranches = openPullRequests.map(pr => pr.head.ref);
+  const openPullRequestBranches = new Set(openPullRequests.map(pr => pr.head.ref));
   const allBranches = await paginateAllUnprotectedBranches();
-  const branchesWithNoOpenPullRequest = allBranches.filter(({ name }) => !openPullRequestBranches.includes(name));
+  const branchesWithNoOpenPullRequest = allBranches.filter(({ name }) => !openPullRequestBranches.has(name));
   const branchesWithUpdatedDates = await map(branchesWithNoOpenPullRequest, async ({ name, commit: { sha } }) => {
     const {
       data: {
