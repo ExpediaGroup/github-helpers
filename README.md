@@ -33,7 +33,6 @@ with:
   context: My Context
   state: success
   description: My Description
-  github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ## Available Helpers
