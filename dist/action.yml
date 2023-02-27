@@ -7,7 +7,7 @@ inputs:
   github_token:
     description: 'The github token'
     required: false
-    default: github.token
+    default: ${{ github.token }}
   body:
     description: 'The comment body'
     required: false
