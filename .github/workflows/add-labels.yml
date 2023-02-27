@@ -21,4 +21,3 @@ jobs:
         with:
           helper: add-labels
           labels: Test Label
-          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
