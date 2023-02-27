@@ -25,4 +25,3 @@ jobs:
         with:
           helper: check-pr-title
            # pattern: 'my-regex-pattern' (optional: pattern must be wrapped in single quotes)
-          github_token: ${{ secrets.GITHUB_TOKEN }}

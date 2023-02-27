@@ -15,10 +15,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
 
       - uses: ./
         with:
@@ -26,7 +22,6 @@ jobs:
           sha: ${{ github.event.pull_request.head.sha }}
           environment: test
           description: PR#${{ github.event.pull_request.number }} has been merged; pipeline in progress...
-          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
 
   set-deployment-status:
     name: Set Deployment Status
@@ -35,10 +30,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
 
       - uses: ./
         with:
@@ -48,7 +39,6 @@ jobs:
           state: success
           description: Deployment succeeded.
           target_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
 
   delete-deployment:
     name: Delete Deployment
@@ -57,14 +47,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
 
       - uses: ./
         with:
           helper: delete-deployment
           sha: ${{ github.event.pull_request.head.sha }}
           environment: test
-          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
