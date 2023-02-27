@@ -105,7 +105,7 @@ inputs:
     description: 'Head ref to initiate pull request from'
     required: false
   days:
-    description: 'Number of days a review is considered late'
+    description: 'Number of days'
     required: false
   no_evict_upon_conflict:
     description: 'Skip the default behavior of evicting a PR from the merge queue when there is a merge conflict'

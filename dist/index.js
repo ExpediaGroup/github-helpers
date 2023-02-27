@@ -20059,6 +20059,18 @@ var map = {
 		832,
 		12
 	],
+	"./delete-stale-branches": [
+		2471,
+		832,
+		710,
+		471
+	],
+	"./delete-stale-branches.ts": [
+		2471,
+		832,
+		710,
+		471
+	],
 	"./filter-paths": [
 		9794,
 		832,
