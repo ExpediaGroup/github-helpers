@@ -23,6 +23,9 @@ type MultisigMetricsParams = {
 };
 
 const configuration = client.createConfiguration();
+client.setServerVariables(configuration, {
+  site: 'datadoghq.eu'
+});
 const apiInstance = new v2.MetricsApi(configuration);
 
 export const backstageMultisigMetrics = async ({ backstage_url }: MultisigMetricsParams) => {

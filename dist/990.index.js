@@ -127,6 +127,9 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const configuration = _datadog_datadog_api_client__WEBPACK_IMPORTED_MODULE_1__.client.createConfiguration();
+_datadog_datadog_api_client__WEBPACK_IMPORTED_MODULE_1__.client.setServerVariables(configuration, {
+    site: 'datadoghq.eu'
+});
 const apiInstance = new _datadog_datadog_api_client__WEBPACK_IMPORTED_MODULE_1__.v2.MetricsApi(configuration);
 const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0, void 0, function* () {
     if (!backstage_url)
