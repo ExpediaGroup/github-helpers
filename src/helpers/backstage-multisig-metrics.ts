@@ -72,6 +72,7 @@ export const backstageMultisigMetrics = async ({ backstage_url }: MultisigMetric
       series
     }
   };
+  core.info(`Data uploaded: ${JSON.stringify(params)}`);
 
   try {
     const data = await apiInstance.submitMetrics(params);

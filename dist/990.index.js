@@ -172,6 +172,7 @@ const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0
             series
         }
     };
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Data uploaded: ${JSON.stringify(params)}`);
     try {
         const data = yield apiInstance.submitMetrics(params);
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
