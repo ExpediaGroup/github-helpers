@@ -41,10 +41,10 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 class GetChangedFiles extends _types_generated__WEBPACK_IMPORTED_MODULE_2__/* .HelperInputs */ .s {
 }
-const getChangedFiles = ({ pattern }) => __awaiter(void 0, void 0, void 0, function* () {
+const getChangedFiles = ({ pattern, delimiter = ',' }) => __awaiter(void 0, void 0, void 0, function* () {
     const filePaths = yield (0,_utils_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_1__/* .getChangedFilepaths */ .s)(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number);
     const filteredFilePaths = pattern ? filePaths.filter(fileName => fileName.match(pattern)) : filePaths;
-    return filteredFilePaths.join(',');
+    return filteredFilePaths.join(delimiter);
 });
 
 

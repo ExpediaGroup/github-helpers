@@ -17,10 +17,11 @@ import { getChangedFilepaths } from '../utils/get-changed-filepaths';
 
 export class GetChangedFiles extends HelperInputs {
   pattern?: string;
+  delimiter?: string;
 }
 
-export const getChangedFiles = async ({ pattern }: GetChangedFiles) => {
+export const getChangedFiles = async ({ pattern, delimiter = ',' }: GetChangedFiles) => {
   const filePaths = await getChangedFilepaths(context.issue.number);
   const filteredFilePaths = pattern ? filePaths.filter(fileName => fileName.match(pattern)) : filePaths;
-  return filteredFilePaths.join(',');
+  return filteredFilePaths.join(delimiter);
 };
