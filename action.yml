@@ -113,6 +113,9 @@ inputs:
   skip_if_already_set:
     description: 'Skip setting a commit status if it has already been set to success or failure by a workflow'
     required: false
+  delimiter:
+    description: 'A custom delimiter'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'
