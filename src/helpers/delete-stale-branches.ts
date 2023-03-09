@@ -18,6 +18,7 @@ import { octokit } from '../octokit';
 import { map } from 'bluebird';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
 import { PullRequestBranchesList } from '../types/github';
+import { getDefaultBranch } from '../utils/get-default-branch';
 
 export class DeleteStaleBranches extends HelperInputs {
   days?: string;
@@ -27,8 +28,11 @@ export const deleteStaleBranches = async ({ days = '30' }: DeleteStaleBranches =
   const openPullRequests = await paginateAllOpenPullRequests();
   const openPullRequestBranches = new Set(openPullRequests.map(pr => pr.head.ref));
   const allBranches = await paginateAllUnprotectedBranches();
-  const branchesWithNoOpenPullRequest = allBranches.filter(({ name }) => !openPullRequestBranches.has(name));
-  const branchesWithUpdatedDates = await map(branchesWithNoOpenPullRequest, async ({ name, commit: { sha } }) => {
+  const defaultBranch = await getDefaultBranch();
+  const featureBranchesWithNoOpenPullRequest = allBranches.filter(
+    ({ name }) => !openPullRequestBranches.has(name) && name !== defaultBranch
+  );
+  const branchesWithUpdatedDates = await map(featureBranchesWithNoOpenPullRequest, async ({ name, commit: { sha } }) => {
     const {
       data: {
         committer: { date }

@@ -35,10 +35,12 @@ jest.mock('@actions/github', () => ({
         )
       },
       repos: {
+        get: jest.fn().mockReturnValue({ data: { default_branch: 'main' } }),
         listBranches: jest.fn().mockImplementation(({ page }) =>
           page === 1
             ? {
                 data: [
+                  { name: 'main', commit: { sha: 'main sha' } },
                   { name: 'new-branch-no-open-pr', commit: { sha: '123' } },
                   { name: 'old-branch-with-no-open-pr', commit: { sha: '456' } },
                   { name: 'branch-with-open-pr', commit: { sha: '789' } }
@@ -60,6 +62,10 @@ describe('deleteStaleBranches', () => {
   it('should call octokit deleteRef with correct branch names', async () => {
     await deleteStaleBranches({ days: '1' });
 
+    expect(octokit.git.deleteRef).not.toHaveBeenCalledWith({
+      ref: 'heads/main',
+      ...context.repo
+    });
     expect(octokit.git.deleteRef).not.toHaveBeenCalledWith({
       ref: 'heads/new-branch-no-open-pr',
       ...context.repo
