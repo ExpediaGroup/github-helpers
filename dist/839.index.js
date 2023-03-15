@@ -32,10 +32,9 @@ class GenerateMatrix extends _types_generated__WEBPACK_IMPORTED_MODULE_1__/* .He
     constructor() {
         super(...arguments);
         this.paths = '';
-        this.batches = '';
     }
 }
-const generateMatrix = ({ paths, batches }) => {
+const generateMatrix = ({ paths, batches = '1' }) => {
     const matrixValues = paths.split(/[\n,]/);
     return {
         include: (0,lodash__WEBPACK_IMPORTED_MODULE_0__.chunk)(matrixValues, Math.ceil(matrixValues.length / Number(batches))).map(chunk => ({ path: chunk.join(',') }))

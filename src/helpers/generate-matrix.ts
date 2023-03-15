@@ -16,10 +16,10 @@ import { chunk } from 'lodash';
 
 export class GenerateMatrix extends HelperInputs {
   paths = '';
-  batches = '';
+  batches?: string;
 }
 
-export const generateMatrix = ({ paths, batches }: GenerateMatrix) => {
+export const generateMatrix = ({ paths, batches = '1' }: GenerateMatrix) => {
   const matrixValues = paths.split(/[\n,]/);
   return {
     include: chunk(matrixValues, Math.ceil(matrixValues.length / Number(batches))).map(chunk => ({ path: chunk.join(',') }))
