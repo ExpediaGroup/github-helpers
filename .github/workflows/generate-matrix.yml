@@ -1,0 +1,43 @@
+name: Generate Matrix
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/helpers/generate-matrix.ts'
+
+jobs:
+  scheduler:
+    name: Determine packages to build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: ./
+        id: matrix
+        with:
+          helper: generate-matrix
+          paths: |
+            test/path/1
+            test/path/2
+            test/path/3
+
+    outputs:
+      matrix: ${{ steps.matrix.outputs.output }}
+
+  build:
+    runs-on: ubuntu-latest
+    needs: scheduler
+    strategy:
+      matrix: ${{ fromJson(needs.scheduler.outputs.matrix) }}
+    steps:
+      - run: echo "Run each job using ${{ matrix.path }}"
+
+  build-status:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: build
+    steps:
+      - name: Check build status
+        run: exit ${{ (needs.build.result == 'failure' || needs.build.result == 'cancelled') && 1 || 0 }}

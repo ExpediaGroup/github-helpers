@@ -127,6 +127,9 @@ The following parameters can be used for additional control over when it is safe
 ### [filter-paths](.github/workflows/filter-paths.yml)
   * Returns `true` if specified file paths have changed for a PR, and `false` otherwise
 
+### [generate-matrix](.github/workflows/generate-matrix.yml)
+  * Returns a job matrix JSON for dynamically running workflows
+
 ### [generate-path-matrix](.github/workflows/generate-path-matrix.yml)
   * Returns a job matrix JSON for dynamically running workflows only for changed file paths
   * Can be used to parallelize similar jobs, which can be useful in a monorepo environment. More information on matrix strategies can be found [here](https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix)
