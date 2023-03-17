@@ -46,7 +46,7 @@ function securityTier(entity: Entity) {
 
 function allowTestsToFail(entity: Entity) {
   const tier = securityTier(entity);
-  return tier < 0 || !!entity.metadata.tags?.includes('disabled-security-checks');
+  return tier < 0 || !!entity.metadata.tags?.includes('ci-sec-disable');
 }
 
 // the annotation will have "url:" prefix - not a relative path
@@ -149,6 +149,23 @@ function componentConfig(item: Entity, runTests: boolean) {
   };
 }
 
+function runTestsPolicy(entity: Entity, changed: boolean, eventName?: string, workflow_force_all_checks_flag?: string) {
+  if (workflow_force_all_checks_flag) {
+    core.info(`${entity.metadata.name}: CI runs because of workflow config (force_all_checks: true)`);
+    return true;
+  }
+  if (eventName !== 'pull_request') {
+    core.info(`${entity.metadata.name}: CI runs because it's not a PR`);
+    return true;
+  }
+  if (entity.metadata.tags?.includes('ci-sec-changed-only')) {
+    core.info(`${entity.metadata.name}: CI runs for changed only (changed: ${changed}) - via ci-sec-changed-only tag`);
+    return changed;
+  }
+  core.info(`${entity.metadata.name}: CI runs by default for all components (changed: ${changed}) - no ci-sec-changed-only tag`);
+  return true;
+}
+
 export const generateComponentMatrix = async ({ backstage_url, force_all_checks }: GenerateComponentMatrix) => {
   const entities = await getBackstageEntities({ backstage_url });
   const repoUrl = `${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}`;
@@ -173,12 +190,12 @@ export const generateComponentMatrix = async ({ backstage_url, force_all_checks 
 
   inspectComponents('Changed components', changedComponents);
 
-  const forceAll = !!force_all_checks || eventName !== 'pull_request';
-  if (forceAll) core.info(`forcing CI runs for all components (${eventName})`);
-
   core.info('Generating component matrix...');
   const matrix = {
-    include: componentItems.map(item => componentConfig(item, forceAll || changedComponents.includes(item)))
+    include: componentItems.map(item => {
+      const runTests = runTestsPolicy(item, changedComponents.includes(item), eventName, force_all_checks);
+      return componentConfig(item, runTests);
+    })
   };
 
   core.info(JSON.stringify(matrix, null, 2));
