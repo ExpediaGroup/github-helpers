@@ -1,6 +1,6 @@
 "use strict";
-exports.id = 706;
-exports.ids = [706];
+exports.id = 854;
+exports.ids = [854];
 exports.modules = {
 
 /***/ 80885:
@@ -88,26 +88,91 @@ class MultisigsCollector {
 
 /***/ }),
 
-/***/ 76706:
+/***/ 23854:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+// ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "BackstageExport": () => (/* binding */ BackstageExport),
-/* harmony export */   "backstageExport": () => (/* binding */ backstageExport)
-/* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(42186);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var glob__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(91957);
-/* harmony import */ var glob__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(glob__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(33476);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(57147);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var simple_git__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(92628);
-/* harmony import */ var handlebars__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(97492);
-/* harmony import */ var handlebars__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(handlebars__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _core_multisigs_collector__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(80885);
-/* harmony import */ var _utils_get_backstage_entities__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(81027);
+
+// EXPORTS
+__webpack_require__.d(__webpack_exports__, {
+  "BackstageExport": () => (/* binding */ BackstageExport),
+  "backstageExport": () => (/* binding */ backstageExport)
+});
+
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
+var core = __webpack_require__(42186);
+// EXTERNAL MODULE: ./node_modules/glob/glob.js
+var glob = __webpack_require__(91957);
+// EXTERNAL MODULE: ./src/types/generated.ts
+var generated = __webpack_require__(33476);
+// EXTERNAL MODULE: external "fs"
+var external_fs_ = __webpack_require__(57147);
+// EXTERNAL MODULE: ./node_modules/simple-git/dist/esm/index.js
+var esm = __webpack_require__(92628);
+// EXTERNAL MODULE: ./node_modules/handlebars/lib/index.js
+var lib = __webpack_require__(97492);
+var lib_default = /*#__PURE__*/__webpack_require__.n(lib);
+// EXTERNAL MODULE: ./src/core/multisigs-collector.ts
+var multisigs_collector = __webpack_require__(80885);
+// EXTERNAL MODULE: ./src/utils/get-backstage-entities.ts
+var get_backstage_entities = __webpack_require__(81027);
+;// CONCATENATED MODULE: ./src/core/filtered-collector.ts
+/*
+Copyright 2022 Aurora Labs
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+function pick(obj, whitelist) {
+    return whitelist.reduce((newObj, key) => {
+        if (key in obj) {
+            // eslint-disable-next-line functional/immutable-data
+            newObj[key] = obj[key];
+        }
+        return newObj;
+    }, {});
+}
+const ALLOWED_KINDS = ['Component', 'System'];
+const ALLOWED_SPEC_FIELDS = ['type'];
+const ALLOWED_METADATA_FIELDS = ['uid', 'namespace', 'name', 'title', 'annotations', 'tags'];
+class FilteredCollector {
+    constructor(entities) {
+        this.srcEntities = entities;
+        this.entities = this.filterEntities();
+    }
+    normalizeEntities(list) {
+        return [...new Set(list)].sort((a, b) => a.localeCompare(b));
+    }
+    filterSpec(spec) {
+        if (!spec)
+            return {};
+        return pick(spec, ALLOWED_SPEC_FIELDS);
+    }
+    filterMetadata(metadata) {
+        return pick(metadata, ALLOWED_METADATA_FIELDS);
+    }
+    filterEntities() {
+        return this.srcEntities
+            .filter(e => ALLOWED_KINDS.includes(e.kind))
+            .map(e => {
+            return {
+                apiVersion: e.apiVersion,
+                kind: e.kind,
+                metadata: this.filterMetadata(e.metadata),
+                spec: this.filterSpec(e.spec)
+            };
+        });
+    }
+}
+
+;// CONCATENATED MODULE: ./src/helpers/backstage-export.ts
 /*
 Copyright 2022 Aurora Labs
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -138,11 +203,12 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-class BackstageExport extends _types_generated__WEBPACK_IMPORTED_MODULE_7__/* .HelperInputs */ .s {
+
+class BackstageExport extends generated/* HelperInputs */.s {
 }
 function reexportTemplate(inputs) {
     const outputPath = inputs.output_path + inputs.templatePath.replace(inputs.template_path, '').replace('.hbs', '');
-    const compiledTemplate = handlebars__WEBPACK_IMPORTED_MODULE_4___default().compile(fs__WEBPACK_IMPORTED_MODULE_2__.readFileSync(inputs.templatePath, { encoding: 'utf8' }), {
+    const compiledTemplate = lib_default().compile(external_fs_.readFileSync(inputs.templatePath, { encoding: 'utf8' }), {
         strict: true
     });
     const options = {
@@ -156,27 +222,27 @@ function reexportTemplate(inputs) {
         }
     };
     const compiledContent = compiledTemplate(inputs.templateData, options);
-    const existingContent = fs__WEBPACK_IMPORTED_MODULE_2__.existsSync(outputPath) &&
-        fs__WEBPACK_IMPORTED_MODULE_2__.readFileSync(outputPath, {
+    const existingContent = external_fs_.existsSync(outputPath) &&
+        external_fs_.readFileSync(outputPath, {
             encoding: 'utf-8'
         });
     if (compiledContent !== existingContent) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Writing ${outputPath}: changed content`);
-        fs__WEBPACK_IMPORTED_MODULE_2__.writeFileSync(outputPath, compiledContent);
+        core.info(`Writing ${outputPath}: changed content`);
+        external_fs_.writeFileSync(outputPath, compiledContent);
         return true;
     }
     return false;
 }
 function commitAndPushChanges(output_path) {
     return __awaiter(this, void 0, void 0, function* () {
-        const git = (0,simple_git__WEBPACK_IMPORTED_MODULE_3__/* .simpleGit */ .o5)('.');
+        const git = (0,esm/* simpleGit */.o5)('.');
         yield git.addConfig('user.email', 'security@aurora.dev');
         yield git.addConfig('user.name', 'Backstage Exporter');
         yield git.add(output_path);
         const msg = 'chore(backstage): 🥷🏽 automatic re-export';
         yield git.commit(msg, undefined);
         yield git.push();
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Updated and pushed the changes');
+        core.info('Updated and pushed the changes');
         return true;
     });
 }
@@ -184,12 +250,14 @@ const backstageExport = ({ backstage_url, template_path, output_path, testing })
     if (!template_path || !output_path) {
         throw new Error('set template_path and output_path for handlebars templating');
     }
-    const entities = yield (0,_utils_get_backstage_entities__WEBPACK_IMPORTED_MODULE_6__/* .getBackstageEntities */ .g)({ backstage_url });
-    const multisigsCollector = new _core_multisigs_collector__WEBPACK_IMPORTED_MODULE_5__/* .MultisigsCollector */ .d(entities);
+    const entities = yield (0,get_backstage_entities/* getBackstageEntities */.g)({ backstage_url });
+    const multisigsCollector = new multisigs_collector/* MultisigsCollector */.d(entities);
+    const filteredCollector = new FilteredCollector(entities);
     // console.log(JSON.stringify(multisigsCollector.systemComponents[0], null, 2));
-    const changedFiles = glob__WEBPACK_IMPORTED_MODULE_1__.sync(`${template_path}**/*.hbs`).reduce((acc, templatePath) => {
+    const changedFiles = glob.sync(`${template_path}**/*.hbs`).reduce((acc, templatePath) => {
         const templateData = {
             multisigSystemComponents: multisigsCollector.systemComponents,
+            filteredEntities: JSON.stringify(filteredCollector.entities, null, 2),
             testing
         };
         if (reexportTemplate({ backstage_url, output_path, template_path, templatePath, templateData })) {
@@ -198,11 +266,11 @@ const backstageExport = ({ backstage_url, template_path, output_path, testing })
         return acc;
     }, []);
     if (testing) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Testing mode: ${changedFiles.length} changed files, exiting`);
+        core.info(`Testing mode: ${changedFiles.length} changed files, exiting`);
         return true;
     }
     if (changedFiles.length === 0) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('No changed files, nothing to commit');
+        core.info('No changed files, nothing to commit');
         return false;
     }
     yield commitAndPushChanges(output_path);
@@ -292,4 +360,4 @@ const getBackstageEntities = ({ backstage_url }) => __awaiter(void 0, void 0, vo
 
 };
 ;
-//# sourceMappingURL=706.index.js.map
+//# sourceMappingURL=854.index.js.map

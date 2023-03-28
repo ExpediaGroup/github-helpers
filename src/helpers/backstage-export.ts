@@ -22,6 +22,7 @@ import handlebars from 'handlebars';
 
 import { MultisigsCollector } from '../core/multisigs-collector';
 import { getBackstageEntities } from '../utils/get-backstage-entities';
+import { FilteredCollector } from '../core/filtered-collector';
 
 export class BackstageExport extends HelperInputs {
   backstage_url?: string;
@@ -82,11 +83,13 @@ export const backstageExport = async ({ backstage_url, template_path, output_pat
   const entities = await getBackstageEntities({ backstage_url });
 
   const multisigsCollector = new MultisigsCollector(entities);
+  const filteredCollector = new FilteredCollector(entities);
 
   // console.log(JSON.stringify(multisigsCollector.systemComponents[0], null, 2));
   const changedFiles = glob.sync(`${template_path}**/*.hbs`).reduce((acc, templatePath) => {
     const templateData = {
       multisigSystemComponents: multisigsCollector.systemComponents,
+      filteredEntities: JSON.stringify(filteredCollector.entities, null, 2),
       testing
     };
 

@@ -21,7 +21,7 @@ jest.mock('@actions/github', () => ({
 
 describe('backstageExport', () => {
   describe('generates multisig info from a template', () => {
-    it('multisigs.md', async () => {
+    it('multisigs.md + filteredEntities', async () => {
       const result = await backstageExport({
         backstage_url: process.env.BACKSTAGE_URL,
         template_path: 'templates/backstage',
