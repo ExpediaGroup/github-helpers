@@ -141,12 +141,9 @@ const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0
         // tracking for inconsistencies
         const { kind, metadata } = ms.entity;
         const { name } = metadata;
-        // name follows this format: <network>-<type>-<address>
-        const titleParts = name === null || name === void 0 ? void 0 : name.split('-');
-        const [network, type] = titleParts;
         // inferred type is JsonObject, this converts to any
         const spec = JSON.parse(JSON.stringify(ms.entity.spec));
-        const version = spec.multisig.version;
+        const { address, network, networkType, system, owner } = spec;
         const timestamp = Math.round(new Date(spec.multisig.fetchDate).getTime() / 1000);
         // this tags timeseries with distinguishing
         // properties for filtering purposes
@@ -158,13 +155,16 @@ const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0
             { type: 'api', name },
             { type: 'kind', name: kind },
             { type: 'network', name: network },
-            { type: 'type', name: type }
+            { type: 'networkType', name: networkType },
+            { type: 'system', name: system },
+            { type: 'owner', name: owner }
         ];
+        const version = spec.multisig.version;
         // datadog requires point value to be scalar
-        const value = getCompliance({ version, network });
+        const value = parseFloat(version);
         const points = [{ timestamp, value }];
         return {
-            metric: 'backstage.multisigs.versions',
+            metric: `backstage.multisigs.${address}.version`,
             type: 0,
             points,
             resources
@@ -186,23 +186,6 @@ const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0
         return;
     }
 });
-/**
- * Helper function that checks multisig version and returns a compliance value.
- * `1` representing compliance and `0` for non compliance.
- */
-function getCompliance({ version, network }) {
-    if (network === 'near') {
-        if (parseFloat(version) >= 2) {
-            return 1;
-        }
-    }
-    else if (network === 'ethereum' || network === 'aurora') {
-        if (parseFloat(version) >= 1.3) {
-            return 1;
-        }
-    }
-    return 0;
-}
 
 
 /***/ }),
