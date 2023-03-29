@@ -143,7 +143,9 @@ const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0
         const { name } = metadata;
         // inferred type is JsonObject, this converts to any
         const spec = JSON.parse(JSON.stringify(ms.entity.spec));
-        const { address, network, networkType, system, owner } = spec;
+        const { address, network, networkType, system: rawSystem, owner: rawOwner } = spec;
+        const system = rawSystem.split(':')[1];
+        const owner = rawOwner.split(':')[1];
         const timestamp = Math.round(new Date(spec.multisig.fetchDate).getTime() / 1000);
         // this tags timeseries with distinguishing
         // properties for filtering purposes
