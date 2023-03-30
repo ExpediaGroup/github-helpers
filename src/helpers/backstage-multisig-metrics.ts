@@ -54,6 +54,7 @@ export const backstageMultisigMetrics = async ({ backstage_url }: MultisigMetric
         name: backstage_url.split('@')[1]
       },
       { type: 'api', name },
+      { type: 'address', name: address },
       { type: 'kind', name: kind },
       { type: 'network', name: network },
       { type: 'networkType', name: networkType },
@@ -61,13 +62,13 @@ export const backstageMultisigMetrics = async ({ backstage_url }: MultisigMetric
       { type: 'owner', name: owner }
     ];
 
-    const version = spec.multisig.version;
+    const { version } = spec.multisig;
     // datadog requires point value to be scalar
     const value = parseFloat(version);
     const points = [{ timestamp, value }];
     return {
-      metric: `backstage.multisigs.${address}.version`,
-      type: 0,
+      metric: 'backstage.multisigs.version',
+      type: 3,
       points,
       resources
     };

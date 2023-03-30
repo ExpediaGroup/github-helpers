@@ -155,19 +155,20 @@ const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0
                 name: backstage_url.split('@')[1]
             },
             { type: 'api', name },
+            { type: 'address', name: address },
             { type: 'kind', name: kind },
             { type: 'network', name: network },
             { type: 'networkType', name: networkType },
             { type: 'system', name: system },
             { type: 'owner', name: owner }
         ];
-        const version = spec.multisig.version;
+        const { version } = spec.multisig;
         // datadog requires point value to be scalar
         const value = parseFloat(version);
         const points = [{ timestamp, value }];
         return {
-            metric: `backstage.multisigs.${address}.version`,
-            type: 0,
+            metric: 'backstage.multisigs.version',
+            type: 3,
             points,
             resources
         };
