@@ -22,7 +22,6 @@ import { getBackstageEntities } from '../utils/get-backstage-entities';
 
 export class GenerateComponentMatrix extends HelperInputs {
   backstage_url?: string;
-  backstage_entities_repo?: string;
   force_all_checks?: string;
 }
 
@@ -167,11 +166,9 @@ function runTestsPolicy(entity: Entity, changed: boolean, eventName?: string, wo
   return true;
 }
 
-export const generateComponentMatrix = async ({ backstage_url, backstage_entities_repo, force_all_checks }: GenerateComponentMatrix) => {
-  const entities = await getBackstageEntities({ backstage_url, backstage_entities_repo });
-
-  const serverUrl = process.env.GITHUB_SERVER_URL || 'https://github.com';
-  const repoUrl = [serverUrl, context.repo.owner, context.repo.repo].join('/');
+export const generateComponentMatrix = async ({ backstage_url, force_all_checks }: GenerateComponentMatrix) => {
+  const entities = await getBackstageEntities({ backstage_url });
+  const repoUrl = `${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}`;
 
   const componentItems = entities
     .filter(item => sourceLocation(item)?.startsWith(`url:${repoUrl}/`))
