@@ -13,6 +13,9 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { CatalogClient } from '@backstage/catalog-client';
+import { Entity } from '@backstage/catalog-model';
+import { simpleGit } from 'simple-git';
+import { now } from 'lodash';
 
 type DiscoveryApi = {
   getBaseUrl(pluginId: string): Promise<string>;
@@ -20,13 +23,29 @@ type DiscoveryApi = {
 
 interface GetBackstageEntities {
   backstage_url?: string;
+  backstage_entities_repo?: string;
 }
 
-export const getBackstageEntities = async ({ backstage_url }: GetBackstageEntities) => {
-  if (!backstage_url) {
-    throw new Error('BACKSTAGE_URL is required, make sure to set the secret');
-  }
+async function getFileContentFromRepo(repoUrl: string, filePath: string): Promise<string> {
+  const cloneDir = `/tmp/github-helpers-${now()}`;
+  const git = simpleGit();
 
+  try {
+    await git.clone(repoUrl, cloneDir, ['--depth=1']);
+    await git.cwd(cloneDir);
+
+    const { current } = await git.branch();
+    const defaultBranch = current || 'main';
+    const fileContent: string = await git.show([`${defaultBranch}:${filePath}`]);
+
+    await git.raw(['rm', '-rf', '.']);
+    return fileContent;
+  } catch (error) {
+    throw new Error(`Failed to fetch ${repoUrl}/${filePath}: ${error}`);
+  }
+}
+
+async function fetchBackstageEntitiesFromURL(backstage_url: string) {
   core.info('Connecting to Backstage to fetch available entities');
 
   const discoveryApi: DiscoveryApi = {
@@ -42,4 +61,25 @@ export const getBackstageEntities = async ({ backstage_url }: GetBackstageEntiti
   core.info(`Total backstage entities: ${entities.items.length}`);
 
   return entities.items;
+}
+
+async function fetchBackstageEntitiesFromRepo(backstage_entities_repo: string) {
+  const serverUrl = process.env.GITHUB_SERVER_URL || 'https://github.com';
+  const repoUrl = `${serverUrl}/${backstage_entities_repo}`;
+  core.info(`Cloning ${repoUrl}`);
+  const content = await getFileContentFromRepo(repoUrl, 'filteredEntities.json');
+  return JSON.parse(content) as Entity[];
+}
+
+export const getBackstageEntities = async ({ backstage_url, backstage_entities_repo }: GetBackstageEntities) => {
+  // repo takes a priority over the URL in order to avoid unnecessary runtime
+  // dependency
+  if (backstage_entities_repo) {
+    return fetchBackstageEntitiesFromRepo(backstage_entities_repo);
+  } else if (backstage_url) {
+    return fetchBackstageEntitiesFromURL(backstage_url);
+  }
+  throw new Error(
+    'Backstage URL or entities repo is required. Set BACKSTAGE_URL (github secret) or pass backstage_entities_repo argument to this action'
+  );
 };

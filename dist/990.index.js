@@ -216,6 +216,9 @@ function getCompliance({ version, network }) {
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(42186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _backstage_catalog_client__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(78988);
+/* harmony import */ var simple_git__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(92628);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(90250);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_3__);
 /*
 Copyright 2022 Aurora Labs
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -239,24 +242,63 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 };
 
 
-const getBackstageEntities = ({ backstage_url }) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!backstage_url) {
-        throw new Error('BACKSTAGE_URL is required, make sure to set the secret');
-    }
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Connecting to Backstage to fetch available entities');
-    const discoveryApi = {
-        getBaseUrl() {
-            return __awaiter(this, void 0, void 0, function* () {
-                return `${backstage_url}/api/catalog`;
-            });
+
+
+function getFileContentFromRepo(repoUrl, filePath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const cloneDir = `/tmp/github-helpers-${(0,lodash__WEBPACK_IMPORTED_MODULE_3__.now)()}`;
+        const git = (0,simple_git__WEBPACK_IMPORTED_MODULE_2__/* .simpleGit */ .o5)();
+        try {
+            yield git.clone(repoUrl, cloneDir, ['--depth=1']);
+            yield git.cwd(cloneDir);
+            const { current } = yield git.branch();
+            const defaultBranch = current || 'main';
+            const fileContent = yield git.show([`${defaultBranch}:${filePath}`]);
+            yield git.raw(['rm', '-rf', '.']);
+            return fileContent;
         }
-    };
-    const catalogClient = new _backstage_catalog_client__WEBPACK_IMPORTED_MODULE_1__/* .CatalogClient */ .MS({
-        discoveryApi
+        catch (error) {
+            throw new Error(`Failed to fetch ${repoUrl}/${filePath}: ${error}`);
+        }
     });
-    const entities = yield catalogClient.getEntities({});
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Total backstage entities: ${entities.items.length}`);
-    return entities.items;
+}
+function fetchBackstageEntitiesFromURL(backstage_url) {
+    return __awaiter(this, void 0, void 0, function* () {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Connecting to Backstage to fetch available entities');
+        const discoveryApi = {
+            getBaseUrl() {
+                return __awaiter(this, void 0, void 0, function* () {
+                    return `${backstage_url}/api/catalog`;
+                });
+            }
+        };
+        const catalogClient = new _backstage_catalog_client__WEBPACK_IMPORTED_MODULE_1__/* .CatalogClient */ .MS({
+            discoveryApi
+        });
+        const entities = yield catalogClient.getEntities({});
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Total backstage entities: ${entities.items.length}`);
+        return entities.items;
+    });
+}
+function fetchBackstageEntitiesFromRepo(backstage_entities_repo) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const serverUrl = process.env.GITHUB_SERVER_URL || 'https://github.com';
+        const repoUrl = `${serverUrl}/${backstage_entities_repo}`;
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Cloning ${repoUrl}`);
+        const content = yield getFileContentFromRepo(repoUrl, 'filteredEntities.json');
+        return JSON.parse(content);
+    });
+}
+const getBackstageEntities = ({ backstage_url, backstage_entities_repo }) => __awaiter(void 0, void 0, void 0, function* () {
+    // repo takes a priority over the URL in order to avoid unnecessary runtime
+    // dependency
+    if (backstage_entities_repo) {
+        return fetchBackstageEntitiesFromRepo(backstage_entities_repo);
+    }
+    else if (backstage_url) {
+        return fetchBackstageEntitiesFromURL(backstage_url);
+    }
+    throw new Error('Backstage URL or entities repo is required. Set BACKSTAGE_URL (github secret) or pass backstage_entities_repo argument to this action');
 });
 
 
