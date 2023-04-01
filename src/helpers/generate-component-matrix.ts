@@ -24,6 +24,7 @@ export class GenerateComponentMatrix extends HelperInputs {
   backstage_url?: string;
   backstage_entities_repo?: string;
   force_all_checks?: string;
+  ignore_failures?: string;
 }
 
 const DEFAULT_GO_VERSION = '1.18';
@@ -43,11 +44,6 @@ function securityTier(entity: Entity) {
   const tier = entity.metadata.annotations['aurora.dev/security-tier'];
   if (!tier) return -1;
   return parseInt(tier, 10);
-}
-
-function allowTestsToFail(entity: Entity) {
-  const tier = securityTier(entity);
-  return tier < 0 || !!entity.metadata.tags?.includes('ci-sec-disable');
 }
 
 // the annotation will have "url:" prefix - not a relative path
@@ -114,7 +110,7 @@ function inspectComponents(message: string, items: Entity[]) {
   items.forEach(item => core.info(` - ${item.metadata.name} at "${sourceLocationRelative(item)}"`));
 }
 
-function componentConfig(item: Entity, runTests: boolean) {
+function componentConfig(item: Entity, runTests: boolean, ignoreFailures: boolean) {
   const path = sourceLocationDir(item)!;
 
   const isSolidity = ['ethereum', 'aurora'].some(tag => item.metadata.tags!.includes(tag));
@@ -138,7 +134,6 @@ function componentConfig(item: Entity, runTests: boolean) {
     tags: item.metadata.tags,
     path,
     securityTier: securityTier(item),
-    allowTestsToFail: allowTestsToFail(item),
 
     nodeRoot: findRoot(path, 'package.json'),
     goVersion: parseGoVersion('go.mod'),
@@ -146,7 +141,10 @@ function componentConfig(item: Entity, runTests: boolean) {
     runSlither,
     slitherArgs,
     runClippy,
-    runGoStaticChecks
+    runGoStaticChecks,
+    ignoreFailures,
+    // backwards compatibility
+    allowTestsToFail: ignoreFailures
   };
 }
 
@@ -167,7 +165,28 @@ function runTestsPolicy(entity: Entity, changed: boolean, eventName?: string, wo
   return true;
 }
 
-export const generateComponentMatrix = async ({ backstage_url, backstage_entities_repo, force_all_checks }: GenerateComponentMatrix) => {
+function ignoreFailuresPolicy(entity: Entity, changed: boolean, _eventName?: string, workflow_ignore_failures?: string) {
+  if (workflow_ignore_failures) {
+    core.info(`${entity.metadata.name}: ignoring failures because of workflow config (ignore_failures: true)`);
+    return true;
+  }
+  if (entity.metadata.tags?.includes('ci-sec-disable')) {
+    core.info(`${entity.metadata.name}: ignoring falures via ci-sec-disable tag`);
+    return true;
+  }
+
+  const tier = securityTier(entity);
+  const ignoreFailures = tier < 0;
+  core.info(`${entity.metadata.name}: CI runs will ignore failures based on security tier (${tier}: ${ignoreFailures})`);
+  return ignoreFailures;
+}
+
+export const generateComponentMatrix = async ({
+  backstage_url,
+  backstage_entities_repo,
+  force_all_checks,
+  ignore_failures
+}: GenerateComponentMatrix) => {
   const entities = await getBackstageEntities({ backstage_url, backstage_entities_repo });
 
   const serverUrl = process.env.GITHUB_SERVER_URL || 'https://github.com';
@@ -196,8 +215,10 @@ export const generateComponentMatrix = async ({ backstage_url, backstage_entitie
   core.info('Generating component matrix...');
   const matrix = {
     include: componentItems.map(item => {
-      const runTests = runTestsPolicy(item, changedComponents.includes(item), eventName, force_all_checks);
-      return componentConfig(item, runTests);
+      const changed = changedComponents.includes(item);
+      const runTests = runTestsPolicy(item, changed, eventName, force_all_checks);
+      const ignoreFailures = ignoreFailuresPolicy(item, changed, eventName, ignore_failures);
+      return componentConfig(item, runTests, ignoreFailures);
     })
   };
 

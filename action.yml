@@ -109,6 +109,9 @@ inputs:
   force_all_checks:
     description: 'Force checks for all PRs even if files were not touched'
     required: false
+  ignore_failures:
+    description: 'Allows tests to fail without blocking PRs'
+    required: false
   template_path:
     description: 'Handlebars Template Path'
     required: false

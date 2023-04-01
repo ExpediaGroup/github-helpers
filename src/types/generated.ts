@@ -48,6 +48,7 @@ export class HelperInputs {
   backstage_url?: string;
   backstage_entities_repo?: string;
   force_all_checks?: string;
+  ignore_failures?: string;
   template_path?: string;
   output_path?: string;
 }
