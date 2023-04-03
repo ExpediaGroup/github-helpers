@@ -38,13 +38,12 @@ export const backstageMultisigMetrics = async ({ backstage_url }: MultisigMetric
     // tracking for inconsistencies
     const { kind, metadata } = ms.entity;
     const { name } = metadata;
-    // name follows this format: <network>-<type>-<address>
-    const titleParts = name?.split('-');
-    const [network, type] = titleParts;
 
     // inferred type is JsonObject, this converts to any
     const spec = JSON.parse(JSON.stringify(ms.entity.spec));
-    const version = spec.multisig.version;
+    const { address, network, networkType, system: rawSystem, owner: rawOwner } = spec;
+    const system = rawSystem.split(':')[1];
+    const owner = rawOwner.split(':')[1];
     const timestamp = Math.round(new Date(spec.multisig.fetchDate).getTime() / 1000);
 
     // this tags timeseries with distinguishing
@@ -55,16 +54,21 @@ export const backstageMultisigMetrics = async ({ backstage_url }: MultisigMetric
         name: backstage_url.split('@')[1]
       },
       { type: 'api', name },
+      { type: 'address', name: address },
       { type: 'kind', name: kind },
       { type: 'network', name: network },
-      { type: 'type', name: type }
+      { type: 'networkType', name: networkType },
+      { type: 'system', name: system },
+      { type: 'owner', name: owner }
     ];
+
+    const { version } = spec.multisig;
     // datadog requires point value to be scalar
-    const value = getCompliance({ version, network });
+    const value = parseFloat(version);
     const points = [{ timestamp, value }];
     return {
-      metric: 'backstage.multisigs.versions',
-      type: 0,
+      metric: 'backstage.multisigs.version',
+      type: 3,
       points,
       resources
     };
@@ -86,25 +90,3 @@ export const backstageMultisigMetrics = async ({ backstage_url }: MultisigMetric
     return;
   }
 };
-
-type getComplianceArgs = {
-  version: string;
-  network: string;
-};
-
-/**
- * Helper function that checks multisig version and returns a compliance value.
- * `1` representing compliance and `0` for non compliance.
- */
-function getCompliance({ version, network }: getComplianceArgs): number {
-  if (network === 'near') {
-    if (parseFloat(version) >= 2) {
-      return 1;
-    }
-  } else if (network === 'ethereum' || network === 'aurora') {
-    if (parseFloat(version) >= 1.3) {
-      return 1;
-    }
-  }
-  return 0;
-}

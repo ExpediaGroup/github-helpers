@@ -15,7 +15,6 @@ mkShell {
     yarn
     yarn2nix
     nodePackages.typescript
-    solc
     python3Packages.bootstrapped-pip
     deno
   ];
