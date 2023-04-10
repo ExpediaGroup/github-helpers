@@ -50,4 +50,5 @@ export class HelperInputs {
   no_evict_upon_conflict?: string;
   skip_if_already_set?: string;
   delimiter?: string;
+  team?: string;
 }
