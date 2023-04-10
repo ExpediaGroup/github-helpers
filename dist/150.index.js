@@ -65,8 +65,8 @@ const updateHeadWithBaseBranch = (base, head) => _octokit__WEBPACK_IMPORTED_MODU
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "KT": () => (/* binding */ octokit),
-/* harmony export */   "ox": () => (/* binding */ octokitGraphql),
-/* harmony export */   "mC": () => (/* binding */ octokitRequest)
+/* harmony export */   "mC": () => (/* binding */ octokitRequest),
+/* harmony export */   "ox": () => (/* binding */ octokitGraphql)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
