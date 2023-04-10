@@ -11,12 +11,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "IsUserInTeam": () => (/* binding */ IsUserInTeam),
 /* harmony export */   "isUserInTeam": () => (/* binding */ isUserInTeam)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3476);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3476);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
 /*
 Copyright 2023 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,20 +39,16 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-
-class IsUserInTeam extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .s {
+class IsUserInTeam extends _types_generated__WEBPACK_IMPORTED_MODULE_2__/* .HelperInputs */ .s {
     constructor() {
         super(...arguments);
         this.login = '';
         this.team = '';
     }
 }
-const isUserInTeam = ({ login = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.actor, team }) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!team) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error('Must supply team');
-    }
-    const response = yield (0,_octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokitRequest */ .mC)('GET /orgs/{org}/teams/{team}/members', {
-        org: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner,
+const isUserInTeam = ({ login = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.actor, team }) => __awaiter(void 0, void 0, void 0, function* () {
+    const response = yield (0,_octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokitRequest */ .mC)('GET /orgs/{org}/teams/{team}/members', {
+        org: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner,
         team
     });
     return response.data.some(({ login: memberLogin }) => memberLogin === login);
@@ -68,8 +62,8 @@ const isUserInTeam = ({ login = _actions_github__WEBPACK_IMPORTED_MODULE_1__.con
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "KT": () => (/* binding */ octokit),
-/* harmony export */   "mC": () => (/* binding */ octokitRequest),
-/* harmony export */   "ox": () => (/* binding */ octokitGraphql)
+/* harmony export */   "ox": () => (/* binding */ octokitGraphql),
+/* harmony export */   "mC": () => (/* binding */ octokitRequest)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);

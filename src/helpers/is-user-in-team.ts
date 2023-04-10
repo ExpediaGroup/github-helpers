@@ -11,7 +11,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import * as core from '@actions/core';
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokitRequest } from '../octokit';
@@ -23,9 +22,6 @@ export class IsUserInTeam extends HelperInputs {
 }
 
 export const isUserInTeam = async ({ login = context.actor, team }: IsUserInTeam) => {
-  if (!team) {
-    core.error('Must supply team');
-  }
   const response: OctokitResponse<Record<string, string | number | boolean>[]> = await octokitRequest(
     'GET /orgs/{org}/teams/{team}/members',
     {
