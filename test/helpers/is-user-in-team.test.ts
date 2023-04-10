@@ -13,37 +13,36 @@ limitations under the License.
 
 import { isUserInTeam } from '../../src/helpers/is-user-in-team';
 import { context } from '@actions/github';
-import { octokitRequest } from '../../src/octokit';
+import { octokit } from '../../src/octokit';
 import { Mocktokit } from '../types';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({ request: jest.fn() }))
+  getOctokit: jest.fn(() => ({ rest: { teams: { listMembersInOrg: jest.fn() } } }))
 }));
 
-(octokitRequest as unknown as Mocktokit).mockImplementation(async (request, { team }) => ({
-  data: team === 'users' ? [{ login: 'octocat' }, { login: 'admin' }] : [{ login: 'admin' }]
+(octokit.teams.listMembersInOrg as unknown as Mocktokit).mockImplementation(async ({ team_slug }) => ({
+  data: team_slug === 'users' ? [{ login: 'octocat' }, { login: 'admin' }] : [{ login: 'admin' }]
 }));
 
 describe('isUserInTeam', () => {
   const login = 'octocat';
-  const route = 'GET /orgs/{org}/teams/{team}/members';
 
   it('should call isUserInTeam with correct params and find user in team', async () => {
     const response = await isUserInTeam({ login, team: 'users' });
-    expect(octokitRequest).toHaveBeenCalledWith(route, {
+    expect(octokit.teams.listMembersInOrg).toHaveBeenCalledWith({
       org: context.repo.owner,
-      team: 'users'
+      team_slug: 'users'
     });
     expect(response).toBe(true);
   });
 
   it('should call isUserInTeam with correct params and find user not in team', async () => {
     const response = await isUserInTeam({ login, team: 'core' });
-    expect(octokitRequest).toHaveBeenCalledWith(route, {
+    expect(octokit.teams.listMembersInOrg).toHaveBeenCalledWith({
       org: context.repo.owner,
-      team: 'core'
+      team_slug: 'core'
     });
     expect(response).toBe(false);
   });

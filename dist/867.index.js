@@ -121,7 +121,7 @@ const addLateReviewLabel = ({ days = '1' }) => __awaiter(void 0, void 0, void 0,
         if (!isLabelNeeded(pr, Number(days))) {
             return;
         }
-        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.addLabels */ .KT.issues.addLabels(Object.assign({ labels: [_constants__WEBPACK_IMPORTED_MODULE_0__/* .LATE_REVIEW */ .fy], issue_number: pr.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: [_constants__WEBPACK_IMPORTED_MODULE_0__/* .LATE_REVIEW */ .fy], issue_number: pr.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     });
 });
 const isLabelNeeded = ({ requested_reviewers, requested_teams, updated_at }, days) => {
@@ -140,9 +140,8 @@ const isLabelNeeded = ({ requested_reviewers, requested_teams, updated_at }, day
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "KT": () => (/* binding */ octokit),
-/* harmony export */   "ox": () => (/* binding */ octokitGraphql),
-/* harmony export */   "mC": () => (/* binding */ octokitRequest)
+/* harmony export */   "K": () => (/* binding */ octokit),
+/* harmony export */   "o": () => (/* binding */ octokitGraphql)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
@@ -166,7 +165,7 @@ limitations under the License.
 
 
 const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true });
-const { rest: octokit, graphql: octokitGraphql, request: octokitRequest } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
+const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
 
 
 /***/ }),
@@ -228,7 +227,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const paginateAllOpenPullRequests = (page = 1) => __awaiter(void 0, void 0, void 0, function* () {
-    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.list */ .KT.pulls.list(Object.assign({ state: 'open', sort: 'updated', direction: 'desc', per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', sort: 'updated', direction: 'desc', per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     if (!response.data.length) {
         return [];
     }

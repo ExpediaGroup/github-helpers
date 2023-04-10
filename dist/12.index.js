@@ -117,14 +117,14 @@ class DeleteDeployment extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .
 }
 const deleteDeployment = ({ sha, environment }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.listDeployments */ .KT.repos.listDeployments(Object.assign(Object.assign({ sha,
+    const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.listDeployments */ .K.repos.listDeployments(Object.assign(Object.assign({ sha,
         environment }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
     const deployment_id = (_a = data.find(Boolean)) === null || _a === void 0 ? void 0 : _a.id;
     if (deployment_id) {
-        yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createDeploymentStatus */ .KT.repos.createDeploymentStatus(Object.assign(Object.assign({ state: 'inactive', deployment_id }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
+        yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createDeploymentStatus */ .K.repos.createDeploymentStatus(Object.assign(Object.assign({ state: 'inactive', deployment_id }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
         return Promise.all([
-            _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.deleteDeployment */ .KT.repos.deleteDeployment(Object.assign(Object.assign({ deployment_id }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc)),
-            _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.deleteAnEnvironment */ .KT.repos.deleteAnEnvironment(Object.assign(Object.assign({ environment_name: environment }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc))
+            _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.deleteDeployment */ .K.repos.deleteDeployment(Object.assign(Object.assign({ deployment_id }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc)),
+            _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.deleteAnEnvironment */ .K.repos.deleteAnEnvironment(Object.assign(Object.assign({ environment_name: environment }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc))
         ]);
     }
 });
@@ -136,9 +136,8 @@ const deleteDeployment = ({ sha, environment }) => __awaiter(void 0, void 0, voi
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "KT": () => (/* binding */ octokit),
-/* harmony export */   "ox": () => (/* binding */ octokitGraphql),
-/* harmony export */   "mC": () => (/* binding */ octokitRequest)
+/* harmony export */   "K": () => (/* binding */ octokit),
+/* harmony export */   "o": () => (/* binding */ octokitGraphql)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
@@ -162,7 +161,7 @@ limitations under the License.
 
 
 const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true });
-const { rest: octokit, graphql: octokitGraphql, request: octokitRequest } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
+const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
 
 
 /***/ }),

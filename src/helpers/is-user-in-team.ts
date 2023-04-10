@@ -13,8 +13,7 @@ limitations under the License.
 
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
-import { octokitRequest } from '../octokit';
-import { OctokitResponse } from '@octokit/types';
+import { octokit } from '../octokit';
 
 export class IsUserInTeam extends HelperInputs {
   login = '';
@@ -22,12 +21,9 @@ export class IsUserInTeam extends HelperInputs {
 }
 
 export const isUserInTeam = async ({ login = context.actor, team }: IsUserInTeam) => {
-  const response: OctokitResponse<Record<string, string | number | boolean>[]> = await octokitRequest(
-    'GET /orgs/{org}/teams/{team}/members',
-    {
-      org: context.repo.owner,
-      team
-    }
-  );
+  const response = await octokit.teams.listMembersInOrg({
+    org: context.repo.owner,
+    team_slug: team
+  });
   return response.data.some(({ login: memberLogin }) => memberLogin === login);
 };
