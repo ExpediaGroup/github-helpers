@@ -19,5 +19,6 @@ jobs:
           helper: is-user-in-team
           login: ${{ github.actor }}
           team: github-helpers-committers
+          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }} # must have read:org permission
 
       - run: echo ${{ steps.is-user-in-team.outputs.output }}
