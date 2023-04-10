@@ -116,6 +116,9 @@ inputs:
   delimiter:
     description: 'A custom delimiter'
     required: false
+  team:
+    description: 'A GitHub team'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'

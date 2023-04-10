@@ -7,19 +7,19 @@ exports.modules = {
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Cc": () => (/* binding */ GITHUB_OPTIONS),
 /* harmony export */   "$9": () => (/* binding */ DEFAULT_PIPELINE_STATUS),
+/* harmony export */   "Km": () => (/* binding */ DEFAULT_PIPELINE_DESCRIPTION),
+/* harmony export */   "Hc": () => (/* binding */ PRODUCTION_ENVIRONMENT),
+/* harmony export */   "fy": () => (/* binding */ LATE_REVIEW),
+/* harmony export */   "_d": () => (/* binding */ CORE_APPROVED_PR_LABEL),
+/* harmony export */   "Xt": () => (/* binding */ PEER_APPROVED_PR_LABEL),
 /* harmony export */   "Ak": () => (/* binding */ READY_FOR_MERGE_PR_LABEL),
 /* harmony export */   "Cb": () => (/* binding */ MERGE_QUEUE_STATUS),
-/* harmony export */   "Cc": () => (/* binding */ GITHUB_OPTIONS),
 /* harmony export */   "Ee": () => (/* binding */ QUEUED_FOR_MERGE_PREFIX),
-/* harmony export */   "HW": () => (/* binding */ DEFAULT_PR_TITLE_REGEX),
-/* harmony export */   "Hc": () => (/* binding */ PRODUCTION_ENVIRONMENT),
 /* harmony export */   "IH": () => (/* binding */ FIRST_QUEUED_PR_LABEL),
-/* harmony export */   "Km": () => (/* binding */ DEFAULT_PIPELINE_DESCRIPTION),
-/* harmony export */   "Xt": () => (/* binding */ PEER_APPROVED_PR_LABEL),
-/* harmony export */   "_d": () => (/* binding */ CORE_APPROVED_PR_LABEL),
-/* harmony export */   "fy": () => (/* binding */ LATE_REVIEW),
-/* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL)
+/* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL),
+/* harmony export */   "HW": () => (/* binding */ DEFAULT_PR_TITLE_REGEX)
 /* harmony export */ });
 /* unused harmony exports DEFAULT_EXEMPT_DESCRIPTION, COPYRIGHT_HEADER */
 /*
@@ -125,7 +125,7 @@ class AssignPrReviewer extends _types_generated__WEBPACK_IMPORTED_MODULE_8__/* .
 }
 const assignPrReviewers = ({ teams, login, number_of_assignees = '1', slack_webhook_url, pull_number = String(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number) }) => __awaiter(void 0, void 0, void 0, function* () {
     const coreMemberLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .c)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
-    const { data: { user, labels } } = yield _octokit__WEBPACK_IMPORTED_MODULE_5__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    const { data: { user, labels } } = yield _octokit__WEBPACK_IMPORTED_MODULE_5__/* .octokit.pulls.get */ .KT.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     if (login && coreMemberLogins.includes(login)) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Already a core member, no need to assign.');
         return;
@@ -137,7 +137,7 @@ const assignPrReviewers = ({ teams, login, number_of_assignees = '1', slack_webh
     const prAuthorUsername = user === null || user === void 0 ? void 0 : user.login;
     const filteredCoreMemberLogins = coreMemberLogins.filter(userName => userName !== prAuthorUsername);
     const assignees = (0,lodash__WEBPACK_IMPORTED_MODULE_6__.sampleSize)(filteredCoreMemberLogins, Number(number_of_assignees));
-    yield _octokit__WEBPACK_IMPORTED_MODULE_5__/* .octokit.issues.addAssignees */ .K.issues.addAssignees(Object.assign({ assignees, issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    yield _octokit__WEBPACK_IMPORTED_MODULE_5__/* .octokit.issues.addAssignees */ .KT.issues.addAssignees(Object.assign({ assignees, issue_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     if (slack_webhook_url) {
         yield (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(assignees, (assignee) => __awaiter(void 0, void 0, void 0, function* () {
             return (0,_utils_notify_user__WEBPACK_IMPORTED_MODULE_4__/* .notifyUser */ .b)({
@@ -156,8 +156,9 @@ const assignPrReviewers = ({ teams, login, number_of_assignees = '1', slack_webh
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "K": () => (/* binding */ octokit),
-/* harmony export */   "o": () => (/* binding */ octokitGraphql)
+/* harmony export */   "KT": () => (/* binding */ octokit),
+/* harmony export */   "ox": () => (/* binding */ octokitGraphql),
+/* harmony export */   "mC": () => (/* binding */ octokitRequest)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
@@ -181,7 +182,7 @@ limitations under the License.
 
 
 const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true });
-const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
+const { rest: octokit, graphql: octokitGraphql, request: octokitRequest } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
 
 
 /***/ }),
@@ -247,7 +248,7 @@ const getChangedFilepaths = (pull_number) => __awaiter(void 0, void 0, void 0, f
     return changedFiles.map(file => file.filename);
 });
 const paginateAllChangedFilepaths = (pull_number, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
-    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number, per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .KT.pulls.listFiles(Object.assign({ pull_number, per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     if (!response.data.length) {
         return [];
     }
@@ -261,8 +262,8 @@ const paginateAllChangedFilepaths = (pull_number, page = 1) => __awaiter(void 0,
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "F": () => (/* binding */ getCoreTeamsAndLogins),
-/* harmony export */   "c": () => (/* binding */ getCoreMemberLogins)
+/* harmony export */   "c": () => (/* binding */ getCoreMemberLogins),
+/* harmony export */   "F": () => (/* binding */ getCoreTeamsAndLogins)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
@@ -315,7 +316,7 @@ const getCoreTeamsAndLogins = (pull_number, teams) => __awaiter(void 0, void 0, 
         throw new Error();
     }
     const teamsAndLogins = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(codeOwners, (team) => __awaiter(void 0, void 0, void 0, function* () {
-        return _octokit__WEBPACK_IMPORTED_MODULE_6__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
+        return _octokit__WEBPACK_IMPORTED_MODULE_6__/* .octokit.teams.listMembersInOrg */ .KT.teams.listMembersInOrg({
             org: _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo.owner,
             team_slug: team,
             per_page: 100
@@ -347,10 +348,11 @@ const getCodeOwners = (pull_number) => __awaiter(void 0, void 0, void 0, functio
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(9462);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6545);
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6161);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -378,18 +380,18 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 const notifyUser = ({ login, pull_number, slack_webhook_url }) => __awaiter(void 0, void 0, void 0, function* () {
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Notifying user ${login}...`);
-    const { data: { email } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.users.getByUsername */ .K.users.getByUsername({ username: login });
+    const { data: { email } } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.users.getByUsername */ .KT.users.getByUsername({ username: login });
     if (!email) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`No github email found for user ${login}. Ensure you have set your email to be publicly visible on your Github profile.`);
         return;
     }
-    const { data: { title, html_url } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    const { data: { title, html_url } } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.get */ .KT.pulls.get(Object.assign({ pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
     try {
-        yield axios__WEBPACK_IMPORTED_MODULE_3__/* ["default"].post */ .Z.post(slack_webhook_url, {
+        yield axios__WEBPACK_IMPORTED_MODULE_1___default().post(slack_webhook_url, {
             assignee: email,
             title,
             html_url,
-            repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo
+            repo: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo
         });
     }
     catch (error) {

@@ -7,19 +7,19 @@ exports.modules = {
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Cc": () => (/* binding */ GITHUB_OPTIONS),
 /* harmony export */   "$9": () => (/* binding */ DEFAULT_PIPELINE_STATUS),
+/* harmony export */   "Km": () => (/* binding */ DEFAULT_PIPELINE_DESCRIPTION),
+/* harmony export */   "Hc": () => (/* binding */ PRODUCTION_ENVIRONMENT),
+/* harmony export */   "fy": () => (/* binding */ LATE_REVIEW),
+/* harmony export */   "_d": () => (/* binding */ CORE_APPROVED_PR_LABEL),
+/* harmony export */   "Xt": () => (/* binding */ PEER_APPROVED_PR_LABEL),
 /* harmony export */   "Ak": () => (/* binding */ READY_FOR_MERGE_PR_LABEL),
 /* harmony export */   "Cb": () => (/* binding */ MERGE_QUEUE_STATUS),
-/* harmony export */   "Cc": () => (/* binding */ GITHUB_OPTIONS),
 /* harmony export */   "Ee": () => (/* binding */ QUEUED_FOR_MERGE_PREFIX),
-/* harmony export */   "HW": () => (/* binding */ DEFAULT_PR_TITLE_REGEX),
-/* harmony export */   "Hc": () => (/* binding */ PRODUCTION_ENVIRONMENT),
 /* harmony export */   "IH": () => (/* binding */ FIRST_QUEUED_PR_LABEL),
-/* harmony export */   "Km": () => (/* binding */ DEFAULT_PIPELINE_DESCRIPTION),
-/* harmony export */   "Xt": () => (/* binding */ PEER_APPROVED_PR_LABEL),
-/* harmony export */   "_d": () => (/* binding */ CORE_APPROVED_PR_LABEL),
-/* harmony export */   "fy": () => (/* binding */ LATE_REVIEW),
-/* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL)
+/* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL),
+/* harmony export */   "HW": () => (/* binding */ DEFAULT_PR_TITLE_REGEX)
 /* harmony export */ });
 /* unused harmony exports DEFAULT_EXEMPT_DESCRIPTION, COPYRIGHT_HEADER */
 /*
@@ -119,16 +119,16 @@ class SetLatestPipelineStatus extends _types_generated__WEBPACK_IMPORTED_MODULE_
 }
 const setLatestPipelineStatus = ({ sha, context = _constants__WEBPACK_IMPORTED_MODULE_1__/* .DEFAULT_PIPELINE_STATUS */ .$9, environment = _constants__WEBPACK_IMPORTED_MODULE_1__/* .PRODUCTION_ENVIRONMENT */ .Hc }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
-    const { data: deployments } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listDeployments */ .K.repos.listDeployments(Object.assign(Object.assign({ environment }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_1__/* .GITHUB_OPTIONS */ .Cc));
+    const { data: deployments } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listDeployments */ .KT.repos.listDeployments(Object.assign(Object.assign({ environment }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_1__/* .GITHUB_OPTIONS */ .Cc));
     const deployment_id = (_a = deployments.find(Boolean)) === null || _a === void 0 ? void 0 : _a.id;
     if (!deployment_id) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('No deployments found. Pipeline is clear!');
         return;
     }
-    const { data: deploymentStatuses } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listDeploymentStatuses */ .K.repos.listDeploymentStatuses(Object.assign(Object.assign({ deployment_id }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_1__/* .GITHUB_OPTIONS */ .Cc));
+    const { data: deploymentStatuses } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listDeploymentStatuses */ .KT.repos.listDeploymentStatuses(Object.assign(Object.assign({ deployment_id }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_1__/* .GITHUB_OPTIONS */ .Cc));
     const deploymentStatus = (_b = deploymentStatuses.find(Boolean)) !== null && _b !== void 0 ? _b : {};
     const { state, description, target_url } = deploymentStatus;
-    return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
+    return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.createCommitStatus */ .KT.repos.createCommitStatus(Object.assign({ sha,
         context, state: (_c = deploymentStateToPipelineStateMap[state]) !== null && _c !== void 0 ? _c : 'pending', description,
         target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
 });
@@ -146,8 +146,9 @@ const deploymentStateToPipelineStateMap = {
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "K": () => (/* binding */ octokit),
-/* harmony export */   "o": () => (/* binding */ octokitGraphql)
+/* harmony export */   "KT": () => (/* binding */ octokit),
+/* harmony export */   "ox": () => (/* binding */ octokitGraphql),
+/* harmony export */   "mC": () => (/* binding */ octokitRequest)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
@@ -171,7 +172,7 @@ limitations under the License.
 
 
 const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true });
-const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
+const { rest: octokit, graphql: octokitGraphql, request: octokitRequest } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
 
 
 /***/ }),

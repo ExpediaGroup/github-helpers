@@ -158,6 +158,9 @@ Additionally, the following parameters can be used for additional control over t
 ### [initiate-deployment](.github/workflows/deployments.yml#L12)
   * Creates a new in-progress Github "deployment" for a commit. More information on Github deployment events can be found [here](https://docs.github.com/en/rest/reference/repos#deployments)
 
+### is-user-in-team
+  * Checks if the specifed GitHub user exists within an organization team
+
 ### [manage-merge-queue](.github/workflows/manage-merge-queue.yml)
   * Manages a queue for PRs as follows:
     * Adding the `READY TO MERGE` label to a PR will add the PR to the "merge queue", represented by a `QUEUED FOR MERGE #X` label. Removing `READY TO MERGE` will remove this label and thus remove the PR from the queue.

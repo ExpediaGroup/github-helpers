@@ -58,7 +58,7 @@ const deleteStaleBranches = ({ days = '30' } = {}) => __awaiter(void 0, void 0, 
     const defaultBranch = yield (0,_utils_get_default_branch__WEBPACK_IMPORTED_MODULE_5__/* .getDefaultBranch */ ._)();
     const featureBranchesWithNoOpenPullRequest = allBranches.filter(({ name }) => !openPullRequestBranches.has(name) && name !== defaultBranch);
     const branchesWithUpdatedDates = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(featureBranchesWithNoOpenPullRequest, ({ name, commit: { sha } }) => __awaiter(void 0, void 0, void 0, function* () {
-        const { data: { committer: { date } } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.git.getCommit */ .K.git.getCommit(Object.assign({ commit_sha: sha }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+        const { data: { committer: { date } } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.git.getCommit */ .KT.git.getCommit(Object.assign({ commit_sha: sha }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
         return {
             name,
             date
@@ -67,7 +67,7 @@ const deleteStaleBranches = ({ days = '30' } = {}) => __awaiter(void 0, void 0, 
     const branchesToDelete = branchesWithUpdatedDates.filter(({ date }) => branchIsTooOld(date, days)).map(({ name }) => name);
     yield (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(branchesToDelete, (branch) => __awaiter(void 0, void 0, void 0, function* () {
         _actions_core__WEBPACK_IMPORTED_MODULE_1__.info(`Deleting branch ${branch}...`);
-        yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.git.deleteRef */ .K.git.deleteRef(Object.assign({ ref: `heads/${branch}` }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+        yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.git.deleteRef */ .KT.git.deleteRef(Object.assign({ ref: `heads/${branch}` }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     }));
 });
 const branchIsTooOld = (dateLastUpdated, daysThreshold) => {
@@ -78,7 +78,7 @@ const branchIsTooOld = (dateLastUpdated, daysThreshold) => {
     return timeSinceLastUpdated > threshold;
 };
 const paginateAllUnprotectedBranches = (page = 1) => __awaiter(void 0, void 0, void 0, function* () {
-    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.listBranches */ .K.repos.listBranches(Object.assign({ protected: false, per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.listBranches */ .KT.repos.listBranches(Object.assign({ protected: false, per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     if (!response.data.length) {
         return [];
     }
@@ -92,8 +92,9 @@ const paginateAllUnprotectedBranches = (page = 1) => __awaiter(void 0, void 0, v
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "K": () => (/* binding */ octokit),
-/* harmony export */   "o": () => (/* binding */ octokitGraphql)
+/* harmony export */   "KT": () => (/* binding */ octokit),
+/* harmony export */   "ox": () => (/* binding */ octokitGraphql),
+/* harmony export */   "mC": () => (/* binding */ octokitRequest)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
@@ -117,7 +118,7 @@ limitations under the License.
 
 
 const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true });
-const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
+const { rest: octokit, graphql: octokitGraphql, request: octokitRequest } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
 
 
 /***/ }),
@@ -179,7 +180,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const getDefaultBranch = () => __awaiter(void 0, void 0, void 0, function* () {
-    const { data: { default_branch } } = yield _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.repos.get */ .K.repos.get(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    const { data: { default_branch } } = yield _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.repos.get */ .KT.repos.get(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     return default_branch;
 });
 
@@ -219,7 +220,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const paginateAllOpenPullRequests = (page = 1) => __awaiter(void 0, void 0, void 0, function* () {
-    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', sort: 'updated', direction: 'desc', per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.list */ .KT.pulls.list(Object.assign({ state: 'open', sort: 'updated', direction: 'desc', per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     if (!response.data.length) {
         return [];
     }
