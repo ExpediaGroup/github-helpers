@@ -13,7 +13,6 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { client, v2 } from '@datadog/datadog-api-client';
-import { MetricSeries } from '@datadog/datadog-api-client/dist/packages/datadog-api-client-v2';
 
 import { MultisigsCollector } from '../core/multisigs-collector';
 import { getBackstageEntities } from '../utils/get-backstage-entities';
@@ -33,14 +32,38 @@ export const backstageMultisigMetrics = async ({ backstage_url }: MultisigMetric
   const entities = await getBackstageEntities({ backstage_url });
 
   const multisigsCollector = new MultisigsCollector(entities);
-  const series: MetricSeries[] = multisigsCollector.getMultisigs().map(ms => {
+  const multisigSeries = generateMultisigMetrics(multisigsCollector, backstage_url);
+  await submitMetrics(multisigSeries);
+
+  const signerSeries = generateSignerMetrics(multisigsCollector, backstage_url);
+  await submitMetrics(signerSeries);
+};
+
+async function submitMetrics(series: v2.MetricSeries[]) {
+  const params = {
+    body: {
+      series
+    }
+  };
+  core.info(`Data uploaded: ${JSON.stringify(params)}`);
+
+  try {
+    const data = await apiInstance.submitMetrics(params);
+    core.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
+  } catch (error: unknown) {
+    core.error(error as Error);
+  }
+}
+
+function generateMultisigMetrics(collector: MultisigsCollector, backstageUrl: string) {
+  const series = collector.getMultisigs().map<v2.MetricSeries>(multisig => {
     // entities are typically emitted as API kind,
     // tracking for inconsistencies
-    const { kind, metadata } = ms.entity;
+    const { kind, metadata } = multisig.entity;
     const { name } = metadata;
 
     // inferred type is JsonObject, this converts to any
-    const spec = JSON.parse(JSON.stringify(ms.entity.spec));
+    const spec = JSON.parse(JSON.stringify(multisig.entity.spec));
     const { address, network, networkType, system: rawSystem, owner: rawOwner } = spec;
     const system = rawSystem.split(':')[1];
     const owner = rawOwner.split(':')[1];
@@ -51,7 +74,7 @@ export const backstageMultisigMetrics = async ({ backstage_url }: MultisigMetric
     const resources = [
       {
         type: 'host',
-        name: backstage_url.split('@')[1]
+        name: backstageUrl.split('@')[1]
       },
       { type: 'api', name },
       { type: 'address', name: address },
@@ -73,20 +96,43 @@ export const backstageMultisigMetrics = async ({ backstage_url }: MultisigMetric
       resources
     };
   });
+  return series;
+}
 
-  const params: v2.MetricsApiSubmitMetricsRequest = {
-    body: {
-      series
-    }
-  };
-  core.info(`Data uploaded: ${JSON.stringify(params)}`);
-
-  try {
-    const data = await apiInstance.submitMetrics(params);
-    core.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
-    return data;
-  } catch (error: unknown) {
-    core.error(error as Error);
-    return;
-  }
-};
+function generateSignerMetrics(collector: MultisigsCollector, backstageUrl: string) {
+  const series = collector.getSigners().map<v2.MetricSeries>(signer => {
+    // entities are typically emitted as API kind,
+    // tracking for inconsistencies
+    const { kind, metadata } = signer.signer;
+    const { name, namespace } = metadata;
+    // inferred type is JsonObject, this converts to any
+    const spec = JSON.parse(JSON.stringify(signer.signer.spec));
+    const { address, network, networkType, owner: rawOwner } = spec;
+    const owner = rawOwner.split(':')[1].split('/')[1];
+    // this tags timeseries with distinguishing
+    // properties for filtering purposes
+    const resources = [
+      {
+        type: 'host',
+        name: backstageUrl.split('@')[1]
+      },
+      { type: 'kind', name: kind },
+      { type: 'name', name },
+      { type: 'namespace', name: namespace },
+      { type: 'address', name: address },
+      { type: 'network', name: network },
+      { type: 'networkType', name: networkType },
+      { type: 'owner', name: owner }
+    ];
+    // datadog requires point value to be scalar, 0 means unknown ownership
+    const value = namespace === 'stub' ? 0 : 1;
+    const points = [{ timestamp: new Date().getTime(), value }];
+    return {
+      metric: 'backstage.signers',
+      type: 1,
+      points,
+      resources
+    };
+  });
+  return series;
+}

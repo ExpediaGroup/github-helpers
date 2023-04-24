@@ -83,6 +83,17 @@ class MultisigsCollector {
     getMultisigs() {
         return this.systemComponents.flatMap(system => system.components.flatMap(component => component.multisigs));
     }
+    getSigners() {
+        const allSigners = this.getMultisigs().flatMap(ms => ms.signers);
+        const uniqueSigners = allSigners.reduce((acc, signer) => {
+            const uid = signer.signer.metadata.uid;
+            if (uid && uid in allSigners) {
+                return acc;
+            }
+            return Object.assign(Object.assign({}, acc), { [uid]: signer });
+        }, {});
+        return Object.values(uniqueSigners);
+    }
 }
 
 

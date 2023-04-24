@@ -83,6 +83,17 @@ class MultisigsCollector {
     getMultisigs() {
         return this.systemComponents.flatMap(system => system.components.flatMap(component => component.multisigs));
     }
+    getSigners() {
+        const allSigners = this.getMultisigs().flatMap(ms => ms.signers);
+        const uniqueSigners = allSigners.reduce((acc, signer) => {
+            const uid = signer.signer.metadata.uid;
+            if (uid && uid in allSigners) {
+                return acc;
+            }
+            return Object.assign(Object.assign({}, acc), { [uid]: signer });
+        }, {});
+        return Object.values(uniqueSigners);
+    }
 }
 
 
@@ -136,13 +147,36 @@ const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0
         return;
     const entities = yield (0,_utils_get_backstage_entities__WEBPACK_IMPORTED_MODULE_3__/* .getBackstageEntities */ .g)({ backstage_url });
     const multisigsCollector = new _core_multisigs_collector__WEBPACK_IMPORTED_MODULE_2__/* .MultisigsCollector */ .d(entities);
-    const series = multisigsCollector.getMultisigs().map(ms => {
+    const multisigSeries = generateMultisigMetrics(multisigsCollector, backstage_url);
+    yield submitMetrics(multisigSeries);
+    const signerSeries = generateSignerMetrics(multisigsCollector, backstage_url);
+    yield submitMetrics(signerSeries);
+});
+function submitMetrics(series) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const params = {
+            body: {
+                series
+            }
+        };
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Data uploaded: ${JSON.stringify(params)}`);
+        try {
+            const data = yield apiInstance.submitMetrics(params);
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
+        }
+        catch (error) {
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(error);
+        }
+    });
+}
+function generateMultisigMetrics(collector, backstageUrl) {
+    const series = collector.getMultisigs().map(multisig => {
         // entities are typically emitted as API kind,
         // tracking for inconsistencies
-        const { kind, metadata } = ms.entity;
+        const { kind, metadata } = multisig.entity;
         const { name } = metadata;
         // inferred type is JsonObject, this converts to any
-        const spec = JSON.parse(JSON.stringify(ms.entity.spec));
+        const spec = JSON.parse(JSON.stringify(multisig.entity.spec));
         const { address, network, networkType, system: rawSystem, owner: rawOwner } = spec;
         const system = rawSystem.split(':')[1];
         const owner = rawOwner.split(':')[1];
@@ -152,7 +186,7 @@ const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0
         const resources = [
             {
                 type: 'host',
-                name: backstage_url.split('@')[1]
+                name: backstageUrl.split('@')[1]
             },
             { type: 'api', name },
             { type: 'address', name: address },
@@ -173,22 +207,45 @@ const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0
             resources
         };
     });
-    const params = {
-        body: {
-            series
-        }
-    };
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Data uploaded: ${JSON.stringify(params)}`);
-    try {
-        const data = yield apiInstance.submitMetrics(params);
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
-        return data;
-    }
-    catch (error) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(error);
-        return;
-    }
-});
+    return series;
+}
+function generateSignerMetrics(collector, backstageUrl) {
+    const series = collector.getSigners().map(signer => {
+        // entities are typically emitted as API kind,
+        // tracking for inconsistencies
+        const { kind, metadata } = signer.signer;
+        const { name, namespace } = metadata;
+        // inferred type is JsonObject, this converts to any
+        const spec = JSON.parse(JSON.stringify(signer.signer.spec));
+        const { address, network, networkType, owner: rawOwner } = spec;
+        const owner = rawOwner.split(':')[1].split('/')[1];
+        // this tags timeseries with distinguishing
+        // properties for filtering purposes
+        const resources = [
+            {
+                type: 'host',
+                name: backstageUrl.split('@')[1]
+            },
+            { type: 'kind', name: kind },
+            { type: 'name', name },
+            { type: 'namespace', name: namespace },
+            { type: 'address', name: address },
+            { type: 'network', name: network },
+            { type: 'networkType', name: networkType },
+            { type: 'owner', name: owner }
+        ];
+        // datadog requires point value to be scalar, 0 means unknown ownership
+        const value = namespace === 'stub' ? 0 : 1;
+        const points = [{ timestamp: new Date().getTime(), value }];
+        return {
+            metric: 'backstage.signers',
+            type: 1,
+            points,
+            resources
+        };
+    });
+    return series;
+}
 
 
 /***/ }),
