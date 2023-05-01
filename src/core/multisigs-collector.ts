@@ -114,4 +114,25 @@ export class MultisigsCollector {
     }, {});
     return Object.values(uniqueSigners);
   }
+
+  getAccessKeys(): Entity[] {
+    const signers = this.getSigners().filter(value => value.signer.spec?.network === 'near');
+    const keys = signers.flatMap(value => {
+      if (!value.signer.relations) {
+        return [];
+      }
+      return value.signer.relations
+        .filter(r => r.type === 'apiConsumedBy' && parseEntityRef(r.targetRef).kind === 'resource')
+        .map(relation => {
+          const key = this.entities.find(e => stringifyEntityRef(e) === relation.targetRef);
+          return key;
+        });
+    });
+
+    return keys.filter<Entity>(this.isEntity);
+  }
+
+  isEntity(entity: Entity | undefined): entity is Entity {
+    return entity !== undefined;
+  }
 }

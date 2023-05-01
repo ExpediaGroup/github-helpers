@@ -94,6 +94,24 @@ class MultisigsCollector {
         }, {});
         return Object.values(uniqueSigners);
     }
+    getAccessKeys() {
+        const signers = this.getSigners().filter(value => { var _a; return ((_a = value.signer.spec) === null || _a === void 0 ? void 0 : _a.network) === 'near'; });
+        const keys = signers.flatMap(value => {
+            if (!value.signer.relations) {
+                return [];
+            }
+            return value.signer.relations
+                .filter(r => r.type === 'apiConsumedBy' && (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.parseEntityRef)(r.targetRef).kind === 'resource')
+                .map(relation => {
+                const key = this.entities.find(e => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.stringifyEntityRef)(e) === relation.targetRef);
+                return key;
+            });
+        });
+        return keys.filter(this.isEntity);
+    }
+    isEntity(entity) {
+        return entity !== undefined;
+    }
 }
 
 

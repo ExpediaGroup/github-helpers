@@ -32,11 +32,18 @@ export const backstageMultisigMetrics = async ({ backstage_url }: MultisigMetric
   const entities = await getBackstageEntities({ backstage_url });
 
   const multisigsCollector = new MultisigsCollector(entities);
-  const multisigSeries = generateMultisigMetrics(multisigsCollector, backstage_url);
-  await submitMetrics(multisigSeries);
 
-  const signerSeries = generateSignerMetrics(multisigsCollector, backstage_url);
-  await submitMetrics(signerSeries);
+  try {
+    const multisigSeries = generateMultisigMetrics(multisigsCollector, backstage_url);
+    const signerSeries = generateSignerMetrics(multisigsCollector, backstage_url);
+    const keySeries = generateAccessKeyMetrics(multisigsCollector, backstage_url);
+    const data = await Promise.all([submitMetrics(multisigSeries), submitMetrics(signerSeries), submitMetrics(keySeries)]);
+
+    core.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
+    return data;
+  } catch (error: unknown) {
+    core.error(error as Error);
+  }
 };
 
 async function submitMetrics(series: v2.MetricSeries[]) {
@@ -45,14 +52,9 @@ async function submitMetrics(series: v2.MetricSeries[]) {
       series
     }
   };
-  core.info(`Data uploaded: ${JSON.stringify(params)}`);
+  core.info(`Data to upload: ${JSON.stringify(params)}`);
 
-  try {
-    const data = await apiInstance.submitMetrics(params);
-    core.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
-  } catch (error: unknown) {
-    core.error(error as Error);
-  }
+  return apiInstance.submitMetrics(params);
 }
 
 function generateMultisigMetrics(collector: MultisigsCollector, backstageUrl: string) {
@@ -126,9 +128,45 @@ function generateSignerMetrics(collector: MultisigsCollector, backstageUrl: stri
     ];
     // datadog requires point value to be scalar, 0 means unknown ownership
     const value = namespace === 'stub' ? 0 : 1;
-    const points = [{ timestamp: new Date().getTime(), value }];
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    const points = [{ timestamp, value }];
     return {
       metric: 'backstage.signers',
+      type: 3,
+      points,
+      resources
+    };
+  });
+  return series;
+}
+
+function generateAccessKeyMetrics(collector: MultisigsCollector, backstageUrl: string) {
+  const series = collector.getAccessKeys().map<v2.MetricSeries>(key => {
+    // entities are typically emitted as API kind,
+    // tracking for inconsistencies
+    const { kind, metadata } = key;
+    const { name, namespace } = metadata;
+    // inferred type is JsonObject, this converts to any
+    const spec = JSON.parse(JSON.stringify(key.spec));
+    const { owner: rawOwner } = spec;
+    const owner = rawOwner.split(':')[1].split('/')[1];
+    // this tags timeseries with distinguishing
+    // properties for filtering purposes
+    const resources = [
+      {
+        type: 'host',
+        name: backstageUrl.split('@')[1]
+      },
+      { type: 'kind', name: kind },
+      { type: 'name', name },
+      { type: 'namespace', name: namespace },
+      { type: 'owner', name: owner }
+    ];
+    const value = 1;
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    const points = [{ timestamp, value }];
+    return {
+      metric: 'backstage.access-keys',
       type: 3,
       points,
       resources

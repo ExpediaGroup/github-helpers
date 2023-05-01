@@ -94,6 +94,24 @@ class MultisigsCollector {
         }, {});
         return Object.values(uniqueSigners);
     }
+    getAccessKeys() {
+        const signers = this.getSigners().filter(value => { var _a; return ((_a = value.signer.spec) === null || _a === void 0 ? void 0 : _a.network) === 'near'; });
+        const keys = signers.flatMap(value => {
+            if (!value.signer.relations) {
+                return [];
+            }
+            return value.signer.relations
+                .filter(r => r.type === 'apiConsumedBy' && (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.parseEntityRef)(r.targetRef).kind === 'resource')
+                .map(relation => {
+                const key = this.entities.find(e => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.stringifyEntityRef)(e) === relation.targetRef);
+                return key;
+            });
+        });
+        return keys.filter(this.isEntity);
+    }
+    isEntity(entity) {
+        return entity !== undefined;
+    }
 }
 
 
@@ -147,10 +165,17 @@ const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0
         return;
     const entities = yield (0,_utils_get_backstage_entities__WEBPACK_IMPORTED_MODULE_3__/* .getBackstageEntities */ .g)({ backstage_url });
     const multisigsCollector = new _core_multisigs_collector__WEBPACK_IMPORTED_MODULE_2__/* .MultisigsCollector */ .d(entities);
-    const multisigSeries = generateMultisigMetrics(multisigsCollector, backstage_url);
-    yield submitMetrics(multisigSeries);
-    const signerSeries = generateSignerMetrics(multisigsCollector, backstage_url);
-    yield submitMetrics(signerSeries);
+    try {
+        const multisigSeries = generateMultisigMetrics(multisigsCollector, backstage_url);
+        const signerSeries = generateSignerMetrics(multisigsCollector, backstage_url);
+        const keySeries = generateAccessKeyMetrics(multisigsCollector, backstage_url);
+        const data = yield Promise.all([submitMetrics(multisigSeries), submitMetrics(signerSeries), submitMetrics(keySeries)]);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
+        return data;
+    }
+    catch (error) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(error);
+    }
 });
 function submitMetrics(series) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -159,14 +184,8 @@ function submitMetrics(series) {
                 series
             }
         };
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Data uploaded: ${JSON.stringify(params)}`);
-        try {
-            const data = yield apiInstance.submitMetrics(params);
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
-        }
-        catch (error) {
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(error);
-        }
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Data to upload: ${JSON.stringify(params)}`);
+        return apiInstance.submitMetrics(params);
     });
 }
 function generateMultisigMetrics(collector, backstageUrl) {
@@ -236,9 +255,44 @@ function generateSignerMetrics(collector, backstageUrl) {
         ];
         // datadog requires point value to be scalar, 0 means unknown ownership
         const value = namespace === 'stub' ? 0 : 1;
-        const points = [{ timestamp: new Date().getTime(), value }];
+        const timestamp = Math.round(new Date().getTime() / 1000);
+        const points = [{ timestamp, value }];
         return {
             metric: 'backstage.signers',
+            type: 3,
+            points,
+            resources
+        };
+    });
+    return series;
+}
+function generateAccessKeyMetrics(collector, backstageUrl) {
+    const series = collector.getAccessKeys().map(key => {
+        // entities are typically emitted as API kind,
+        // tracking for inconsistencies
+        const { kind, metadata } = key;
+        const { name, namespace } = metadata;
+        // inferred type is JsonObject, this converts to any
+        const spec = JSON.parse(JSON.stringify(key.spec));
+        const { owner: rawOwner } = spec;
+        const owner = rawOwner.split(':')[1].split('/')[1];
+        // this tags timeseries with distinguishing
+        // properties for filtering purposes
+        const resources = [
+            {
+                type: 'host',
+                name: backstageUrl.split('@')[1]
+            },
+            { type: 'kind', name: kind },
+            { type: 'name', name },
+            { type: 'namespace', name: namespace },
+            { type: 'owner', name: owner }
+        ];
+        const value = 1;
+        const timestamp = Math.round(new Date().getTime() / 1000);
+        const points = [{ timestamp, value }];
+        return {
+            metric: 'backstage.access-keys',
             type: 3,
             points,
             resources
