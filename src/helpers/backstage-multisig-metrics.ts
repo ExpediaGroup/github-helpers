@@ -129,7 +129,7 @@ function generateSignerMetrics(collector: MultisigsCollector, backstageUrl: stri
     const points = [{ timestamp: new Date().getTime(), value }];
     return {
       metric: 'backstage.signers',
-      type: 1,
+      type: 3,
       points,
       resources
     };
