@@ -26,6 +26,7 @@ client.setServerVariables(configuration, {
   site: 'datadoghq.eu'
 });
 const apiInstance = new v2.MetricsApi(configuration);
+const DATADOG_GAUGE_TYPE = 3;
 
 export const backstageMultisigMetrics = async ({ backstage_url }: MultisigMetricsParams) => {
   if (!backstage_url) return;
@@ -37,7 +38,13 @@ export const backstageMultisigMetrics = async ({ backstage_url }: MultisigMetric
     const multisigSeries = generateMultisigMetrics(multisigsCollector, backstage_url);
     const signerSeries = generateSignerMetrics(multisigsCollector, backstage_url);
     const keySeries = generateAccessKeyMetrics(multisigsCollector, backstage_url);
-    const data = await Promise.all([submitMetrics(multisigSeries), submitMetrics(signerSeries), submitMetrics(keySeries)]);
+    const keyCountByOwnerSeries = generateUserAccessKeyMetrics(multisigsCollector, backstage_url);
+    const data = await Promise.all([
+      submitMetrics(multisigSeries),
+      submitMetrics(signerSeries),
+      submitMetrics(keySeries),
+      submitMetrics(keyCountByOwnerSeries)
+    ]);
 
     core.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
     return data;
@@ -93,7 +100,7 @@ function generateMultisigMetrics(collector: MultisigsCollector, backstageUrl: st
     const points = [{ timestamp, value }];
     return {
       metric: 'backstage.multisigs.version',
-      type: 3,
+      type: DATADOG_GAUGE_TYPE,
       points,
       resources
     };
@@ -132,7 +139,7 @@ function generateSignerMetrics(collector: MultisigsCollector, backstageUrl: stri
     const points = [{ timestamp, value }];
     return {
       metric: 'backstage.signers',
-      type: 3,
+      type: DATADOG_GAUGE_TYPE,
       points,
       resources
     };
@@ -142,14 +149,15 @@ function generateSignerMetrics(collector: MultisigsCollector, backstageUrl: stri
 
 function generateAccessKeyMetrics(collector: MultisigsCollector, backstageUrl: string) {
   const series = collector.getAccessKeys().map<v2.MetricSeries>(key => {
-    // entities are typically emitted as API kind,
+    // entities are typically emitted as Resource kind,
     // tracking for inconsistencies
     const { kind, metadata } = key;
     const { name, namespace } = metadata;
     // inferred type is JsonObject, this converts to any
     const spec = JSON.parse(JSON.stringify(key.spec));
     const { owner: rawOwner } = spec;
-    const owner = rawOwner.split(':')[1].split('/')[1];
+    const [ownerKind, ownerRef] = rawOwner.split(':');
+    const ownerName = ownerRef.split('/')[1];
     // this tags timeseries with distinguishing
     // properties for filtering purposes
     const resources = [
@@ -160,14 +168,50 @@ function generateAccessKeyMetrics(collector: MultisigsCollector, backstageUrl: s
       { type: 'kind', name: kind },
       { type: 'name', name },
       { type: 'namespace', name: namespace },
-      { type: 'owner', name: owner }
+      { type: 'owner', name: ownerName },
+      { type: 'ownerKind', name: ownerKind }
     ];
-    const value = 1;
+    const value = namespace === 'stub' || ownerKind !== 'user' ? 0 : 1;
     const timestamp = Math.round(new Date().getTime() / 1000);
     const points = [{ timestamp, value }];
     return {
-      metric: 'backstage.access-keys',
-      type: 3,
+      metric: 'backstage.access_keys',
+      type: DATADOG_GAUGE_TYPE,
+      points,
+      resources
+    };
+  });
+  return series;
+}
+
+type Entity = ReturnType<MultisigsCollector['getAccessKeys']>[number];
+type KeysByOwner = {
+  [owner: string]: Entity[];
+};
+function generateUserAccessKeyMetrics(collector: MultisigsCollector, backstageUrl: string) {
+  const accessKeysPerOwner = collector.getAccessKeys().reduce<KeysByOwner>((acc, key) => {
+    // inferred type is JsonObject, this converts to any
+    const spec = JSON.parse(JSON.stringify(key.spec));
+    const { owner } = spec;
+    return {
+      ...acc,
+      [owner]: [...(acc[owner] || []), key]
+    };
+  }, {});
+  const series = Object.entries(accessKeysPerOwner).map<v2.MetricSeries>(([owner, keys]) => {
+    const resources = [
+      {
+        type: 'host',
+        name: backstageUrl.split('@')[1]
+      },
+      { type: 'owner', name: owner }
+    ];
+    const value = keys.length;
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    const points = [{ timestamp, value }];
+    return {
+      metric: 'backstage.access_keys_owned_count',
+      type: DATADOG_GAUGE_TYPE,
       points,
       resources
     };
