@@ -13,12 +13,16 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { client, v2 } from '@datadog/datadog-api-client';
+import { Entity } from '@backstage/catalog-model';
 
 import { MultisigsCollector } from '../core/multisigs-collector';
 import { getBackstageEntities } from '../utils/get-backstage-entities';
 
 type MultisigMetricsParams = {
   backstage_url?: string;
+};
+type KeysByOwner = {
+  [owner: string]: Entity[];
 };
 
 const configuration = client.createConfiguration();
@@ -39,11 +43,13 @@ export const backstageMultisigMetrics = async ({ backstage_url }: MultisigMetric
     const signerSeries = generateSignerMetrics(multisigsCollector, backstage_url);
     const keySeries = generateAccessKeyMetrics(multisigsCollector, backstage_url);
     const keyCountByOwnerSeries = generateUserAccessKeyMetrics(multisigsCollector, backstage_url);
+    const keyCountByContractSeries = generateContractAccessKeyMetrics(multisigsCollector, backstage_url);
     const data = await Promise.all([
       submitMetrics(multisigSeries),
       submitMetrics(signerSeries),
       submitMetrics(keySeries),
-      submitMetrics(keyCountByOwnerSeries)
+      submitMetrics(keyCountByOwnerSeries),
+      submitMetrics(keyCountByContractSeries)
     ]);
 
     core.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
@@ -184,10 +190,6 @@ function generateAccessKeyMetrics(collector: MultisigsCollector, backstageUrl: s
   return series;
 }
 
-type Entity = ReturnType<MultisigsCollector['getAccessKeys']>[number];
-type KeysByOwner = {
-  [owner: string]: Entity[];
-};
 function generateUserAccessKeyMetrics(collector: MultisigsCollector, backstageUrl: string) {
   const accessKeysPerOwner = collector.getAccessKeys().reduce<KeysByOwner>((acc, key) => {
     // inferred type is JsonObject, this converts to any
@@ -211,6 +213,37 @@ function generateUserAccessKeyMetrics(collector: MultisigsCollector, backstageUr
     const points = [{ timestamp, value }];
     return {
       metric: 'backstage.access_keys_owned_count',
+      type: DATADOG_GAUGE_TYPE,
+      points,
+      resources
+    };
+  });
+  return series;
+}
+
+function generateContractAccessKeyMetrics(collector: MultisigsCollector, backstageUrl: string) {
+  const accessKeysPerContract = collector.getContractAccessKeys().reduce<KeysByOwner>((acc, key) => {
+    // inferred type is JsonObject, this converts to any
+    const spec = JSON.parse(JSON.stringify(key.spec));
+    const { owner } = spec;
+    return {
+      ...acc,
+      [owner]: [...(acc[owner] || []), key]
+    };
+  }, {});
+  const series = Object.entries(accessKeysPerContract).map<v2.MetricSeries>(([owner, keys]) => {
+    const resources = [
+      {
+        type: 'host',
+        name: backstageUrl.split('@')[1]
+      },
+      { type: 'owner', name: owner }
+    ];
+    const value = keys.length;
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    const points = [{ timestamp, value }];
+    return {
+      metric: 'backstage.access_keys_by_contract_count',
       type: DATADOG_GAUGE_TYPE,
       points,
       resources

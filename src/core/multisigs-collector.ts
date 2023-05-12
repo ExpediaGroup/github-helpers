@@ -39,10 +39,12 @@ export class MultisigsCollector {
   systemComponents: SystemComponents[] = [];
   private entities: Entity[] = [];
   private multisigs: Entity[] = [];
+  private contracts: Entity[] = [];
 
   constructor(entities: Entity[]) {
     this.entities = entities;
     this.multisigs = this.entities.filter(item => isApiEntity(item) && item.spec.type === 'multisig-deployment');
+    this.contracts = this.entities.filter(item => isApiEntity(item) && item.spec.type === 'contract-deployment');
     this.systemComponents = this.collectSystems();
   }
 
@@ -103,11 +105,18 @@ export class MultisigsCollector {
     return this.systemComponents.flatMap(system => system.components.flatMap(component => component.multisigs));
   }
 
+  getNearContracts() {
+    return this.contracts.filter(entity => entity.spec?.network === 'near');
+  }
+
   getSigners() {
     const allSigners = this.getMultisigs().flatMap(ms => ms.signers);
     const uniqueSigners = allSigners.reduce<{ [uid: string]: MultisigSigner }>((acc, signer) => {
       const uid = signer.signer.metadata.uid;
       if (uid && uid in allSigners) {
+        return acc;
+      }
+      if (this.hasDisqualifiedTags(signer.signer)) {
         return acc;
       }
       return { ...acc, [uid as string]: signer };
@@ -129,7 +138,26 @@ export class MultisigsCollector {
         });
     });
 
+    return keys.filter<Entity>(this.isEntity).filter(this.hasDisqualifiedTags);
+  }
+
+  getContractAccessKeys() {
+    const keys = this.contracts.flatMap(value => {
+      if (!value.relations) {
+        return [];
+      }
+      return value.relations
+        .filter(r => r.type === 'apiConsumedBy' && parseEntityRef(r.targetRef).kind === 'resource')
+        .map(relation => {
+          const key = this.entities.find(e => stringifyEntityRef(e) === relation.targetRef);
+          return key;
+        });
+    });
     return keys.filter<Entity>(this.isEntity);
+  }
+
+  private hasDisqualifiedTags(entity: Entity) {
+    return entity.metadata.tags?.includes('retired') || entity.metadata.tags?.includes('allow-unknown');
   }
 
   isEntity(entity: Entity | undefined): entity is Entity {

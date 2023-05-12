@@ -28,8 +28,10 @@ class MultisigsCollector {
         this.systemComponents = [];
         this.entities = [];
         this.multisigs = [];
+        this.contracts = [];
         this.entities = entities;
         this.multisigs = this.entities.filter(item => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.isApiEntity)(item) && item.spec.type === 'multisig-deployment');
+        this.contracts = this.entities.filter(item => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.isApiEntity)(item) && item.spec.type === 'contract-deployment');
         this.systemComponents = this.collectSystems();
     }
     normalizeEntities(list) {
@@ -83,11 +85,17 @@ class MultisigsCollector {
     getMultisigs() {
         return this.systemComponents.flatMap(system => system.components.flatMap(component => component.multisigs));
     }
+    getNearContracts() {
+        return this.contracts.filter(entity => { var _a; return ((_a = entity.spec) === null || _a === void 0 ? void 0 : _a.network) === 'near'; });
+    }
     getSigners() {
         const allSigners = this.getMultisigs().flatMap(ms => ms.signers);
         const uniqueSigners = allSigners.reduce((acc, signer) => {
             const uid = signer.signer.metadata.uid;
             if (uid && uid in allSigners) {
+                return acc;
+            }
+            if (this.hasDisqualifiedTags(signer.signer)) {
                 return acc;
             }
             return Object.assign(Object.assign({}, acc), { [uid]: signer });
@@ -107,7 +115,25 @@ class MultisigsCollector {
                 return key;
             });
         });
+        return keys.filter(this.isEntity).filter(this.hasDisqualifiedTags);
+    }
+    getContractAccessKeys() {
+        const keys = this.contracts.flatMap(value => {
+            if (!value.relations) {
+                return [];
+            }
+            return value.relations
+                .filter(r => r.type === 'apiConsumedBy' && (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.parseEntityRef)(r.targetRef).kind === 'resource')
+                .map(relation => {
+                const key = this.entities.find(e => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.stringifyEntityRef)(e) === relation.targetRef);
+                return key;
+            });
+        });
         return keys.filter(this.isEntity);
+    }
+    hasDisqualifiedTags(entity) {
+        var _a, _b;
+        return ((_a = entity.metadata.tags) === null || _a === void 0 ? void 0 : _a.includes('retired')) || ((_b = entity.metadata.tags) === null || _b === void 0 ? void 0 : _b.includes('allow-unknown'));
     }
     isEntity(entity) {
         return entity !== undefined;
@@ -171,11 +197,13 @@ const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0
         const signerSeries = generateSignerMetrics(multisigsCollector, backstage_url);
         const keySeries = generateAccessKeyMetrics(multisigsCollector, backstage_url);
         const keyCountByOwnerSeries = generateUserAccessKeyMetrics(multisigsCollector, backstage_url);
+        const keyCountByContractSeries = generateContractAccessKeyMetrics(multisigsCollector, backstage_url);
         const data = yield Promise.all([
             submitMetrics(multisigSeries),
             submitMetrics(signerSeries),
             submitMetrics(keySeries),
-            submitMetrics(keyCountByOwnerSeries)
+            submitMetrics(keyCountByOwnerSeries),
+            submitMetrics(keyCountByContractSeries)
         ]);
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
         return data;
@@ -329,6 +357,33 @@ function generateUserAccessKeyMetrics(collector, backstageUrl) {
         const points = [{ timestamp, value }];
         return {
             metric: 'backstage.access_keys_owned_count',
+            type: DATADOG_GAUGE_TYPE,
+            points,
+            resources
+        };
+    });
+    return series;
+}
+function generateContractAccessKeyMetrics(collector, backstageUrl) {
+    const accessKeysPerContract = collector.getContractAccessKeys().reduce((acc, key) => {
+        // inferred type is JsonObject, this converts to any
+        const spec = JSON.parse(JSON.stringify(key.spec));
+        const { owner } = spec;
+        return Object.assign(Object.assign({}, acc), { [owner]: [...(acc[owner] || []), key] });
+    }, {});
+    const series = Object.entries(accessKeysPerContract).map(([owner, keys]) => {
+        const resources = [
+            {
+                type: 'host',
+                name: backstageUrl.split('@')[1]
+            },
+            { type: 'owner', name: owner }
+        ];
+        const value = keys.length;
+        const timestamp = Math.round(new Date().getTime() / 1000);
+        const points = [{ timestamp, value }];
+        return {
+            metric: 'backstage.access_keys_by_contract_count',
             type: DATADOG_GAUGE_TYPE,
             points,
             resources

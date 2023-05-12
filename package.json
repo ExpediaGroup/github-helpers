@@ -62,7 +62,8 @@
       "^.+\\.(j|t)sx?$": "ts-jest"
     },
     "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
-    "clearMocks": true
+    "clearMocks": true,
+    "testTimeout": 10000
   },
   "scripts": {
     "build": "tsc",
