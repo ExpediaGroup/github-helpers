@@ -116,7 +116,7 @@ export class MultisigsCollector {
       if (uid && uid in allSigners) {
         return acc;
       }
-      if (this.hasDisqualifiedTags(signer.signer)) {
+      if (!this.isQualifiedEntity(signer.signer)) {
         return acc;
       }
       return { ...acc, [uid as string]: signer };
@@ -138,10 +138,10 @@ export class MultisigsCollector {
         });
     });
 
-    return keys.filter<Entity>(this.isEntity).filter(this.hasDisqualifiedTags);
+    return keys.filter<Entity>(this.isEntity).filter(this.isQualifiedEntity);
   }
 
-  getContractAccessKeys() {
+  getContractAccessKeys(): Entity[] {
     const keys = this.contracts.flatMap(value => {
       if (!value.relations) {
         return [];
@@ -156,11 +156,11 @@ export class MultisigsCollector {
     return keys.filter<Entity>(this.isEntity);
   }
 
-  private hasDisqualifiedTags(entity: Entity) {
-    return entity.metadata.tags?.includes('retired') || entity.metadata.tags?.includes('allow-unknown');
+  private isQualifiedEntity(entity: Entity) {
+    return !entity.metadata.tags?.includes('retired') && !entity.metadata.tags?.includes('allow-unknown');
   }
 
-  isEntity(entity: Entity | undefined): entity is Entity {
+  private isEntity(entity: Entity | undefined): entity is Entity {
     return entity !== undefined;
   }
 }

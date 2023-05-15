@@ -155,6 +155,7 @@ function generateSignerMetrics(collector: MultisigsCollector, backstageUrl: stri
 
 function generateAccessKeyMetrics(collector: MultisigsCollector, backstageUrl: string) {
   const series = collector.getAccessKeys().map<v2.MetricSeries>(key => {
+    core.info(key.metadata.toString());
     // entities are typically emitted as Resource kind,
     // tracking for inconsistencies
     const { kind, metadata } = key;
@@ -192,6 +193,7 @@ function generateAccessKeyMetrics(collector: MultisigsCollector, backstageUrl: s
 
 function generateUserAccessKeyMetrics(collector: MultisigsCollector, backstageUrl: string) {
   const accessKeysPerOwner = collector.getAccessKeys().reduce<KeysByOwner>((acc, key) => {
+    core.info(key.metadata.toString());
     // inferred type is JsonObject, this converts to any
     const spec = JSON.parse(JSON.stringify(key.spec));
     const { owner } = spec;

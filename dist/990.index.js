@@ -95,7 +95,7 @@ class MultisigsCollector {
             if (uid && uid in allSigners) {
                 return acc;
             }
-            if (this.hasDisqualifiedTags(signer.signer)) {
+            if (!this.isQualifiedEntity(signer.signer)) {
                 return acc;
             }
             return Object.assign(Object.assign({}, acc), { [uid]: signer });
@@ -115,7 +115,7 @@ class MultisigsCollector {
                 return key;
             });
         });
-        return keys.filter(this.isEntity).filter(this.hasDisqualifiedTags);
+        return keys.filter(this.isEntity).filter(this.isQualifiedEntity);
     }
     getContractAccessKeys() {
         const keys = this.contracts.flatMap(value => {
@@ -131,9 +131,9 @@ class MultisigsCollector {
         });
         return keys.filter(this.isEntity);
     }
-    hasDisqualifiedTags(entity) {
+    isQualifiedEntity(entity) {
         var _a, _b;
-        return ((_a = entity.metadata.tags) === null || _a === void 0 ? void 0 : _a.includes('retired')) || ((_b = entity.metadata.tags) === null || _b === void 0 ? void 0 : _b.includes('allow-unknown'));
+        return !((_a = entity.metadata.tags) === null || _a === void 0 ? void 0 : _a.includes('retired')) && !((_b = entity.metadata.tags) === null || _b === void 0 ? void 0 : _b.includes('allow-unknown'));
     }
     isEntity(entity) {
         return entity !== undefined;
@@ -303,6 +303,7 @@ function generateSignerMetrics(collector, backstageUrl) {
 }
 function generateAccessKeyMetrics(collector, backstageUrl) {
     const series = collector.getAccessKeys().map(key => {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(key.metadata.toString());
         // entities are typically emitted as Resource kind,
         // tracking for inconsistencies
         const { kind, metadata } = key;
@@ -339,6 +340,7 @@ function generateAccessKeyMetrics(collector, backstageUrl) {
 }
 function generateUserAccessKeyMetrics(collector, backstageUrl) {
     const accessKeysPerOwner = collector.getAccessKeys().reduce((acc, key) => {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(key.metadata.toString());
         // inferred type is JsonObject, this converts to any
         const spec = JSON.parse(JSON.stringify(key.spec));
         const { owner } = spec;
