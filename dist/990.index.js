@@ -303,7 +303,6 @@ function generateSignerMetrics(collector, backstageUrl) {
 }
 function generateAccessKeyMetrics(collector, backstageUrl) {
     const series = collector.getAccessKeys().map(key => {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(key.metadata.toString());
         // entities are typically emitted as Resource kind,
         // tracking for inconsistencies
         const { kind, metadata } = key;
@@ -340,7 +339,6 @@ function generateAccessKeyMetrics(collector, backstageUrl) {
 }
 function generateUserAccessKeyMetrics(collector, backstageUrl) {
     const accessKeysPerOwner = collector.getAccessKeys().reduce((acc, key) => {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(key.metadata.toString());
         // inferred type is JsonObject, this converts to any
         const spec = JSON.parse(JSON.stringify(key.spec));
         const { owner } = spec;
