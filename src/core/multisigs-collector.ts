@@ -17,6 +17,10 @@ type MultisigSigner = {
   signer: Entity;
   owner?: Entity;
 };
+type MultisigSignerAndKeysComposed = MultisigSigner & { keys: Entity[] };
+type MultisigSignerAndKeys = {
+  [K in keyof MultisigSignerAndKeysComposed]: MultisigSignerAndKeysComposed[K];
+};
 
 type MultisigInfo = {
   entity: Entity;
@@ -139,6 +143,35 @@ export class MultisigsCollector {
     });
 
     return keys.filter<Entity>(this.isEntity).filter(this.isQualifiedEntity);
+  }
+
+  getAccessKeysPerSigner() {
+    const signers = this.getSigners().filter(value => value.signer.spec?.network === 'near');
+    const keysPerSigner = signers.reduce<{ [s: string]: MultisigSignerAndKeys }>((acc, value) => {
+      if (!value.signer.relations) {
+        return acc;
+      }
+      const spec = JSON.parse(JSON.stringify(value.signer.spec));
+      const signer: string = spec.address;
+      const keys = value.signer.relations
+        .filter(r => r.type === 'apiConsumedBy' && parseEntityRef(r.targetRef).kind === 'resource')
+        .map(relation => {
+          const key = this.entities.find(e => stringifyEntityRef(e) === relation.targetRef);
+          return key;
+        })
+        .filter<Entity>(this.isEntity);
+
+      return {
+        ...acc,
+        [signer]: {
+          owner: value.owner,
+          signer: value.signer,
+          keys
+        }
+      };
+    }, {});
+
+    return keysPerSigner;
   }
 
   getContractAccessKeys(): Entity[] {

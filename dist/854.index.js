@@ -117,6 +117,29 @@ class MultisigsCollector {
         });
         return keys.filter(this.isEntity).filter(this.isQualifiedEntity);
     }
+    getAccessKeysPerSigner() {
+        const signers = this.getSigners().filter(value => { var _a; return ((_a = value.signer.spec) === null || _a === void 0 ? void 0 : _a.network) === 'near'; });
+        const keysPerSigner = signers.reduce((acc, value) => {
+            if (!value.signer.relations) {
+                return acc;
+            }
+            const spec = JSON.parse(JSON.stringify(value.signer.spec));
+            const signer = spec.address;
+            const keys = value.signer.relations
+                .filter(r => r.type === 'apiConsumedBy' && (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.parseEntityRef)(r.targetRef).kind === 'resource')
+                .map(relation => {
+                const key = this.entities.find(e => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.stringifyEntityRef)(e) === relation.targetRef);
+                return key;
+            })
+                .filter(this.isEntity);
+            return Object.assign(Object.assign({}, acc), { [signer]: {
+                    owner: value.owner,
+                    signer: value.signer,
+                    keys
+                } });
+        }, {});
+        return keysPerSigner;
+    }
     getContractAccessKeys() {
         const keys = this.contracts.flatMap(value => {
             if (!value.relations) {

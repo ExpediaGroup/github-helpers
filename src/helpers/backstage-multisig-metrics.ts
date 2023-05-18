@@ -191,15 +191,15 @@ function generateAccessKeyMetrics(collector: MultisigsCollector, backstageUrl: s
 }
 
 function generateUserAccessKeyMetrics(collector: MultisigsCollector, backstageUrl: string) {
-  const accessKeysPerOwner = collector.getAccessKeys().reduce<KeysByOwner>((acc, key) => {
+  const accessKeysPerOwner = Object.entries(collector.getAccessKeysPerSigner()).reduce<KeysByOwner>((acc, [signer, value]) => {
     // inferred type is JsonObject, this converts to any
-    const spec = JSON.parse(JSON.stringify(key.spec));
-    const { owner } = spec;
+    // const spec = JSON.parse(JSON.stringify(key.spec));
     return {
       ...acc,
-      [owner]: [...(acc[owner] || []), key]
+      [signer]: value.keys
     };
   }, {});
+  core.debug(accessKeysPerOwner.toString());
   const series = Object.entries(accessKeysPerOwner).map<v2.MetricSeries>(([owner, keys]) => {
     const resources = [
       {
