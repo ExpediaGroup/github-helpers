@@ -361,21 +361,20 @@ function generateAccessKeyMetrics(collector, backstageUrl) {
     return series;
 }
 function generateUserAccessKeyMetrics(collector, backstageUrl) {
-    const accessKeysPerOwner = Object.entries(collector.getAccessKeysPerSigner()).reduce((acc, [signer, value]) => {
-        // inferred type is JsonObject, this converts to any
-        // const spec = JSON.parse(JSON.stringify(key.spec));
-        return Object.assign(Object.assign({}, acc), { [signer]: value.keys });
-    }, {});
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(accessKeysPerOwner.toString());
-    const series = Object.entries(accessKeysPerOwner).map(([owner, keys]) => {
+    const series = Object.entries(collector.getAccessKeysPerSigner()).map(([signer, entry]) => {
+        const spec = JSON.parse(JSON.stringify(entry.signer.spec));
+        const { owner } = spec;
+        const ownerName = `${owner}/${signer}`;
         const resources = [
             {
                 type: 'host',
                 name: backstageUrl.split('@')[1]
             },
-            { type: 'owner', name: owner }
+            { type: 'owner', name: ownerName },
+            { type: 'user', name: owner },
+            { type: 'signer', name: signer }
         ];
-        const value = keys.length;
+        const value = entry.keys.length;
         const timestamp = Math.round(new Date().getTime() / 1000);
         const points = [{ timestamp, value }];
         return {
