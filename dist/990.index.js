@@ -29,9 +29,11 @@ class MultisigsCollector {
         this.entities = [];
         this.multisigs = [];
         this.contracts = [];
+        this.accessKeys = [];
         this.entities = entities;
         this.multisigs = this.entities.filter(item => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.isApiEntity)(item) && item.spec.type === 'multisig-deployment');
         this.contracts = this.entities.filter(item => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.isApiEntity)(item) && item.spec.type === 'contract-deployment');
+        this.accessKeys = this.entities.filter(item => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.isResourceEntity)(item) && item.spec.type === 'access-key');
         this.systemComponents = this.collectSystems();
     }
     normalizeEntities(list) {
@@ -102,14 +104,14 @@ class MultisigsCollector {
         }, {});
         return Object.values(uniqueSigners);
     }
-    getAccessKeys() {
+    getMultisigAccessKeys() {
         const signers = this.getSigners().filter(value => { var _a; return ((_a = value.signer.spec) === null || _a === void 0 ? void 0 : _a.network) === 'near'; });
         const keys = signers.flatMap(value => {
             if (!value.signer.relations) {
                 return [];
             }
             return value.signer.relations
-                .filter(r => r.type === 'apiConsumedBy' && (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.parseEntityRef)(r.targetRef).kind === 'resource')
+                .filter(r => r.type === _backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.RELATION_API_CONSUMED_BY && (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.parseEntityRef)(r.targetRef).kind === 'resource')
                 .map(relation => {
                 const key = this.entities.find(e => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.stringifyEntityRef)(e) === relation.targetRef);
                 return key;
@@ -126,7 +128,7 @@ class MultisigsCollector {
             const spec = JSON.parse(JSON.stringify(value.signer.spec));
             const signer = spec.address;
             const keys = value.signer.relations
-                .filter(r => r.type === 'apiConsumedBy' && (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.parseEntityRef)(r.targetRef).kind === 'resource')
+                .filter(r => r.type === _backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.RELATION_API_CONSUMED_BY && (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.parseEntityRef)(r.targetRef).kind === 'resource')
                 .map(relation => {
                 const key = this.entities.find(e => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.stringifyEntityRef)(e) === relation.targetRef);
                 return key;
@@ -146,13 +148,26 @@ class MultisigsCollector {
                 return [];
             }
             return value.relations
-                .filter(r => r.type === 'apiConsumedBy' && (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.parseEntityRef)(r.targetRef).kind === 'resource')
+                .filter(r => r.type === _backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.RELATION_API_CONSUMED_BY && (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.parseEntityRef)(r.targetRef).kind === 'resource')
                 .map(relation => {
                 const key = this.entities.find(e => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.stringifyEntityRef)(e) === relation.targetRef);
                 return key;
             });
         });
         return keys.filter(this.isEntity);
+    }
+    getAllAccessKeys() {
+        return this.accessKeys;
+    }
+    getDeprecatedAccessKeys() {
+        const keys = this.getAllAccessKeys();
+        const deprecated = keys.filter(entity => { var _a; return (_a = entity.metadata.tags) === null || _a === void 0 ? void 0 : _a.includes('deprecated'); });
+        return deprecated;
+    }
+    getUnknownAccessKeys() {
+        const keys = this.getAllAccessKeys();
+        const unknown = keys.filter(entity => { var _a; return (_a = entity.metadata.tags) === null || _a === void 0 ? void 0 : _a.includes('unknown'); });
+        return unknown;
     }
     isQualifiedEntity(entity) {
         var _a, _b;
@@ -221,12 +236,18 @@ const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0
         const keySeries = generateAccessKeyMetrics(multisigsCollector, backstage_url);
         const keyCountByOwnerSeries = generateUserAccessKeyMetrics(multisigsCollector, backstage_url);
         const keyCountByContractSeries = generateContractAccessKeyMetrics(multisigsCollector, backstage_url);
+        const deprecatedKeysSeries = generateDeprecatedAccessKeyMetrics(multisigsCollector, backstage_url);
+        const unknownAccessKeysSeries = generateUnknownAccessKeyMetrics(multisigsCollector, backstage_url);
+        const unknownSignerSeries = generateUnknownSignerMetrics(multisigsCollector, backstage_url);
         const data = yield Promise.all([
             submitMetrics(multisigSeries),
             submitMetrics(signerSeries),
             submitMetrics(keySeries),
             submitMetrics(keyCountByOwnerSeries),
-            submitMetrics(keyCountByContractSeries)
+            submitMetrics(keyCountByContractSeries),
+            submitMetrics(deprecatedKeysSeries),
+            submitMetrics(unknownAccessKeysSeries),
+            submitMetrics(unknownSignerSeries)
         ]);
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
         return data;
@@ -324,8 +345,49 @@ function generateSignerMetrics(collector, backstageUrl) {
     });
     return series;
 }
+function generateUnknownSignerMetrics(collector, backstageUrl) {
+    const unknownSigners = collector
+        .getSigners()
+        .filter(entry => { var _a; return ((_a = entry.signer.metadata.tags) === null || _a === void 0 ? void 0 : _a.includes('stub')) || entry.signer.metadata.namespace === 'stub'; });
+    const series = unknownSigners.map(signer => {
+        // entities are typically emitted as API kind,
+        // tracking for inconsistencies
+        const { kind, metadata } = signer.signer;
+        const { name, namespace } = metadata;
+        // inferred type is JsonObject, this converts to any
+        const spec = JSON.parse(JSON.stringify(signer.signer.spec));
+        const { address, network, networkType, owner: rawOwner } = spec;
+        const owner = rawOwner.split(':')[1].split('/')[1];
+        // this tags timeseries with distinguishing
+        // properties for filtering purposes
+        const resources = [
+            {
+                type: 'host',
+                name: backstageUrl.split('@')[1]
+            },
+            { type: 'kind', name: kind },
+            { type: 'name', name },
+            { type: 'namespace', name: namespace },
+            { type: 'address', name: address },
+            { type: 'network', name: network },
+            { type: 'networkType', name: networkType },
+            { type: 'owner', name: owner }
+        ];
+        // datadog requires point value to be scalar, 0 means unknown ownership
+        const value = 1;
+        const timestamp = Math.round(new Date().getTime() / 1000);
+        const points = [{ timestamp, value }];
+        return {
+            metric: 'backstage.signers.unknown',
+            type: DATADOG_GAUGE_TYPE,
+            points,
+            resources
+        };
+    });
+    return series;
+}
 function generateAccessKeyMetrics(collector, backstageUrl) {
-    const series = collector.getAccessKeys().map(key => {
+    const series = collector.getMultisigAccessKeys().map(key => {
         // entities are typically emitted as Resource kind,
         // tracking for inconsistencies
         const { kind, metadata } = key;
@@ -360,22 +422,93 @@ function generateAccessKeyMetrics(collector, backstageUrl) {
     });
     return series;
 }
-function generateUserAccessKeyMetrics(collector, backstageUrl) {
-    const accessKeysPerOwner = Object.entries(collector.getAccessKeysPerSigner()).reduce((acc, [signer, value]) => {
+function generateDeprecatedAccessKeyMetrics(collector, backstageUrl) {
+    const series = collector.getDeprecatedAccessKeys().map(key => {
+        // entities are typically emitted as Resource kind,
+        // tracking for inconsistencies
+        const { kind, metadata } = key;
+        const { name, namespace } = metadata;
         // inferred type is JsonObject, this converts to any
-        // const spec = JSON.parse(JSON.stringify(key.spec));
-        return Object.assign(Object.assign({}, acc), { [signer]: value.keys });
-    }, {});
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(accessKeysPerOwner.toString());
-    const series = Object.entries(accessKeysPerOwner).map(([owner, keys]) => {
+        const spec = JSON.parse(JSON.stringify(key.spec));
+        const { owner: rawOwner } = spec;
+        const [ownerKind, ownerRef] = rawOwner.split(':');
+        const ownerName = ownerRef.split('/')[1];
+        // this tags timeseries with distinguishing
+        // properties for filtering purposes
         const resources = [
             {
                 type: 'host',
                 name: backstageUrl.split('@')[1]
             },
-            { type: 'owner', name: owner }
+            { type: 'kind', name: kind },
+            { type: 'name', name },
+            { type: 'namespace', name: namespace },
+            { type: 'owner', name: ownerName },
+            { type: 'ownerKind', name: ownerKind }
         ];
-        const value = keys.length;
+        const value = ownerKind !== 'user' ? 0 : 1;
+        const timestamp = Math.round(new Date().getTime() / 1000);
+        const points = [{ timestamp, value }];
+        return {
+            metric: 'backstage.access_keys.deprecated',
+            type: DATADOG_GAUGE_TYPE,
+            points,
+            resources
+        };
+    });
+    return series;
+}
+function generateUnknownAccessKeyMetrics(collector, backstageUrl) {
+    const series = collector.getUnknownAccessKeys().map(key => {
+        // entities are typically emitted as Resource kind,
+        // tracking for inconsistencies
+        const { kind, metadata } = key;
+        const { name, namespace } = metadata;
+        // inferred type is JsonObject, this converts to any
+        const spec = JSON.parse(JSON.stringify(key.spec));
+        const { owner: rawOwner } = spec;
+        const [ownerKind, ownerRef] = rawOwner.split(':');
+        const ownerName = ownerRef.split('/')[1];
+        // this tags timeseries with distinguishing
+        // properties for filtering purposes
+        const resources = [
+            {
+                type: 'host',
+                name: backstageUrl.split('@')[1]
+            },
+            { type: 'kind', name: kind },
+            { type: 'name', name },
+            { type: 'namespace', name: namespace },
+            { type: 'owner', name: ownerName },
+            { type: 'ownerKind', name: ownerKind }
+        ];
+        const value = 1;
+        const timestamp = Math.round(new Date().getTime() / 1000);
+        const points = [{ timestamp, value }];
+        return {
+            metric: 'backstage.access_keys.unknown',
+            type: DATADOG_GAUGE_TYPE,
+            points,
+            resources
+        };
+    });
+    return series;
+}
+function generateUserAccessKeyMetrics(collector, backstageUrl) {
+    const series = Object.entries(collector.getAccessKeysPerSigner()).map(([signer, entry]) => {
+        const spec = JSON.parse(JSON.stringify(entry.signer.spec));
+        const { owner } = spec;
+        const ownerName = `${owner}/${signer}`;
+        const resources = [
+            {
+                type: 'host',
+                name: backstageUrl.split('@')[1]
+            },
+            { type: 'owner', name: ownerName },
+            { type: 'user', name: owner },
+            { type: 'signer', name: signer }
+        ];
+        const value = entry.keys.length;
         const timestamp = Math.round(new Date().getTime() / 1000);
         const points = [{ timestamp, value }];
         return {

@@ -11,7 +11,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Entity, isApiEntity, stringifyEntityRef, RELATION_OWNED_BY, RELATION_HAS_PART, parseEntityRef } from '@backstage/catalog-model';
+import {
+  Entity,
+  isApiEntity,
+  isResourceEntity,
+  stringifyEntityRef,
+  RELATION_OWNED_BY,
+  RELATION_API_CONSUMED_BY,
+  RELATION_HAS_PART,
+  parseEntityRef
+} from '@backstage/catalog-model';
 
 type MultisigSigner = {
   signer: Entity;
@@ -44,11 +53,13 @@ export class MultisigsCollector {
   private entities: Entity[] = [];
   private multisigs: Entity[] = [];
   private contracts: Entity[] = [];
+  private accessKeys: Entity[] = [];
 
   constructor(entities: Entity[]) {
     this.entities = entities;
     this.multisigs = this.entities.filter(item => isApiEntity(item) && item.spec.type === 'multisig-deployment');
     this.contracts = this.entities.filter(item => isApiEntity(item) && item.spec.type === 'contract-deployment');
+    this.accessKeys = this.entities.filter(item => isResourceEntity(item) && item.spec.type === 'access-key');
     this.systemComponents = this.collectSystems();
   }
 
@@ -128,14 +139,14 @@ export class MultisigsCollector {
     return Object.values(uniqueSigners);
   }
 
-  getAccessKeys(): Entity[] {
+  getMultisigAccessKeys(): Entity[] {
     const signers = this.getSigners().filter(value => value.signer.spec?.network === 'near');
     const keys = signers.flatMap(value => {
       if (!value.signer.relations) {
         return [];
       }
       return value.signer.relations
-        .filter(r => r.type === 'apiConsumedBy' && parseEntityRef(r.targetRef).kind === 'resource')
+        .filter(r => r.type === RELATION_API_CONSUMED_BY && parseEntityRef(r.targetRef).kind === 'resource')
         .map(relation => {
           const key = this.entities.find(e => stringifyEntityRef(e) === relation.targetRef);
           return key;
@@ -154,7 +165,7 @@ export class MultisigsCollector {
       const spec = JSON.parse(JSON.stringify(value.signer.spec));
       const signer: string = spec.address;
       const keys = value.signer.relations
-        .filter(r => r.type === 'apiConsumedBy' && parseEntityRef(r.targetRef).kind === 'resource')
+        .filter(r => r.type === RELATION_API_CONSUMED_BY && parseEntityRef(r.targetRef).kind === 'resource')
         .map(relation => {
           const key = this.entities.find(e => stringifyEntityRef(e) === relation.targetRef);
           return key;
@@ -180,13 +191,29 @@ export class MultisigsCollector {
         return [];
       }
       return value.relations
-        .filter(r => r.type === 'apiConsumedBy' && parseEntityRef(r.targetRef).kind === 'resource')
+        .filter(r => r.type === RELATION_API_CONSUMED_BY && parseEntityRef(r.targetRef).kind === 'resource')
         .map(relation => {
           const key = this.entities.find(e => stringifyEntityRef(e) === relation.targetRef);
           return key;
         });
     });
     return keys.filter<Entity>(this.isEntity);
+  }
+
+  getAllAccessKeys(): Entity[] {
+    return this.accessKeys;
+  }
+
+  getDeprecatedAccessKeys(): Entity[] {
+    const keys = this.getAllAccessKeys();
+    const deprecated = keys.filter(entity => entity.metadata.tags?.includes('deprecated'));
+    return deprecated;
+  }
+
+  getUnknownAccessKeys(): Entity[] {
+    const keys = this.getAllAccessKeys();
+    const unknown = keys.filter(entity => entity.metadata.tags?.includes('unknown'));
+    return unknown;
   }
 
   private isQualifiedEntity(entity: Entity) {

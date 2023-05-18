@@ -29,9 +29,11 @@ class MultisigsCollector {
         this.entities = [];
         this.multisigs = [];
         this.contracts = [];
+        this.accessKeys = [];
         this.entities = entities;
         this.multisigs = this.entities.filter(item => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.isApiEntity)(item) && item.spec.type === 'multisig-deployment');
         this.contracts = this.entities.filter(item => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.isApiEntity)(item) && item.spec.type === 'contract-deployment');
+        this.accessKeys = this.entities.filter(item => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.isResourceEntity)(item) && item.spec.type === 'access-key');
         this.systemComponents = this.collectSystems();
     }
     normalizeEntities(list) {
@@ -102,14 +104,14 @@ class MultisigsCollector {
         }, {});
         return Object.values(uniqueSigners);
     }
-    getAccessKeys() {
+    getMultisigAccessKeys() {
         const signers = this.getSigners().filter(value => { var _a; return ((_a = value.signer.spec) === null || _a === void 0 ? void 0 : _a.network) === 'near'; });
         const keys = signers.flatMap(value => {
             if (!value.signer.relations) {
                 return [];
             }
             return value.signer.relations
-                .filter(r => r.type === 'apiConsumedBy' && (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.parseEntityRef)(r.targetRef).kind === 'resource')
+                .filter(r => r.type === _backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.RELATION_API_CONSUMED_BY && (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.parseEntityRef)(r.targetRef).kind === 'resource')
                 .map(relation => {
                 const key = this.entities.find(e => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.stringifyEntityRef)(e) === relation.targetRef);
                 return key;
@@ -126,7 +128,7 @@ class MultisigsCollector {
             const spec = JSON.parse(JSON.stringify(value.signer.spec));
             const signer = spec.address;
             const keys = value.signer.relations
-                .filter(r => r.type === 'apiConsumedBy' && (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.parseEntityRef)(r.targetRef).kind === 'resource')
+                .filter(r => r.type === _backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.RELATION_API_CONSUMED_BY && (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.parseEntityRef)(r.targetRef).kind === 'resource')
                 .map(relation => {
                 const key = this.entities.find(e => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.stringifyEntityRef)(e) === relation.targetRef);
                 return key;
@@ -146,13 +148,26 @@ class MultisigsCollector {
                 return [];
             }
             return value.relations
-                .filter(r => r.type === 'apiConsumedBy' && (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.parseEntityRef)(r.targetRef).kind === 'resource')
+                .filter(r => r.type === _backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.RELATION_API_CONSUMED_BY && (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.parseEntityRef)(r.targetRef).kind === 'resource')
                 .map(relation => {
                 const key = this.entities.find(e => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.stringifyEntityRef)(e) === relation.targetRef);
                 return key;
             });
         });
         return keys.filter(this.isEntity);
+    }
+    getAllAccessKeys() {
+        return this.accessKeys;
+    }
+    getDeprecatedAccessKeys() {
+        const keys = this.getAllAccessKeys();
+        const deprecated = keys.filter(entity => { var _a; return (_a = entity.metadata.tags) === null || _a === void 0 ? void 0 : _a.includes('deprecated'); });
+        return deprecated;
+    }
+    getUnknownAccessKeys() {
+        const keys = this.getAllAccessKeys();
+        const unknown = keys.filter(entity => { var _a; return (_a = entity.metadata.tags) === null || _a === void 0 ? void 0 : _a.includes('unknown'); });
+        return unknown;
     }
     isQualifiedEntity(entity) {
         var _a, _b;

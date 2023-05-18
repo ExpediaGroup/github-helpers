@@ -44,12 +44,18 @@ export const backstageMultisigMetrics = async ({ backstage_url }: MultisigMetric
     const keySeries = generateAccessKeyMetrics(multisigsCollector, backstage_url);
     const keyCountByOwnerSeries = generateUserAccessKeyMetrics(multisigsCollector, backstage_url);
     const keyCountByContractSeries = generateContractAccessKeyMetrics(multisigsCollector, backstage_url);
+    const deprecatedKeysSeries = generateDeprecatedAccessKeyMetrics(multisigsCollector, backstage_url);
+    const unknownAccessKeysSeries = generateUnknownAccessKeyMetrics(multisigsCollector, backstage_url);
+    const unknownSignerSeries = generateUnknownSignerMetrics(multisigsCollector, backstage_url);
     const data = await Promise.all([
       submitMetrics(multisigSeries),
       submitMetrics(signerSeries),
       submitMetrics(keySeries),
       submitMetrics(keyCountByOwnerSeries),
-      submitMetrics(keyCountByContractSeries)
+      submitMetrics(keyCountByContractSeries),
+      submitMetrics(deprecatedKeysSeries),
+      submitMetrics(unknownAccessKeysSeries),
+      submitMetrics(unknownSignerSeries)
     ]);
 
     core.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
@@ -153,8 +159,50 @@ function generateSignerMetrics(collector: MultisigsCollector, backstageUrl: stri
   return series;
 }
 
+function generateUnknownSignerMetrics(collector: MultisigsCollector, backstageUrl: string) {
+  const unknownSigners = collector
+    .getSigners()
+    .filter(entry => entry.signer.metadata.tags?.includes('stub') || entry.signer.metadata.namespace === 'stub');
+  const series = unknownSigners.map<v2.MetricSeries>(signer => {
+    // entities are typically emitted as API kind,
+    // tracking for inconsistencies
+    const { kind, metadata } = signer.signer;
+    const { name, namespace } = metadata;
+    // inferred type is JsonObject, this converts to any
+    const spec = JSON.parse(JSON.stringify(signer.signer.spec));
+    const { address, network, networkType, owner: rawOwner } = spec;
+    const owner = rawOwner.split(':')[1].split('/')[1];
+    // this tags timeseries with distinguishing
+    // properties for filtering purposes
+    const resources = [
+      {
+        type: 'host',
+        name: backstageUrl.split('@')[1]
+      },
+      { type: 'kind', name: kind },
+      { type: 'name', name },
+      { type: 'namespace', name: namespace },
+      { type: 'address', name: address },
+      { type: 'network', name: network },
+      { type: 'networkType', name: networkType },
+      { type: 'owner', name: owner }
+    ];
+    // datadog requires point value to be scalar, 0 means unknown ownership
+    const value = 1;
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    const points = [{ timestamp, value }];
+    return {
+      metric: 'backstage.signers.unknown',
+      type: DATADOG_GAUGE_TYPE,
+      points,
+      resources
+    };
+  });
+  return series;
+}
+
 function generateAccessKeyMetrics(collector: MultisigsCollector, backstageUrl: string) {
-  const series = collector.getAccessKeys().map<v2.MetricSeries>(key => {
+  const series = collector.getMultisigAccessKeys().map<v2.MetricSeries>(key => {
     // entities are typically emitted as Resource kind,
     // tracking for inconsistencies
     const { kind, metadata } = key;
@@ -190,25 +238,95 @@ function generateAccessKeyMetrics(collector: MultisigsCollector, backstageUrl: s
   return series;
 }
 
-function generateUserAccessKeyMetrics(collector: MultisigsCollector, backstageUrl: string) {
-  const accessKeysPerOwner = Object.entries(collector.getAccessKeysPerSigner()).reduce<KeysByOwner>((acc, [signer, value]) => {
+function generateDeprecatedAccessKeyMetrics(collector: MultisigsCollector, backstageUrl: string) {
+  const series = collector.getDeprecatedAccessKeys().map<v2.MetricSeries>(key => {
+    // entities are typically emitted as Resource kind,
+    // tracking for inconsistencies
+    const { kind, metadata } = key;
+    const { name, namespace } = metadata;
     // inferred type is JsonObject, this converts to any
-    // const spec = JSON.parse(JSON.stringify(key.spec));
-    return {
-      ...acc,
-      [signer]: value.keys
-    };
-  }, {});
-  core.debug(accessKeysPerOwner.toString());
-  const series = Object.entries(accessKeysPerOwner).map<v2.MetricSeries>(([owner, keys]) => {
+    const spec = JSON.parse(JSON.stringify(key.spec));
+    const { owner: rawOwner } = spec;
+    const [ownerKind, ownerRef] = rawOwner.split(':');
+    const ownerName = ownerRef.split('/')[1];
+    // this tags timeseries with distinguishing
+    // properties for filtering purposes
     const resources = [
       {
         type: 'host',
         name: backstageUrl.split('@')[1]
       },
-      { type: 'owner', name: owner }
+      { type: 'kind', name: kind },
+      { type: 'name', name },
+      { type: 'namespace', name: namespace },
+      { type: 'owner', name: ownerName },
+      { type: 'ownerKind', name: ownerKind }
     ];
-    const value = keys.length;
+    const value = ownerKind !== 'user' ? 0 : 1;
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    const points = [{ timestamp, value }];
+    return {
+      metric: 'backstage.access_keys.deprecated',
+      type: DATADOG_GAUGE_TYPE,
+      points,
+      resources
+    };
+  });
+  return series;
+}
+
+function generateUnknownAccessKeyMetrics(collector: MultisigsCollector, backstageUrl: string) {
+  const series = collector.getUnknownAccessKeys().map<v2.MetricSeries>(key => {
+    // entities are typically emitted as Resource kind,
+    // tracking for inconsistencies
+    const { kind, metadata } = key;
+    const { name, namespace } = metadata;
+    // inferred type is JsonObject, this converts to any
+    const spec = JSON.parse(JSON.stringify(key.spec));
+    const { owner: rawOwner } = spec;
+    const [ownerKind, ownerRef] = rawOwner.split(':');
+    const ownerName = ownerRef.split('/')[1];
+    // this tags timeseries with distinguishing
+    // properties for filtering purposes
+    const resources = [
+      {
+        type: 'host',
+        name: backstageUrl.split('@')[1]
+      },
+      { type: 'kind', name: kind },
+      { type: 'name', name },
+      { type: 'namespace', name: namespace },
+      { type: 'owner', name: ownerName },
+      { type: 'ownerKind', name: ownerKind }
+    ];
+    const value = 1;
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    const points = [{ timestamp, value }];
+    return {
+      metric: 'backstage.access_keys.unknown',
+      type: DATADOG_GAUGE_TYPE,
+      points,
+      resources
+    };
+  });
+  return series;
+}
+
+function generateUserAccessKeyMetrics(collector: MultisigsCollector, backstageUrl: string) {
+  const series = Object.entries(collector.getAccessKeysPerSigner()).map<v2.MetricSeries>(([signer, entry]) => {
+    const spec = JSON.parse(JSON.stringify(entry.signer.spec));
+    const { owner } = spec;
+    const ownerName = `${owner}/${signer}`;
+    const resources = [
+      {
+        type: 'host',
+        name: backstageUrl.split('@')[1]
+      },
+      { type: 'owner', name: ownerName },
+      { type: 'user', name: owner },
+      { type: 'signer', name: signer }
+    ];
+    const value = entry.keys.length;
     const timestamp = Math.round(new Date().getTime() / 1000);
     const points = [{ timestamp, value }];
     return {
