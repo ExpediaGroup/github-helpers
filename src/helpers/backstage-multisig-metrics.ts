@@ -47,6 +47,8 @@ export const backstageMultisigMetrics = async ({ backstage_url }: MultisigMetric
     const deprecatedKeysSeries = generateDeprecatedAccessKeyMetrics(multisigsCollector, backstage_url);
     const unknownAccessKeysSeries = generateUnknownAccessKeyMetrics(multisigsCollector, backstage_url);
     const unknownSignerSeries = generateUnknownSignerMetrics(multisigsCollector, backstage_url);
+    const unknownAddressSeries = generateUnknownAddressMetrics(multisigsCollector, backstage_url);
+    // const unverifiedContractSeries = generateUnverifiedContractsMetrics(multisigsCollector, backstage_url);
     const data = await Promise.all([
       submitMetrics(multisigSeries),
       submitMetrics(signerSeries),
@@ -55,7 +57,9 @@ export const backstageMultisigMetrics = async ({ backstage_url }: MultisigMetric
       submitMetrics(keyCountByContractSeries),
       submitMetrics(deprecatedKeysSeries),
       submitMetrics(unknownAccessKeysSeries),
-      submitMetrics(unknownSignerSeries)
+      submitMetrics(unknownSignerSeries),
+      submitMetrics(unknownAddressSeries)
+      // submitMetrics(unverifiedContractSeries)
     ]);
 
     core.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
@@ -193,6 +197,89 @@ function generateUnknownSignerMetrics(collector: MultisigsCollector, backstageUr
     const points = [{ timestamp, value }];
     return {
       metric: 'backstage.signers.unknown',
+      type: DATADOG_GAUGE_TYPE,
+      points,
+      resources
+    };
+  });
+  return series;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function generateUnverifiedContractsMetrics(collector: MultisigsCollector, backstageUrl: string) {
+  const unverifiedContracts = collector.getAllApis().filter(entity => entity.metadata.tags?.includes('unverified'));
+  const series = unverifiedContracts.map<v2.MetricSeries>(entity => {
+    // entities are typically emitted as API kind,
+    // tracking for inconsistencies
+    const { kind, metadata } = entity;
+    const { name, namespace } = metadata;
+    // inferred type is JsonObject, this converts to any
+    const spec = JSON.parse(JSON.stringify(entity.spec));
+    const { address, network, networkType, owner: rawOwner } = spec;
+    const owner = rawOwner.split(':')[1].split('/')[1];
+    // this tags timeseries with distinguishing
+    // properties for filtering purposes
+    const resources = [
+      {
+        type: 'host',
+        name: backstageUrl.split('@')[1]
+      },
+      { type: 'kind', name: kind },
+      { type: 'name', name },
+      { type: 'namespace', name: namespace },
+      { type: 'address', name: address },
+      { type: 'network', name: network },
+      { type: 'networkType', name: networkType },
+      { type: 'owner', name: owner }
+    ];
+    // datadog requires point value to be scalar, 0 means unknown ownership
+    const value = 1;
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    const points = [{ timestamp, value }];
+    return {
+      metric: 'backstage.reports.unverified=contracts',
+      type: DATADOG_GAUGE_TYPE,
+      points,
+      resources
+    };
+  });
+  return series;
+}
+
+function generateUnknownAddressMetrics(collector: MultisigsCollector, backstageUrl: string) {
+  const unknownSigners = collector
+    .getSigners()
+    .filter(entry => entry.signer.metadata.tags?.includes('stub') || entry.signer.metadata.tags?.includes('contract-state'));
+  const series = unknownSigners.map<v2.MetricSeries>(signer => {
+    // entities are typically emitted as API kind,
+    // tracking for inconsistencies
+    const { kind, metadata } = signer.signer;
+    const { name, namespace } = metadata;
+    // inferred type is JsonObject, this converts to any
+    const spec = JSON.parse(JSON.stringify(signer.signer.spec));
+    const { address, network, networkType, owner: rawOwner } = spec;
+    const owner = rawOwner.split(':')[1].split('/')[1];
+    // this tags timeseries with distinguishing
+    // properties for filtering purposes
+    const resources = [
+      {
+        type: 'host',
+        name: backstageUrl.split('@')[1]
+      },
+      { type: 'kind', name: kind },
+      { type: 'name', name },
+      { type: 'namespace', name: namespace },
+      { type: 'address', name: address },
+      { type: 'network', name: network },
+      { type: 'networkType', name: networkType },
+      { type: 'owner', name: owner }
+    ];
+    // datadog requires point value to be scalar, 0 means unknown ownership
+    const value = 1;
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    const points = [{ timestamp, value }];
+    return {
+      metric: 'backstage.reports.unknown-addresses',
       type: DATADOG_GAUGE_TYPE,
       points,
       resources
