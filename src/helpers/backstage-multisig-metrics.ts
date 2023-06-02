@@ -247,16 +247,16 @@ function generateUnverifiedContractsMetrics(collector: MultisigsCollector, backs
 }
 
 function generateUnknownAddressMetrics(collector: MultisigsCollector, backstageUrl: string) {
-  const unknownSigners = collector
-    .getSigners()
-    .filter(entry => entry.signer.metadata.tags?.includes('stub') || entry.signer.metadata.tags?.includes('contract-state'));
-  const series = unknownSigners.map<v2.MetricSeries>(signer => {
+  const stubAndStateEntities = collector
+    .getAllResources()
+    .filter(entry => entry.metadata.tags?.includes('stub') && entry.metadata.tags?.includes('contract-state'));
+  const series = stubAndStateEntities.map<v2.MetricSeries>(entity => {
     // entities are typically emitted as API kind,
     // tracking for inconsistencies
-    const { kind, metadata } = signer.signer;
+    const { kind, metadata } = entity;
     const { name, namespace } = metadata;
     // inferred type is JsonObject, this converts to any
-    const spec = JSON.parse(JSON.stringify(signer.signer.spec));
+    const spec = JSON.parse(JSON.stringify(entity.spec));
     const { address, network, networkType, owner: rawOwner } = spec;
     const owner = rawOwner.split(':')[1].split('/')[1];
     // this tags timeseries with distinguishing

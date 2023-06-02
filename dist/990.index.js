@@ -441,16 +441,16 @@ function generateUnverifiedContractsMetrics(collector, backstageUrl) {
     return series;
 }
 function generateUnknownAddressMetrics(collector, backstageUrl) {
-    const unknownSigners = collector
-        .getSigners()
-        .filter(entry => { var _a, _b; return ((_a = entry.signer.metadata.tags) === null || _a === void 0 ? void 0 : _a.includes('stub')) || ((_b = entry.signer.metadata.tags) === null || _b === void 0 ? void 0 : _b.includes('contract-state')); });
-    const series = unknownSigners.map(signer => {
+    const stubAndStateEntities = collector
+        .getAllResources()
+        .filter(entry => { var _a, _b; return ((_a = entry.metadata.tags) === null || _a === void 0 ? void 0 : _a.includes('stub')) && ((_b = entry.metadata.tags) === null || _b === void 0 ? void 0 : _b.includes('contract-state')); });
+    const series = stubAndStateEntities.map(entity => {
         // entities are typically emitted as API kind,
         // tracking for inconsistencies
-        const { kind, metadata } = signer.signer;
+        const { kind, metadata } = entity;
         const { name, namespace } = metadata;
         // inferred type is JsonObject, this converts to any
-        const spec = JSON.parse(JSON.stringify(signer.signer.spec));
+        const spec = JSON.parse(JSON.stringify(entity.spec));
         const { address, network, networkType, owner: rawOwner } = spec;
         const owner = rawOwner.split(':')[1].split('/')[1];
         // this tags timeseries with distinguishing
