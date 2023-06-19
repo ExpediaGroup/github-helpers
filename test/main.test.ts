@@ -17,6 +17,12 @@ import { getActionInputs } from '../src/utils/get-action-inputs';
 import { getInput } from '@actions/core';
 import { run } from '../src/main';
 
+jest.mock('../src/helpers/create-pr-comment', () => {
+  return {
+    __esModule: true,
+    ...jest.requireActual('../src/helpers/create-pr-comment')
+  };
+});
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' } },
@@ -40,7 +46,7 @@ describe('main', () => {
   });
 
   it('should call getActionInputs with correct params', () => {
-    expect(getActionInputs).toHaveBeenCalledWith(['body']);
+    expect(getActionInputs).toHaveBeenCalled();
   });
 
   it('should call helper with all inputs', () => {

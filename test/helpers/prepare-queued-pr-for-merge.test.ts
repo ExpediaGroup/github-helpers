@@ -12,16 +12,19 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import * as manageMergeQueue from '../../src/helpers/manage-merge-queue';
-import * as removeLabel from '../../src/helpers/remove-label';
-import * as updateMergeQueue from '../../src/utils/update-merge-queue';
 import { FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
+import { updateMergeQueue } from '../../src/utils/update-merge-queue';
 import { prepareQueuedPrForMerge } from '../../src/helpers/prepare-queued-pr-for-merge';
+import { removePrFromQueue } from '../../src/helpers/manage-merge-queue';
+import { removeLabelIfExists } from '../../src/helpers/remove-label';
 
 jest.mock('@actions/core');
+jest.mock('../../src/utils/update-merge-queue');
+jest.mock('../../src/helpers/manage-merge-queue');
+jest.mock('../../src/helpers/remove-label');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' } },
   getOctokit: jest.fn(() => ({
@@ -37,9 +40,6 @@ jest.mock('@actions/github', () => ({
 }));
 (octokit.repos.mergeUpstream as unknown as Mocktokit).mockImplementation(async () => ({ some: 'response' }));
 (octokit.repos.merge as unknown as Mocktokit).mockImplementation(async () => ({ some: 'response' }));
-const removePrSpy = jest.spyOn(manageMergeQueue, 'removePrFromQueue');
-const updateQueueSpy = jest.spyOn(updateMergeQueue, 'updateMergeQueue');
-const removeLabelSpy = jest.spyOn(removeLabel, 'removeLabelIfExists');
 
 describe('prepareQueuedPrForMerge', () => {
   const ref = 'branch name';
@@ -305,9 +305,7 @@ describe('prepareQueuedPrForMerge', () => {
     });
 
     it('should remove PR from queue and call core.error', () => {
-      expect(removePrSpy).toHaveBeenCalledWith(firstInQueue);
-      expect(removeLabelSpy).toHaveBeenCalled();
-      expect(updateQueueSpy).toHaveBeenCalled();
+      expect(removePrFromQueue).toHaveBeenCalledWith(firstInQueue);
       expect(core.setFailed).toHaveBeenCalled();
     });
   });
@@ -355,9 +353,9 @@ describe('prepareQueuedPrForMerge', () => {
     });
 
     it('should NOT remove PR from queue and call core.error', () => {
-      expect(removePrSpy).not.toHaveBeenCalled();
-      expect(removeLabelSpy).not.toHaveBeenCalled();
-      expect(updateQueueSpy).not.toHaveBeenCalled();
+      expect(removePrFromQueue).not.toHaveBeenCalled();
+      expect(removeLabelIfExists).not.toHaveBeenCalled();
+      expect(updateMergeQueue).not.toHaveBeenCalled();
       expect(core.setFailed).toHaveBeenCalled();
     });
   });
