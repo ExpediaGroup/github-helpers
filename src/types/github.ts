@@ -11,18 +11,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { components, operations } from '@octokit/openapi-types/types';
-import { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types';
+import { RestEndpointMethodTypes } from '@octokit/rest';
 
-export type PipelineState = operations['repos/create-commit-status']['requestBody']['content']['application/json']['state'];
-export type DeploymentStatus = operations['repos/create-deployment-status']['requestBody']['content']['application/json'];
-export type DeploymentState = DeploymentStatus['state'];
-export type PullRequest = components['schemas']['pull-request'];
-export type SimplePullRequest = components['schemas']['pull-request-simple'];
+export type PipelineState = RestEndpointMethodTypes['repos']['createCommitStatus']['parameters']['state'];
+export type DeploymentState = RestEndpointMethodTypes['repos']['createDeploymentStatus']['parameters']['state'];
+export type PullRequest = RestEndpointMethodTypes['pulls']['get']['response']['data'];
 export type PullRequestList = RestEndpointMethodTypes['pulls']['list']['response']['data'];
+export type SinglePullRequest = PullRequestList[number];
 export type PullRequestBranchesList = RestEndpointMethodTypes['repos']['listBranches']['response']['data'];
 export type ChangedFilesList = RestEndpointMethodTypes['pulls']['listFiles']['response']['data'];
-export type CreateDeploymentResponse = components['schemas']['deployment'];
 export type ProjectListResponse = RestEndpointMethodTypes['projects']['listForRepo']['response'];
 export type ColumnListResponse = RestEndpointMethodTypes['projects']['listColumns']['response'];
 
