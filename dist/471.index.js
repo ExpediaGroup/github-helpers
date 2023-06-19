@@ -82,7 +82,7 @@ const paginateAllUnprotectedBranches = (page = 1) => __awaiter(void 0, void 0, v
     if (!response.data.length) {
         return [];
     }
-    return response.data.concat(yield paginateAllUnprotectedBranches(page + 1));
+    return [...response.data, ...(yield paginateAllUnprotectedBranches(page + 1))];
 });
 
 

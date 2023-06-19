@@ -13,7 +13,7 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import { FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../constants';
-import { GithubError, PullRequest, PullRequestList, SimplePullRequest } from '../types/github';
+import { GithubError, PullRequest, PullRequestList, SinglePullRequest } from '../types/github';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import { removePrFromQueue } from './manage-merge-queue';
@@ -26,7 +26,7 @@ export const prepareQueuedPrForMerge = async () => {
   });
   const pullRequest = findNextPrToMerge(data);
   if (pullRequest) {
-    return updatePrWithMainline(pullRequest);
+    return updatePrWithMainline(pullRequest as PullRequest);
   }
 };
 
@@ -34,10 +34,10 @@ const findNextPrToMerge = (pullRequests: PullRequestList) =>
   pullRequests.find(pr => hasRequiredLabels(pr, [READY_FOR_MERGE_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL])) ??
   pullRequests.find(pr => hasRequiredLabels(pr, [READY_FOR_MERGE_PR_LABEL, FIRST_QUEUED_PR_LABEL]));
 
-const hasRequiredLabels = (pr: SimplePullRequest, requiredLabels: string[]) =>
+const hasRequiredLabels = (pr: SinglePullRequest, requiredLabels: string[]) =>
   requiredLabels.every(mergeQueueLabel => pr.labels.some(label => label.name === mergeQueueLabel));
 
-export const updatePrWithMainline = async (pullRequest: PullRequest | SimplePullRequest) => {
+export const updatePrWithMainline = async (pullRequest: PullRequest) => {
   if (pullRequest.head.user?.login && pullRequest.base.user?.login && pullRequest.head.user?.login !== pullRequest.base.user?.login) {
     try {
       // update fork default branch with upstream
@@ -60,7 +60,7 @@ export const updatePrWithMainline = async (pullRequest: PullRequest | SimplePull
   } catch (error) {
     const noEvictUponConflict = core.getBooleanInput('no_evict_upon_conflict');
     if ((error as GithubError).status === 409) {
-      if (!noEvictUponConflict) await removePrFromQueue(pullRequest as PullRequest);
+      if (!noEvictUponConflict) await removePrFromQueue(pullRequest);
       core.setFailed('The first PR in the queue has a merge conflict.');
     } else core.setFailed((error as GithubError).message);
   }

@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { CreateDeploymentResponse, DeploymentState } from '../types/github';
+import { DeploymentState } from '../types/github';
 import { GITHUB_OPTIONS } from '../constants';
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
@@ -42,16 +42,18 @@ export const initiateDeployment = async ({
     ...context.repo,
     ...GITHUB_OPTIONS
   });
-  const deployment_id = (data as CreateDeploymentResponse).id;
-  await octokit.repos.createDeploymentStatus({
-    state,
-    deployment_id,
-    description,
-    environment_url,
-    target_url,
-    ...context.repo,
-    ...GITHUB_OPTIONS
-  });
+  const deployment_id = 'ref' in data ? data.id : undefined;
+  if (deployment_id) {
+    await octokit.repos.createDeploymentStatus({
+      state,
+      deployment_id,
+      description,
+      environment_url,
+      target_url,
+      ...context.repo,
+      ...GITHUB_OPTIONS
+    });
+  }
 
   return deployment_id;
 };

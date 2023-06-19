@@ -17,7 +17,7 @@ import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import { map } from 'bluebird';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
-import { SimplePullRequest } from '../types/github';
+import { SinglePullRequest } from '../types/github';
 
 export class AddLateReviewLabel extends HelperInputs {
   days?: string;
@@ -39,7 +39,7 @@ export const addLateReviewLabel = async ({ days = '1' }: AddLateReviewLabel) => 
   });
 };
 
-const isLabelNeeded = ({ requested_reviewers, requested_teams, updated_at }: SimplePullRequest, days: number) => {
+const isLabelNeeded = ({ requested_reviewers, requested_teams, updated_at }: SinglePullRequest, days: number) => {
   const last_updated = new Date(updated_at);
   const now = new Date();
   const timeSinceLastUpdated = now.getTime() - last_updated.getTime();

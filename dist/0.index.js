@@ -118,7 +118,7 @@ class SetLatestPipelineStatus extends _types_generated__WEBPACK_IMPORTED_MODULE_
     }
 }
 const setLatestPipelineStatus = ({ sha, context = _constants__WEBPACK_IMPORTED_MODULE_1__/* .DEFAULT_PIPELINE_STATUS */ .$9, environment = _constants__WEBPACK_IMPORTED_MODULE_1__/* .PRODUCTION_ENVIRONMENT */ .Hc }) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b;
     const { data: deployments } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listDeployments */ .K.repos.listDeployments(Object.assign(Object.assign({ environment }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_1__/* .GITHUB_OPTIONS */ .Cc));
     const deployment_id = (_a = deployments.find(Boolean)) === null || _a === void 0 ? void 0 : _a.id;
     if (!deployment_id) {
@@ -126,10 +126,14 @@ const setLatestPipelineStatus = ({ sha, context = _constants__WEBPACK_IMPORTED_M
         return;
     }
     const { data: deploymentStatuses } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listDeploymentStatuses */ .K.repos.listDeploymentStatuses(Object.assign(Object.assign({ deployment_id }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_1__/* .GITHUB_OPTIONS */ .Cc));
-    const deploymentStatus = (_b = deploymentStatuses.find(Boolean)) !== null && _b !== void 0 ? _b : {};
+    const deploymentStatus = deploymentStatuses.find(Boolean);
+    if (!deploymentStatus) {
+        return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
+            context, state: 'pending' }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
+    }
     const { state, description, target_url } = deploymentStatus;
     return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
-        context, state: (_c = deploymentStateToPipelineStateMap[state]) !== null && _c !== void 0 ? _c : 'pending', description,
+        context, state: (_b = deploymentStateToPipelineStateMap[state]) !== null && _b !== void 0 ? _b : 'pending', description,
         target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
 });
 const deploymentStateToPipelineStateMap = {

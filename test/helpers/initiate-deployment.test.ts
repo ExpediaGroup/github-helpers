@@ -33,7 +33,8 @@ jest.mock('@actions/github', () => ({
 const deployment_id = 123;
 (octokit.repos.createDeployment as unknown as Mocktokit).mockImplementation(async () => ({
   data: {
-    id: deployment_id
+    id: deployment_id,
+    ref: 'some-ref'
   }
 }));
 

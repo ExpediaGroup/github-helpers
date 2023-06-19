@@ -117,12 +117,14 @@ class InitiateDeployment extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/*
 }
 const initiateDeployment = ({ sha, state = 'in_progress', environment, environment_url, description, target_url }) => __awaiter(void 0, void 0, void 0, function* () {
     const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createDeployment */ .K.repos.createDeployment(Object.assign(Object.assign({ ref: sha, environment, auto_merge: false, required_contexts: [] }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
-    const deployment_id = data.id;
-    yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createDeploymentStatus */ .K.repos.createDeploymentStatus(Object.assign(Object.assign({ state,
-        deployment_id,
-        description,
-        environment_url,
-        target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
+    const deployment_id = 'ref' in data ? data.id : undefined;
+    if (deployment_id) {
+        yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createDeploymentStatus */ .K.repos.createDeploymentStatus(Object.assign(Object.assign({ state,
+            deployment_id,
+            description,
+            environment_url,
+            target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
+    }
     return deployment_id;
 });
 

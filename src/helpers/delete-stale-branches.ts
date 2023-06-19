@@ -76,5 +76,5 @@ const paginateAllUnprotectedBranches = async (page = 1): Promise<PullRequestBran
   if (!response.data.length) {
     return [];
   }
-  return response.data.concat(await paginateAllUnprotectedBranches(page + 1));
+  return [...response.data, ...(await paginateAllUnprotectedBranches(page + 1))];
 };
