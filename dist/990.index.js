@@ -235,6 +235,7 @@ _datadog_datadog_api_client__WEBPACK_IMPORTED_MODULE_1__.client.setServerVariabl
 });
 const apiInstance = new _datadog_datadog_api_client__WEBPACK_IMPORTED_MODULE_1__.v2.MetricsApi(configuration);
 const DATADOG_GAUGE_TYPE = 3;
+const SIGNER_POLICY_LIMIT_MS = 180 * 86400 * 1000; // amount of days * seconds in day * milliseconds in second
 const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0, void 0, function* () {
     if (!backstage_url)
         return;
@@ -250,6 +251,7 @@ const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0
         const unknownAccessKeysSeries = generateUnknownAccessKeyMetrics(multisigsCollector, backstage_url);
         const unknownSignerSeries = generateUnknownSignerMetrics(multisigsCollector, backstage_url);
         const unknownAddressSeries = generateUnknownAddressMetrics(multisigsCollector, backstage_url);
+        const inactiveSignerSeries = generateInactiveSignerMetrics(multisigsCollector, backstage_url);
         // const unverifiedContractSeries = generateUnverifiedContractsMetrics(multisigsCollector, backstage_url);
         const data = yield Promise.all([
             submitMetrics(multisigSeries),
@@ -260,7 +262,8 @@ const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0
             submitMetrics(deprecatedKeysSeries),
             submitMetrics(unknownAccessKeysSeries),
             submitMetrics(unknownSignerSeries),
-            submitMetrics(unknownAddressSeries)
+            submitMetrics(unknownAddressSeries),
+            submitMetrics(inactiveSignerSeries)
             // submitMetrics(unverifiedContractSeries)
         ]);
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
@@ -635,6 +638,47 @@ function generateContractAccessKeyMetrics(collector, backstageUrl) {
         const points = [{ timestamp, value }];
         return {
             metric: 'backstage.access_keys_by_contract_count',
+            type: DATADOG_GAUGE_TYPE,
+            points,
+            resources
+        };
+    });
+    return series;
+}
+function generateInactiveSignerMetrics(collector, backstageUrl) {
+    const series = collector
+        .getSigners()
+        .filter(entry => { var _a; return ((_a = entry.signer.spec) === null || _a === void 0 ? void 0 : _a.network) === 'near'; })
+        .map(entity => {
+        // entities are typically emitted as API kind,
+        // tracking for inconsistencies
+        const { kind, metadata } = entity.signer;
+        const { name, namespace } = metadata;
+        // inferred type is JsonObject, this converts to any
+        const spec = JSON.parse(JSON.stringify(entity.signer.spec));
+        const { address, network, networkType, owner: rawOwner } = spec;
+        const owner = rawOwner.split(':')[1].split('/')[1];
+        // this tags timeseries with distinguishing
+        // properties for filtering purposes
+        const resources = [
+            {
+                type: 'host',
+                name: backstageUrl.split('@')[1]
+            },
+            { type: 'kind', name: kind },
+            { type: 'name', name },
+            { type: 'namespace', name: namespace },
+            { type: 'address', name: address },
+            { type: 'network', name: network },
+            { type: 'networkType', name: networkType },
+            { type: 'owner', name: owner }
+        ];
+        const now = new Date().getTime();
+        const isPastThreshold = now - Number(spec.lastSigned) > SIGNER_POLICY_LIMIT_MS;
+        const value = isPastThreshold ? 1 : 0;
+        const points = [{ timestamp: now, value }];
+        return {
+            metric: 'backstage.signers.inactive',
             type: DATADOG_GAUGE_TYPE,
             points,
             resources
