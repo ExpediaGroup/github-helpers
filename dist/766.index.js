@@ -398,7 +398,7 @@ var import_endpoint = __webpack_require__(9440);
 var import_universal_user_agent = __webpack_require__(5030);
 
 // pkg/dist-src/version.js
-var VERSION = "7.0.0";
+var VERSION = "7.0.1";
 
 // pkg/dist-src/fetch-wrapper.js
 var import_is_plain_object = __webpack_require__(3287);
