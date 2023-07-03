@@ -18,7 +18,7 @@
     "lodash.union": "4.6.0",
     "lodash.uniq": "4.5.0",
     "micromatch": "4.0.5",
-    "typescript": "5.1.3"
+    "typescript": "5.1.6"
   },
   "devDependencies": {
     "@octokit/types": "10.0.0",
