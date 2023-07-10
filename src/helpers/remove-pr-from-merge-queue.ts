@@ -12,26 +12,34 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { FIRST_QUEUED_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../constants';
+import { FIRST_QUEUED_PR_LABEL, QUEUED_FOR_MERGE_PREFIX, READY_FOR_MERGE_PR_LABEL } from '../constants';
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import { removeLabelIfExists } from './remove-label';
+import { map } from 'bluebird';
 
 export class RemovePrFromMergeQueue extends HelperInputs {
   seconds = '';
 }
 
 export const removePrFromMergeQueue = async ({ seconds }: RemovePrFromMergeQueue) => {
-  const { data: prData } = await octokit.pulls.list({
+  const { data: pullRequests } = await octokit.pulls.list({
     state: 'open',
     per_page: 100,
     ...context.repo
   });
-  const firstQueuedPr = prData.find(pr => pr.labels.some(label => label.name === FIRST_QUEUED_PR_LABEL));
+  const firstQueuedPr = pullRequests.find(pr => pr.labels.some(label => label.name === FIRST_QUEUED_PR_LABEL));
   if (!firstQueuedPr) {
     core.info('No PR is first in the merge queue.');
-    return;
+
+    return map(pullRequests, pr => {
+      const queueLabel = pr.labels.find(label => label.name.startsWith(QUEUED_FOR_MERGE_PREFIX));
+      if (queueLabel?.name) {
+        core.info(`Cleaning up PR with queue label ${queueLabel.name}...`);
+        return Promise.all([removeLabelIfExists(READY_FOR_MERGE_PR_LABEL, pr.number), removeLabelIfExists(queueLabel.name, pr.number)]);
+      }
+    });
   }
 
   const {
@@ -44,7 +52,8 @@ export const removePrFromMergeQueue = async ({ seconds }: RemovePrFromMergeQueue
   });
   const failingStatus = data.find(status => status.state === 'failure');
   if (failingStatus && timestampIsStale(failingStatus.created_at, seconds)) {
-    return removeLabelIfExists(READY_FOR_MERGE_PR_LABEL, number);
+    core.info('Removing stale PR from first queued position...');
+    return Promise.all([removeLabelIfExists(READY_FOR_MERGE_PR_LABEL, number), removeLabelIfExists(FIRST_QUEUED_PR_LABEL, number)]);
   }
 };
 

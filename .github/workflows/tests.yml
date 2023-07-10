@@ -11,10 +11,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Validate package.json
         uses: ExpediaGroup/package-json-validator@v1
@@ -55,10 +51,5 @@ jobs:
           if [[ $(git status --porcelain) ]]; then
             echo "Detected uncommitted changes after build. Please run npm run package and commit the changes!"
             git status
-            git config user.name "${{ github.actor }}"
-            git config user.email "${{ github.actor }}@users.noreply.github.com"
-            git add dist/
-            git commit -m "chore: committing generated dist" --no-verify
-            git push
             exit 1
           fi
