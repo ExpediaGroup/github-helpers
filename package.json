@@ -21,7 +21,7 @@
     "typescript": "5.1.6"
   },
   "devDependencies": {
-    "@octokit/types": "10.0.0",
+    "@octokit/types": "11.0.0",
     "@swc/jest": "0.2.26",
     "@total-typescript/ts-reset": "0.4.2",
     "@types/axios": "0.14.0",
