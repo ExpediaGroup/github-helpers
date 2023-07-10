@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { FIRST_QUEUED_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
+import { FIRST_QUEUED_PR_LABEL, QUEUED_FOR_MERGE_PREFIX, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
@@ -91,6 +91,7 @@ describe('removePrFromMergeQueue', () => {
 
     it('should call removeLabelIfExists', () => {
       expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 12345);
+      expect(removeLabelIfExists).toHaveBeenCalledWith(FIRST_QUEUED_PR_LABEL, 12345);
     });
   });
 
@@ -136,7 +137,7 @@ describe('removePrFromMergeQueue', () => {
   });
 
   describe('should not remove pr case with no failure status', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       (octokit.repos.listCommitStatusesForRef as unknown as Mocktokit).mockImplementation(async () => ({
         data: [
           {
@@ -153,7 +154,7 @@ describe('removePrFromMergeQueue', () => {
           }
         ]
       }));
-      removePrFromMergeQueue({ seconds });
+      await removePrFromMergeQueue({ seconds });
     });
 
     it('should call pulls.list with correct params', () => {
@@ -173,6 +174,50 @@ describe('removePrFromMergeQueue', () => {
 
     it('should not call removeLabelIfExists', () => {
       expect(removeLabelIfExists).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('should remove stray PRs in the queue', () => {
+    beforeEach(async () => {
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+        data: [
+          {
+            head: { sha: 'wrong sha' },
+            number: 456,
+            labels: [{ name: 'test label' }]
+          },
+          {
+            number: 12345,
+            head: { sha: 'correct sha' },
+            labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: `${QUEUED_FOR_MERGE_PREFIX} #2` }]
+          },
+          {
+            number: 678,
+            head: { sha: 'correct sha' },
+            labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: `${QUEUED_FOR_MERGE_PREFIX} #3` }]
+          }
+        ]
+      }));
+      await removePrFromMergeQueue({ seconds });
+    });
+
+    it('should call pulls.list with correct params', () => {
+      expect(octokit.pulls.list).toHaveBeenCalledWith({
+        state: 'open',
+        per_page: 100,
+        ...context.repo
+      });
+    });
+
+    it('should call listCommitStatusesForRef with correct params', () => {
+      expect(octokit.repos.listCommitStatusesForRef).not.toHaveBeenCalled();
+    });
+
+    it('should call removeLabelIfExists', () => {
+      expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 12345);
+      expect(removeLabelIfExists).toHaveBeenCalledWith(`${QUEUED_FOR_MERGE_PREFIX} #2`, 12345);
+      expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 678);
+      expect(removeLabelIfExists).toHaveBeenCalledWith(`${QUEUED_FOR_MERGE_PREFIX} #3`, 678);
     });
   });
 });
