@@ -46,6 +46,7 @@ describe('approvalsSatisfied', () => {
       ]
     }));
     const result = await approvalsSatisfied({ teams: 'team1' });
+    expect(getCoreTeamsAndLogins).toHaveBeenCalledWith(123, ['team1']);
     expect(result).toBe(false);
   });
 
@@ -68,7 +69,7 @@ describe('approvalsSatisfied', () => {
         }
       ]
     }));
-    const result = await approvalsSatisfied({ teams: 'team1' });
+    const result = await approvalsSatisfied();
     expect(result).toBe(true);
   });
 
@@ -103,7 +104,7 @@ describe('approvalsSatisfied', () => {
         }
       ]
     }));
-    const result = await approvalsSatisfied({ teams: 'team1\nteam2' });
+    const result = await approvalsSatisfied();
     expect(result).toBe(false);
   });
 
@@ -142,7 +143,89 @@ describe('approvalsSatisfied', () => {
         }
       ]
     }));
-    const result = await approvalsSatisfied({ teams: 'team1\nteam2\nteam3' });
+    const result = await approvalsSatisfied();
+    expect(result).toBe(true);
+  });
+
+  it('should return false when not enough members from core teams have approved', async () => {
+    (getCoreTeamsAndLogins as jest.Mock).mockResolvedValue([
+      {
+        team: 'team1',
+        login: 'user1'
+      },
+      {
+        team: 'team1',
+        login: 'user2'
+      },
+      {
+        team: 'team2',
+        login: 'user3'
+      },
+      {
+        team: 'team2',
+        login: 'user4'
+      },
+      {
+        team: 'team3',
+        login: 'user5'
+      }
+    ]);
+    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user1' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user3' }
+        }
+      ]
+    }));
+    const result = await approvalsSatisfied({ number_of_reviewers: '2' });
+    expect(result).toBe(false);
+  });
+
+  it('should return true when enough members from core teams have approved', async () => {
+    (getCoreTeamsAndLogins as jest.Mock).mockResolvedValue([
+      {
+        team: 'team1',
+        login: 'user1'
+      },
+      {
+        team: 'team1',
+        login: 'user2'
+      },
+      {
+        team: 'team2',
+        login: 'user3'
+      },
+      {
+        team: 'team2',
+        login: 'user4'
+      }
+    ]);
+    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user1' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user2' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user3' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user4' }
+        }
+      ]
+    }));
+    const result = await approvalsSatisfied({ number_of_reviewers: '2' });
     expect(result).toBe(true);
   });
 });

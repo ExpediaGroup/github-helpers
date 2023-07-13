@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { CodeOwnersEntry, loadOwners, matchFile } from 'codeowners-utils';
+import { loadOwners, matchFile } from 'codeowners-utils';
 import { uniq, union } from 'lodash';
 import { context } from '@actions/github';
 import { getChangedFilepaths } from './get-changed-filepaths';
@@ -25,7 +25,7 @@ export const getCoreMemberLogins = async (pull_number: number, teams?: string[])
 };
 
 export const getCoreTeamsAndLogins = async (pull_number: number, teams?: string[]) => {
-  const codeOwners = teams ?? (await getCodeOwners(pull_number));
+  const codeOwners = teams ?? (await getRequiredCodeOwners(pull_number));
 
   if (!codeOwners?.length) {
     core.setFailed('No code owners found. Please provide a "teams" input or set up a CODEOWNERS file in your repo.');
@@ -44,12 +44,13 @@ export const getCoreTeamsAndLogins = async (pull_number: number, teams?: string[
   return union(...teamsAndLogins);
 };
 
-const getCodeOwners = async (pull_number: number) => {
+const getRequiredCodeOwners = async (pull_number: number) => {
   const codeOwners = (await loadOwners(process.cwd())) ?? [];
   const changedFilePaths = await getChangedFilepaths(pull_number);
-  const matchingCodeOwners = changedFilePaths.map(filePath => matchFile(filePath, codeOwners) ?? ({} as CodeOwnersEntry));
+  const matchingCodeOwners = changedFilePaths.map(filePath => matchFile(filePath, codeOwners));
   return uniq<string>(
     matchingCodeOwners
+      .filter(Boolean)
       .map(owner => owner.owners)
       .flat()
       .filter(Boolean)

@@ -39,6 +39,7 @@ export class HelperInputs {
   paths_no_filter?: string;
   slack_webhook_url?: string;
   number_of_assignees?: string;
+  number_of_reviewers?: string;
   globs?: string;
   override_filter_globs?: string;
   title?: string;
