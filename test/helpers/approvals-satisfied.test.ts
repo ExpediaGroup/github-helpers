@@ -179,6 +179,10 @@ describe('approvalsSatisfied', () => {
         {
           state: 'APPROVED',
           user: { login: 'user3' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user4' }
         }
       ]
     }));
@@ -203,6 +207,10 @@ describe('approvalsSatisfied', () => {
       {
         team: 'team2',
         login: 'user4'
+      },
+      {
+        team: 'team2',
+        login: 'user5'
       }
     ]);
     (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
