@@ -19,9 +19,10 @@ import { groupBy, uniq } from 'lodash';
 
 export class ApprovalsSatisfied extends HelperInputs {
   teams?: string;
+  number_of_reviewers?: string;
 }
 
-export const approvalsSatisfied = async ({ teams }: ApprovalsSatisfied = {}) => {
+export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1' }: ApprovalsSatisfied = {}) => {
   const { data: reviews } = await octokit.pulls.listReviews({ pull_number: context.issue.number, ...context.repo });
   const teamsAndLogins = await getCoreTeamsAndLogins(context.issue.number, teams?.split('\n'));
   const approverLogins = reviews
@@ -32,6 +33,7 @@ export const approvalsSatisfied = async ({ teams }: ApprovalsSatisfied = {}) => 
 
   return codeOwnerTeams.every(team => {
     const membersOfCodeOwnerTeam = groupBy(teamsAndLogins, 'team')[team];
-    return membersOfCodeOwnerTeam.some(({ login }) => approverLogins.includes(login));
+    const numberOfApprovalsForTeam = membersOfCodeOwnerTeam.filter(({ login }) => approverLogins.includes(login)).length;
+    return numberOfApprovalsForTeam >= Number(number_of_reviewers);
   });
 };

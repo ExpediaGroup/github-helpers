@@ -83,6 +83,9 @@ inputs:
   number_of_assignees:
     description: 'Number of people to assign a PR to'
     required: false
+  number_of_reviewers:
+    description: 'Number of reviewers of a PR'
+    required: false
   globs:
     description: 'A list of file paths (newline/comma separated) using glob syntax'
     required: false

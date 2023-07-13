@@ -46,7 +46,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 class ApprovalsSatisfied extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
 }
-const approvalsSatisfied = ({ teams } = {}) => __awaiter(void 0, void 0, void 0, function* () {
+const approvalsSatisfied = ({ teams, number_of_reviewers = '1' } = {}) => __awaiter(void 0, void 0, void 0, function* () {
     const { data: reviews } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listReviews */ .K.pulls.listReviews(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     const teamsAndLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreTeamsAndLogins */ .F)(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
     const approverLogins = reviews
@@ -56,7 +56,8 @@ const approvalsSatisfied = ({ teams } = {}) => __awaiter(void 0, void 0, void 0,
     const codeOwnerTeams = (0,lodash__WEBPACK_IMPORTED_MODULE_3__.uniq)(teamsAndLogins.map(({ team }) => team));
     return codeOwnerTeams.every(team => {
         const membersOfCodeOwnerTeam = (0,lodash__WEBPACK_IMPORTED_MODULE_3__.groupBy)(teamsAndLogins, 'team')[team];
-        return membersOfCodeOwnerTeam.some(({ login }) => approverLogins.includes(login));
+        const numberOfApprovalsForTeam = membersOfCodeOwnerTeam.filter(({ login }) => approverLogins.includes(login)).length;
+        return numberOfApprovalsForTeam >= Number(number_of_reviewers);
     });
 });
 
@@ -220,7 +221,7 @@ const getCoreMemberLogins = (pull_number, teams) => __awaiter(void 0, void 0, vo
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(teamsAndLogins.map(({ login }) => login));
 });
 const getCoreTeamsAndLogins = (pull_number, teams) => __awaiter(void 0, void 0, void 0, function* () {
-    const codeOwners = teams !== null && teams !== void 0 ? teams : (yield getCodeOwners(pull_number));
+    const codeOwners = teams !== null && teams !== void 0 ? teams : (yield getRequiredCodeOwners(pull_number));
     if (!(codeOwners === null || codeOwners === void 0 ? void 0 : codeOwners.length)) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No code owners found. Please provide a "teams" input or set up a CODEOWNERS file in your repo.');
         throw new Error();
@@ -235,12 +236,13 @@ const getCoreTeamsAndLogins = (pull_number, teams) => __awaiter(void 0, void 0, 
     }));
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.union)(...teamsAndLogins);
 });
-const getCodeOwners = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {
+const getRequiredCodeOwners = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const codeOwners = (_a = (yield (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd()))) !== null && _a !== void 0 ? _a : [];
     const changedFilePaths = yield (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__/* .getChangedFilepaths */ .s)(pull_number);
-    const matchingCodeOwners = changedFilePaths.map(filePath => { var _a; return (_a = (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.matchFile)(filePath, codeOwners)) !== null && _a !== void 0 ? _a : {}; });
+    const matchingCodeOwners = changedFilePaths.map(filePath => (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.matchFile)(filePath, codeOwners));
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(matchingCodeOwners
+        .filter(Boolean)
         .map(owner => owner.owners)
         .flat()
         .filter(Boolean)
