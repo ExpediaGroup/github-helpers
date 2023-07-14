@@ -47,7 +47,7 @@ describe('approvalsSatisfied', () => {
     }));
     const result = await approvalsSatisfied({ teams: 'team1', pull_number: '12345' });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner' });
-    expect(getCoreTeamsAndLogins).toHaveBeenCalledWith(123, ['team1']);
+    expect(getCoreTeamsAndLogins).toHaveBeenCalledWith(12345, ['team1']);
     expect(result).toBe(false);
   });
 
