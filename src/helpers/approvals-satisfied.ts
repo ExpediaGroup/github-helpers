@@ -20,10 +20,15 @@ import { groupBy, uniq } from 'lodash';
 export class ApprovalsSatisfied extends HelperInputs {
   teams?: string;
   number_of_reviewers?: string;
+  pull_number?: string;
 }
 
-export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1' }: ApprovalsSatisfied = {}) => {
-  const { data: reviews } = await octokit.pulls.listReviews({ pull_number: context.issue.number, ...context.repo });
+export const approvalsSatisfied = async ({
+  teams,
+  number_of_reviewers = '1',
+  pull_number = String(context.issue.number)
+}: ApprovalsSatisfied = {}) => {
+  const { data: reviews } = await octokit.pulls.listReviews({ pull_number: Number(pull_number), ...context.repo });
   const teamsAndLogins = await getCoreTeamsAndLogins(context.issue.number, teams?.split('\n'));
   const approverLogins = reviews
     .filter(({ state }) => state === 'APPROVED')
