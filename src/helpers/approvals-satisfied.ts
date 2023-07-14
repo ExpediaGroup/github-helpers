@@ -23,13 +23,10 @@ export class ApprovalsSatisfied extends HelperInputs {
   pull_number?: string;
 }
 
-export const approvalsSatisfied = async ({
-  teams,
-  number_of_reviewers = '1',
-  pull_number = String(context.issue.number)
-}: ApprovalsSatisfied = {}) => {
-  const { data: reviews } = await octokit.pulls.listReviews({ pull_number: Number(pull_number), ...context.repo });
-  const teamsAndLogins = await getCoreTeamsAndLogins(context.issue.number, teams?.split('\n'));
+export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pull_number }: ApprovalsSatisfied = {}) => {
+  const prNumber = pull_number ? Number(pull_number) : context.issue.number;
+  const { data: reviews } = await octokit.pulls.listReviews({ pull_number: prNumber, ...context.repo });
+  const teamsAndLogins = await getCoreTeamsAndLogins(prNumber, teams?.split('\n'));
   const approverLogins = reviews
     .filter(({ state }) => state === 'APPROVED')
     .map(({ user }) => user?.login)
