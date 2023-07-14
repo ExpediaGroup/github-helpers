@@ -46,8 +46,8 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 class ApprovalsSatisfied extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
 }
-const approvalsSatisfied = ({ teams, number_of_reviewers = '1' } = {}) => __awaiter(void 0, void 0, void 0, function* () {
-    const { data: reviews } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listReviews */ .K.pulls.listReviews(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+const approvalsSatisfied = ({ teams, number_of_reviewers = '1', pull_number = String(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number) } = {}) => __awaiter(void 0, void 0, void 0, function* () {
+    const { data: reviews } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listReviews */ .K.pulls.listReviews(Object.assign({ pull_number: Number(pull_number) }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     const teamsAndLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreTeamsAndLogins */ .F)(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
     const approverLogins = reviews
         .filter(({ state }) => state === 'APPROVED')
