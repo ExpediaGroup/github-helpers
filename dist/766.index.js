@@ -398,7 +398,7 @@ var import_endpoint = __webpack_require__(9440);
 var import_universal_user_agent = __webpack_require__(5030);
 
 // pkg/dist-src/version.js
-var VERSION = "8.0.4";
+var VERSION = "8.1.0";
 
 // pkg/dist-src/fetch-wrapper.js
 var import_is_plain_object = __webpack_require__(3287);
@@ -411,8 +411,9 @@ function getBufferResponse(response) {
 
 // pkg/dist-src/fetch-wrapper.js
 function fetchWrapper(requestOptions) {
-  var _a, _b;
+  var _a, _b, _c;
   const log = requestOptions.request && requestOptions.request.log ? requestOptions.request.log : console;
+  const parseSuccessResponseBody = ((_a = requestOptions.request) == null ? void 0 : _a.parseSuccessResponseBody) !== false;
   if ((0, import_is_plain_object.isPlainObject)(requestOptions.body) || Array.isArray(requestOptions.body)) {
     requestOptions.body = JSON.stringify(requestOptions.body);
   }
@@ -420,7 +421,7 @@ function fetchWrapper(requestOptions) {
   let status;
   let url;
   let { fetch } = globalThis;
-  if ((_a = requestOptions.request) == null ? void 0 : _a.fetch) {
+  if ((_b = requestOptions.request) == null ? void 0 : _b.fetch) {
     fetch = requestOptions.request.fetch;
   }
   if (!fetch) {
@@ -432,7 +433,7 @@ function fetchWrapper(requestOptions) {
     method: requestOptions.method,
     body: requestOptions.body,
     headers: requestOptions.headers,
-    signal: (_b = requestOptions.request) == null ? void 0 : _b.signal,
+    signal: (_c = requestOptions.request) == null ? void 0 : _c.signal,
     // duplex must be set if request.body is ReadableStream or Async Iterables.
     // See https://fetch.spec.whatwg.org/#dom-requestinit-duplex.
     ...requestOptions.body && { duplex: "half" }
@@ -490,7 +491,7 @@ function fetchWrapper(requestOptions) {
       });
       throw error;
     }
-    return getResponseData(response);
+    return parseSuccessResponseBody ? await getResponseData(response) : response.body;
   }).then((data) => {
     return {
       status,
