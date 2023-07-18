@@ -19,6 +19,8 @@ jest.mock('@actions/core');
 const ownerMap: { [key: string]: Object } = {
   'test-owners-1': { data: [{ login: 'user1' }, { login: 'user2' }] },
   'test-owners-2': { data: [{ login: 'user2' }, { login: 'user3' }] },
+  'test-shared-owners-1': { data: [{ login: 'user4' }, { login: 'user5' }] },
+  'test-shared-owners-2': { data: [{ login: 'user5' }, { login: 'user6' }] },
   'github-helpers-committers': { data: [{ login: 'user4' }] }
 };
 jest.mock('@actions/github', () => ({
@@ -34,7 +36,8 @@ jest.mock('@actions/github', () => ({
 }));
 const file1 = 'file/path/1/file1.txt';
 const file2 = 'file/path/2/file2.ts';
-const file3 = 'something/totally/different/file1.txt';
+const sharedFile = 'file/path/shared/file.ts';
+const someTotallyDifferentFile = 'something/totally/different/file1.txt';
 const pkg = 'package.json';
 
 const pull_number = 123;
@@ -78,7 +81,7 @@ describe('getCoreMemberLogins', () => {
                     filename: file2
                   },
                   {
-                    filename: file3
+                    filename: someTotallyDifferentFile
                   },
                   {
                     filename: pkg
@@ -111,7 +114,7 @@ describe('getCoreMemberLogins', () => {
                   filename: file2
                 },
                 {
-                  filename: file3
+                  filename: someTotallyDifferentFile
                 },
                 {
                   filename: pkg

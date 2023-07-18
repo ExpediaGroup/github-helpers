@@ -14,8 +14,9 @@ limitations under the License.
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
-import { getCoreTeamsAndLogins } from '../utils/get-core-member-logins';
-import { groupBy, uniq } from 'lodash';
+import { getCodeOwnersFromEntries, getCoreTeamsAndLogins, getRequiredCodeOwnersEntries } from '../utils/get-core-member-logins';
+import {groupBy, union, uniq} from 'lodash';
+import {map} from "bluebird";
 
 export class ApprovalsSatisfied extends HelperInputs {
   teams?: string;
@@ -26,16 +27,39 @@ export class ApprovalsSatisfied extends HelperInputs {
 export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pull_number }: ApprovalsSatisfied = {}) => {
   const prNumber = pull_number ? Number(pull_number) : context.issue.number;
   const { data: reviews } = await octokit.pulls.listReviews({ pull_number: prNumber, ...context.repo });
-  const teamsAndLogins = await getCoreTeamsAndLogins(prNumber, teams?.split('\n'));
   const approverLogins = reviews
     .filter(({ state }) => state === 'APPROVED')
     .map(({ user }) => user?.login)
     .filter(Boolean);
+  const requiredCodeOwnersEntries = await getRequiredCodeOwnersEntries(prNumber);
+  const codeOwners = teams?.split('\n') ?? getCodeOwnersFromEntries(requiredCodeOwnersEntries);
+  const teamsAndLogins = await getCoreTeamsAndLogins(codeOwners);
   const codeOwnerTeams = uniq(teamsAndLogins.map(({ team }) => team));
 
-  return codeOwnerTeams.every(team => {
-    const membersOfCodeOwnerTeam = groupBy(teamsAndLogins, 'team')[team];
-    const numberOfApprovalsForTeam = membersOfCodeOwnerTeam.filter(({ login }) => approverLogins.includes(login)).length;
-    return numberOfApprovalsForTeam >= Number(number_of_reviewers);
+  return requiredCodeOwnersEntries.every(async entry => {
+    if (entry.owners.length > 1) {
+      const loginsLists = await map(codeOwners, async team =>
+        octokit.teams
+          .listMembersInOrg({
+            org: context.repo.owner,
+            team_slug: team,
+            per_page: 100
+          })
+          .then(listMembersResponse => listMembersResponse.data.map(({ login }) => login))
+      );
+      const uniqueLogins = union(...loginsLists);
+      const numberOfApprovalsForTeam = uniqueLogins.filter(login => approverLogins.includes(login)).length;
+      return numberOfApprovalsForTeam >= Number(number_of_reviewers);
+    }
+
+    if (entry.owners[0]) {
+      const { data } = await octokit.teams.listMembersInOrg({
+        org: context.repo.owner,
+        team_slug: entry.owners[0],
+        per_page: 100
+      });
+      const numberOfApprovalsForTeam = data.filter(({ login }) => approverLogins.includes(login)).length;
+      return numberOfApprovalsForTeam >= Number(number_of_reviewers);
+    }
   });
 };
