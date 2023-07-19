@@ -117,7 +117,7 @@ class AddPrApprovalLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/*
     }
 }
 const addPrApprovalLabel = ({ teams, login }) => __awaiter(void 0, void 0, void 0, function* () {
-    const coreMemberLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .cp)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
+    const coreMemberLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .c)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
     const approvalLabel = coreMemberLogins.includes(login) ? _constants__WEBPACK_IMPORTED_MODULE_0__/* .CORE_APPROVED_PR_LABEL */ ._d : _constants__WEBPACK_IMPORTED_MODULE_0__/* .PEER_APPROVED_PR_LABEL */ .Xt;
     return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: [approvalLabel], issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
 });
@@ -245,11 +245,9 @@ const paginateAllChangedFilepaths = (pull_number, page = 1) => __awaiter(void 0,
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "AB": () => (/* binding */ getCodeOwnersFromEntries),
-/* harmony export */   "cp": () => (/* binding */ getCoreMemberLogins),
-/* harmony export */   "qi": () => (/* binding */ getRequiredCodeOwnersEntries)
+/* harmony export */   "c": () => (/* binding */ getCoreMemberLogins),
+/* harmony export */   "q": () => (/* binding */ getRequiredCodeOwnersEntries)
 /* harmony export */ });
-/* unused harmony export getCoreTeamsAndLogins */
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var codeowners_utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4445);
@@ -297,6 +295,12 @@ const getCoreMemberLogins = (pull_number, teams) => __awaiter(void 0, void 0, vo
     const teamsAndLogins = yield getCoreTeamsAndLogins(codeOwners);
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(teamsAndLogins.map(({ login }) => login));
 });
+const getRequiredCodeOwnersEntries = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const codeOwners = (_a = (yield (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd()))) !== null && _a !== void 0 ? _a : [];
+    const changedFilePaths = yield (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__/* .getChangedFilepaths */ .s)(pull_number);
+    return changedFilePaths.map(filePath => (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.matchFile)(filePath, codeOwners)).filter(Boolean);
+});
 const getCoreTeamsAndLogins = (codeOwners) => __awaiter(void 0, void 0, void 0, function* () {
     if (!(codeOwners === null || codeOwners === void 0 ? void 0 : codeOwners.length)) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No code owners found. Please provide a "teams" input or set up a CODEOWNERS file in your repo.');
@@ -311,12 +315,6 @@ const getCoreTeamsAndLogins = (codeOwners) => __awaiter(void 0, void 0, void 0, 
             .then(listMembersResponse => listMembersResponse.data.map(({ login }) => ({ team, login })));
     }));
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.union)(...teamsAndLogins);
-});
-const getRequiredCodeOwnersEntries = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const codeOwners = (_a = (yield (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd()))) !== null && _a !== void 0 ? _a : [];
-    const changedFilePaths = yield (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__/* .getChangedFilepaths */ .s)(pull_number);
-    return changedFilePaths.map(filePath => (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.matchFile)(filePath, codeOwners)).filter(Boolean);
 });
 const getCodeOwnersFromEntries = (codeOwnersEntries) => {
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(codeOwnersEntries

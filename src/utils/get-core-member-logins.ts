@@ -26,7 +26,13 @@ export const getCoreMemberLogins = async (pull_number: number, teams?: string[])
   return uniq(teamsAndLogins.map(({ login }) => login));
 };
 
-export const getCoreTeamsAndLogins = async (codeOwners?: string[]) => {
+export const getRequiredCodeOwnersEntries = async (pull_number: number): Promise<CodeOwnersEntry[]> => {
+  const codeOwners = (await loadOwners(process.cwd())) ?? [];
+  const changedFilePaths = await getChangedFilepaths(pull_number);
+  return changedFilePaths.map(filePath => matchFile(filePath, codeOwners)).filter(Boolean);
+};
+
+const getCoreTeamsAndLogins = async (codeOwners?: string[]) => {
   if (!codeOwners?.length) {
     core.setFailed('No code owners found. Please provide a "teams" input or set up a CODEOWNERS file in your repo.');
     throw new Error();
@@ -44,13 +50,7 @@ export const getCoreTeamsAndLogins = async (codeOwners?: string[]) => {
   return union(...teamsAndLogins);
 };
 
-export const getRequiredCodeOwnersEntries = async (pull_number: number): Promise<CodeOwnersEntry[]> => {
-  const codeOwners = (await loadOwners(process.cwd())) ?? [];
-  const changedFilePaths = await getChangedFilepaths(pull_number);
-  return changedFilePaths.map(filePath => matchFile(filePath, codeOwners)).filter(Boolean);
-};
-
-export const getCodeOwnersFromEntries = (codeOwnersEntries: CodeOwnersEntry[]) => {
+const getCodeOwnersFromEntries = (codeOwnersEntries: CodeOwnersEntry[]) => {
   return uniq<string>(
     codeOwnersEntries
       .map(entry => entry.owners)

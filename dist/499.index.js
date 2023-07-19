@@ -11,16 +11,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "ApprovalsSatisfied": () => (/* binding */ ApprovalsSatisfied),
 /* harmony export */   "approvalsSatisfied": () => (/* binding */ approvalsSatisfied)
 /* harmony export */ });
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(3476);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(3476);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
 /* harmony import */ var _utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(7290);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(250);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(8710);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _utils_convert_to_team_slug__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(489);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8710);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _utils_convert_to_team_slug__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(489);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,8 +46,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-
-class ApprovalsSatisfied extends _types_generated__WEBPACK_IMPORTED_MODULE_5__/* .HelperInputs */ .s {
+class ApprovalsSatisfied extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
 }
 const approvalsSatisfied = ({ teams, number_of_reviewers = '1', pull_number } = {}) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -59,31 +56,22 @@ const approvalsSatisfied = ({ teams, number_of_reviewers = '1', pull_number } = 
         .filter(({ state }) => state === 'APPROVED')
         .map(({ user }) => user === null || user === void 0 ? void 0 : user.login)
         .filter(Boolean);
-    const requiredCodeOwnersEntries = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getRequiredCodeOwnersEntries */ .qi)(prNumber);
-    const codeOwners = (_a = teams === null || teams === void 0 ? void 0 : teams.split('\n')) !== null && _a !== void 0 ? _a : (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCodeOwnersFromEntries */ .AB)(requiredCodeOwnersEntries);
+    const teamsList = teams === null || teams === void 0 ? void 0 : teams.split('\n');
+    const requiredCodeOwnersEntries = (_a = teamsList === null || teamsList === void 0 ? void 0 : teamsList.map(team => ({ pattern: '', owners: [(0,_utils_convert_to_team_slug__WEBPACK_IMPORTED_MODULE_5__/* .convertToTeamSlug */ .$)(team)] }))) !== null && _a !== void 0 ? _a : (yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getRequiredCodeOwnersEntries */ .q)(prNumber));
     const codeOwnersEntrySatisfiesApprovals = (entry) => __awaiter(void 0, void 0, void 0, function* () {
-        if (entry.owners.length > 1) {
-            const loginsLists = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(codeOwners, (team) => __awaiter(void 0, void 0, void 0, function* () {
-                return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
-                    org: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner,
-                    team_slug: team,
-                    per_page: 100
-                })
-                    .then(listMembersResponse => listMembersResponse.data.map(({ login }) => login));
-            }));
-            const uniqueLogins = (0,lodash__WEBPACK_IMPORTED_MODULE_3__.union)(...loginsLists);
-            const numberOfApprovalsForTeam = uniqueLogins.filter(login => approverLogins.includes(login)).length;
-            return numberOfApprovalsForTeam >= Number(number_of_reviewers);
-        }
-        if (entry.owners[0]) {
+        const loginsLists = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(entry.owners, (team) => __awaiter(void 0, void 0, void 0, function* () {
             const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
                 org: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner,
-                team_slug: (0,_utils_convert_to_team_slug__WEBPACK_IMPORTED_MODULE_6__/* .convertToTeamSlug */ .$)(entry.owners[0]),
+                team_slug: (0,_utils_convert_to_team_slug__WEBPACK_IMPORTED_MODULE_5__/* .convertToTeamSlug */ .$)(team),
                 per_page: 100
             });
-            const numberOfApprovalsForTeam = data.filter(({ login }) => approverLogins.includes(login)).length;
-            return numberOfApprovalsForTeam >= Number(number_of_reviewers);
-        }
+            return data.map(({ login }) => ({ team, login }));
+        }));
+        const codeOwnerLogins = loginsLists.flat().map(({ login }) => login);
+        const numberOfCollectiveApprovals = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
+        const numberOfApprovalsForTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
+        const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovals : numberOfApprovalsForTeam;
+        return numberOfApprovals >= Number(number_of_reviewers);
     });
     const booleans = yield Promise.all(requiredCodeOwnersEntries.map(codeOwnersEntrySatisfiesApprovals));
     return booleans.every(Boolean);
@@ -212,11 +200,9 @@ const paginateAllChangedFilepaths = (pull_number, page = 1) => __awaiter(void 0,
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "AB": () => (/* binding */ getCodeOwnersFromEntries),
-/* harmony export */   "cp": () => (/* binding */ getCoreMemberLogins),
-/* harmony export */   "qi": () => (/* binding */ getRequiredCodeOwnersEntries)
+/* harmony export */   "c": () => (/* binding */ getCoreMemberLogins),
+/* harmony export */   "q": () => (/* binding */ getRequiredCodeOwnersEntries)
 /* harmony export */ });
-/* unused harmony export getCoreTeamsAndLogins */
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var codeowners_utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4445);
@@ -264,6 +250,12 @@ const getCoreMemberLogins = (pull_number, teams) => __awaiter(void 0, void 0, vo
     const teamsAndLogins = yield getCoreTeamsAndLogins(codeOwners);
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(teamsAndLogins.map(({ login }) => login));
 });
+const getRequiredCodeOwnersEntries = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const codeOwners = (_a = (yield (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd()))) !== null && _a !== void 0 ? _a : [];
+    const changedFilePaths = yield (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__/* .getChangedFilepaths */ .s)(pull_number);
+    return changedFilePaths.map(filePath => (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.matchFile)(filePath, codeOwners)).filter(Boolean);
+});
 const getCoreTeamsAndLogins = (codeOwners) => __awaiter(void 0, void 0, void 0, function* () {
     if (!(codeOwners === null || codeOwners === void 0 ? void 0 : codeOwners.length)) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No code owners found. Please provide a "teams" input or set up a CODEOWNERS file in your repo.');
@@ -278,12 +270,6 @@ const getCoreTeamsAndLogins = (codeOwners) => __awaiter(void 0, void 0, void 0, 
             .then(listMembersResponse => listMembersResponse.data.map(({ login }) => ({ team, login })));
     }));
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.union)(...teamsAndLogins);
-});
-const getRequiredCodeOwnersEntries = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const codeOwners = (_a = (yield (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd()))) !== null && _a !== void 0 ? _a : [];
-    const changedFilePaths = yield (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__/* .getChangedFilepaths */ .s)(pull_number);
-    return changedFilePaths.map(filePath => (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.matchFile)(filePath, codeOwners)).filter(Boolean);
 });
 const getCodeOwnersFromEntries = (codeOwnersEntries) => {
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(codeOwnersEntries
