@@ -34,7 +34,7 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
     .filter(Boolean);
   const teamsList = teams?.split('\n');
   const requiredCodeOwnersEntries: CodeOwnersEntry[] =
-    teamsList?.map(team => ({ pattern: '', owners: [convertToTeamSlug(team)] })) ?? (await getRequiredCodeOwnersEntries(prNumber));
+    teamsList?.map(team => ({ pattern: '', owners: [team] })) ?? (await getRequiredCodeOwnersEntries(prNumber));
 
   const codeOwnersEntrySatisfiesApprovals = async (entry: CodeOwnersEntry) => {
     const loginsLists = await map(entry.owners, async team => {

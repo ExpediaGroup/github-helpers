@@ -49,7 +49,7 @@ describe('approvalsSatisfied', () => {
         }
       ]
     }));
-    const result = await approvalsSatisfied({ teams: '@ExpediaGroup/team1', pull_number: '12345' });
+    const result = await approvalsSatisfied({ teams: 'team1', pull_number: '12345' });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner' });
     expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(false);
@@ -64,7 +64,7 @@ describe('approvalsSatisfied', () => {
         }
       ]
     }));
-    const result = await approvalsSatisfied({ teams: '@ExpediaGroup/team1', pull_number: '12345' });
+    const result = await approvalsSatisfied({ teams: 'team1', pull_number: '12345' });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner' });
     expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(true);

@@ -57,7 +57,7 @@ const approvalsSatisfied = ({ teams, number_of_reviewers = '1', pull_number } = 
         .map(({ user }) => user === null || user === void 0 ? void 0 : user.login)
         .filter(Boolean);
     const teamsList = teams === null || teams === void 0 ? void 0 : teams.split('\n');
-    const requiredCodeOwnersEntries = (_a = teamsList === null || teamsList === void 0 ? void 0 : teamsList.map(team => ({ pattern: '', owners: [(0,_utils_convert_to_team_slug__WEBPACK_IMPORTED_MODULE_5__/* .convertToTeamSlug */ .$)(team)] }))) !== null && _a !== void 0 ? _a : (yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getRequiredCodeOwnersEntries */ .q)(prNumber));
+    const requiredCodeOwnersEntries = (_a = teamsList === null || teamsList === void 0 ? void 0 : teamsList.map(team => ({ pattern: '', owners: [team] }))) !== null && _a !== void 0 ? _a : (yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getRequiredCodeOwnersEntries */ .q)(prNumber));
     const codeOwnersEntrySatisfiesApprovals = (entry) => __awaiter(void 0, void 0, void 0, function* () {
         const loginsLists = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(entry.owners, (team) => __awaiter(void 0, void 0, void 0, function* () {
             const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
