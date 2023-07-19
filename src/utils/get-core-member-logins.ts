@@ -18,6 +18,7 @@ import { context } from '@actions/github';
 import { getChangedFilepaths } from './get-changed-filepaths';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
+import { convertToTeamSlug } from './convert-to-team-slug';
 
 export const getCoreMemberLogins = async (pull_number: number, teams?: string[]) => {
   const codeOwners = teams ?? getCodeOwnersFromEntries(await getRequiredCodeOwnersEntries(pull_number));
@@ -52,9 +53,9 @@ export const getRequiredCodeOwnersEntries = async (pull_number: number): Promise
 export const getCodeOwnersFromEntries = (codeOwnersEntries: CodeOwnersEntry[]) => {
   return uniq<string>(
     codeOwnersEntries
-      .map(owner => owner.owners)
+      .map(entry => entry.owners)
       .flat()
       .filter(Boolean)
-      .map(owner => owner.substring(owner.indexOf('/') + 1))
+      .map(codeOwner => convertToTeamSlug(codeOwner))
   );
 };

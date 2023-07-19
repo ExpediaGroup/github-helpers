@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import { Mocktokit } from '../types';
-import { getCoreMemberLogins } from '../../src/utils/get-core-member-logins';
+import { getCoreMemberLogins, getRequiredCodeOwnersEntries } from '../../src/utils/get-core-member-logins';
 import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
@@ -95,6 +95,39 @@ describe('getCoreMemberLogins', () => {
         const result = await getCoreMemberLogins(pull_number);
 
         expect(result).toEqual(['user1', 'user2', 'user3', 'user4']);
+      });
+    });
+
+    describe('getRequiredCodeOwnersEntries', () => {
+      beforeEach(() => {
+        (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+          data:
+            page === 1
+              ? [
+                  {
+                    filename: file1
+                  },
+                  {
+                    filename: sharedFile
+                  }
+                ]
+              : []
+        }));
+      });
+
+      it('should return expected result', async () => {
+        const result = await getRequiredCodeOwnersEntries(pull_number);
+
+        expect(result).toEqual([
+          {
+            pattern: '/file/path/1',
+            owners: ['@ExpediaGroup/test-owners-1']
+          },
+          {
+            pattern: '/file/path/shared',
+            owners: ['@ExpediaGroup/test-shared-owners-1', '@ExpediaGroup/test-shared-owners-2']
+          }
+        ]);
       });
     });
   });

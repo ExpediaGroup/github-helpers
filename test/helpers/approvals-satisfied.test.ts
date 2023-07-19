@@ -14,8 +14,15 @@ limitations under the License.
 import { Mocktokit } from '../types';
 import { approvalsSatisfied } from '../../src/helpers/approvals-satisfied';
 import { octokit } from '../../src/octokit';
-import { getCoreTeamsAndLogins } from '../../src/utils/get-core-member-logins';
+import { getRequiredCodeOwnersEntries } from '../../src/utils/get-core-member-logins';
 
+const ownerMap: { [key: string]: Object } = {
+  team1: { data: [{ login: 'user1' }] },
+  team2: { data: [{ login: 'user2' }, { login: 'user3' }] },
+  team3: { data: [{ login: 'user1' }] },
+  team4: { data: [{ login: 'user4' }, { login: 'user5' }] },
+  'github-helpers-committers': { data: [{ login: 'user4' }] }
+};
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
@@ -23,6 +30,9 @@ jest.mock('@actions/github', () => ({
     rest: {
       pulls: {
         listReviews: jest.fn()
+      },
+      teams: {
+        listMembersInOrg: jest.fn(async input => ownerMap[input.team_slug])
       }
     }
   }))
@@ -31,12 +41,7 @@ jest.mock('../../src/utils/get-core-member-logins');
 
 describe('approvalsSatisfied', () => {
   it('should return false when a core member has not approved', async () => {
-    (getCoreTeamsAndLogins as jest.Mock).mockResolvedValue([
-      {
-        team: 'team1',
-        login: 'user1'
-      }
-    ]);
+    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@ExpediaGroup/team1'] }]);
     (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
         {
@@ -47,17 +52,12 @@ describe('approvalsSatisfied', () => {
     }));
     const result = await approvalsSatisfied({ teams: 'team1', pull_number: '12345' });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner' });
-    expect(getCoreTeamsAndLogins).toHaveBeenCalledWith(12345, ['team1']);
+    expect(getRequiredCodeOwnersEntries).toHaveBeenCalledWith(12345);
     expect(result).toBe(false);
   });
 
   it('should return true when a core member has approved', async () => {
-    (getCoreTeamsAndLogins as jest.Mock).mockResolvedValue([
-      {
-        team: 'team1',
-        login: 'user1'
-      }
-    ]);
+    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@ExpediaGroup/team1'] }]);
     (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
         {
@@ -75,23 +75,10 @@ describe('approvalsSatisfied', () => {
   });
 
   it('should return false when not all core teams have approved', async () => {
-    (getCoreTeamsAndLogins as jest.Mock).mockResolvedValue([
-      {
-        team: 'team1',
-        login: 'user1'
-      },
-      {
-        team: 'team2',
-        login: 'user2'
-      },
-      {
-        team: 'team2',
-        login: 'user3'
-      },
-      {
-        team: 'team3',
-        login: 'user1'
-      }
+    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
+      { owners: ['@ExpediaGroup/team1'] },
+      { owners: ['@ExpediaGroup/team2'] },
+      { owners: ['@ExpediaGroup/team3'] }
     ]);
     (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
@@ -110,23 +97,10 @@ describe('approvalsSatisfied', () => {
   });
 
   it('should return true when a member from each core team has approved', async () => {
-    (getCoreTeamsAndLogins as jest.Mock).mockResolvedValue([
-      {
-        team: 'team1',
-        login: 'user1'
-      },
-      {
-        team: 'team2',
-        login: 'user2'
-      },
-      {
-        team: 'team2',
-        login: 'user3'
-      },
-      {
-        team: 'team3',
-        login: 'user1'
-      }
+    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
+      { owners: ['@ExpediaGroup/team1'] },
+      { owners: ['@ExpediaGroup/team2'] },
+      { owners: ['@ExpediaGroup/team3'] }
     ]);
     (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
@@ -149,33 +123,15 @@ describe('approvalsSatisfied', () => {
   });
 
   it('should return false when not enough members from core teams have approved', async () => {
-    (getCoreTeamsAndLogins as jest.Mock).mockResolvedValue([
-      {
-        team: 'team1',
-        login: 'user1'
-      },
-      {
-        team: 'team1',
-        login: 'user2'
-      },
-      {
-        team: 'team2',
-        login: 'user3'
-      },
-      {
-        team: 'team2',
-        login: 'user4'
-      },
-      {
-        team: 'team3',
-        login: 'user5'
-      }
+    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
+      { owners: ['@ExpediaGroup/team2'] },
+      { owners: ['@ExpediaGroup/team4'] }
     ]);
     (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
         {
           state: 'APPROVED',
-          user: { login: 'user1' }
+          user: { login: 'user2' }
         },
         {
           state: 'APPROVED',
@@ -192,34 +148,12 @@ describe('approvalsSatisfied', () => {
   });
 
   it('should return true when enough members from core teams have approved', async () => {
-    (getCoreTeamsAndLogins as jest.Mock).mockResolvedValue([
-      {
-        team: 'team1',
-        login: 'user1'
-      },
-      {
-        team: 'team1',
-        login: 'user2'
-      },
-      {
-        team: 'team2',
-        login: 'user3'
-      },
-      {
-        team: 'team2',
-        login: 'user4'
-      },
-      {
-        team: 'team2',
-        login: 'user5'
-      }
+    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
+      { owners: ['@ExpediaGroup/team2'] },
+      { owners: ['@ExpediaGroup/team4'] }
     ]);
     (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
       data: [
-        {
-          state: 'APPROVED',
-          user: { login: 'user1' }
-        },
         {
           state: 'APPROVED',
           user: { login: 'user2' }
@@ -231,6 +165,10 @@ describe('approvalsSatisfied', () => {
         {
           state: 'APPROVED',
           user: { login: 'user4' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user5' }
         }
       ]
     }));

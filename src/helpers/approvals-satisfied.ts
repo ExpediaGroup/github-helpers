@@ -14,9 +14,11 @@ limitations under the License.
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
-import { getCodeOwnersFromEntries, getCoreTeamsAndLogins, getRequiredCodeOwnersEntries } from '../utils/get-core-member-logins';
-import {groupBy, union, uniq} from 'lodash';
-import {map} from "bluebird";
+import { getCodeOwnersFromEntries, getRequiredCodeOwnersEntries } from '../utils/get-core-member-logins';
+import { union } from 'lodash';
+import { map } from 'bluebird';
+import { convertToTeamSlug } from '../utils/convert-to-team-slug';
+import { CodeOwnersEntry } from 'codeowners-utils';
 
 export class ApprovalsSatisfied extends HelperInputs {
   teams?: string;
@@ -33,10 +35,8 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
     .filter(Boolean);
   const requiredCodeOwnersEntries = await getRequiredCodeOwnersEntries(prNumber);
   const codeOwners = teams?.split('\n') ?? getCodeOwnersFromEntries(requiredCodeOwnersEntries);
-  const teamsAndLogins = await getCoreTeamsAndLogins(codeOwners);
-  const codeOwnerTeams = uniq(teamsAndLogins.map(({ team }) => team));
 
-  return requiredCodeOwnersEntries.every(async entry => {
+  const codeOwnersEntrySatisfiesApprovals = async (entry: CodeOwnersEntry) => {
     if (entry.owners.length > 1) {
       const loginsLists = await map(codeOwners, async team =>
         octokit.teams
@@ -55,11 +55,14 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
     if (entry.owners[0]) {
       const { data } = await octokit.teams.listMembersInOrg({
         org: context.repo.owner,
-        team_slug: entry.owners[0],
+        team_slug: convertToTeamSlug(entry.owners[0]),
         per_page: 100
       });
       const numberOfApprovalsForTeam = data.filter(({ login }) => approverLogins.includes(login)).length;
       return numberOfApprovalsForTeam >= Number(number_of_reviewers);
     }
-  });
+  };
+
+  const booleans = await Promise.all(requiredCodeOwnersEntries.map(codeOwnersEntrySatisfiesApprovals));
+  return booleans.every(Boolean);
 };
