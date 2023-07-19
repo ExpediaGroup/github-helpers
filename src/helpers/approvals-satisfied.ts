@@ -14,8 +14,10 @@ limitations under the License.
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
-import { getCoreTeamsAndLogins } from '../utils/get-core-member-logins';
-import { groupBy, uniq } from 'lodash';
+import { getRequiredCodeOwnersEntries } from '../utils/get-core-member-logins';
+import { map } from 'bluebird';
+import { convertToTeamSlug } from '../utils/convert-to-team-slug';
+import { CodeOwnersEntry } from 'codeowners-utils';
 
 export class ApprovalsSatisfied extends HelperInputs {
   teams?: string;
@@ -26,16 +28,33 @@ export class ApprovalsSatisfied extends HelperInputs {
 export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pull_number }: ApprovalsSatisfied = {}) => {
   const prNumber = pull_number ? Number(pull_number) : context.issue.number;
   const { data: reviews } = await octokit.pulls.listReviews({ pull_number: prNumber, ...context.repo });
-  const teamsAndLogins = await getCoreTeamsAndLogins(prNumber, teams?.split('\n'));
   const approverLogins = reviews
     .filter(({ state }) => state === 'APPROVED')
     .map(({ user }) => user?.login)
     .filter(Boolean);
-  const codeOwnerTeams = uniq(teamsAndLogins.map(({ team }) => team));
+  const teamsList = teams?.split('\n');
+  const requiredCodeOwnersEntries = teamsList ? createArtificialCodeOwnersEntry(teamsList) : await getRequiredCodeOwnersEntries(prNumber);
 
-  return codeOwnerTeams.every(team => {
-    const membersOfCodeOwnerTeam = groupBy(teamsAndLogins, 'team')[team];
-    const numberOfApprovalsForTeam = membersOfCodeOwnerTeam.filter(({ login }) => approverLogins.includes(login)).length;
-    return numberOfApprovalsForTeam >= Number(number_of_reviewers);
-  });
+  const codeOwnersEntrySatisfiesApprovals = async (entry: Pick<CodeOwnersEntry, 'owners'>) => {
+    const teamsAndLoginsLists = await map(entry.owners, async team => {
+      const { data } = await octokit.teams.listMembersInOrg({
+        org: context.repo.owner,
+        team_slug: convertToTeamSlug(team),
+        per_page: 100
+      });
+      return data.map(({ login }) => ({ team, login }));
+    });
+    const codeOwnerLogins = teamsAndLoginsLists.flat().map(({ login }) => login);
+
+    const numberOfCollectiveApprovalsAcrossTeams = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
+    const numberOfApprovalsForSingleTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
+    const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovalsAcrossTeams : numberOfApprovalsForSingleTeam;
+
+    return numberOfApprovals >= Number(number_of_reviewers);
+  };
+
+  const booleans = await Promise.all(requiredCodeOwnersEntries.map(codeOwnersEntrySatisfiesApprovals));
+  return booleans.every(Boolean);
 };
+
+const createArtificialCodeOwnersEntry = (teams: string[]) => teams.map(team => ({ owners: [team] }));
