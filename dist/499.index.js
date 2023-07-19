@@ -16,8 +16,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
 /* harmony import */ var _utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(7290);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(250);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8710);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _utils_convert_to_team_slug__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(489);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,23 +45,37 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+
 class ApprovalsSatisfied extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
 }
 const approvalsSatisfied = ({ teams, number_of_reviewers = '1', pull_number } = {}) => __awaiter(void 0, void 0, void 0, function* () {
     const prNumber = pull_number ? Number(pull_number) : _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number;
     const { data: reviews } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listReviews */ .K.pulls.listReviews(Object.assign({ pull_number: prNumber }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-    const teamsAndLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreTeamsAndLogins */ .F)(prNumber, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
     const approverLogins = reviews
         .filter(({ state }) => state === 'APPROVED')
         .map(({ user }) => user === null || user === void 0 ? void 0 : user.login)
         .filter(Boolean);
-    const codeOwnerTeams = (0,lodash__WEBPACK_IMPORTED_MODULE_3__.uniq)(teamsAndLogins.map(({ team }) => team));
-    return codeOwnerTeams.every(team => {
-        const membersOfCodeOwnerTeam = (0,lodash__WEBPACK_IMPORTED_MODULE_3__.groupBy)(teamsAndLogins, 'team')[team];
-        const numberOfApprovalsForTeam = membersOfCodeOwnerTeam.filter(({ login }) => approverLogins.includes(login)).length;
-        return numberOfApprovalsForTeam >= Number(number_of_reviewers);
+    const teamsList = teams === null || teams === void 0 ? void 0 : teams.split('\n');
+    const requiredCodeOwnersEntries = teamsList ? createArtificialCodeOwnersEntry(teamsList) : yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getRequiredCodeOwnersEntries */ .q)(prNumber);
+    const codeOwnersEntrySatisfiesApprovals = (entry) => __awaiter(void 0, void 0, void 0, function* () {
+        const teamsAndLoginsLists = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(entry.owners, (team) => __awaiter(void 0, void 0, void 0, function* () {
+            const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
+                org: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner,
+                team_slug: (0,_utils_convert_to_team_slug__WEBPACK_IMPORTED_MODULE_5__/* .convertToTeamSlug */ .$)(team),
+                per_page: 100
+            });
+            return data.map(({ login }) => ({ team, login }));
+        }));
+        const codeOwnerLogins = teamsAndLoginsLists.flat().map(({ login }) => login);
+        const numberOfCollectiveApprovalsAcrossTeams = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
+        const numberOfApprovalsForSingleTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
+        const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovalsAcrossTeams : numberOfApprovalsForSingleTeam;
+        return numberOfApprovals >= Number(number_of_reviewers);
     });
+    const booleans = yield Promise.all(requiredCodeOwnersEntries.map(codeOwnersEntrySatisfiesApprovals));
+    return booleans.every(Boolean);
 });
+const createArtificialCodeOwnersEntry = (teams) => teams.map(team => ({ owners: [team] }));
 
 
 /***/ }),
@@ -123,6 +138,29 @@ class HelperInputs {
 
 /***/ }),
 
+/***/ 489:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "$": () => (/* binding */ convertToTeamSlug)
+/* harmony export */ });
+/*
+Copyright 2021 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+const convertToTeamSlug = (codeOwner) => codeOwner.substring(codeOwner.indexOf('/') + 1);
+
+
+/***/ }),
+
 /***/ 9180:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
@@ -174,8 +212,8 @@ const paginateAllChangedFilepaths = (pull_number, page = 1) => __awaiter(void 0,
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "F": () => (/* binding */ getCoreTeamsAndLogins),
-/* harmony export */   "c": () => (/* binding */ getCoreMemberLogins)
+/* harmony export */   "c": () => (/* binding */ getCoreMemberLogins),
+/* harmony export */   "q": () => (/* binding */ getRequiredCodeOwnersEntries)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
@@ -189,6 +227,7 @@ const paginateAllChangedFilepaths = (pull_number, page = 1) => __awaiter(void 0,
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(8710);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(6161);
+/* harmony import */ var _convert_to_team_slug__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(489);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -217,12 +256,19 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
+
 const getCoreMemberLogins = (pull_number, teams) => __awaiter(void 0, void 0, void 0, function* () {
-    const teamsAndLogins = yield getCoreTeamsAndLogins(pull_number, teams);
+    const codeOwners = teams !== null && teams !== void 0 ? teams : getCodeOwnersFromEntries(yield getRequiredCodeOwnersEntries(pull_number));
+    const teamsAndLogins = yield getCoreTeamsAndLogins(codeOwners);
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(teamsAndLogins.map(({ login }) => login));
 });
-const getCoreTeamsAndLogins = (pull_number, teams) => __awaiter(void 0, void 0, void 0, function* () {
-    const codeOwners = teams !== null && teams !== void 0 ? teams : (yield getRequiredCodeOwners(pull_number));
+const getRequiredCodeOwnersEntries = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const codeOwners = (_a = (yield (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd()))) !== null && _a !== void 0 ? _a : [];
+    const changedFilePaths = yield (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__/* .getChangedFilepaths */ .s)(pull_number);
+    return changedFilePaths.map(filePath => (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.matchFile)(filePath, codeOwners)).filter(Boolean);
+});
+const getCoreTeamsAndLogins = (codeOwners) => __awaiter(void 0, void 0, void 0, function* () {
     if (!(codeOwners === null || codeOwners === void 0 ? void 0 : codeOwners.length)) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No code owners found. Please provide a "teams" input or set up a CODEOWNERS file in your repo.');
         throw new Error();
@@ -237,18 +283,13 @@ const getCoreTeamsAndLogins = (pull_number, teams) => __awaiter(void 0, void 0, 
     }));
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.union)(...teamsAndLogins);
 });
-const getRequiredCodeOwners = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const codeOwners = (_a = (yield (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd()))) !== null && _a !== void 0 ? _a : [];
-    const changedFilePaths = yield (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__/* .getChangedFilepaths */ .s)(pull_number);
-    const matchingCodeOwners = changedFilePaths.map(filePath => (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.matchFile)(filePath, codeOwners));
-    return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(matchingCodeOwners
-        .filter(Boolean)
-        .map(owner => owner.owners)
+const getCodeOwnersFromEntries = (codeOwnersEntries) => {
+    return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(codeOwnersEntries
+        .map(entry => entry.owners)
         .flat()
         .filter(Boolean)
-        .map(owner => owner.substring(owner.indexOf('/') + 1)));
-});
+        .map(codeOwner => (0,_convert_to_team_slug__WEBPACK_IMPORTED_MODULE_7__/* .convertToTeamSlug */ .$)(codeOwner)));
+};
 
 
 /***/ })

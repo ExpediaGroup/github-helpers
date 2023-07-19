@@ -12,21 +12,27 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { loadOwners, matchFile } from 'codeowners-utils';
+import { CodeOwnersEntry, loadOwners, matchFile } from 'codeowners-utils';
 import { uniq, union } from 'lodash';
 import { context } from '@actions/github';
 import { getChangedFilepaths } from './get-changed-filepaths';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
+import { convertToTeamSlug } from './convert-to-team-slug';
 
 export const getCoreMemberLogins = async (pull_number: number, teams?: string[]) => {
-  const teamsAndLogins = await getCoreTeamsAndLogins(pull_number, teams);
+  const codeOwners = teams ?? getCodeOwnersFromEntries(await getRequiredCodeOwnersEntries(pull_number));
+  const teamsAndLogins = await getCoreTeamsAndLogins(codeOwners);
   return uniq(teamsAndLogins.map(({ login }) => login));
 };
 
-export const getCoreTeamsAndLogins = async (pull_number: number, teams?: string[]) => {
-  const codeOwners = teams ?? (await getRequiredCodeOwners(pull_number));
+export const getRequiredCodeOwnersEntries = async (pull_number: number): Promise<CodeOwnersEntry[]> => {
+  const codeOwners = (await loadOwners(process.cwd())) ?? [];
+  const changedFilePaths = await getChangedFilepaths(pull_number);
+  return changedFilePaths.map(filePath => matchFile(filePath, codeOwners)).filter(Boolean);
+};
 
+const getCoreTeamsAndLogins = async (codeOwners?: string[]) => {
   if (!codeOwners?.length) {
     core.setFailed('No code owners found. Please provide a "teams" input or set up a CODEOWNERS file in your repo.');
     throw new Error();
@@ -44,16 +50,12 @@ export const getCoreTeamsAndLogins = async (pull_number: number, teams?: string[
   return union(...teamsAndLogins);
 };
 
-const getRequiredCodeOwners = async (pull_number: number) => {
-  const codeOwners = (await loadOwners(process.cwd())) ?? [];
-  const changedFilePaths = await getChangedFilepaths(pull_number);
-  const matchingCodeOwners = changedFilePaths.map(filePath => matchFile(filePath, codeOwners));
+const getCodeOwnersFromEntries = (codeOwnersEntries: CodeOwnersEntry[]) => {
   return uniq<string>(
-    matchingCodeOwners
-      .filter(Boolean)
-      .map(owner => owner.owners)
+    codeOwnersEntries
+      .map(entry => entry.owners)
       .flat()
       .filter(Boolean)
-      .map(owner => owner.substring(owner.indexOf('/') + 1))
+      .map(codeOwner => convertToTeamSlug(codeOwner))
   );
 };
