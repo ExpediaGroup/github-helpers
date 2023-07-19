@@ -21,7 +21,8 @@ const ownerMap: { [key: string]: Object } = {
   team2: { data: [{ login: 'user2' }, { login: 'user3' }] },
   team3: { data: [{ login: 'user1' }] },
   team4: { data: [{ login: 'user4' }, { login: 'user5' }] },
-  team5: { data: [{ login: 'user5' }, { login: 'user6' }] }
+  team5: { data: [{ login: 'user4' }, { login: 'user6' }, { login: 'user7' }] },
+  team6: { data: [{ login: 'user8' }, { login: 'user9' }] }
 };
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
@@ -245,6 +246,52 @@ describe('approvalsSatisfied', () => {
         {
           state: 'APPROVED',
           user: { login: 'user6' }
+        }
+      ]
+    }));
+    const result = await approvalsSatisfied({ number_of_reviewers: '2' });
+    expect(result).toBe(true);
+  });
+
+  it('should return false when collective approvals are met but not standalone approvals', async () => {
+    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
+      { owners: ['@ExpediaGroup/team4'] },
+      { owners: ['@ExpediaGroup/team5', '@ExpediaGroup/team6'] }
+    ]);
+    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user4' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user8' }
+        }
+      ]
+    }));
+    const result = await approvalsSatisfied({ number_of_reviewers: '2' });
+    expect(result).toBe(false);
+  });
+
+  it('should return true when both collective and standalone approvals are met', async () => {
+    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
+      { owners: ['@ExpediaGroup/team4'] },
+      { owners: ['@ExpediaGroup/team5', '@ExpediaGroup/team6'] }
+    ]);
+    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user4' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user5' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user8' }
         }
       ]
     }));

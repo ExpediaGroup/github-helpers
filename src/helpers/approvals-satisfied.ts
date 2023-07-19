@@ -33,10 +33,9 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
     .map(({ user }) => user?.login)
     .filter(Boolean);
   const teamsList = teams?.split('\n');
-  const requiredCodeOwnersEntries: CodeOwnersEntry[] =
-    teamsList?.map(team => ({ pattern: '', owners: [team] })) ?? (await getRequiredCodeOwnersEntries(prNumber));
+  const requiredCodeOwnersEntries = teamsList ? createArtificialCodeOwnersEntry(teamsList) : await getRequiredCodeOwnersEntries(prNumber);
 
-  const codeOwnersEntrySatisfiesApprovals = async (entry: CodeOwnersEntry) => {
+  const codeOwnersEntrySatisfiesApprovals = async (entry: Pick<CodeOwnersEntry, 'owners'>) => {
     const loginsLists = await map(entry.owners, async team => {
       const { data } = await octokit.teams.listMembersInOrg({
         org: context.repo.owner,
@@ -57,3 +56,5 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
   const booleans = await Promise.all(requiredCodeOwnersEntries.map(codeOwnersEntrySatisfiesApprovals));
   return booleans.every(Boolean);
 };
+
+const createArtificialCodeOwnersEntry = (teams: string[]) => teams.map(team => ({ owners: [team] }));

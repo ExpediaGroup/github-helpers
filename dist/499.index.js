@@ -49,7 +49,6 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 class ApprovalsSatisfied extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
 }
 const approvalsSatisfied = ({ teams, number_of_reviewers = '1', pull_number } = {}) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     const prNumber = pull_number ? Number(pull_number) : _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number;
     const { data: reviews } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listReviews */ .K.pulls.listReviews(Object.assign({ pull_number: prNumber }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     const approverLogins = reviews
@@ -57,7 +56,7 @@ const approvalsSatisfied = ({ teams, number_of_reviewers = '1', pull_number } = 
         .map(({ user }) => user === null || user === void 0 ? void 0 : user.login)
         .filter(Boolean);
     const teamsList = teams === null || teams === void 0 ? void 0 : teams.split('\n');
-    const requiredCodeOwnersEntries = (_a = teamsList === null || teamsList === void 0 ? void 0 : teamsList.map(team => ({ pattern: '', owners: [team] }))) !== null && _a !== void 0 ? _a : (yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getRequiredCodeOwnersEntries */ .q)(prNumber));
+    const requiredCodeOwnersEntries = teamsList ? createArtificialCodeOwnersEntry(teamsList) : yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getRequiredCodeOwnersEntries */ .q)(prNumber);
     const codeOwnersEntrySatisfiesApprovals = (entry) => __awaiter(void 0, void 0, void 0, function* () {
         const loginsLists = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(entry.owners, (team) => __awaiter(void 0, void 0, void 0, function* () {
             const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
@@ -76,6 +75,7 @@ const approvalsSatisfied = ({ teams, number_of_reviewers = '1', pull_number } = 
     const booleans = yield Promise.all(requiredCodeOwnersEntries.map(codeOwnersEntrySatisfiesApprovals));
     return booleans.every(Boolean);
 });
+const createArtificialCodeOwnersEntry = (teams) => teams.map(team => ({ owners: [team] }));
 
 
 /***/ }),
