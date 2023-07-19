@@ -36,7 +36,7 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
   const requiredCodeOwnersEntries = teamsList ? createArtificialCodeOwnersEntry(teamsList) : await getRequiredCodeOwnersEntries(prNumber);
 
   const codeOwnersEntrySatisfiesApprovals = async (entry: Pick<CodeOwnersEntry, 'owners'>) => {
-    const loginsLists = await map(entry.owners, async team => {
+    const teamsAndLoginsLists = await map(entry.owners, async team => {
       const { data } = await octokit.teams.listMembersInOrg({
         org: context.repo.owner,
         team_slug: convertToTeamSlug(team),
@@ -44,11 +44,11 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
       });
       return data.map(({ login }) => ({ team, login }));
     });
-    const codeOwnerLogins = loginsLists.flat().map(({ login }) => login);
+    const codeOwnerLogins = teamsAndLoginsLists.flat().map(({ login }) => login);
 
-    const numberOfCollectiveApprovals = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
-    const numberOfApprovalsForTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
-    const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovals : numberOfApprovalsForTeam;
+    const numberOfCollectiveApprovalsAcrossTeams = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
+    const numberOfApprovalsForSingleTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
+    const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovalsAcrossTeams : numberOfApprovalsForSingleTeam;
 
     return numberOfApprovals >= Number(number_of_reviewers);
   };

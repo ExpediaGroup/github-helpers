@@ -58,7 +58,7 @@ const approvalsSatisfied = ({ teams, number_of_reviewers = '1', pull_number } = 
     const teamsList = teams === null || teams === void 0 ? void 0 : teams.split('\n');
     const requiredCodeOwnersEntries = teamsList ? createArtificialCodeOwnersEntry(teamsList) : yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getRequiredCodeOwnersEntries */ .q)(prNumber);
     const codeOwnersEntrySatisfiesApprovals = (entry) => __awaiter(void 0, void 0, void 0, function* () {
-        const loginsLists = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(entry.owners, (team) => __awaiter(void 0, void 0, void 0, function* () {
+        const teamsAndLoginsLists = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(entry.owners, (team) => __awaiter(void 0, void 0, void 0, function* () {
             const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
                 org: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner,
                 team_slug: (0,_utils_convert_to_team_slug__WEBPACK_IMPORTED_MODULE_5__/* .convertToTeamSlug */ .$)(team),
@@ -66,10 +66,10 @@ const approvalsSatisfied = ({ teams, number_of_reviewers = '1', pull_number } = 
             });
             return data.map(({ login }) => ({ team, login }));
         }));
-        const codeOwnerLogins = loginsLists.flat().map(({ login }) => login);
-        const numberOfCollectiveApprovals = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
-        const numberOfApprovalsForTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
-        const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovals : numberOfApprovalsForTeam;
+        const codeOwnerLogins = teamsAndLoginsLists.flat().map(({ login }) => login);
+        const numberOfCollectiveApprovalsAcrossTeams = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
+        const numberOfApprovalsForSingleTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
+        const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovalsAcrossTeams : numberOfApprovalsForSingleTeam;
         return numberOfApprovals >= Number(number_of_reviewers);
     });
     const booleans = yield Promise.all(requiredCodeOwnersEntries.map(codeOwnersEntrySatisfiesApprovals));
