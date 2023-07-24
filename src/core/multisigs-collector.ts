@@ -51,15 +51,19 @@ type SystemComponents = {
 export class MultisigsCollector {
   systemComponents: SystemComponents[] = [];
   private entities: Entity[] = [];
+  private apiEntities: Entity[] = [];
+  private resourceEntities: Entity[] = [];
   private multisigs: Entity[] = [];
   private contracts: Entity[] = [];
   private accessKeys: Entity[] = [];
 
   constructor(entities: Entity[]) {
     this.entities = entities;
-    this.multisigs = this.entities.filter(item => isApiEntity(item) && item.spec.type === 'multisig-deployment');
-    this.contracts = this.entities.filter(item => isApiEntity(item) && item.spec.type === 'contract-deployment');
-    this.accessKeys = this.entities.filter(item => isResourceEntity(item) && item.spec.type === 'access-key');
+    this.apiEntities = this.entities.filter(isApiEntity);
+    this.resourceEntities = this.entities.filter(isResourceEntity);
+    this.multisigs = this.apiEntities.filter(item => item.spec?.type === 'multisig-deployment');
+    this.contracts = this.apiEntities.filter(item => item.spec?.type === 'contract-deployment');
+    this.accessKeys = this.resourceEntities.filter(item => item.spec?.type === 'access-key');
     this.systemComponents = this.collectSystems();
   }
 
@@ -114,6 +118,14 @@ export class MultisigsCollector {
         };
       })
       .sort((a, b) => a.owner.metadata.name.localeCompare(b.owner.metadata.name));
+  }
+
+  getAllApis() {
+    return this.apiEntities;
+  }
+
+  getAllResources() {
+    return this.resourceEntities;
   }
 
   getMultisigs() {

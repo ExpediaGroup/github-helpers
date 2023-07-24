@@ -27,13 +27,17 @@ class MultisigsCollector {
     constructor(entities) {
         this.systemComponents = [];
         this.entities = [];
+        this.apiEntities = [];
+        this.resourceEntities = [];
         this.multisigs = [];
         this.contracts = [];
         this.accessKeys = [];
         this.entities = entities;
-        this.multisigs = this.entities.filter(item => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.isApiEntity)(item) && item.spec.type === 'multisig-deployment');
-        this.contracts = this.entities.filter(item => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.isApiEntity)(item) && item.spec.type === 'contract-deployment');
-        this.accessKeys = this.entities.filter(item => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.isResourceEntity)(item) && item.spec.type === 'access-key');
+        this.apiEntities = this.entities.filter(_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.isApiEntity);
+        this.resourceEntities = this.entities.filter(_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.isResourceEntity);
+        this.multisigs = this.apiEntities.filter(item => { var _a; return ((_a = item.spec) === null || _a === void 0 ? void 0 : _a.type) === 'multisig-deployment'; });
+        this.contracts = this.apiEntities.filter(item => { var _a; return ((_a = item.spec) === null || _a === void 0 ? void 0 : _a.type) === 'contract-deployment'; });
+        this.accessKeys = this.resourceEntities.filter(item => { var _a; return ((_a = item.spec) === null || _a === void 0 ? void 0 : _a.type) === 'access-key'; });
         this.systemComponents = this.collectSystems();
     }
     normalizeEntities(list) {
@@ -83,6 +87,12 @@ class MultisigsCollector {
             };
         })
             .sort((a, b) => a.owner.metadata.name.localeCompare(b.owner.metadata.name));
+    }
+    getAllApis() {
+        return this.apiEntities;
+    }
+    getAllResources() {
+        return this.resourceEntities;
     }
     getMultisigs() {
         return this.systemComponents.flatMap(system => system.components.flatMap(component => component.multisigs));
@@ -225,6 +235,7 @@ _datadog_datadog_api_client__WEBPACK_IMPORTED_MODULE_1__.client.setServerVariabl
 });
 const apiInstance = new _datadog_datadog_api_client__WEBPACK_IMPORTED_MODULE_1__.v2.MetricsApi(configuration);
 const DATADOG_GAUGE_TYPE = 3;
+const SIGNER_POLICY_LIMIT_MS = 180 * 86400 * 1000; // amount of days * seconds in day * milliseconds in second
 const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0, void 0, function* () {
     if (!backstage_url)
         return;
@@ -239,6 +250,9 @@ const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0
         const deprecatedKeysSeries = generateDeprecatedAccessKeyMetrics(multisigsCollector, backstage_url);
         const unknownAccessKeysSeries = generateUnknownAccessKeyMetrics(multisigsCollector, backstage_url);
         const unknownSignerSeries = generateUnknownSignerMetrics(multisigsCollector, backstage_url);
+        const unknownAddressSeries = generateUnknownAddressMetrics(multisigsCollector, backstage_url);
+        const inactiveSignerSeries = generateInactiveSignerMetrics(multisigsCollector, backstage_url);
+        // const unverifiedContractSeries = generateUnverifiedContractsMetrics(multisigsCollector, backstage_url);
         const data = yield Promise.all([
             submitMetrics(multisigSeries),
             submitMetrics(signerSeries),
@@ -247,7 +261,10 @@ const backstageMultisigMetrics = ({ backstage_url }) => __awaiter(void 0, void 0
             submitMetrics(keyCountByContractSeries),
             submitMetrics(deprecatedKeysSeries),
             submitMetrics(unknownAccessKeysSeries),
-            submitMetrics(unknownSignerSeries)
+            submitMetrics(unknownSignerSeries),
+            submitMetrics(unknownAddressSeries),
+            submitMetrics(inactiveSignerSeries)
+            // submitMetrics(unverifiedContractSeries)
         ]);
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`API called successfully. Returned data: ${JSON.stringify(data)}`);
         return data;
@@ -379,6 +396,87 @@ function generateUnknownSignerMetrics(collector, backstageUrl) {
         const points = [{ timestamp, value }];
         return {
             metric: 'backstage.signers.unknown',
+            type: DATADOG_GAUGE_TYPE,
+            points,
+            resources
+        };
+    });
+    return series;
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function generateUnverifiedContractsMetrics(collector, backstageUrl) {
+    const unverifiedContracts = collector.getAllApis().filter(entity => { var _a; return (_a = entity.metadata.tags) === null || _a === void 0 ? void 0 : _a.includes('unverified'); });
+    const series = unverifiedContracts.map(entity => {
+        // entities are typically emitted as API kind,
+        // tracking for inconsistencies
+        const { kind, metadata } = entity;
+        const { name, namespace } = metadata;
+        // inferred type is JsonObject, this converts to any
+        const spec = JSON.parse(JSON.stringify(entity.spec));
+        const { address, network, networkType, owner: rawOwner } = spec;
+        const owner = rawOwner.split(':')[1].split('/')[1];
+        // this tags timeseries with distinguishing
+        // properties for filtering purposes
+        const resources = [
+            {
+                type: 'host',
+                name: backstageUrl.split('@')[1]
+            },
+            { type: 'kind', name: kind },
+            { type: 'name', name },
+            { type: 'namespace', name: namespace },
+            { type: 'address', name: address },
+            { type: 'network', name: network },
+            { type: 'networkType', name: networkType },
+            { type: 'owner', name: owner }
+        ];
+        // datadog requires point value to be scalar, 0 means unknown ownership
+        const value = 1;
+        const timestamp = Math.round(new Date().getTime() / 1000);
+        const points = [{ timestamp, value }];
+        return {
+            metric: 'backstage.reports.unverified=contracts',
+            type: DATADOG_GAUGE_TYPE,
+            points,
+            resources
+        };
+    });
+    return series;
+}
+function generateUnknownAddressMetrics(collector, backstageUrl) {
+    const stubAndStateEntities = collector
+        .getAllResources()
+        .filter(entry => { var _a, _b; return ((_a = entry.metadata.tags) === null || _a === void 0 ? void 0 : _a.includes('stub')) && ((_b = entry.metadata.tags) === null || _b === void 0 ? void 0 : _b.includes('contract-state')); });
+    const series = stubAndStateEntities.map(entity => {
+        // entities are typically emitted as API kind,
+        // tracking for inconsistencies
+        const { kind, metadata } = entity;
+        const { name, namespace } = metadata;
+        // inferred type is JsonObject, this converts to any
+        const spec = JSON.parse(JSON.stringify(entity.spec));
+        const { address, network, networkType, owner: rawOwner } = spec;
+        const owner = rawOwner.split(':')[1].split('/')[1];
+        // this tags timeseries with distinguishing
+        // properties for filtering purposes
+        const resources = [
+            {
+                type: 'host',
+                name: backstageUrl.split('@')[1]
+            },
+            { type: 'kind', name: kind },
+            { type: 'name', name },
+            { type: 'namespace', name: namespace },
+            { type: 'address', name: address },
+            { type: 'network', name: network },
+            { type: 'networkType', name: networkType },
+            { type: 'owner', name: owner }
+        ];
+        // datadog requires point value to be scalar, 0 means unknown ownership
+        const value = 1;
+        const timestamp = Math.round(new Date().getTime() / 1000);
+        const points = [{ timestamp, value }];
+        return {
+            metric: 'backstage.reports.unknown-addresses',
             type: DATADOG_GAUGE_TYPE,
             points,
             resources
@@ -540,6 +638,44 @@ function generateContractAccessKeyMetrics(collector, backstageUrl) {
         const points = [{ timestamp, value }];
         return {
             metric: 'backstage.access_keys_by_contract_count',
+            type: DATADOG_GAUGE_TYPE,
+            points,
+            resources
+        };
+    });
+    return series;
+}
+function generateInactiveSignerMetrics(collector, backstageUrl) {
+    const series = collector.getSigners().map(entity => {
+        // entities are typically emitted as API kind,
+        // tracking for inconsistencies
+        const { kind, metadata } = entity.signer;
+        const { name, namespace } = metadata;
+        // inferred type is JsonObject, this converts to any
+        const spec = JSON.parse(JSON.stringify(entity.signer.spec));
+        const { address, network, networkType, owner: rawOwner } = spec;
+        const owner = rawOwner.split(':')[1].split('/')[1];
+        // this tags timeseries with distinguishing
+        // properties for filtering purposes
+        const resources = [
+            {
+                type: 'host',
+                name: backstageUrl.split('@')[1]
+            },
+            { type: 'kind', name: kind },
+            { type: 'name', name },
+            { type: 'namespace', name: namespace },
+            { type: 'address', name: address },
+            { type: 'network', name: network },
+            { type: 'networkType', name: networkType },
+            { type: 'owner', name: owner }
+        ];
+        const now = new Date().getTime();
+        const isPastThreshold = now - Number(spec.lastSigned) > SIGNER_POLICY_LIMIT_MS;
+        const value = isPastThreshold ? 1 : 0;
+        const points = [{ timestamp: now, value }];
+        return {
+            metric: 'backstage.signers.inactive',
             type: DATADOG_GAUGE_TYPE,
             points,
             resources

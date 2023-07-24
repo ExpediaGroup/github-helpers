@@ -27,13 +27,17 @@ class MultisigsCollector {
     constructor(entities) {
         this.systemComponents = [];
         this.entities = [];
+        this.apiEntities = [];
+        this.resourceEntities = [];
         this.multisigs = [];
         this.contracts = [];
         this.accessKeys = [];
         this.entities = entities;
-        this.multisigs = this.entities.filter(item => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.isApiEntity)(item) && item.spec.type === 'multisig-deployment');
-        this.contracts = this.entities.filter(item => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.isApiEntity)(item) && item.spec.type === 'contract-deployment');
-        this.accessKeys = this.entities.filter(item => (0,_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.isResourceEntity)(item) && item.spec.type === 'access-key');
+        this.apiEntities = this.entities.filter(_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.isApiEntity);
+        this.resourceEntities = this.entities.filter(_backstage_catalog_model__WEBPACK_IMPORTED_MODULE_0__.isResourceEntity);
+        this.multisigs = this.apiEntities.filter(item => { var _a; return ((_a = item.spec) === null || _a === void 0 ? void 0 : _a.type) === 'multisig-deployment'; });
+        this.contracts = this.apiEntities.filter(item => { var _a; return ((_a = item.spec) === null || _a === void 0 ? void 0 : _a.type) === 'contract-deployment'; });
+        this.accessKeys = this.resourceEntities.filter(item => { var _a; return ((_a = item.spec) === null || _a === void 0 ? void 0 : _a.type) === 'access-key'; });
         this.systemComponents = this.collectSystems();
     }
     normalizeEntities(list) {
@@ -83,6 +87,12 @@ class MultisigsCollector {
             };
         })
             .sort((a, b) => a.owner.metadata.name.localeCompare(b.owner.metadata.name));
+    }
+    getAllApis() {
+        return this.apiEntities;
+    }
+    getAllResources() {
+        return this.resourceEntities;
     }
     getMultisigs() {
         return this.systemComponents.flatMap(system => system.components.flatMap(component => component.multisigs));
