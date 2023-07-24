@@ -461,43 +461,40 @@ function generateContractAccessKeyMetrics(collector: MultisigsCollector, backsta
 }
 
 function generateInactiveSignerMetrics(collector: MultisigsCollector, backstageUrl: string) {
-  const series = collector
-    .getSigners()
-    .filter(entry => entry.signer.spec?.network === 'near')
-    .map<v2.MetricSeries>(entity => {
-      // entities are typically emitted as API kind,
-      // tracking for inconsistencies
-      const { kind, metadata } = entity.signer;
-      const { name, namespace } = metadata;
-      // inferred type is JsonObject, this converts to any
-      const spec = JSON.parse(JSON.stringify(entity.signer.spec));
-      const { address, network, networkType, owner: rawOwner } = spec;
-      const owner = rawOwner.split(':')[1].split('/')[1];
-      // this tags timeseries with distinguishing
-      // properties for filtering purposes
-      const resources = [
-        {
-          type: 'host',
-          name: backstageUrl.split('@')[1]
-        },
-        { type: 'kind', name: kind },
-        { type: 'name', name },
-        { type: 'namespace', name: namespace },
-        { type: 'address', name: address },
-        { type: 'network', name: network },
-        { type: 'networkType', name: networkType },
-        { type: 'owner', name: owner }
-      ];
-      const now = new Date().getTime();
-      const isPastThreshold = now - Number(spec.lastSigned) > SIGNER_POLICY_LIMIT_MS;
-      const value = isPastThreshold ? 1 : 0;
-      const points = [{ timestamp: now, value }];
-      return {
-        metric: 'backstage.signers.inactive',
-        type: DATADOG_GAUGE_TYPE,
-        points,
-        resources
-      };
-    });
+  const series = collector.getSigners().map<v2.MetricSeries>(entity => {
+    // entities are typically emitted as API kind,
+    // tracking for inconsistencies
+    const { kind, metadata } = entity.signer;
+    const { name, namespace } = metadata;
+    // inferred type is JsonObject, this converts to any
+    const spec = JSON.parse(JSON.stringify(entity.signer.spec));
+    const { address, network, networkType, owner: rawOwner } = spec;
+    const owner = rawOwner.split(':')[1].split('/')[1];
+    // this tags timeseries with distinguishing
+    // properties for filtering purposes
+    const resources = [
+      {
+        type: 'host',
+        name: backstageUrl.split('@')[1]
+      },
+      { type: 'kind', name: kind },
+      { type: 'name', name },
+      { type: 'namespace', name: namespace },
+      { type: 'address', name: address },
+      { type: 'network', name: network },
+      { type: 'networkType', name: networkType },
+      { type: 'owner', name: owner }
+    ];
+    const now = new Date().getTime();
+    const isPastThreshold = now - Number(spec.lastSigned) > SIGNER_POLICY_LIMIT_MS;
+    const value = isPastThreshold ? 1 : 0;
+    const points = [{ timestamp: now, value }];
+    return {
+      metric: 'backstage.signers.inactive',
+      type: DATADOG_GAUGE_TYPE,
+      points,
+      resources
+    };
+  });
   return series;
 }
