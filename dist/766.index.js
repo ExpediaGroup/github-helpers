@@ -398,7 +398,7 @@ var import_endpoint = __webpack_require__(9440);
 var import_universal_user_agent = __webpack_require__(5030);
 
 // pkg/dist-src/version.js
-var VERSION = "8.1.0";
+var VERSION = "8.1.1";
 
 // pkg/dist-src/fetch-wrapper.js
 var import_is_plain_object = __webpack_require__(3287);
@@ -426,7 +426,7 @@ function fetchWrapper(requestOptions) {
   }
   if (!fetch) {
     throw new Error(
-      'Global "fetch" not found. Please provide `options.request.fetch` to octokit or upgrade to node@18 or newer.'
+      "fetch is not set. Please pass a fetch implementation as new Octokit({ request: { fetch }}). Learn more at https://github.com/octokit/octokit.js/#fetch-missing"
     );
   }
   return fetch(requestOptions.url, {
