@@ -646,10 +646,7 @@ function generateContractAccessKeyMetrics(collector, backstageUrl) {
     return series;
 }
 function generateInactiveSignerMetrics(collector, backstageUrl) {
-    const series = collector
-        .getSigners()
-        .filter(entry => { var _a; return ((_a = entry.signer.spec) === null || _a === void 0 ? void 0 : _a.network) === 'near'; })
-        .map(entity => {
+    const series = collector.getSigners().map(entity => {
         // entities are typically emitted as API kind,
         // tracking for inconsistencies
         const { kind, metadata } = entity.signer;
