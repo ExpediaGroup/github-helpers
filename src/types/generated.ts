@@ -52,4 +52,5 @@ export class HelperInputs {
   skip_if_already_set?: string;
   delimiter?: string;
   team?: string;
+  ignore_deleted?: string;
 }
