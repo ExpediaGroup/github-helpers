@@ -15,9 +15,10 @@ import { ChangedFilesList } from '../types/github';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
-export const getChangedFilepaths = async (pull_number: number) => {
+export const getChangedFilepaths = async (pull_number: number, ignore_deleted?: boolean) => {
   const changedFiles = await paginateAllChangedFilepaths(pull_number);
-  return changedFiles.map(file => file.filename);
+  const filesToMap = ignore_deleted ? changedFiles.filter(file => file.status !== 'removed') : changedFiles;
+  return filesToMap.map(file => file.filename);
 };
 
 const paginateAllChangedFilepaths = async (pull_number: number, page = 1): Promise<ChangedFilesList> => {

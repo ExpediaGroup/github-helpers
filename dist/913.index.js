@@ -41,8 +41,8 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 class GetChangedFiles extends _types_generated__WEBPACK_IMPORTED_MODULE_2__/* .HelperInputs */ .s {
 }
-const getChangedFiles = ({ pattern, delimiter = ',' }) => __awaiter(void 0, void 0, void 0, function* () {
-    const filePaths = yield (0,_utils_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_1__/* .getChangedFilepaths */ .s)(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number);
+const getChangedFiles = ({ pattern, delimiter = ',', ignore_deleted }) => __awaiter(void 0, void 0, void 0, function* () {
+    const filePaths = yield (0,_utils_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_1__/* .getChangedFilepaths */ .s)(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number, Boolean(ignore_deleted));
     const filteredFilePaths = pattern ? filePaths.filter(fileName => fileName.match(pattern)) : filePaths;
     return filteredFilePaths.join(delimiter);
 });
@@ -140,9 +140,10 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 };
 
 
-const getChangedFilepaths = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {
+const getChangedFilepaths = (pull_number, ignore_deleted) => __awaiter(void 0, void 0, void 0, function* () {
     const changedFiles = yield paginateAllChangedFilepaths(pull_number);
-    return changedFiles.map(file => file.filename);
+    const filesToMap = ignore_deleted ? changedFiles.filter(file => file.status !== 'removed') : changedFiles;
+    return filesToMap.map(file => file.filename);
 });
 const paginateAllChangedFilepaths = (pull_number, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
     const response = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number, per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));

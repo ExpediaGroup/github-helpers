@@ -122,6 +122,9 @@ inputs:
   team:
     description: 'A GitHub team'
     required: false
+  ignore_deleted:
+    description: 'Set to true to ignore deleted files (for get-changed-files helper)'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'
