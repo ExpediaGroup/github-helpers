@@ -16,6 +16,7 @@ import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import { getRequiredCodeOwnersEntries } from '../utils/get-core-member-logins';
 import { map } from 'bluebird';
+import { uniqBy } from 'lodash';
 import { convertToTeamSlug } from '../utils/convert-to-team-slug';
 import { CodeOwnersEntry } from 'codeowners-utils';
 import * as core from '@actions/core';
@@ -52,9 +53,9 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
     const numberOfApprovalsForSingleTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
     const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovalsAcrossTeams : numberOfApprovalsForSingleTeam;
 
-    core.info(`Required code owners: ${requiredCodeOwnersEntries.map(({ owners }) => owners).toString()}`);
+    core.info(`Required code owners: ${uniqBy(requiredCodeOwnersEntries, 'owners').toString()}`);
     core.info(`PR already approved by: ${approverLogins.toString()}`);
-    core.info(`Current number of approvals: ${numberOfApprovals}`);
+    core.info(`Current number of approvals satisfied: ${numberOfApprovals}`);
 
     return numberOfApprovals >= Number(number_of_reviewers);
   };

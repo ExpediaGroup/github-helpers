@@ -25,6 +25,8 @@ var octokit = __webpack_require__(6161);
 var get_core_member_logins = __webpack_require__(7290);
 // EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
 var bluebird = __webpack_require__(8710);
+// EXTERNAL MODULE: ./node_modules/lodash/lodash.js
+var lodash = __webpack_require__(250);
 // EXTERNAL MODULE: ./src/utils/convert-to-team-slug.ts
 var convert_to_team_slug = __webpack_require__(489);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
@@ -91,6 +93,7 @@ var approvals_satisfied_awaiter = (undefined && undefined.__awaiter) || function
 
 
 
+
 class ApprovalsSatisfied extends generated/* HelperInputs */.s {
 }
 const approvalsSatisfied = ({ teams, number_of_reviewers = '1', pull_number } = {}) => approvals_satisfied_awaiter(void 0, void 0, void 0, function* () {
@@ -115,9 +118,9 @@ const approvalsSatisfied = ({ teams, number_of_reviewers = '1', pull_number } = 
         const numberOfCollectiveApprovalsAcrossTeams = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
         const numberOfApprovalsForSingleTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
         const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovalsAcrossTeams : numberOfApprovalsForSingleTeam;
-        core.info(`Required code owners: ${requiredCodeOwnersEntries.map(({ owners }) => owners).toString()}`);
+        core.info(`Required code owners: ${(0,lodash.uniqBy)(requiredCodeOwnersEntries, 'owners').toString()}`);
         core.info(`PR already approved by: ${approverLogins.toString()}`);
-        core.info(`Current number of approvals: ${numberOfApprovals}`);
+        core.info(`Current number of approvals satisfied: ${numberOfApprovals}`);
         return numberOfApprovals >= Number(number_of_reviewers);
     });
     const booleans = yield Promise.all(requiredCodeOwnersEntries.map(codeOwnersEntrySatisfiesApprovals));
