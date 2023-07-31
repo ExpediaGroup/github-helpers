@@ -17,6 +17,7 @@ export type PipelineState = RestEndpointMethodTypes['repos']['createCommitStatus
 export type DeploymentState = RestEndpointMethodTypes['repos']['createDeploymentStatus']['parameters']['state'];
 export type PullRequest = RestEndpointMethodTypes['pulls']['get']['response']['data'];
 export type PullRequestList = RestEndpointMethodTypes['pulls']['list']['response']['data'];
+export type PullRequestReviewList = RestEndpointMethodTypes['pulls']['listReviews']['response']['data'];
 export type SinglePullRequest = PullRequestList[number];
 export type PullRequestBranchesList = RestEndpointMethodTypes['repos']['listBranches']['response']['data'];
 export type ChangedFilesList = RestEndpointMethodTypes['pulls']['listFiles']['response']['data'];

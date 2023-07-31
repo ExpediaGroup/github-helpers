@@ -19,6 +19,7 @@ import { map } from 'bluebird';
 import { convertToTeamSlug } from '../utils/convert-to-team-slug';
 import { CodeOwnersEntry } from 'codeowners-utils';
 import * as core from '@actions/core';
+import { paginateAllReviews } from '../utils/paginate-all-reviews';
 
 export class ApprovalsSatisfied extends HelperInputs {
   teams?: string;
@@ -28,7 +29,7 @@ export class ApprovalsSatisfied extends HelperInputs {
 
 export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pull_number }: ApprovalsSatisfied = {}) => {
   const prNumber = pull_number ? Number(pull_number) : context.issue.number;
-  const { data: reviews } = await octokit.pulls.listReviews({ pull_number: prNumber, ...context.repo });
+  const reviews = await paginateAllReviews(prNumber);
   const approverLogins = reviews
     .filter(({ state }) => state === 'APPROVED')
     .map(({ user }) => user?.login)
