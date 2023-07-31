@@ -19,6 +19,7 @@ import { map } from 'bluebird';
 import { convertToTeamSlug } from '../utils/convert-to-team-slug';
 import { CodeOwnersEntry } from 'codeowners-utils';
 import * as core from '@actions/core';
+import { paginateAllReviews } from '../utils/paginate-all-reviews';
 
 export class ApprovalsSatisfied extends HelperInputs {
   teams?: string;
@@ -28,11 +29,13 @@ export class ApprovalsSatisfied extends HelperInputs {
 
 export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pull_number }: ApprovalsSatisfied = {}) => {
   const prNumber = pull_number ? Number(pull_number) : context.issue.number;
-  const { data: reviews } = await octokit.pulls.listReviews({ pull_number: prNumber, ...context.repo });
+  const reviews = await paginateAllReviews(prNumber);
   const approverLogins = reviews
     .filter(({ state }) => state === 'APPROVED')
     .map(({ user }) => user?.login)
     .filter(Boolean);
+  core.debug(`PR already approved by: ${approverLogins.toString()}`);
+
   const teamsList = teams?.split('\n');
   const requiredCodeOwnersEntries = teamsList ? createArtificialCodeOwnersEntry(teamsList) : await getRequiredCodeOwnersEntries(prNumber);
 
@@ -51,13 +54,12 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
     const numberOfApprovalsForSingleTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
     const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovalsAcrossTeams : numberOfApprovalsForSingleTeam;
 
-    core.info(`Required code owners: ${requiredCodeOwnersEntries.map(({ owners }) => owners).toString()}`);
-    core.info(`PR already approved by: ${approverLogins.toString()}`);
-    core.info(`Current number of approvals: ${numberOfApprovals}`);
+    core.debug(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
 
     return numberOfApprovals >= Number(number_of_reviewers);
   };
 
+  core.debug(`Required code owners: ${requiredCodeOwnersEntries.map(({ owners }) => owners).toString()}`);
   const booleans = await Promise.all(requiredCodeOwnersEntries.map(codeOwnersEntrySatisfiesApprovals));
   return booleans.every(Boolean);
 };

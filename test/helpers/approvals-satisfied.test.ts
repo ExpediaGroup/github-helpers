@@ -39,57 +39,63 @@ jest.mock('@actions/github', () => ({
   }))
 }));
 jest.mock('../../src/utils/get-core-member-logins');
+const mockPagination = (result: unknown) => {
+  (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async ({ page }) => {
+    return page === 1 ? result : { data: [] };
+  });
+};
 
 describe('approvalsSatisfied', () => {
   it('should return false when passing teams override and required approvals are not met', async () => {
-    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+    mockPagination({
       data: [
         {
           state: 'APPROVED',
           user: { login: 'user3' }
         }
       ]
-    }));
+    });
+
     const result = await approvalsSatisfied({ teams: 'team1', pull_number: '12345' });
-    expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner' });
+    expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
     expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(false);
   });
 
   it('should return true when passing teams override and required approvals are met', async () => {
-    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+    mockPagination({
       data: [
         {
           state: 'APPROVED',
           user: { login: 'user1' }
         }
       ]
-    }));
+    });
     const result = await approvalsSatisfied({ teams: 'team1', pull_number: '12345' });
-    expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner' });
+    expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
     expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(true);
   });
 
   it('should return false when a core member has not approved', async () => {
     (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@ExpediaGroup/team1'] }]);
-    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+    mockPagination({
       data: [
         {
           state: 'APPROVED',
           user: { login: 'user3' }
         }
       ]
-    }));
+    });
     const result = await approvalsSatisfied({ pull_number: '12345' });
-    expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner' });
+    expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
     expect(getRequiredCodeOwnersEntries).toHaveBeenCalledWith(12345);
     expect(result).toBe(false);
   });
 
   it('should return true when a core member has approved', async () => {
     (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@ExpediaGroup/team1'] }]);
-    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+    mockPagination({
       data: [
         {
           state: 'APPROVED',
@@ -100,7 +106,7 @@ describe('approvalsSatisfied', () => {
           user: { login: 'user3' }
         }
       ]
-    }));
+    });
     const result = await approvalsSatisfied();
     expect(result).toBe(true);
   });
@@ -111,7 +117,7 @@ describe('approvalsSatisfied', () => {
       { owners: ['@ExpediaGroup/team2'] },
       { owners: ['@ExpediaGroup/team3'] }
     ]);
-    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+    mockPagination({
       data: [
         {
           state: 'APPROVED',
@@ -122,7 +128,7 @@ describe('approvalsSatisfied', () => {
           user: { login: 'user3' }
         }
       ]
-    }));
+    });
     const result = await approvalsSatisfied();
     expect(result).toBe(false);
   });
@@ -133,7 +139,7 @@ describe('approvalsSatisfied', () => {
       { owners: ['@ExpediaGroup/team2'] },
       { owners: ['@ExpediaGroup/team3'] }
     ]);
-    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+    mockPagination({
       data: [
         {
           state: 'APPROVED',
@@ -148,7 +154,7 @@ describe('approvalsSatisfied', () => {
           user: { login: 'user3' }
         }
       ]
-    }));
+    });
     const result = await approvalsSatisfied();
     expect(result).toBe(true);
   });
@@ -158,7 +164,7 @@ describe('approvalsSatisfied', () => {
       { owners: ['@ExpediaGroup/team2'] },
       { owners: ['@ExpediaGroup/team4'] }
     ]);
-    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+    mockPagination({
       data: [
         {
           state: 'APPROVED',
@@ -173,7 +179,7 @@ describe('approvalsSatisfied', () => {
           user: { login: 'user4' }
         }
       ]
-    }));
+    });
     const result = await approvalsSatisfied({ number_of_reviewers: '2' });
     expect(result).toBe(false);
   });
@@ -183,7 +189,7 @@ describe('approvalsSatisfied', () => {
       { owners: ['@ExpediaGroup/team2'] },
       { owners: ['@ExpediaGroup/team4'] }
     ]);
-    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+    mockPagination({
       data: [
         {
           state: 'APPROVED',
@@ -202,42 +208,42 @@ describe('approvalsSatisfied', () => {
           user: { login: 'user5' }
         }
       ]
-    }));
+    });
     const result = await approvalsSatisfied({ number_of_reviewers: '2' });
     expect(result).toBe(true);
   });
 
   it('should return false when not enough collective approvals from shared owners are met', async () => {
     (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@ExpediaGroup/team4', '@ExpediaGroup/team5'] }]);
-    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+    mockPagination({
       data: [
         {
           state: 'APPROVED',
           user: { login: 'user4' }
         }
       ]
-    }));
+    });
     const result = await approvalsSatisfied({ number_of_reviewers: '2' });
     expect(result).toBe(false);
   });
 
   it('should return false when not enough collective approvals from shared owners are met even if user is in both groups', async () => {
     (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@ExpediaGroup/team4', '@ExpediaGroup/team5'] }]);
-    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+    mockPagination({
       data: [
         {
           state: 'APPROVED',
           user: { login: 'user5' }
         }
       ]
-    }));
+    });
     const result = await approvalsSatisfied({ number_of_reviewers: '2' });
     expect(result).toBe(false);
   });
 
   it('should return true when enough collective approvals from shared owners are met', async () => {
     (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@ExpediaGroup/team4', '@ExpediaGroup/team5'] }]);
-    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+    mockPagination({
       data: [
         {
           state: 'APPROVED',
@@ -248,7 +254,7 @@ describe('approvalsSatisfied', () => {
           user: { login: 'user6' }
         }
       ]
-    }));
+    });
     const result = await approvalsSatisfied({ number_of_reviewers: '2' });
     expect(result).toBe(true);
   });
@@ -258,7 +264,7 @@ describe('approvalsSatisfied', () => {
       { owners: ['@ExpediaGroup/team4'] },
       { owners: ['@ExpediaGroup/team5', '@ExpediaGroup/team6'] }
     ]);
-    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+    mockPagination({
       data: [
         {
           state: 'APPROVED',
@@ -269,7 +275,7 @@ describe('approvalsSatisfied', () => {
           user: { login: 'user8' }
         }
       ]
-    }));
+    });
     const result = await approvalsSatisfied({ number_of_reviewers: '2' });
     expect(result).toBe(false);
   });
@@ -279,7 +285,7 @@ describe('approvalsSatisfied', () => {
       { owners: ['@ExpediaGroup/team4'] },
       { owners: ['@ExpediaGroup/team5', '@ExpediaGroup/team6'] }
     ]);
-    (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async () => ({
+    mockPagination({
       data: [
         {
           state: 'APPROVED',
@@ -294,7 +300,7 @@ describe('approvalsSatisfied', () => {
           user: { login: 'user8' }
         }
       ]
-    }));
+    });
     const result = await approvalsSatisfied({ number_of_reviewers: '2' });
     expect(result).toBe(true);
   });
