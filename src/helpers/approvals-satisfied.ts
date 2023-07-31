@@ -18,6 +18,7 @@ import { getRequiredCodeOwnersEntries } from '../utils/get-core-member-logins';
 import { map } from 'bluebird';
 import { convertToTeamSlug } from '../utils/convert-to-team-slug';
 import { CodeOwnersEntry } from 'codeowners-utils';
+import * as core from '@actions/core';
 
 export class ApprovalsSatisfied extends HelperInputs {
   teams?: string;
@@ -49,6 +50,10 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
     const numberOfCollectiveApprovalsAcrossTeams = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
     const numberOfApprovalsForSingleTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
     const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovalsAcrossTeams : numberOfApprovalsForSingleTeam;
+
+    core.info(`Required code owners: ${requiredCodeOwnersEntries.map(({ owners }) => owners).toString()}`);
+    core.info(`PR already approved by: ${approverLogins.toString()}`);
+    core.info(`Current number of approvals: ${numberOfApprovals}`);
 
     return numberOfApprovals >= Number(number_of_reviewers);
   };
