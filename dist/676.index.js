@@ -265,7 +265,7 @@ const getQueuedPullRequests = () => manage_merge_queue_awaiter(void 0, void 0, v
 });
 const enableAutoMerge = (pullRequestId, mergeMethod = 'SQUASH') => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
     try {
-        return (0,octokit/* octokitGraphql */.o)(`
+        return yield (0,octokit/* octokitGraphql */.o)(`
     mutation {
       enablePullRequestAutoMerge(input: { pullRequestId: "${pullRequestId}", mergeMethod: ${mergeMethod} }) {
         clientMutationId
