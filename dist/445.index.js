@@ -17,7 +17,7 @@ const path_1 = __importDefault(__webpack_require__(1017));
 const fs_1 = __importDefault(__webpack_require__(7147));
 const util_1 = __importDefault(__webpack_require__(3837));
 const ignore_1 = __importDefault(__webpack_require__(1230));
-const cross_spawn_1 = __importDefault(__webpack_require__(7881));
+const cross_spawn_1 = __importDefault(__webpack_require__(2746));
 let readFile = util_1.default.promisify(fs_1.default.readFile);
 /**
  * Parse a CODEOWNERS file into an array of entries (will be in reverse order
@@ -162,7 +162,7 @@ exports.findUnmatchedFiles = findUnmatchedFiles;
 
 /***/ }),
 
-/***/ 7881:
+/***/ 2746:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
@@ -630,7 +630,6 @@ const EMPTY = ''
 const SPACE = ' '
 const ESCAPE = '\\'
 const REGEX_TEST_BLANK_LINE = /^\s+$/
-const REGEX_INVALID_TRAILING_BACKSLASH = /(?:[^\\]|^)\\$/
 const REGEX_REPLACE_LEADING_EXCAPED_EXCLAMATION = /^\\!/
 const REGEX_REPLACE_LEADING_EXCAPED_HASH = /^\\#/
 const REGEX_SPLITALL_CRLF = /\r?\n/g
@@ -642,14 +641,10 @@ const REGEX_SPLITALL_CRLF = /\r?\n/g
 const REGEX_TEST_INVALID_PATH = /^\.*\/|^\.+$/
 
 const SLASH = '/'
-
-// Do not use ternary expression here, since "istanbul ignore next" is buggy
-let TMP_KEY_IGNORE = 'node-ignore'
-/* istanbul ignore else */
-if (typeof Symbol !== 'undefined') {
-  TMP_KEY_IGNORE = Symbol.for('node-ignore')
-}
-const KEY_IGNORE = TMP_KEY_IGNORE
+const KEY_IGNORE = typeof Symbol !== 'undefined'
+  ? Symbol.for('node-ignore')
+  /* istanbul ignore next */
+  : 'node-ignore'
 
 const define = (object, key, value) =>
   Object.defineProperty(object, key, {value})
@@ -816,27 +811,18 @@ const REPLACERS = [
       : '\\/.+'
   ],
 
-  // normal intermediate wildcards
+  // intermediate wildcards
   [
     // Never replace escaped '*'
     // ignore rule '\*' will match the path '*'
 
     // 'abc.*/' -> go
-    // 'abc.*'  -> skip this rule,
-    //    coz trailing single wildcard will be handed by [trailing wildcard]
-    /(^|[^\\]+)(\\\*)+(?=.+)/g,
+    // 'abc.*'  -> skip this rule
+    /(^|[^\\]+)\\\*(?=.+)/g,
 
     // '*.js' matches '.js'
     // '*.js' doesn't match 'abc'
-    (_, p1, p2) => {
-      // 1.
-      // > An asterisk "*" matches anything except a slash.
-      // 2.
-      // > Other consecutive asterisks are considered regular asterisks
-      // > and will match according to the previous rules.
-      const unescaped = p2.replace(/\\\*/g, '[^\\/]*')
-      return p1 + unescaped
-    }
+    (_, p1) => `${p1}[^\\/]*`
   ],
 
   [
@@ -947,7 +933,6 @@ const isString = subject => typeof subject === 'string'
 const checkPattern = pattern => pattern
   && isString(pattern)
   && !REGEX_TEST_BLANK_LINE.test(pattern)
-  && !REGEX_INVALID_TRAILING_BACKSLASH.test(pattern)
 
   // > A line starting with # serves as a comment.
   && pattern.indexOf('#') !== 0
@@ -1213,7 +1198,7 @@ module.exports = factory
 
 // Windows
 // --------------------------------------------------------------
-/* istanbul ignore if */
+/* istanbul ignore if  */
 if (
   // Detect `process` so that it can run in browsers.
   typeof process !== 'undefined'

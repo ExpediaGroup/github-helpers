@@ -50,7 +50,7 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
     });
     const codeOwnerLogins = teamsAndLoginsLists.flat().map(({ login }) => login);
 
-    const numberOfCollectiveApprovalsAcrossTeams = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
+    const numberOfCollectiveApprovalsAcrossTeams = approverLogins.filter(login => login && codeOwnerLogins.includes(login)).length;
     const numberOfApprovalsForSingleTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
     const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovalsAcrossTeams : numberOfApprovalsForSingleTeam;
 

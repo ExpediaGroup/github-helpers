@@ -36,7 +36,7 @@ export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
   }
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: githubContext.issue.number, ...githubContext.repo });
 
-  const { state, message } = await setMergeSafetyStatus(pullRequest as PullRequest, inputs);
+  const { state, message } = await setMergeSafetyStatus(pullRequest, inputs);
   if (state === 'failure') {
     core.setFailed(message);
   }

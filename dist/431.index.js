@@ -113,7 +113,7 @@ const approvalsSatisfied = ({ teams, number_of_reviewers = '1', pull_number } = 
             return data.map(({ login }) => ({ team, login }));
         }));
         const codeOwnerLogins = teamsAndLoginsLists.flat().map(({ login }) => login);
-        const numberOfCollectiveApprovalsAcrossTeams = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
+        const numberOfCollectiveApprovalsAcrossTeams = approverLogins.filter(login => login && codeOwnerLogins.includes(login)).length;
         const numberOfApprovalsForSingleTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
         const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovalsAcrossTeams : numberOfApprovalsForSingleTeam;
         core.debug(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);

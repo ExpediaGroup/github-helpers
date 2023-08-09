@@ -26,9 +26,7 @@ export class CreatePR extends HelperInputs {
 export const createPr = async ({ title, body, head = context.ref.replace('refs/heads/', ''), base }: CreatePR) => {
   const pr_base = base || (await getDefaultBranch());
   await updateHeadWithBaseBranch(pr_base, head);
-  const {
-    data: { number }
-  } = await octokit.pulls.create({
+  const { data } = await octokit.pulls.create({
     title,
     head,
     base: pr_base,
@@ -36,7 +34,7 @@ export const createPr = async ({ title, body, head = context.ref.replace('refs/h
     maintainer_can_modify: true,
     ...context.repo
   });
-  return number;
+  return data;
 };
 
 const updateHeadWithBaseBranch = (base: string, head: string) =>

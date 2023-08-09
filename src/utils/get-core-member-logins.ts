@@ -29,7 +29,7 @@ export const getCoreMemberLogins = async (pull_number: number, teams?: string[])
 export const getRequiredCodeOwnersEntries = async (pull_number: number): Promise<CodeOwnersEntry[]> => {
   const codeOwners = (await loadOwners(process.cwd())) ?? [];
   const changedFilePaths = await getChangedFilepaths(pull_number);
-  return changedFilePaths.map(filePath => matchFile(filePath, codeOwners)).filter(Boolean);
+  return changedFilePaths.map(filePath => matchFile(filePath, codeOwners)).filter(Boolean) as CodeOwnersEntry[];
 };
 
 const getCoreTeamsAndLogins = async (codeOwners?: string[]) => {

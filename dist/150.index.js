@@ -51,9 +51,9 @@ class CreatePR extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperIn
 const createPr = ({ title, body, head = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.ref.replace('refs/heads/', ''), base }) => __awaiter(void 0, void 0, void 0, function* () {
     const pr_base = base || (yield (0,_utils_get_default_branch__WEBPACK_IMPORTED_MODULE_2__/* .getDefaultBranch */ ._)());
     yield updateHeadWithBaseBranch(pr_base, head);
-    const { data: { number } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.create */ .K.pulls.create(Object.assign({ title,
+    const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.create */ .K.pulls.create(Object.assign({ title,
         head, base: pr_base, body, maintainer_can_modify: true }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-    return number;
+    return data;
 });
 const updateHeadWithBaseBranch = (base, head) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.merge */ .K.repos.merge(Object.assign({ base: head, head: base }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
 
