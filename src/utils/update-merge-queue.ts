@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import { JUMP_THE_QUEUE_PR_LABEL, MERGE_QUEUE_STATUS, QUEUED_FOR_MERGE_PREFIX } from '../constants';
-import { PullRequestList } from '../types/github';
+import { PullRequest, PullRequestList } from '../types/github';
 import { context } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
@@ -53,7 +53,7 @@ const updateQueuePosition = async (pr: QueuedPr, index: number) => {
       state: 'success',
       description: 'This PR is next to merge.'
     });
-    await Promise.all([removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, number), updatePrWithMainline(pullRequest)]);
+    await Promise.all([removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, number), updatePrWithMainline(pullRequest as PullRequest)]);
   }
 
   return Promise.all([

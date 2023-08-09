@@ -25,5 +25,5 @@ export const paginateAllReviews = async (prNumber: number, page = 1): Promise<Pu
   if (!response.data.length) {
     return [];
   }
-  return response.data.concat(await paginateAllReviews(prNumber, page + 1));
+  return (response.data as PullRequestReviewList).concat(await paginateAllReviews(prNumber, page + 1));
 };
