@@ -53,4 +53,5 @@ export class HelperInputs {
   delimiter?: string;
   team?: string;
   ignore_deleted?: string;
+  return_full_payload?: string;
 }
