@@ -125,6 +125,10 @@ inputs:
   ignore_deleted:
     description: 'Set to true to ignore deleted files (for get-changed-files helper)'
     required: false
+  return_full_payload:
+    description: 'Return full payload from GitHub rather than a trimmed-down version of the response'
+    default: false
+    required: false
 outputs:
   output:
     description: 'The output of the helper'

@@ -11,6 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import * as core from '@actions/core';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { createPr } from '../../src/helpers/create-pr';
@@ -34,6 +35,7 @@ jest.mock('@actions/github', () => ({
 }));
 (octokit.pulls.create as unknown as Mocktokit).mockImplementation(async () => ({
   data: {
+    title: 'title',
     number: 100
   }
 }));
@@ -85,6 +87,16 @@ describe('createPr', () => {
       body
     });
     expect(result).toBe(100);
+  });
+
+  it('should return the full response object', async () => {
+    (core.getBooleanInput as jest.Mock).mockReturnValue(true);
+    const result = await createPr({
+      title,
+      body,
+      return_full_payload: 'true'
+    });
+    expect(result).toMatchObject({ title, number: 100 });
   });
 
   it('should create pull from specified head', async () => {

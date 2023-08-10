@@ -11,6 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import * as core from '@actions/core';
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
@@ -21,14 +22,13 @@ export class CreatePR extends HelperInputs {
   body = '';
   head?: string;
   base?: string;
+  return_full_payload?: string;
 }
 
 export const createPr = async ({ title, body, head = context.ref.replace('refs/heads/', ''), base }: CreatePR) => {
   const pr_base = base || (await getDefaultBranch());
   await updateHeadWithBaseBranch(pr_base, head);
-  const {
-    data: { number }
-  } = await octokit.pulls.create({
+  const { data } = await octokit.pulls.create({
     title,
     head,
     base: pr_base,
@@ -36,7 +36,8 @@ export const createPr = async ({ title, body, head = context.ref.replace('refs/h
     maintainer_can_modify: true,
     ...context.repo
   });
-  return number;
+  const return_full_payload = core.getBooleanInput('return_full_payload');
+  return return_full_payload ? data : data.number;
 };
 
 const updateHeadWithBaseBranch = (base: string, head: string) =>
