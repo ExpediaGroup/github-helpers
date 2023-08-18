@@ -146,29 +146,36 @@ const sortPrsByQueuePosition = (queuedPrs) => queuedPrs
     return {
         number: pr.number,
         label,
-        queuePosition
+        queuePosition,
+        sha: pr.head.sha
     };
 })
     .sort((pr1, pr2) => pr1.queuePosition - pr2.queuePosition);
 const updateQueuePosition = (pr, index) => __awaiter(void 0, void 0, void 0, function* () {
-    const { number, label, queuePosition } = pr;
+    const { number, label, queuePosition, sha } = pr;
     const newQueuePosition = index + 1;
     if (!label || isNaN(queuePosition) || queuePosition === newQueuePosition) {
         return;
     }
     if (newQueuePosition === 1) {
-        const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: number }, github.context.repo));
+        const { data: firstPrInQueue } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: number }, github.context.repo));
         yield (0,set_commit_status.setCommitStatus)({
-            sha: pullRequest.head.sha,
+            sha: firstPrInQueue.head.sha,
             context: constants/* MERGE_QUEUE_STATUS */.Cb,
             state: 'success',
             description: 'This PR is next to merge.'
         });
-        yield Promise.all([(0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, number), (0,prepare_queued_pr_for_merge.updatePrWithMainline)(pullRequest)]);
+        yield Promise.all([(0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, number), (0,prepare_queued_pr_for_merge.updatePrWithDefaultBranch)(firstPrInQueue)]);
     }
     return Promise.all([
         octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${newQueuePosition}`], issue_number: number }, github.context.repo)),
-        (0,remove_label.removeLabelIfExists)(label, number)
+        (0,remove_label.removeLabelIfExists)(label, number),
+        (0,set_commit_status.setCommitStatus)({
+            sha,
+            context: constants/* MERGE_QUEUE_STATUS */.Cb,
+            state: 'pending',
+            description: 'This PR is in line to merge.'
+        })
     ]);
 });
 
@@ -288,7 +295,7 @@ const enableAutoMerge = (pullRequestId, mergeMethod = 'SQUASH') => manage_merge_
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "prepareQueuedPrForMerge": () => (/* binding */ prepareQueuedPrForMerge),
-/* harmony export */   "updatePrWithMainline": () => (/* binding */ updatePrWithMainline)
+/* harmony export */   "updatePrWithDefaultBranch": () => (/* binding */ updatePrWithDefaultBranch)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
@@ -327,7 +334,7 @@ const prepareQueuedPrForMerge = () => __awaiter(void 0, void 0, void 0, function
     const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
     const pullRequest = findNextPrToMerge(data);
     if (pullRequest) {
-        return updatePrWithMainline(pullRequest);
+        return updatePrWithDefaultBranch(pullRequest);
     }
 });
 const findNextPrToMerge = (pullRequests) => {
@@ -335,7 +342,7 @@ const findNextPrToMerge = (pullRequests) => {
     return (_a = pullRequests.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_1__/* .JUMP_THE_QUEUE_PR_LABEL */ .nJ]))) !== null && _a !== void 0 ? _a : pullRequests.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_1__/* .FIRST_QUEUED_PR_LABEL */ .IH]));
 };
 const hasRequiredLabels = (pr, requiredLabels) => requiredLabels.every(mergeQueueLabel => pr.labels.some(label => label.name === mergeQueueLabel));
-const updatePrWithMainline = (pullRequest) => __awaiter(void 0, void 0, void 0, function* () {
+const updatePrWithDefaultBranch = (pullRequest) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d;
     if (((_a = pullRequest.head.user) === null || _a === void 0 ? void 0 : _a.login) && ((_b = pullRequest.base.user) === null || _b === void 0 ? void 0 : _b.login) && ((_c = pullRequest.head.user) === null || _c === void 0 ? void 0 : _c.login) !== ((_d = pullRequest.base.user) === null || _d === void 0 ? void 0 : _d.login)) {
         try {

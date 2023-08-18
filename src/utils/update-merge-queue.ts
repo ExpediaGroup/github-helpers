@@ -17,7 +17,7 @@ import { context } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
 import { removeLabelIfExists } from '../helpers/remove-label';
-import { updatePrWithMainline } from '../helpers/prepare-queued-pr-for-merge';
+import { updatePrWithDefaultBranch } from '../helpers/prepare-queued-pr-for-merge';
 import { setCommitStatus } from '../helpers/set-commit-status';
 
 export const updateMergeQueue = (queuedPrs: PullRequestList) => {
@@ -25,7 +25,7 @@ export const updateMergeQueue = (queuedPrs: PullRequestList) => {
   return map(sortedPrs, updateQueuePosition);
 };
 
-const sortPrsByQueuePosition = (queuedPrs: PullRequestList): QueuedPr[] =>
+const sortPrsByQueuePosition = (queuedPrs: PullRequestList) =>
   queuedPrs
     .map(pr => {
       const label = pr.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
@@ -34,26 +34,27 @@ const sortPrsByQueuePosition = (queuedPrs: PullRequestList): QueuedPr[] =>
       return {
         number: pr.number,
         label,
-        queuePosition
+        queuePosition,
+        sha: pr.head.sha
       };
     })
     .sort((pr1, pr2) => pr1.queuePosition - pr2.queuePosition);
 
-const updateQueuePosition = async (pr: QueuedPr, index: number) => {
-  const { number, label, queuePosition } = pr;
+const updateQueuePosition = async (pr: ReturnType<typeof sortPrsByQueuePosition>[number], index: number) => {
+  const { number, label, queuePosition, sha } = pr;
   const newQueuePosition = index + 1;
   if (!label || isNaN(queuePosition) || queuePosition === newQueuePosition) {
     return;
   }
   if (newQueuePosition === 1) {
-    const { data: pullRequest } = await octokit.pulls.get({ pull_number: number, ...context.repo });
+    const { data: firstPrInQueue } = await octokit.pulls.get({ pull_number: number, ...context.repo });
     await setCommitStatus({
-      sha: pullRequest.head.sha,
+      sha: firstPrInQueue.head.sha,
       context: MERGE_QUEUE_STATUS,
       state: 'success',
       description: 'This PR is next to merge.'
     });
-    await Promise.all([removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, number), updatePrWithMainline(pullRequest as PullRequest)]);
+    await Promise.all([removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, number), updatePrWithDefaultBranch(firstPrInQueue as PullRequest)]);
   }
 
   return Promise.all([
@@ -62,12 +63,12 @@ const updateQueuePosition = async (pr: QueuedPr, index: number) => {
       issue_number: number,
       ...context.repo
     }),
-    removeLabelIfExists(label, number)
+    removeLabelIfExists(label, number),
+    setCommitStatus({
+      sha,
+      context: MERGE_QUEUE_STATUS,
+      state: 'pending',
+      description: 'This PR is in line to merge.'
+    })
   ]);
-};
-
-type QueuedPr = {
-  number: number;
-  label?: string;
-  queuePosition: number;
 };
