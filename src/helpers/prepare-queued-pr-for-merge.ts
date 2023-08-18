@@ -26,7 +26,7 @@ export const prepareQueuedPrForMerge = async () => {
   });
   const pullRequest = findNextPrToMerge(data);
   if (pullRequest) {
-    return updatePrWithMainline(pullRequest as PullRequest);
+    return updatePrWithDefaultBranch(pullRequest as PullRequest);
   }
 };
 
@@ -37,7 +37,7 @@ const findNextPrToMerge = (pullRequests: PullRequestList) =>
 const hasRequiredLabels = (pr: SinglePullRequest, requiredLabels: string[]) =>
   requiredLabels.every(mergeQueueLabel => pr.labels.some(label => label.name === mergeQueueLabel));
 
-export const updatePrWithMainline = async (pullRequest: PullRequest) => {
+export const updatePrWithDefaultBranch = async (pullRequest: PullRequest) => {
   if (pullRequest.head.user?.login && pullRequest.base.user?.login && pullRequest.head.user?.login !== pullRequest.base.user?.login) {
     try {
       // update fork default branch with upstream

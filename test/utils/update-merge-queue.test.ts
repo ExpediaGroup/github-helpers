@@ -18,7 +18,7 @@ import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
 import { removeLabelIfExists } from '../../src/helpers/remove-label';
 import { updateMergeQueue } from '../../src/utils/update-merge-queue';
-import { updatePrWithMainline } from '../../src/helpers/prepare-queued-pr-for-merge';
+import { updatePrWithDefaultBranch } from '../../src/helpers/prepare-queued-pr-for-merge';
 import { setCommitStatus } from '../../src/helpers/set-commit-status';
 
 jest.mock('../../src/helpers/remove-label');
@@ -48,10 +48,12 @@ describe('updateMergeQueue', () => {
   describe('pr merge case', () => {
     const queuedPrs = [
       {
+        head: { sha: 'sha123' },
         number: 123,
         labels: [{ name: 'QUEUED FOR MERGE #2' }]
       },
       {
+        head: { sha: 'sha456' },
         number: 456,
         labels: [{ name: 'QUEUED FOR MERGE #3' }]
       }
@@ -79,19 +81,19 @@ describe('updateMergeQueue', () => {
     });
 
     it('should call updatePrWithDefaultBranch with correct params', () => {
-      expect(updatePrWithMainline).toHaveBeenCalledWith({ head: { sha: 'sha123' } });
+      expect(updatePrWithDefaultBranch).toHaveBeenCalledWith({ head: { sha: 'sha123' } });
     });
   });
 
   describe('middle pr taken out of queue case', () => {
     const queuedPrs = [
       {
-        head: { sha: 'sha1' },
+        head: { sha: 'sha123' },
         number: 123,
         labels: [{ name: 'QUEUED FOR MERGE #1' }]
       },
       {
-        head: { sha: 'sha3' },
+        head: { sha: 'sha456' },
         number: 456,
         labels: [{ name: 'QUEUED FOR MERGE #3' }]
       }
@@ -118,20 +120,20 @@ describe('updateMergeQueue', () => {
       expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #3', 456);
     });
 
-    it('should not update pr with mainline', () => {
-      expect(updatePrWithMainline).not.toHaveBeenCalled();
+    it('should not update pr with default branch', () => {
+      expect(updatePrWithDefaultBranch).not.toHaveBeenCalled();
     });
   });
 
   describe('first pr taken out of queue case', () => {
     const queuedPrs = [
       {
-        head: { sha: 'sha2' },
+        head: { sha: 'sha123' },
         number: 123,
         labels: [{ name: 'QUEUED FOR MERGE #2' }]
       },
       {
-        head: { sha: 'sha3' },
+        head: { sha: 'sha456' },
         number: 456,
         labels: [{ name: 'QUEUED FOR MERGE #3' }]
       }
@@ -167,18 +169,20 @@ describe('updateMergeQueue', () => {
       });
     });
 
-    it('should update pr with mainline', () => {
-      expect(updatePrWithMainline).toHaveBeenCalled();
+    it('should update pr with default branch', () => {
+      expect(updatePrWithDefaultBranch).toHaveBeenCalled();
     });
   });
 
   describe('pr jumping the queue case', () => {
     const queuedPrs = [
       {
+        head: { sha: 'sha123' },
         number: 123,
         labels: [{ name: JUMP_THE_QUEUE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
       },
       {
+        head: { sha: 'sha456' },
         number: 456,
         labels: [{ name: 'QUEUED FOR MERGE #1' }]
       }
@@ -207,8 +211,23 @@ describe('updateMergeQueue', () => {
       expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #1', 456);
     });
 
-    it('should not call updatePrWithDefaultBranch', () => {
-      expect(updatePrWithMainline).toHaveBeenCalledWith({ head: { sha: 'sha123' } });
+    it('should set the correct commit statuses', () => {
+      expect(setCommitStatus).toHaveBeenCalledWith({
+        sha: 'sha123',
+        context: MERGE_QUEUE_STATUS,
+        state: 'success',
+        description: 'This PR is next to merge.'
+      });
+      expect(setCommitStatus).toHaveBeenCalledWith({
+        sha: 'sha456',
+        context: MERGE_QUEUE_STATUS,
+        state: 'pending',
+        description: 'This PR is in line to merge.'
+      });
+    });
+
+    it('should call updatePrWithDefaultBranch', () => {
+      expect(updatePrWithDefaultBranch).toHaveBeenCalledWith({ head: { sha: 'sha123' } });
     });
   });
 });
