@@ -127,13 +127,12 @@ inputs:
     required: false
   return_full_payload:
     description: 'Return full payload from GitHub rather than a trimmed-down version of the response'
-    default: false
     required: false
 outputs:
   output:
     description: 'The output of the helper'
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/index.js'
 branding:
   icon: user-check
