@@ -132,7 +132,7 @@ outputs:
   output:
     description: 'The output of the helper'
 runs:
-  using: 'node20'
+  using: 'node16'
   main: 'dist/index.js'
 branding:
   icon: user-check
