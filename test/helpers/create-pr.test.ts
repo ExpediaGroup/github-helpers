@@ -11,7 +11,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import * as core from '@actions/core';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { createPr } from '../../src/helpers/create-pr';
@@ -90,7 +89,6 @@ describe('createPr', () => {
   });
 
   it('should return the full response object', async () => {
-    (core.getBooleanInput as jest.Mock).mockReturnValue(true);
     const result = await createPr({
       title,
       body,
