@@ -35,7 +35,7 @@ export const createPr = async ({ title, body, head = context.ref.replace('refs/h
     maintainer_can_modify: true,
     ...context.repo
   });
-  return return_full_payload ? data : data.number;
+  return return_full_payload === 'true' ? data : data.number;
 };
 
 const updateHeadWithBaseBranch = (base: string, head: string) =>

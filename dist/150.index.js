@@ -53,7 +53,7 @@ const createPr = ({ title, body, head = _actions_github__WEBPACK_IMPORTED_MODULE
     yield updateHeadWithBaseBranch(pr_base, head);
     const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.create */ .K.pulls.create(Object.assign({ title,
         head, base: pr_base, body, maintainer_can_modify: true }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-    return return_full_payload ? data : data.number;
+    return return_full_payload === 'true' ? data : data.number;
 });
 const updateHeadWithBaseBranch = (base, head) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.merge */ .K.repos.merge(Object.assign({ base: head, head: base }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
 
