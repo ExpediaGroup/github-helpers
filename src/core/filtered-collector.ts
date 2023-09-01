@@ -14,7 +14,7 @@ limitations under the License.
 import { JsonObject } from '@backstage/types';
 import { Entity } from '@backstage/catalog-model';
 
-function pick<T, K extends keyof T>(obj: T, whitelist: K[]): Pick<T, K> {
+function pick<T extends {}, K extends keyof T>(obj: T, whitelist: K[]): Pick<T, K> {
   return whitelist.reduce((newObj, key) => {
     if (key in obj) {
       // eslint-disable-next-line functional/immutable-data
@@ -25,7 +25,7 @@ function pick<T, K extends keyof T>(obj: T, whitelist: K[]): Pick<T, K> {
 }
 
 const ALLOWED_KINDS = ['Component', 'System'];
-const ALLOWED_SPEC_FIELDS = ['type'];
+const ALLOWED_SPEC_FIELDS = ['type', 'deployedAt'];
 const ALLOWED_METADATA_FIELDS = ['uid', 'namespace', 'name', 'title', 'annotations', 'tags'];
 
 export class FilteredCollector {
