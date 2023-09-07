@@ -37,8 +37,8 @@ with:
 
 ## Available Helpers
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
-### [are-reviewers-requested](.github/workflows/are-reviewers-requested.yml)
-  * Returns true if all users and teams specified are requested for review on a pull request
+### [are-reviewers-required](.github/workflows/are-reviewers-required.yml)
+  * Returns true if all teams specified are requested for review on a pull request
 
 ### [add-labels](.github/workflows/add-labels.yml)
   * Adds one or more labels to a PR

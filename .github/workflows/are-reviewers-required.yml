@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - 'src/helpers/are-reviewers-requested.ts'
+      - 'src/helpers/are-reviewers-required.ts'
 
 jobs:
   test:
@@ -15,4 +15,4 @@ jobs:
 
       - uses: ./
         with:
-          helper: are-reviewers-requested
+          helper: are-reviewers-required
