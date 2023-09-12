@@ -19969,6 +19969,20 @@ var map = {
 		832,
 		522
 	],
+	"./are-reviewers-required": [
+		6465,
+		832,
+		710,
+		445,
+		465
+	],
+	"./are-reviewers-required.ts": [
+		6465,
+		832,
+		710,
+		445,
+		465
+	],
 	"./assign-pr-reviewers": [
 		2153,
 		832,
