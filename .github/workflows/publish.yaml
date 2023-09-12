@@ -8,7 +8,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Update Major Version
         run: |
           MAJOR_VERSION=$(echo "${GITHUB_REF}" | cut -d "/" -f3 | cut -d "." -f1)
