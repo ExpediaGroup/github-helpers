@@ -26,7 +26,7 @@ export const areReviewersRequired = async ({ teams }: AreReviewersRequired) => {
   const requiredCodeOwnersEntries = (await getRequiredCodeOwnersEntries(prNumber)).map(({ owners }) => owners).flat();
   const notRequiredTeams = teamsList.filter(team => !requiredCodeOwnersEntries.includes(team));
   if (notRequiredTeams.length) {
-    core.info(`${notRequiredTeams.join(', ')} not in list of required reviewers`);
+    core.info(`${notRequiredTeams.join(', ')} not in list of required reviewers (${requiredCodeOwnersEntries.join(', ')})`);
     return false;
   }
   return true;

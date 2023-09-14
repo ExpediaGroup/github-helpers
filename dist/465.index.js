@@ -54,7 +54,7 @@ const areReviewersRequired = ({ teams }) => __awaiter(void 0, void 0, void 0, fu
     const requiredCodeOwnersEntries = (yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_1__/* .getRequiredCodeOwnersEntries */ .q)(prNumber)).map(({ owners }) => owners).flat();
     const notRequiredTeams = teamsList.filter(team => !requiredCodeOwnersEntries.includes(team));
     if (notRequiredTeams.length) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`${notRequiredTeams.join(', ')} not in list of required reviewers`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`${notRequiredTeams.join(', ')} not in list of required reviewers (${requiredCodeOwnersEntries.join(', ')})`);
         return false;
     }
     return true;
