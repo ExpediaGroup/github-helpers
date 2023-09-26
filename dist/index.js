@@ -19931,6 +19931,18 @@ var map = {
 		710,
 		867
 	],
+	"./add-overdue-issue-label": [
+		257,
+		832,
+		710,
+		257
+	],
+	"./add-overdue-issue-label.ts": [
+		257,
+		832,
+		710,
+		257
+	],
 	"./add-pr-approval-label": [
 		905,
 		832,

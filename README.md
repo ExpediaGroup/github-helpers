@@ -37,6 +37,9 @@ with:
 
 ## Available Helpers
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
+### [add-overdue-issue-label](.github/workflows/add-overdue-issue-label.yml)
+  * Adds &#x27;overdue&#x27; or &#x27;due soon&#x27; labels to issues that have a priority label and are overdue based on SLA guidelines
+
 ### [are-reviewers-required](.github/workflows/are-reviewers-required.yml)
   * Returns true if all teams specified are requested for review on a pull request
 

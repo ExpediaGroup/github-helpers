@@ -1,6 +1,6 @@
 "use strict";
-exports.id = 101;
-exports.ids = [101];
+exports.id = 257;
+exports.ids = [257];
 exports.modules = {
 
 /***/ 9042:
@@ -82,23 +82,29 @@ limitations under the License.
 
 /***/ }),
 
-/***/ 8101:
+/***/ 257:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+// ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "NotifyPipelineComplete": () => (/* binding */ NotifyPipelineComplete),
-/* harmony export */   "notifyPipelineComplete": () => (/* binding */ notifyPipelineComplete)
-/* harmony export */ });
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(3476);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8710);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6161);
+
+// EXPORTS
+__webpack_require__.d(__webpack_exports__, {
+  "AddOverdueIssueLabel": () => (/* binding */ AddOverdueIssueLabel),
+  "addOverdueIssueLabel": () => (/* binding */ addOverdueIssueLabel)
+});
+
+// EXTERNAL MODULE: ./src/constants.ts
+var constants = __webpack_require__(9042);
+// EXTERNAL MODULE: ./src/types/generated.ts
+var generated = __webpack_require__(3476);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
+var github = __webpack_require__(5438);
+// EXTERNAL MODULE: ./src/octokit.ts
+var octokit = __webpack_require__(6161);
+;// CONCATENATED MODULE: ./src/utils/paginate-open-issues.ts
 /*
-Copyright 2021 Expedia, Inc.
+Copyright 2023 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -120,20 +126,108 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 };
 
 
-
-
-
-class NotifyPipelineComplete extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
-}
-const notifyPipelineComplete = ({ context = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PIPELINE_STATUS */ .$9, description = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PIPELINE_DESCRIPTION */ .Km, target_url }) => __awaiter(void 0, void 0, void 0, function* () {
-    const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
-    const commitHashes = data.map(pullRequest => pullRequest.head.sha);
-    return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(commitHashes, (sha) => __awaiter(void 0, void 0, void 0, function* () {
-        return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
-            context, state: 'success', description,
-            target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
-    }));
+const paginateAllOpenIssues = (priorityLabels, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+    const response = yield octokit/* octokit.issues.listForRepo */.K.issues.listForRepo(Object.assign({ state: 'open', labels: priorityLabels, sort: 'created', direction: 'desc', per_page: 100, page }, github.context.repo));
+    if (!response.data.length) {
+        return [];
+    }
+    return response.data.concat(yield paginateAllOpenIssues(priorityLabels, page + 1));
 });
+
+// EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
+var bluebird = __webpack_require__(8710);
+;// CONCATENATED MODULE: ./src/helpers/add-overdue-issue-label.ts
+/*
+Copyright 2023 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+var add_overdue_issue_label_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+
+
+
+
+class AddOverdueIssueLabel extends generated/* HelperInputs */.s {
+}
+const addOverdueIssueLabel = ({ warningThreshold = 7, almostOverdueLabel = constants/* ALMOST_OVERDUE_ISSUE */.aT, overdueLabel = constants/* OVERDUE_ISSUE */.wH, priorityLabels = { priority_1: constants/* PRIORITY_1 */.N5, priority_2: constants/* PRIORITY_2 */.eK, priority_3: constants/* PRIORITY_3 */.Yc, priority_4: constants/* PRIORITY_4 */.CA } }) => add_overdue_issue_label_awaiter(void 0, void 0, void 0, function* () {
+    const openIssues = yield paginateAllOpenIssues([priorityLabels.priority_1, priorityLabels.priority_2, priorityLabels.priority_3, priorityLabels.priority_4].join());
+    return (0,bluebird.map)(openIssues, issue => {
+        const { labels: issueLabels, created_at, assignee, number: issue_number } = issue;
+        const priority = issueLabels && getPriorityLabel(issueLabels, priorityLabels);
+        if (!priority)
+            return;
+        const labelToAdd = isOverdue(priority, new Date(created_at), warningThreshold, overdueLabel, almostOverdueLabel, priorityLabels);
+        if (!labelToAdd)
+            return;
+        octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `@${assignee}, this issue assigned to you is now ${labelToAdd.toLowerCase()}` }, github.context.repo));
+        return octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [labelToAdd], issue_number }, github.context.repo));
+    });
+});
+const getPriorityLabel = (labels, priorityLabels) => {
+    if (labels.find(label => (label.name || label) === priorityLabels.priority_1))
+        return priorityLabels.priority_1;
+    else if (labels.find(label => (label.name || label) === priorityLabels.priority_2))
+        return priorityLabels.priority_2;
+    else if (labels.find(label => (label.name || label) === priorityLabels.priority_3))
+        return priorityLabels.priority_3;
+    else if (labels.find(label => (label.name || label) === priorityLabels.priority_4))
+        return priorityLabels.priority_4;
+    else
+        return;
+};
+const SLAGuidelines = {
+    critical: 2,
+    high: 14,
+    medium: 45,
+    low: 90
+};
+const isOverdue = (priority, date_created, warningThreshold, overdueLabel, almostOverdueLabel, priorityLabels) => {
+    if (!priority.length)
+        return;
+    const now = new Date();
+    const daysSinceCreation = (now.getTime() - date_created.getTime()) / 86400000;
+    switch (priority) {
+        case priorityLabels.priority_1:
+            if (daysSinceCreation > SLAGuidelines.critical)
+                return overdueLabel;
+            break;
+        case priorityLabels.priority_2:
+            if (daysSinceCreation > SLAGuidelines.high)
+                return overdueLabel;
+            else if (daysSinceCreation > SLAGuidelines.high - warningThreshold)
+                return almostOverdueLabel;
+            break;
+        case priorityLabels.priority_3:
+            if (daysSinceCreation > SLAGuidelines.medium)
+                return overdueLabel;
+            else if (daysSinceCreation > SLAGuidelines.medium - warningThreshold)
+                return almostOverdueLabel;
+            break;
+        case priorityLabels.priority_4:
+            if (daysSinceCreation > SLAGuidelines.low)
+                return overdueLabel;
+            else if (daysSinceCreation > SLAGuidelines.low - warningThreshold)
+                return almostOverdueLabel;
+            break;
+    }
+};
 
 
 /***/ }),
@@ -198,4 +292,4 @@ class HelperInputs {
 
 };
 ;
-//# sourceMappingURL=101.index.js.map
+//# sourceMappingURL=257.index.js.map

@@ -1,0 +1,22 @@
+name: Add Overdue Issue Label
+
+on:
+  issues:
+    types:
+      - opened
+      - reopened
+    paths:
+      - 'src/helpers/add-overdue-issue-label.ts'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: ./
+        with:
+          helper: add-overdue-issue-label
+          login: ${{ github.event.review.user.login }}
+          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }} # must have read:org permission

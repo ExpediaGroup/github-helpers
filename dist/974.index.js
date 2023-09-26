@@ -9,6 +9,7 @@ exports.modules = {
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "$9": () => (/* binding */ DEFAULT_PIPELINE_STATUS),
 /* harmony export */   "Ak": () => (/* binding */ READY_FOR_MERGE_PR_LABEL),
+/* harmony export */   "CA": () => (/* binding */ PRIORITY_4),
 /* harmony export */   "Cb": () => (/* binding */ MERGE_QUEUE_STATUS),
 /* harmony export */   "Cc": () => (/* binding */ GITHUB_OPTIONS),
 /* harmony export */   "Ee": () => (/* binding */ QUEUED_FOR_MERGE_PREFIX),
@@ -16,10 +17,15 @@ exports.modules = {
 /* harmony export */   "Hc": () => (/* binding */ PRODUCTION_ENVIRONMENT),
 /* harmony export */   "IH": () => (/* binding */ FIRST_QUEUED_PR_LABEL),
 /* harmony export */   "Km": () => (/* binding */ DEFAULT_PIPELINE_DESCRIPTION),
+/* harmony export */   "N5": () => (/* binding */ PRIORITY_1),
 /* harmony export */   "Xt": () => (/* binding */ PEER_APPROVED_PR_LABEL),
+/* harmony export */   "Yc": () => (/* binding */ PRIORITY_3),
 /* harmony export */   "_d": () => (/* binding */ CORE_APPROVED_PR_LABEL),
+/* harmony export */   "aT": () => (/* binding */ ALMOST_OVERDUE_ISSUE),
+/* harmony export */   "eK": () => (/* binding */ PRIORITY_2),
 /* harmony export */   "fy": () => (/* binding */ LATE_REVIEW),
-/* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL)
+/* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL),
+/* harmony export */   "wH": () => (/* binding */ OVERDUE_ISSUE)
 /* harmony export */ });
 /* unused harmony exports DEFAULT_EXEMPT_DESCRIPTION, COPYRIGHT_HEADER */
 /*
@@ -46,6 +52,12 @@ const DEFAULT_PIPELINE_STATUS = 'Pipeline Status';
 const DEFAULT_PIPELINE_DESCRIPTION = 'Pipeline clear.';
 const PRODUCTION_ENVIRONMENT = 'production';
 const LATE_REVIEW = 'Late Review';
+const OVERDUE_ISSUE = 'Overdue';
+const ALMOST_OVERDUE_ISSUE = 'Due Soon';
+const PRIORITY_1 = 'Priority: Critical';
+const PRIORITY_2 = 'Priority: High';
+const PRIORITY_3 = 'Priority: Medium';
+const PRIORITY_4 = 'Priority: Low';
 const CORE_APPROVED_PR_LABEL = 'CORE APPROVED';
 const PEER_APPROVED_PR_LABEL = 'PEER APPROVED';
 const READY_FOR_MERGE_PR_LABEL = 'READY FOR MERGE';
