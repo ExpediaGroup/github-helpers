@@ -37,6 +37,9 @@ with:
 
 ## Available Helpers
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
+### [comment-issue-due-date](.github/workflows/comment-issue-due-date.yml)
+  * When an issue is labeled with a priority label, adds a comment stating the due date based on SLA guidelines
+
 ### [are-reviewers-required](.github/workflows/are-reviewers-required.yml)
   * Returns true if all teams specified are requested for review on a pull request
 

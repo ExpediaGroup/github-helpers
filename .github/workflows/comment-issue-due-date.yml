@@ -1,0 +1,21 @@
+name: Comment Issue Due Date
+
+on:
+  issues:
+    types:
+      - labeled
+    paths:
+      - 'src/helpers/comment-issue-due-date.ts'
+
+jobs:
+  test:
+    if: ['Priority: Critical', 'Priority: High', 'Priority: Medium', 'Priority: Low'].contains(${{ github.event.label.name }});
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: ./
+        with:
+          helper: comment-issue-due-date
+          label: github.event.label.name

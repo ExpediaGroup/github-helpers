@@ -20033,6 +20033,16 @@ var map = {
 		832,
 		830
 	],
+	"./comment-issue-due-date": [
+		8146,
+		832,
+		146
+	],
+	"./comment-issue-due-date.ts": [
+		8146,
+		832,
+		146
+	],
 	"./create-pr": [
 		9150,
 		832,

@@ -1,6 +1,6 @@
 "use strict";
-exports.id = 867;
-exports.ids = [867];
+exports.id = 146;
+exports.ids = [146];
 exports.modules = {
 
 /***/ 9042:
@@ -78,24 +78,21 @@ limitations under the License.
 
 /***/ }),
 
-/***/ 7867:
+/***/ 8146:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "AddLateReviewLabel": () => (/* binding */ AddLateReviewLabel),
-/* harmony export */   "addLateReviewLabel": () => (/* binding */ addLateReviewLabel)
+/* harmony export */   "CreateIssueDuedateComment": () => (/* binding */ CreateIssueDuedateComment),
+/* harmony export */   "commentIssueDueDate": () => (/* binding */ commentIssueDueDate)
 /* harmony export */ });
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(3476);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8710);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(5757);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3476);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9042);
 /*
-Copyright 2022 Expedia, Inc.
+Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -119,27 +116,35 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-
-
-class AddLateReviewLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_5__/* .HelperInputs */ .s {
+class CreateIssueDuedateComment extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .s {
 }
-const addLateReviewLabel = ({ days = '1' }) => __awaiter(void 0, void 0, void 0, function* () {
-    const openPullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__/* .paginateAllOpenPullRequests */ .P)();
-    return (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(openPullRequests, pr => {
-        if (!isLabelNeeded(pr, Number(days))) {
-            return;
-        }
-        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: [_constants__WEBPACK_IMPORTED_MODULE_0__/* .LATE_REVIEW */ .fy], issue_number: pr.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
-    });
+const commentIssueDueDate = ({ label }) => __awaiter(void 0, void 0, void 0, function* () {
+    const issue_number = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number;
+    // eslint-disable-next-line functional/no-let
+    let numDaysAllowedOpen;
+    switch (label) {
+        case _constants__WEBPACK_IMPORTED_MODULE_2__/* .PRIORITY_1 */ .N5:
+            numDaysAllowedOpen = 2;
+            break;
+        case _constants__WEBPACK_IMPORTED_MODULE_2__/* .PRIORITY_2 */ .eK:
+            numDaysAllowedOpen = 14;
+            break;
+        case _constants__WEBPACK_IMPORTED_MODULE_2__/* .PRIORITY_3 */ .Yc:
+            numDaysAllowedOpen = 45;
+            break;
+        case _constants__WEBPACK_IMPORTED_MODULE_2__/* .PRIORITY_4 */ .CA:
+            numDaysAllowedOpen = 90;
+            break;
+    }
+    if (!numDaysAllowedOpen)
+        return;
+    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.get */ .K.issues.get(Object.assign({ issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+    const issue = response.data;
+    const dateCreated = new Date(issue.created_at);
+    // format will be day month date year (ex: Mon Dec 25 2023)
+    const dueDate = new Date(dateCreated.getTime() + numDaysAllowedOpen * 86400000);
+    return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body: `This issue is due on ${dueDate.toDateString()}`, issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
 });
-const isLabelNeeded = ({ requested_reviewers, requested_teams, updated_at }, days) => {
-    const last_updated = new Date(updated_at);
-    const now = new Date();
-    const timeSinceLastUpdated = now.getTime() - last_updated.getTime();
-    const dayThreshold = days * 86400000;
-    const isWaitingOnReviewers = Boolean(requested_reviewers || requested_teams);
-    return timeSinceLastUpdated > dayThreshold && isWaitingOnReviewers;
-};
 
 
 /***/ }),
@@ -200,51 +205,8 @@ class HelperInputs {
 }
 
 
-/***/ }),
-
-/***/ 5757:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "P": () => (/* binding */ paginateAllOpenPullRequests)
-/* harmony export */ });
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6161);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/*
-Copyright 2022 Expedia, Inc.
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-    https://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-
-
-const paginateAllOpenPullRequests = (page = 1) => __awaiter(void 0, void 0, void 0, function* () {
-    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', sort: 'updated', direction: 'desc', per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
-    if (!response.data.length) {
-        return [];
-    }
-    return response.data.concat(yield paginateAllOpenPullRequests(page + 1));
-});
-
-
 /***/ })
 
 };
 ;
-//# sourceMappingURL=867.index.js.map
+//# sourceMappingURL=146.index.js.map
