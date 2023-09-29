@@ -17,30 +17,24 @@ import { octokit } from '../octokit';
 import { PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4 } from '../constants';
 
 export class CreateIssueDuedateComment extends HelperInputs {
-  label?: string;
+  label!: typeof PRIORITY_1 | typeof PRIORITY_2 | typeof PRIORITY_3 | typeof PRIORITY_4;
 }
+
+export type PriorityDueDateMapping = {
+  [key: string]: number;
+};
+
+const daysOpenBasedOnPriority: PriorityDueDateMapping = {
+  [PRIORITY_1]: 2,
+  [PRIORITY_2]: 14,
+  [PRIORITY_3]: 45,
+  [PRIORITY_4]: 90
+};
 
 export const commentIssueDueDate = async ({ label }: CreateIssueDuedateComment) => {
   const issue_number = context.issue.number;
 
-  // eslint-disable-next-line functional/no-let
-  let numDaysAllowedOpen;
-  switch (label) {
-    case PRIORITY_1:
-      numDaysAllowedOpen = 2;
-      break;
-    case PRIORITY_2:
-      numDaysAllowedOpen = 14;
-      break;
-    case PRIORITY_3:
-      numDaysAllowedOpen = 45;
-      break;
-    case PRIORITY_4:
-      numDaysAllowedOpen = 90;
-      break;
-  }
-
-  if (!numDaysAllowedOpen) return;
+  const numDaysAllowedOpen = daysOpenBasedOnPriority[label];
 
   const response = await octokit.issues.get({
     issue_number,

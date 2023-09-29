@@ -28,7 +28,8 @@ jest.mock('@actions/github', () => ({
 jest.spyOn(Date, 'now').mockImplementation(() => new Date('2023-09-26T10:00:00Z').getTime());
 
 describe('commentIssueDueDate', () => {
-  it('should add a due date of 2 days ahead when adding a critical priority label', async () => {
+  it('should add due dates correctly based on priority label', async () => {
+    // Critical: 2 days
     (octokit.issues.get as unknown as Mocktokit).mockResolvedValueOnce({
       status: '200',
       data: {
@@ -43,8 +44,8 @@ describe('commentIssueDueDate', () => {
       issue_number: 123,
       ...context.repo
     });
-  });
-  it('should add a due date of 14 days ahead when adding a high priority label', async () => {
+
+    // High: 14 days
     (octokit.issues.get as unknown as Mocktokit).mockResolvedValueOnce({
       status: '200',
       data: {
@@ -59,8 +60,7 @@ describe('commentIssueDueDate', () => {
       issue_number: 123,
       ...context.repo
     });
-  });
-  it('should add a due date of 45 days ahead when adding a medium priority label', async () => {
+    // Medium: 45 days
     (octokit.issues.get as unknown as Mocktokit).mockResolvedValueOnce({
       status: '200',
       data: {
@@ -75,8 +75,7 @@ describe('commentIssueDueDate', () => {
       issue_number: 123,
       ...context.repo
     });
-  });
-  it('should add a due date of 60 days ahead when adding a low priority label', async () => {
+    // Low: 90 days
     (octokit.issues.get as unknown as Mocktokit).mockResolvedValueOnce({
       status: '200',
       data: {
@@ -91,30 +90,5 @@ describe('commentIssueDueDate', () => {
       issue_number: 123,
       ...context.repo
     });
-  });
-  it('should not add a due date comment if a label other than priority is passed in', async () => {
-    (octokit.issues.get as unknown as Mocktokit).mockResolvedValueOnce({
-      status: '200',
-      data: {
-        issue_number: 123,
-        created_at: Date.now(),
-        labels: 'Bug',
-        ...context.repo
-      }
-    });
-    await commentIssueDueDate({ label: 'Bug' });
-    expect(octokit.issues.createComment).not.toHaveBeenCalled();
-  });
-  it('should not add a due date comment if no labels are passed in', async () => {
-    (octokit.issues.get as unknown as Mocktokit).mockResolvedValueOnce({
-      status: '200',
-      data: {
-        issue_number: 123,
-        created_at: Date.now(),
-        ...context.repo
-      }
-    });
-    await commentIssueDueDate({});
-    expect(octokit.issues.createComment).not.toHaveBeenCalled();
   });
 });

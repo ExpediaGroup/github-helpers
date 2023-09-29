@@ -118,26 +118,15 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 class CreateIssueDuedateComment extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .s {
 }
+const daysOpenBasedOnPriority = {
+    [_constants__WEBPACK_IMPORTED_MODULE_2__/* .PRIORITY_1 */ .N5]: 2,
+    [_constants__WEBPACK_IMPORTED_MODULE_2__/* .PRIORITY_2 */ .eK]: 14,
+    [_constants__WEBPACK_IMPORTED_MODULE_2__/* .PRIORITY_3 */ .Yc]: 45,
+    [_constants__WEBPACK_IMPORTED_MODULE_2__/* .PRIORITY_4 */ .CA]: 90
+};
 const commentIssueDueDate = ({ label }) => __awaiter(void 0, void 0, void 0, function* () {
     const issue_number = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number;
-    // eslint-disable-next-line functional/no-let
-    let numDaysAllowedOpen;
-    switch (label) {
-        case _constants__WEBPACK_IMPORTED_MODULE_2__/* .PRIORITY_1 */ .N5:
-            numDaysAllowedOpen = 2;
-            break;
-        case _constants__WEBPACK_IMPORTED_MODULE_2__/* .PRIORITY_2 */ .eK:
-            numDaysAllowedOpen = 14;
-            break;
-        case _constants__WEBPACK_IMPORTED_MODULE_2__/* .PRIORITY_3 */ .Yc:
-            numDaysAllowedOpen = 45;
-            break;
-        case _constants__WEBPACK_IMPORTED_MODULE_2__/* .PRIORITY_4 */ .CA:
-            numDaysAllowedOpen = 90;
-            break;
-    }
-    if (!numDaysAllowedOpen)
-        return;
+    const numDaysAllowedOpen = daysOpenBasedOnPriority[label];
     const response = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.get */ .K.issues.get(Object.assign({ issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     const issue = response.data;
     const dateCreated = new Date(issue.created_at);
