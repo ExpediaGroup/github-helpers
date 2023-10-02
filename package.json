@@ -35,7 +35,7 @@
     "@types/micromatch": "4.0.2",
     "@types/node": "20.6.5",
     "@types/node-fetch": "2.6.6",
-    "@typescript-eslint/eslint-plugin": "6.7.2",
+    "@typescript-eslint/eslint-plugin": "6.7.3",
     "@vercel/ncc": "0.38.0",
     "eslint": "8.45.0",
     "eslint-plugin-eslint-comments": "3.2.0",
