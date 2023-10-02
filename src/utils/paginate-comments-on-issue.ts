@@ -11,22 +11,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { IssueList } from '../types/github';
+import { CommentList } from '../types/github';
 import { octokit } from '../octokit';
 import { context } from '@actions/github';
 
-export const paginateAllOpenIssues = async (priorityLabels?: string, page = 1): Promise<IssueList> => {
-  const response = await octokit.issues.listForRepo({
-    state: 'open',
-    labels: priorityLabels,
+export const paginateAllCommentsOnIssue = async (issue_number: number, page = 1): Promise<CommentList> => {
+  const response = await octokit.issues.listComments({
+    issue_number,
     sort: 'created',
     direction: 'desc',
     per_page: 100,
     page,
     ...context.repo
   });
-  if (!response || !response.data.length) {
+  if (!response.data.length) {
     return [];
   }
-  return (response.data as IssueList).concat(await paginateAllOpenIssues(priorityLabels, page + 1));
+  return (response.data as CommentList).concat(await paginateAllCommentsOnIssue(issue_number, page + 1));
 };

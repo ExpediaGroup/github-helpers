@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { addOverdueIssueLabel } from '../../src/helpers/add-overdue-issue-label';
+import { manageIssueDueDates } from '../../src/helpers/manage-issue-due-dates';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
 import { Mocktokit } from '../types';
@@ -21,14 +21,65 @@ jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' } },
   getOctokit: jest.fn(() => ({
-    rest: { issues: { addLabels: jest.fn(), listForRepo: jest.fn(), createComment: jest.fn() } }
+    rest: { issues: { addLabels: jest.fn(), listForRepo: jest.fn(), createComment: jest.fn(), listComments: jest.fn() } }
   }))
 }));
 
-jest.spyOn(Date, 'now').mockImplementation(() => new Date('2023-09-022T10:00:00Z').getTime());
+jest.spyOn(Date, 'now').mockImplementation(() => new Date('2023-09-26T10:00:00Z').getTime());
 
 describe('addOverdueIssueLabel', () => {
   beforeEach(() => {});
+
+  it('should add due date comments to PRs with any priority label', async () => {
+    (octokit.issues.listForRepo as unknown as Mocktokit).mockResolvedValueOnce({
+      status: '200',
+      data: [
+        {
+          number: 123,
+          labels: [PRIORITY_1],
+          created_at: Date.now()
+        },
+        {
+          number: 234,
+          labels: [PRIORITY_2],
+          created_at: Date.now()
+        },
+        {
+          number: 345,
+          labels: [PRIORITY_3],
+          created_at: Date.now()
+        },
+        {
+          number: 456,
+          labels: [PRIORITY_4],
+          created_at: Date.now()
+        }
+      ]
+    });
+
+    await manageIssueDueDates({});
+    expect(octokit.issues.createComment).toHaveBeenNthCalledWith(1, {
+      body: 'This issue is due on Thu Sep 28 2023',
+      issue_number: 123,
+      ...context.repo
+    });
+    expect(octokit.issues.createComment).toHaveBeenNthCalledWith(2, {
+      body: 'This issue is due on Tue Oct 10 2023',
+      issue_number: 234,
+      ...context.repo
+    });
+    expect(octokit.issues.createComment).toHaveBeenNthCalledWith(3, {
+      body: 'This issue is due on Fri Nov 10 2023',
+      issue_number: 345,
+      ...context.repo
+    });
+    expect(octokit.issues.createComment).toHaveBeenNthCalledWith(4, {
+      body: 'This issue is due on Mon Dec 25 2023',
+      issue_number: 456,
+      ...context.repo
+    });
+    expect(octokit.issues.listComments).not.toHaveBeenCalled();
+  });
 
   it('should add overdue label to a PR with high priority that is 20 days old', async () => {
     (octokit.issues.listForRepo as unknown as Mocktokit)
@@ -38,7 +89,7 @@ describe('addOverdueIssueLabel', () => {
           {
             number: 123,
             labels: [PRIORITY_2],
-            created_at: '2023-09-02T20:09:21Z',
+            created_at: '2023-09-06T20:09:21Z',
             assignee: 'octocat'
           }
         ]
@@ -48,7 +99,7 @@ describe('addOverdueIssueLabel', () => {
         data: []
       });
 
-    await addOverdueIssueLabel({});
+    await manageIssueDueDates({});
 
     expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
       page: 1,
@@ -86,7 +137,7 @@ describe('addOverdueIssueLabel', () => {
           {
             number: 123,
             labels: [PRIORITY_4],
-            created_at: '2023-06-29T20:09:21Z',
+            created_at: '2023-07-03T20:09:21Z',
             assignee: 'octocat'
           }
         ]
@@ -96,7 +147,14 @@ describe('addOverdueIssueLabel', () => {
         data: []
       });
 
-    await addOverdueIssueLabel({});
+    (octokit.issues.listComments as unknown as Mocktokit)
+      .mockResolvedValueOnce({
+        status: '200',
+        data: [{ body: 'This issue is due on Sun Oct 1 2023' }]
+      })
+      .mockResolvedValueOnce({ status: '200', data: [] });
+
+    await manageIssueDueDates({});
 
     expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
       page: 1,
@@ -134,7 +192,7 @@ describe('addOverdueIssueLabel', () => {
           {
             number: 123,
             labels: [PRIORITY_3],
-            created_at: '2023-09-12T20:09:21Z',
+            created_at: '2023-09-16T20:09:21Z',
             assignee: 'octocat'
           }
         ]
@@ -144,7 +202,21 @@ describe('addOverdueIssueLabel', () => {
         data: []
       });
 
-    await addOverdueIssueLabel({});
+    (octokit.issues.listComments as unknown as Mocktokit)
+      .mockResolvedValueOnce({
+        status: '200',
+        data: [
+          {
+            body: 'This issue is due on Tue Oct 31 2023'
+          }
+        ]
+      })
+      .mockResolvedValueOnce({
+        status: '200',
+        data: []
+      });
+
+    await manageIssueDueDates({});
 
     expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
       page: 1,
@@ -165,8 +237,6 @@ describe('addOverdueIssueLabel', () => {
       labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(),
       ...context.repo
     });
-
-    expect(octokit.issues.createComment).not.toHaveBeenCalled();
     expect(octokit.issues.addLabels).not.toHaveBeenCalled();
   });
 
@@ -187,7 +257,7 @@ describe('addOverdueIssueLabel', () => {
         data: []
       });
 
-    await addOverdueIssueLabel({});
+    await manageIssueDueDates({});
 
     expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
       page: 1,

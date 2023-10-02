@@ -1,12 +1,8 @@
-name: Add Overdue Issue Label
+name: Manage Issue Due Dates
 
 on:
-  issues:
-    types:
-      - opened
-      - reopened
-    paths:
-      - 'src/helpers/add-overdue-issue-label.ts'
+  schedule:
+    - cron: '0 0 * * *'
 
 jobs:
   test:
@@ -17,6 +13,6 @@ jobs:
 
       - uses: ./
         with:
-          helper: add-overdue-issue-label
+          helper: manage-issue-due-dates
           login: ${{ github.event.review.user.login }}
           github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }} # must have read:org permission
