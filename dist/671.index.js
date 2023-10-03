@@ -1,6 +1,6 @@
 "use strict";
-exports.id = 596;
-exports.ids = [596];
+exports.id = 671;
+exports.ids = [671];
 exports.modules = {
 
 /***/ 9042:
@@ -82,7 +82,7 @@ limitations under the License.
 
 /***/ }),
 
-/***/ 3596:
+/***/ 5671:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 // ESM COMPAT FLAG
@@ -90,7 +90,7 @@ __webpack_require__.r(__webpack_exports__);
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
-  "AddOverdueIssueLabel": () => (/* binding */ AddOverdueIssueLabel),
+  "ManageIssueDueDates": () => (/* binding */ ManageIssueDueDates),
   "manageIssueDueDates": () => (/* binding */ manageIssueDueDates)
 });
 
@@ -98,10 +98,10 @@ __webpack_require__.d(__webpack_exports__, {
 var constants = __webpack_require__(9042);
 // EXTERNAL MODULE: ./src/types/generated.ts
 var generated = __webpack_require__(3476);
-// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
-var github = __webpack_require__(5438);
 // EXTERNAL MODULE: ./src/octokit.ts
 var octokit = __webpack_require__(6161);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
+var github = __webpack_require__(5438);
 ;// CONCATENATED MODULE: ./src/utils/paginate-open-issues.ts
 /*
 Copyright 2023 Expedia, Inc.
@@ -133,6 +133,29 @@ const paginateAllOpenIssues = (priorityLabels, page = 1) => __awaiter(void 0, vo
     }
     return response.data.concat(yield paginateAllOpenIssues(priorityLabels, page + 1));
 });
+
+;// CONCATENATED MODULE: ./src/utils/add-overdue-labels.ts
+
+
+const addOverdueLabel = (priority, createdDate, issue_number, assignee, warningThreshold, almostOverdueLabel, overdueLabel, priorityLabels) => {
+    const SLAGuidelines = {
+        [priorityLabels[0]]: 2,
+        [priorityLabels[1]]: 14,
+        [priorityLabels[2]]: 45,
+        [priorityLabels[3]]: 90
+    };
+    const daysSinceCreation = Math.ceil((Date.now() - createdDate.getTime()) / 86400000);
+    const labelToAdd = daysSinceCreation > SLAGuidelines[priority]
+        ? overdueLabel
+        : daysSinceCreation > SLAGuidelines[priority] - warningThreshold
+            ? almostOverdueLabel
+            : '';
+    if (labelToAdd.length) {
+        assignee &&
+            octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `@${assignee}, this issue assigned to you is now ${labelToAdd.toLowerCase()}` }, github.context.repo));
+        octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [labelToAdd], issue_number }, github.context.repo));
+    }
+};
 
 ;// CONCATENATED MODULE: ./src/utils/paginate-comments-on-issue.ts
 /*
@@ -166,6 +189,30 @@ const paginateAllCommentsOnIssue = (issue_number, page = 1) => paginate_comments
     return response.data.concat(yield paginateAllCommentsOnIssue(issue_number, page + 1));
 });
 
+;// CONCATENATED MODULE: ./src/utils/add-due-date-comment.ts
+var add_due_date_comment_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+
+const addDueDateComment = (deadline, createdDate, issue_number, hasExistingComments) => add_due_date_comment_awaiter(void 0, void 0, void 0, function* () {
+    const commentList = hasExistingComments ? yield paginateAllCommentsOnIssue(issue_number) : [];
+    // Create due date comment if there are no existing comments or the comment list does not contain a due date comment
+    if (!hasExistingComments || commentList.findIndex((comment) => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.startsWith('This issue is due on'); }) === -1) {
+        const dueDate = new Date(createdDate.getTime() + deadline * 86400000);
+        yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `This issue is due on ${dueDate.toDateString()}` }, github.context.repo));
+    }
+});
+
+// EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
+var bluebird = __webpack_require__(8710);
 ;// CONCATENATED MODULE: ./src/helpers/manage-issue-due-dates.ts
 /*
 Copyright 2023 Expedia, Inc.
@@ -194,76 +241,39 @@ var manage_issue_due_dates_awaiter = (undefined && undefined.__awaiter) || funct
 
 
 
-class AddOverdueIssueLabel extends generated/* HelperInputs */.s {
+class ManageIssueDueDates extends generated/* HelperInputs */.s {
 }
-const manageIssueDueDates = ({ warningThreshold = 7, almostOverdueLabel = constants/* ALMOST_OVERDUE_ISSUE */.aT, overdueLabel = constants/* OVERDUE_ISSUE */.wH, priorityLabels = { priority_1: constants/* PRIORITY_1 */.N5, priority_2: constants/* PRIORITY_2 */.eK, priority_3: constants/* PRIORITY_3 */.Yc, priority_4: constants/* PRIORITY_4 */.CA } }) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
-    const openIssues = yield paginateAllOpenIssues([priorityLabels.priority_1, priorityLabels.priority_2, priorityLabels.priority_3, priorityLabels.priority_4].join());
-    const getPriorityLabel = (labels, priorityLabels) => {
-        if (!labels)
-            return '';
-        // eslint-disable-next-line functional/no-let
-        let index = -1;
-        Object.values(priorityLabels).forEach(priority => {
-            if (index === -1) {
-                index = labels.findIndex(label => (label.name || label) === priority);
+const manageIssueDueDates = ({ warningThreshold = '7', almostOverdueLabel = constants/* ALMOST_OVERDUE_ISSUE */.aT, overdueLabel = constants/* OVERDUE_ISSUE */.wH, customPriorityLabels = [constants/* PRIORITY_1 */.N5, constants/* PRIORITY_2 */.eK, constants/* PRIORITY_3 */.Yc, constants/* PRIORITY_4 */.CA].join() }) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
+    const priorityLabels = customPriorityLabels.split(',');
+    const openIssues = yield paginateAllOpenIssues(customPriorityLabels);
+    const getPriorityLabel = (labels) => {
+        if (labels) {
+            for (const priorityLabel of priorityLabels) {
+                // Label can either be a string or an object with a 'name' property
+                if (labels.find(label => (label.name || label) === priorityLabel) !== undefined)
+                    return priorityLabel;
             }
-        });
-        // eslint-disable-next-line functional/no-let
-        let priorityLabel = '';
-        if (index > -1) {
-            const label = labels[index];
-            if (typeof label === 'string')
-                priorityLabel = label;
-            else
-                priorityLabel = label.name;
         }
-        return priorityLabel;
+        // no priority label was found
+        return '';
     };
-    const addOverdueLabel = (priority, date_created, issue_number, assignee) => {
-        const SLAGuidelines = {
-            [priorityLabels.priority_1]: 2,
-            [priorityLabels.priority_2]: 14,
-            [priorityLabels.priority_3]: 45,
-            [priorityLabels.priority_4]: 90
-        };
-        const daysSinceCreation = (Date.now() - date_created.getTime()) / 86400000;
-        // eslint-disable-next-line functional/no-let
-        let labelToAdd = '';
-        if (daysSinceCreation > SLAGuidelines[priority])
-            labelToAdd = overdueLabel;
-        else if (daysSinceCreation > SLAGuidelines[priority] - warningThreshold)
-            labelToAdd = almostOverdueLabel;
-        if (labelToAdd.length && assignee.length) {
-            octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `@${assignee}, this issue assigned to you is now ${labelToAdd.toLowerCase()}` }, github.context.repo));
-            return octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [labelToAdd], issue_number }, github.context.repo));
-        }
-    };
-    const addDueDateComment = (deadline, createdDate, issue_number, hasExistingComments) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
-        const commentList = hasExistingComments ? yield paginateAllCommentsOnIssue(issue_number) : [];
-        // Create due date comment if there are no existing comments or the comment list does not contain a due date comment
-        if (!hasExistingComments ||
-            commentList.findIndex((comment) => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.startsWith('This issue is due on'); }) === -1) {
-            const dueDate = new Date(createdDate.getTime() + deadline * 86400000);
-            octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `This issue is due on ${dueDate.toDateString()}` }, github.context.repo));
-        }
-    });
-    yield Promise.all(openIssues.map((issue) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
+    yield (0,bluebird.map)(openIssues, (issue) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
         var _a;
         const { labels: issueLabels, created_at, assignee, number: issue_number, comments } = issue;
-        const priority = getPriorityLabel(issueLabels, priorityLabels);
+        const priority = getPriorityLabel(issueLabels);
         if (priority.length) {
             const createdDate = new Date(created_at);
             const assigneeName = typeof assignee === 'string' ? assignee : (_a = assignee === null || assignee === void 0 ? void 0 : assignee.name) !== null && _a !== void 0 ? _a : '';
             const daysOpenBasedOnPriority = {
-                [priorityLabels.priority_1]: 2,
-                [priorityLabels.priority_2]: 14,
-                [priorityLabels.priority_3]: 45,
-                [priorityLabels.priority_4]: 90
+                [priorityLabels[0]]: 2,
+                [priorityLabels[1]]: 14,
+                [priorityLabels[2]]: 45,
+                [priorityLabels[3]]: 90
             };
-            addOverdueLabel(priority, createdDate, issue_number, assigneeName);
+            addOverdueLabel(priority, createdDate, issue_number, assigneeName, Number(warningThreshold), almostOverdueLabel, overdueLabel, priorityLabels);
             yield addDueDateComment(daysOpenBasedOnPriority[priority], createdDate, issue_number, comments > 0);
         }
-    })));
+    }));
 });
 
 
@@ -329,4 +339,4 @@ class HelperInputs {
 
 };
 ;
-//# sourceMappingURL=596.index.js.map
+//# sourceMappingURL=671.index.js.map

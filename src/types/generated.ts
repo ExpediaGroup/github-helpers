@@ -54,4 +54,8 @@ export class HelperInputs {
   team?: string;
   ignore_deleted?: string;
   return_full_payload?: string;
+  warning_threshold?: string;
+  almost_overdue_label?: string;
+  overdue_label?: string;
+  custom_priority_labels?: string;
 }

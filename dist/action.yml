@@ -128,6 +128,22 @@ inputs:
   return_full_payload:
     description: 'Return full payload from GitHub rather than a trimmed-down version of the response'
     required: false
+  warning_threshold:
+    description: 'How many days before this issue becomes overdue should the due soon label be added'
+    required: false
+    default: '7'
+  almost_overdue_label:
+    description: 'Optional custom label text for the due soon label'
+    required: false
+    default: 'Due Soon'
+  overdue_label:
+    description: 'Optional custom label text for the overdue label'
+    required: false
+    default: 'Overdue'
+  custom_priority_labels:
+    description: 'Optional custom labels for priorities 1 through 4, given in a comma-separated list'
+    required: false
+    default: 'Priority: Critical,Priority: High,Priority: Medium,Priority: Low'
 outputs:
   output:
     description: 'The output of the helper'

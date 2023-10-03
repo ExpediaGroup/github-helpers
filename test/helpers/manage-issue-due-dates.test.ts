@@ -27,7 +27,7 @@ jest.mock('@actions/github', () => ({
 
 jest.spyOn(Date, 'now').mockImplementation(() => new Date('2023-09-26T10:00:00Z').getTime());
 
-describe('addOverdueIssueLabel', () => {
+describe('manageIssueDueDates', () => {
   beforeEach(() => {});
 
   it('should add due date comments to PRs with any priority label', async () => {
@@ -60,6 +60,11 @@ describe('addOverdueIssueLabel', () => {
     await manageIssueDueDates({});
     expect(octokit.issues.createComment).toHaveBeenNthCalledWith(1, {
       body: 'This issue is due on Thu Sep 28 2023',
+      issue_number: 123,
+      ...context.repo
+    });
+    expect(octokit.issues.addLabels).toHaveBeenCalledWith({
+      labels: [ALMOST_OVERDUE_ISSUE],
       issue_number: 123,
       ...context.repo
     });
@@ -121,12 +126,12 @@ describe('addOverdueIssueLabel', () => {
       ...context.repo
     });
 
+    expect(octokit.issues.addLabels).toHaveBeenCalledWith({ labels: [OVERDUE_ISSUE], issue_number: 123, ...context.repo });
     expect(octokit.issues.createComment).toHaveBeenCalledWith({
       body: '@octocat, this issue assigned to you is now overdue',
       issue_number: 123,
       ...context.repo
     });
-    expect(octokit.issues.addLabels).toHaveBeenCalledWith({ labels: [OVERDUE_ISSUE], issue_number: 123, ...context.repo });
   });
 
   it('should add due soon label to a PR with low priority that is 85 days old', async () => {
@@ -176,12 +181,55 @@ describe('addOverdueIssueLabel', () => {
       ...context.repo
     });
 
+    expect(octokit.issues.addLabels).toHaveBeenCalledWith({ labels: [ALMOST_OVERDUE_ISSUE], issue_number: 123, ...context.repo });
     expect(octokit.issues.createComment).toHaveBeenCalledWith({
       body: '@octocat, this issue assigned to you is now due soon',
       issue_number: 123,
       ...context.repo
     });
-    expect(octokit.issues.addLabels).toHaveBeenCalledWith({ labels: [ALMOST_OVERDUE_ISSUE], issue_number: 123, ...context.repo });
+  });
+
+  it('should not add a label to a PR without any priority labels, regardless of creation date', async () => {
+    (octokit.issues.listForRepo as unknown as Mocktokit)
+      .mockResolvedValueOnce({
+        status: '200',
+        data: [
+          {
+            number: 123,
+            created_at: '2020-05-29T20:09:21Z',
+            assignee: 'octocat'
+          }
+        ]
+      })
+      .mockResolvedValueOnce({
+        status: '200',
+        data: []
+      });
+
+    await manageIssueDueDates({});
+
+    expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
+      page: 1,
+      per_page: 100,
+      sort: 'created',
+      direction: 'desc',
+      state: 'open',
+      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(),
+      ...context.repo
+    });
+
+    expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
+      page: 2,
+      per_page: 100,
+      sort: 'created',
+      direction: 'desc',
+      state: 'open',
+      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(),
+      ...context.repo
+    });
+
+    expect(octokit.issues.createComment).not.toHaveBeenCalled();
+    expect(octokit.issues.addLabels).not.toHaveBeenCalled();
   });
 
   it('should not add a label to a PR with medium priority that is 10 days old', async () => {
@@ -237,49 +285,6 @@ describe('addOverdueIssueLabel', () => {
       labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(),
       ...context.repo
     });
-    expect(octokit.issues.addLabels).not.toHaveBeenCalled();
-  });
-
-  it('should not add a label to a PR without any priority labels, regardless of creation date', async () => {
-    (octokit.issues.listForRepo as unknown as Mocktokit)
-      .mockResolvedValueOnce({
-        status: '200',
-        data: [
-          {
-            number: 123,
-            created_at: '2020-05-29T20:09:21Z',
-            assignee: 'octocat'
-          }
-        ]
-      })
-      .mockResolvedValueOnce({
-        status: '200',
-        data: []
-      });
-
-    await manageIssueDueDates({});
-
-    expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
-      page: 1,
-      per_page: 100,
-      sort: 'created',
-      direction: 'desc',
-      state: 'open',
-      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(),
-      ...context.repo
-    });
-
-    expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
-      page: 2,
-      per_page: 100,
-      sort: 'created',
-      direction: 'desc',
-      state: 'open',
-      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(),
-      ...context.repo
-    });
-
-    expect(octokit.issues.createComment).not.toHaveBeenCalled();
     expect(octokit.issues.addLabels).not.toHaveBeenCalled();
   });
 });

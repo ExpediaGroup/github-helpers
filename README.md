@@ -37,8 +37,10 @@ with:
 
 ## Available Helpers
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
-### [add-overdue-issue-label](.github/workflows/add-overdue-issue-label.yml)
-  * Adds &#x27;overdue&#x27; or &#x27;due soon&#x27; labels to issues that have a priority label and are overdue based on SLA guidelines
+### [manage-issue-due-dates](.github/workflows/manage-issue-due-dates.yml)
+  * Adds a comment listing the due date (based on SLA guidelines) to issues with a priority label attached
+  * Adds an &#x27;overdue&#x27; label to issues with a priority label that are overdue
+  * Adds a &#x27;due soon&#x27; label to issues with a priority label that will become overdue in 7 days
 
 ### [are-reviewers-required](.github/workflows/are-reviewers-required.yml)
   * Returns true if all teams specified are requested for review on a pull request
