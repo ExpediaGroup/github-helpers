@@ -27,18 +27,19 @@ export const addOverdueLabel = (
       ? almostOverdueLabel
       : '';
 
-  if (labelToAdd.length) {
-    assignee &&
-      octokit.issues.createComment({
-        issue_number,
-        body: `@${assignee}, this issue assigned to you is now ${labelToAdd.toLowerCase()}`,
-        ...context.repo
-      });
-
-    octokit.issues.addLabels({
-      labels: [labelToAdd],
+  if (!labelToAdd.length) {
+    return;
+  }
+  assignee &&
+    octokit.issues.createComment({
       issue_number,
+      body: `@${assignee}, this issue assigned to you is now ${labelToAdd.toLowerCase()}`,
       ...context.repo
     });
-  }
+
+  octokit.issues.addLabels({
+    labels: [labelToAdd],
+    issue_number,
+    ...context.repo
+  });
 };

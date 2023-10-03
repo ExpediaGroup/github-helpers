@@ -16,7 +16,7 @@ import { HelperInputs } from '../types/generated';
 import { paginateAllOpenIssues } from '../utils/paginate-open-issues';
 import { addOverdueLabel } from '../utils/add-overdue-labels';
 import { addDueDateComment } from '../utils/add-due-date-comment';
-import { IssueLabels, IssueList } from '../types/github';
+import { IssueList, IssueLabels } from '../types/github';
 import { map } from 'bluebird';
 
 export class ManageIssueDueDates extends HelperInputs {
@@ -39,43 +39,45 @@ export const manageIssueDueDates = async ({
   const openIssues: IssueList = await paginateAllOpenIssues(customPriorityLabels);
 
   const getPriorityLabel = (labels: IssueLabels) => {
-    if (labels) {
-      for (const priorityLabel of priorityLabels) {
-        // Label can either be a string or an object with a 'name' property
-        if (labels.find(label => (label.name || label) === priorityLabel) !== undefined) return priorityLabel;
-      }
+    if (!labels) {
+      return;
+    }
+    for (const priorityLabel of priorityLabels) {
+      // Label can either be a string or an object with a 'name' property
+      if (labels.find(label => (typeof label !== 'string' ? label.name : label) === priorityLabel) !== undefined) return priorityLabel;
     }
 
     // no priority label was found
-    return '';
+    return;
   };
 
   await map(openIssues, async issue => {
-    const { labels: issueLabels, created_at, assignee, number: issue_number, comments } = issue;
-    const priority = getPriorityLabel(issueLabels as IssueLabels);
-    if (priority.length) {
-      const createdDate = new Date(created_at);
-      const assigneeName: string = typeof assignee === 'string' ? assignee : assignee?.name ?? '';
-
-      const daysOpenBasedOnPriority = {
-        [priorityLabels[0]]: 2,
-        [priorityLabels[1]]: 14,
-        [priorityLabels[2]]: 45,
-        [priorityLabels[3]]: 90
-      };
-
-      addOverdueLabel(
-        priority,
-        createdDate,
-        issue_number,
-        assigneeName,
-        Number(warningThreshold),
-        almostOverdueLabel,
-        overdueLabel,
-        priorityLabels
-      );
-
-      await addDueDateComment(daysOpenBasedOnPriority[priority], createdDate, issue_number, comments > 0);
+    const { labels, created_at, assignee, number: issue_number, comments } = issue;
+    const priority = getPriorityLabel(labels);
+    if (!priority) {
+      return;
     }
+    const createdDate = new Date(created_at);
+    const assigneeName: string = typeof assignee === 'string' ? assignee : assignee?.name ?? '';
+
+    const daysOpenBasedOnPriority = {
+      [priorityLabels[0]]: 2,
+      [priorityLabels[1]]: 14,
+      [priorityLabels[2]]: 45,
+      [priorityLabels[3]]: 90
+    };
+
+    addOverdueLabel(
+      priority,
+      createdDate,
+      issue_number,
+      assigneeName,
+      Number(warningThreshold),
+      almostOverdueLabel,
+      overdueLabel,
+      priorityLabels
+    );
+
+    await addDueDateComment(daysOpenBasedOnPriority[priority], createdDate, issue_number, comments);
   });
 };
