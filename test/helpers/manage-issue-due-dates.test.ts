@@ -19,7 +19,7 @@ import { ALMOST_OVERDUE_ISSUE, OVERDUE_ISSUE, PRIORITY_1, PRIORITY_2, PRIORITY_3
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
+  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({
     rest: { issues: { addLabels: jest.fn(), listForRepo: jest.fn(), createComment: jest.fn(), listComments: jest.fn() } }
   }))
@@ -112,7 +112,7 @@ describe('manageIssueDueDates', () => {
       sort: 'created',
       direction: 'desc',
       state: 'open',
-      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(),
+      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(','),
       ...context.repo
     });
 
@@ -122,7 +122,7 @@ describe('manageIssueDueDates', () => {
       sort: 'created',
       direction: 'desc',
       state: 'open',
-      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(),
+      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(','),
       ...context.repo
     });
 
@@ -167,7 +167,7 @@ describe('manageIssueDueDates', () => {
       sort: 'created',
       direction: 'desc',
       state: 'open',
-      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(),
+      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(','),
       ...context.repo
     });
 
@@ -177,7 +177,7 @@ describe('manageIssueDueDates', () => {
       sort: 'created',
       direction: 'desc',
       state: 'open',
-      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(),
+      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(','),
       ...context.repo
     });
 
@@ -214,7 +214,7 @@ describe('manageIssueDueDates', () => {
       sort: 'created',
       direction: 'desc',
       state: 'open',
-      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(),
+      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(','),
       ...context.repo
     });
 
@@ -224,7 +224,7 @@ describe('manageIssueDueDates', () => {
       sort: 'created',
       direction: 'desc',
       state: 'open',
-      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(),
+      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(','),
       ...context.repo
     });
 
@@ -272,7 +272,7 @@ describe('manageIssueDueDates', () => {
       sort: 'created',
       direction: 'desc',
       state: 'open',
-      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(),
+      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(','),
       ...context.repo
     });
 
@@ -282,7 +282,7 @@ describe('manageIssueDueDates', () => {
       sort: 'created',
       direction: 'desc',
       state: 'open',
-      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(),
+      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(','),
       ...context.repo
     });
     expect(octokit.issues.addLabels).not.toHaveBeenCalled();

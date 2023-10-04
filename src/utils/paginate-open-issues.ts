@@ -15,10 +15,10 @@ import { IssueList } from '../types/github';
 import { octokit } from '../octokit';
 import { context } from '@actions/github';
 
-export const paginateAllOpenIssues = async (priorityLabels?: string, page = 1): Promise<IssueList> => {
+export const paginateAllOpenIssues = async (labels?: string, page = 1): Promise<IssueList> => {
   const response = await octokit.issues.listForRepo({
     state: 'open',
-    labels: priorityLabels,
+    labels,
     sort: 'created',
     direction: 'desc',
     per_page: 100,
@@ -28,5 +28,5 @@ export const paginateAllOpenIssues = async (priorityLabels?: string, page = 1): 
   if (!response || !response.data.length) {
     return [];
   }
-  return (response.data as IssueList).concat(await paginateAllOpenIssues(priorityLabels, page + 1));
+  return (response.data as IssueList).concat(await paginateAllOpenIssues(labels, page + 1));
 };

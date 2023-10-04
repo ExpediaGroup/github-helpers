@@ -11,57 +11,60 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4 } from '../constants';
+import { OVERDUE_ISSUE, ALMOST_OVERDUE_ISSUE, PRIORITY_LABELS, PRIORITY_TO_DAYS_MAP, SECONDS_IN_A_DAY } from '../constants';
 import { HelperInputs } from '../types/generated';
 import { paginateAllOpenIssues } from '../utils/paginate-open-issues';
-import { addOverdueLabel } from '../utils/add-overdue-labels';
 import { addDueDateComment } from '../utils/add-due-date-comment';
 import { IssueList, IssueLabels } from '../types/github';
 import { map } from 'bluebird';
+import { octokit } from '../octokit';
+import { context } from '@actions/github';
+import { addLabels } from './add-labels';
+import * as core from '@actions/core';
 
 export class ManageIssueDueDates extends HelperInputs {
-  /* The threshold (in days) of when to apply the "due soon" label
-   * @default 7
-   */
   days?: string;
 }
 
-export const manageIssueDueDates = async ({ days }: ManageIssueDueDates) => {
-  const priorityLabels = [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4];
-  const openIssues: IssueList = await paginateAllOpenIssues(priorityLabels.join());
-  const warningThreshold = Number(days) || 7;
+export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) => {
+  const openIssues: IssueList = await paginateAllOpenIssues(PRIORITY_LABELS.join(','));
+  const warningThreshold = Number(days);
 
-  const getPriorityLabel = (labels: IssueLabels) => {
-    if (!labels) {
-      return;
-    }
-    for (const priorityLabel of priorityLabels) {
-      // Label can either be a string or an object with a 'name' property
-      if (labels.find(label => (typeof label !== 'string' ? label.name : label) === priorityLabel)) return priorityLabel;
-    }
-
-    // no priority label was found
-    return;
-  };
+  const getFirstPriorityLabelFoundOnIssue = (issueLabels: IssueLabels) =>
+    PRIORITY_LABELS.find(priorityLabel =>
+      issueLabels.some(issueLabel => {
+        const labelName = typeof issueLabel === 'string' ? issueLabel : issueLabel.name;
+        return labelName === priorityLabel;
+      })
+    );
 
   await map(openIssues, async issue => {
     const { labels, created_at, assignee, number: issue_number, comments } = issue;
-    const priority = getPriorityLabel(labels);
+    const priority = getFirstPriorityLabelFoundOnIssue(labels);
     if (!priority) {
+      core.warning(`No priority found for issue #${issue_number}.`);
       return;
     }
     const createdDate = new Date(created_at);
-    const assigneeName = typeof assignee === 'string' ? assignee : assignee?.name;
-
-    const SLAGuidelines = {
-      [priorityLabels[0]]: 2,
-      [priorityLabels[1]]: 14,
-      [priorityLabels[2]]: 45,
-      [priorityLabels[3]]: 90
-    };
-
-    addOverdueLabel(createdDate, issue_number, assigneeName, warningThreshold, SLAGuidelines[priority]);
-
-    await addDueDateComment(SLAGuidelines[priority], createdDate, issue_number, comments);
+    const daysSinceCreation = Math.ceil((Date.now() - createdDate.getTime()) / SECONDS_IN_A_DAY);
+    const labelToAdd =
+      daysSinceCreation > PRIORITY_TO_DAYS_MAP[priority]
+        ? OVERDUE_ISSUE
+        : daysSinceCreation > PRIORITY_TO_DAYS_MAP[priority] - warningThreshold
+        ? ALMOST_OVERDUE_ISSUE
+        : undefined;
+    if (!labelToAdd) {
+      core.warning(`No label to add for #${issue_number}.`);
+      return;
+    }
+    if (assignee) {
+      await octokit.issues.createComment({
+        issue_number,
+        body: `@${assignee.name}, this issue assigned to you is now ${labelToAdd.toLowerCase()}`,
+        ...context.repo
+      });
+    }
+    await addLabels({ labels: labelToAdd });
+    await addDueDateComment(PRIORITY_TO_DAYS_MAP[priority], createdDate, issue_number, comments);
   });
 };

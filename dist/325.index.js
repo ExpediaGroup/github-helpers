@@ -1,6 +1,6 @@
 "use strict";
-exports.id = 671;
-exports.ids = [671];
+exports.id = 325;
+exports.ids = [325,939];
 exports.modules = {
 
 /***/ 9042:
@@ -9,7 +9,6 @@ exports.modules = {
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "$9": () => (/* binding */ DEFAULT_PIPELINE_STATUS),
 /* harmony export */   "Ak": () => (/* binding */ READY_FOR_MERGE_PR_LABEL),
-/* harmony export */   "CA": () => (/* binding */ PRIORITY_4),
 /* harmony export */   "Cb": () => (/* binding */ MERGE_QUEUE_STATUS),
 /* harmony export */   "Cc": () => (/* binding */ GITHUB_OPTIONS),
 /* harmony export */   "Ee": () => (/* binding */ QUEUED_FOR_MERGE_PREFIX),
@@ -18,17 +17,16 @@ exports.modules = {
 /* harmony export */   "IH": () => (/* binding */ FIRST_QUEUED_PR_LABEL),
 /* harmony export */   "K5": () => (/* binding */ SECONDS_IN_A_DAY),
 /* harmony export */   "Km": () => (/* binding */ DEFAULT_PIPELINE_DESCRIPTION),
-/* harmony export */   "N5": () => (/* binding */ PRIORITY_1),
 /* harmony export */   "Xt": () => (/* binding */ PEER_APPROVED_PR_LABEL),
-/* harmony export */   "Yc": () => (/* binding */ PRIORITY_3),
 /* harmony export */   "_d": () => (/* binding */ CORE_APPROVED_PR_LABEL),
 /* harmony export */   "aT": () => (/* binding */ ALMOST_OVERDUE_ISSUE),
-/* harmony export */   "eK": () => (/* binding */ PRIORITY_2),
 /* harmony export */   "fy": () => (/* binding */ LATE_REVIEW),
+/* harmony export */   "gd": () => (/* binding */ PRIORITY_TO_DAYS_MAP),
 /* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL),
+/* harmony export */   "rF": () => (/* binding */ PRIORITY_LABELS),
 /* harmony export */   "wH": () => (/* binding */ OVERDUE_ISSUE)
 /* harmony export */ });
-/* unused harmony exports DEFAULT_EXEMPT_DESCRIPTION, COPYRIGHT_HEADER */
+/* unused harmony exports DEFAULT_EXEMPT_DESCRIPTION, PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4, COPYRIGHT_HEADER */
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,6 +58,13 @@ const PRIORITY_1 = 'Priority: Critical';
 const PRIORITY_2 = 'Priority: High';
 const PRIORITY_3 = 'Priority: Medium';
 const PRIORITY_4 = 'Priority: Low';
+const PRIORITY_LABELS = [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4];
+const PRIORITY_TO_DAYS_MAP = {
+    [PRIORITY_1]: 2,
+    [PRIORITY_2]: 14,
+    [PRIORITY_3]: 45,
+    [PRIORITY_4]: 90
+};
 const CORE_APPROVED_PR_LABEL = 'CORE APPROVED';
 const PEER_APPROVED_PR_LABEL = 'PEER APPROVED';
 const READY_FOR_MERGE_PR_LABEL = 'READY FOR MERGE';
@@ -84,7 +89,45 @@ limitations under the License.
 
 /***/ }),
 
-/***/ 5671:
+/***/ 1939:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "AddLabels": () => (/* binding */ AddLabels),
+/* harmony export */   "addLabels": () => (/* binding */ addLabels)
+/* harmony export */ });
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3476);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
+/*
+Copyright 2021 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+
+
+class AddLabels extends _types_generated__WEBPACK_IMPORTED_MODULE_2__/* .HelperInputs */ .s {
+    constructor() {
+        super(...arguments);
+        this.labels = '';
+    }
+}
+const addLabels = ({ labels }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: labels.split('\n'), issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+
+
+/***/ }),
+
+/***/ 2325:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 // ESM COMPAT FLAG
@@ -128,28 +171,13 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 };
 
 
-const paginateAllOpenIssues = (priorityLabels, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
-    const response = yield octokit/* octokit.issues.listForRepo */.K.issues.listForRepo(Object.assign({ state: 'open', labels: priorityLabels, sort: 'created', direction: 'desc', per_page: 100, page }, github.context.repo));
+const paginateAllOpenIssues = (labels, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+    const response = yield octokit/* octokit.issues.listForRepo */.K.issues.listForRepo(Object.assign({ state: 'open', labels, sort: 'created', direction: 'desc', per_page: 100, page }, github.context.repo));
     if (!response || !response.data.length) {
         return [];
     }
-    return response.data.concat(yield paginateAllOpenIssues(priorityLabels, page + 1));
+    return response.data.concat(yield paginateAllOpenIssues(labels, page + 1));
 });
-
-;// CONCATENATED MODULE: ./src/utils/add-overdue-labels.ts
-
-
-
-const addOverdueLabel = (createdDate, issue_number, assignee, warningThreshold, SLAGuidelines) => {
-    const daysSinceCreation = Math.ceil((Date.now() - createdDate.getTime()) / constants/* SECONDS_IN_A_DAY */.K5);
-    const labelToAdd = daysSinceCreation > SLAGuidelines ? constants/* OVERDUE_ISSUE */.wH : daysSinceCreation > SLAGuidelines - warningThreshold ? constants/* ALMOST_OVERDUE_ISSUE */.aT : '';
-    if (!labelToAdd.length) {
-        return;
-    }
-    assignee &&
-        octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `@${assignee}, this issue assigned to you is now ${labelToAdd.toLowerCase()}` }, github.context.repo));
-    octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [labelToAdd], issue_number }, github.context.repo));
-};
 
 ;// CONCATENATED MODULE: ./src/utils/paginate-comments-on-issue.ts
 /*
@@ -209,6 +237,10 @@ const addDueDateComment = (deadline, createdDate, issue_number, numComments) => 
 
 // EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
 var bluebird = __webpack_require__(8710);
+// EXTERNAL MODULE: ./src/helpers/add-labels.ts
+var add_labels = __webpack_require__(1939);
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
+var core = __webpack_require__(2186);
 ;// CONCATENATED MODULE: ./src/helpers/manage-issue-due-dates.ts
 /*
 Copyright 2023 Expedia, Inc.
@@ -237,40 +269,41 @@ var manage_issue_due_dates_awaiter = (undefined && undefined.__awaiter) || funct
 
 
 
+
+
+
 class ManageIssueDueDates extends generated/* HelperInputs */.s {
 }
-const manageIssueDueDates = ({ days }) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
-    const priorityLabels = [constants/* PRIORITY_1 */.N5, constants/* PRIORITY_2 */.eK, constants/* PRIORITY_3 */.Yc, constants/* PRIORITY_4 */.CA];
-    const openIssues = yield paginateAllOpenIssues(priorityLabels.join());
-    const warningThreshold = Number(days) || 7;
-    const getPriorityLabel = (labels) => {
-        if (!labels) {
-            return;
-        }
-        for (const priorityLabel of priorityLabels) {
-            // Label can either be a string or an object with a 'name' property
-            if (labels.find(label => (typeof label !== 'string' ? label.name : label) === priorityLabel))
-                return priorityLabel;
-        }
-        // no priority label was found
-        return;
-    };
+const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
+    const openIssues = yield paginateAllOpenIssues(constants/* PRIORITY_LABELS.join */.rF.join(','));
+    const warningThreshold = Number(days);
+    const getFirstPriorityLabelFoundOnIssue = (issueLabels) => constants/* PRIORITY_LABELS.find */.rF.find(priorityLabel => issueLabels.some(issueLabel => {
+        const labelName = typeof issueLabel === 'string' ? issueLabel : issueLabel.name;
+        return labelName === priorityLabel;
+    }));
     yield (0,bluebird.map)(openIssues, (issue) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
         const { labels, created_at, assignee, number: issue_number, comments } = issue;
-        const priority = getPriorityLabel(labels);
+        const priority = getFirstPriorityLabelFoundOnIssue(labels);
         if (!priority) {
+            core.warning(`No priority found for issue #${issue_number}.`);
             return;
         }
         const createdDate = new Date(created_at);
-        const assigneeName = typeof assignee === 'string' ? assignee : assignee === null || assignee === void 0 ? void 0 : assignee.name;
-        const SLAGuidelines = {
-            [priorityLabels[0]]: 2,
-            [priorityLabels[1]]: 14,
-            [priorityLabels[2]]: 45,
-            [priorityLabels[3]]: 90
-        };
-        addOverdueLabel(createdDate, issue_number, assigneeName, warningThreshold, SLAGuidelines[priority]);
-        yield addDueDateComment(SLAGuidelines[priority], createdDate, issue_number, comments);
+        const daysSinceCreation = Math.ceil((Date.now() - createdDate.getTime()) / constants/* SECONDS_IN_A_DAY */.K5);
+        const labelToAdd = daysSinceCreation > constants/* PRIORITY_TO_DAYS_MAP */.gd[priority]
+            ? constants/* OVERDUE_ISSUE */.wH
+            : daysSinceCreation > constants/* PRIORITY_TO_DAYS_MAP */.gd[priority] - warningThreshold
+                ? constants/* ALMOST_OVERDUE_ISSUE */.aT
+                : undefined;
+        if (!labelToAdd) {
+            core.warning(`No label to add for #${issue_number}.`);
+            return;
+        }
+        if (assignee) {
+            yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `@${assignee.name}, this issue assigned to you is now ${labelToAdd.toLowerCase()}` }, github.context.repo));
+        }
+        yield (0,add_labels.addLabels)({ labels: labelToAdd });
+        yield addDueDateComment(constants/* PRIORITY_TO_DAYS_MAP */.gd[priority], createdDate, issue_number, comments);
     }));
 });
 
@@ -337,4 +370,4 @@ class HelperInputs {
 
 };
 ;
-//# sourceMappingURL=671.index.js.map
+//# sourceMappingURL=325.index.js.map
