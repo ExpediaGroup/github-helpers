@@ -19,7 +19,6 @@ import { IssueList, IssueLabels } from '../types/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
 import { context } from '@actions/github';
-import { addLabels } from './add-labels';
 import * as core from '@actions/core';
 
 export class ManageIssueDueDates extends HelperInputs {
@@ -64,7 +63,11 @@ export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) =
         ...context.repo
       });
     }
-    await addLabels({ labels: labelToAdd });
+    await octokit.issues.addLabels({
+      labels: [labelToAdd],
+      issue_number,
+      ...context.repo
+    });
     await addDueDateComment(PRIORITY_TO_DAYS_MAP[priority], createdDate, issue_number, comments);
   });
 };
