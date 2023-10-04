@@ -19,11 +19,25 @@ export const GITHUB_OPTIONS = {
   }
 };
 
+export const SECONDS_IN_A_DAY = 86400000;
 export const DEFAULT_EXEMPT_DESCRIPTION = 'Passed in case the check is exempt.';
 export const DEFAULT_PIPELINE_STATUS = 'Pipeline Status';
 export const DEFAULT_PIPELINE_DESCRIPTION = 'Pipeline clear.';
 export const PRODUCTION_ENVIRONMENT = 'production';
 export const LATE_REVIEW = 'Late Review';
+export const OVERDUE_ISSUE = 'Overdue';
+export const ALMOST_OVERDUE_ISSUE = 'Due Soon';
+export const PRIORITY_1 = 'Priority: Critical';
+export const PRIORITY_2 = 'Priority: High';
+export const PRIORITY_3 = 'Priority: Medium';
+export const PRIORITY_4 = 'Priority: Low';
+export const PRIORITY_LABELS = [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4] as const;
+export const PRIORITY_TO_DAYS_MAP = {
+  [PRIORITY_1]: 2,
+  [PRIORITY_2]: 14,
+  [PRIORITY_3]: 45,
+  [PRIORITY_4]: 90
+};
 export const CORE_APPROVED_PR_LABEL = 'CORE APPROVED';
 export const PEER_APPROVED_PR_LABEL = 'PEER APPROVED';
 export const READY_FOR_MERGE_PR_LABEL = 'READY FOR MERGE';

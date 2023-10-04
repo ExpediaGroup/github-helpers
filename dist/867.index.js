@@ -15,13 +15,18 @@ exports.modules = {
 /* harmony export */   "HW": () => (/* binding */ DEFAULT_PR_TITLE_REGEX),
 /* harmony export */   "Hc": () => (/* binding */ PRODUCTION_ENVIRONMENT),
 /* harmony export */   "IH": () => (/* binding */ FIRST_QUEUED_PR_LABEL),
+/* harmony export */   "K5": () => (/* binding */ SECONDS_IN_A_DAY),
 /* harmony export */   "Km": () => (/* binding */ DEFAULT_PIPELINE_DESCRIPTION),
 /* harmony export */   "Xt": () => (/* binding */ PEER_APPROVED_PR_LABEL),
 /* harmony export */   "_d": () => (/* binding */ CORE_APPROVED_PR_LABEL),
+/* harmony export */   "aT": () => (/* binding */ ALMOST_OVERDUE_ISSUE),
 /* harmony export */   "fy": () => (/* binding */ LATE_REVIEW),
-/* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL)
+/* harmony export */   "gd": () => (/* binding */ PRIORITY_TO_DAYS_MAP),
+/* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL),
+/* harmony export */   "rF": () => (/* binding */ PRIORITY_LABELS),
+/* harmony export */   "wH": () => (/* binding */ OVERDUE_ISSUE)
 /* harmony export */ });
-/* unused harmony exports DEFAULT_EXEMPT_DESCRIPTION, COPYRIGHT_HEADER */
+/* unused harmony exports DEFAULT_EXEMPT_DESCRIPTION, PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4, COPYRIGHT_HEADER */
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,11 +46,25 @@ const GITHUB_OPTIONS = {
         accept: PREVIEWS.map(preview => `application/vnd.github.${preview}-preview+json`).join()
     }
 };
+const SECONDS_IN_A_DAY = 86400000;
 const DEFAULT_EXEMPT_DESCRIPTION = 'Passed in case the check is exempt.';
 const DEFAULT_PIPELINE_STATUS = 'Pipeline Status';
 const DEFAULT_PIPELINE_DESCRIPTION = 'Pipeline clear.';
 const PRODUCTION_ENVIRONMENT = 'production';
 const LATE_REVIEW = 'Late Review';
+const OVERDUE_ISSUE = 'Overdue';
+const ALMOST_OVERDUE_ISSUE = 'Due Soon';
+const PRIORITY_1 = 'Priority: Critical';
+const PRIORITY_2 = 'Priority: High';
+const PRIORITY_3 = 'Priority: Medium';
+const PRIORITY_4 = 'Priority: Low';
+const PRIORITY_LABELS = [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4];
+const PRIORITY_TO_DAYS_MAP = {
+    [PRIORITY_1]: 2,
+    [PRIORITY_2]: 14,
+    [PRIORITY_3]: 45,
+    [PRIORITY_4]: 90
+};
 const CORE_APPROVED_PR_LABEL = 'CORE APPROVED';
 const PEER_APPROVED_PR_LABEL = 'PEER APPROVED';
 const READY_FOR_MERGE_PR_LABEL = 'READY FOR MERGE';
@@ -128,7 +147,7 @@ const isLabelNeeded = ({ requested_reviewers, requested_teams, updated_at }, day
     const last_updated = new Date(updated_at);
     const now = new Date();
     const timeSinceLastUpdated = now.getTime() - last_updated.getTime();
-    const dayThreshold = days * 86400000;
+    const dayThreshold = days * _constants__WEBPACK_IMPORTED_MODULE_0__/* .SECONDS_IN_A_DAY */ .K5;
     const isWaitingOnReviewers = Boolean(requested_reviewers || requested_teams);
     return timeSinceLastUpdated > dayThreshold && isWaitingOnReviewers;
 };

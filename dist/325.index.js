@@ -1,6 +1,6 @@
 "use strict";
-exports.id = 263;
-exports.ids = [263];
+exports.id = 325;
+exports.ids = [325];
 exports.modules = {
 
 /***/ 9042:
@@ -89,24 +89,29 @@ limitations under the License.
 
 /***/ }),
 
-/***/ 7263:
+/***/ 2325:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+// ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "MoveProjectCardProps": () => (/* binding */ MoveProjectCardProps),
-/* harmony export */   "moveProjectCard": () => (/* binding */ moveProjectCard)
-/* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3041);
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9042);
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(3476);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6161);
+
+// EXPORTS
+__webpack_require__.d(__webpack_exports__, {
+  "ManageIssueDueDates": () => (/* binding */ ManageIssueDueDates),
+  "manageIssueDueDates": () => (/* binding */ manageIssueDueDates)
+});
+
+// EXTERNAL MODULE: ./src/constants.ts
+var constants = __webpack_require__(9042);
+// EXTERNAL MODULE: ./src/types/generated.ts
+var generated = __webpack_require__(3476);
+// EXTERNAL MODULE: ./src/octokit.ts
+var octokit = __webpack_require__(6161);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
+var github = __webpack_require__(5438);
+;// CONCATENATED MODULE: ./src/utils/paginate-open-issues.ts
 /*
-Copyright 2021 Expedia, Inc.
+Copyright 2023 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -128,46 +133,141 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 };
 
 
-
-
-
-
-class MoveProjectCardProps extends _types_generated__WEBPACK_IMPORTED_MODULE_5__/* .HelperInputs */ .s {
-    constructor() {
-        super(...arguments);
-        this.project_destination_column_name = '';
-        this.project_name = '';
-        this.project_origin_column_name = '';
+const paginateAllOpenIssues = (labels, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+    const response = yield octokit/* octokit.issues.listForRepo */.K.issues.listForRepo(Object.assign({ state: 'open', labels, sort: 'created', direction: 'desc', per_page: 100, page }, github.context.repo));
+    if (!response || !response.data.length) {
+        return [];
     }
+    return response.data.concat(yield paginateAllOpenIssues(labels, page + 1));
+});
+
+;// CONCATENATED MODULE: ./src/utils/paginate-comments-on-issue.ts
+/*
+Copyright 2023 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+var paginate_comments_on_issue_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+const paginateAllCommentsOnIssue = (issue_number, page = 1) => paginate_comments_on_issue_awaiter(void 0, void 0, void 0, function* () {
+    const response = yield octokit/* octokit.issues.listComments */.K.issues.listComments(Object.assign({ issue_number, sort: 'created', direction: 'desc', per_page: 100, page }, github.context.repo));
+    if (!response.data.length) {
+        return [];
+    }
+    return response.data.concat(yield paginateAllCommentsOnIssue(issue_number, page + 1));
+});
+
+;// CONCATENATED MODULE: ./src/utils/add-due-date-comment.ts
+/*
+Copyright 2023 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+var add_due_date_comment_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+
+
+const addDueDateComment = (deadline, createdDate, issue_number, numComments) => add_due_date_comment_awaiter(void 0, void 0, void 0, function* () {
+    const hasExistingComments = numComments > 0;
+    const commentList = hasExistingComments ? yield paginateAllCommentsOnIssue(issue_number) : [];
+    // Create due date comment if there are no existing comments or the comment list does not contain a due date comment
+    if (!hasExistingComments || !commentList.find((comment) => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.startsWith('This issue is due on'); })) {
+        const dueDate = new Date(createdDate.getTime() + deadline * constants/* SECONDS_IN_A_DAY */.K5);
+        yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `This issue is due on ${dueDate.toDateString()}` }, github.context.repo));
+    }
+});
+
+// EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
+var bluebird = __webpack_require__(8710);
+;// CONCATENATED MODULE: ./src/helpers/manage-issue-due-dates.ts
+/*
+Copyright 2023 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+var manage_issue_due_dates_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+
+
+
+
+
+class ManageIssueDueDates extends generated/* HelperInputs */.s {
 }
-const moveProjectCard = ({ project_destination_column_name, project_origin_column_name, project_name }) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const columnsList = yield (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__/* .getProjectColumns */ .N)({ project_name });
-    if (!((_a = columnsList === null || columnsList === void 0 ? void 0 : columnsList.data) === null || _a === void 0 ? void 0 : _a.length)) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(`There are no columns associated to ${project_name} project.`);
-        return;
-    }
-    const destinationColumn = (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__/* .getDestinationColumn */ .Y)(columnsList, project_destination_column_name);
-    const originColumn = getOriginColumn(columnsList, project_origin_column_name);
-    if (!originColumn) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`No origin column was found for the name ${project_origin_column_name}`);
-        return;
-    }
-    const cardToMove = yield getCardToMove(originColumn);
-    if (cardToMove && destinationColumn) {
-        return _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.projects.moveCard */ .K.projects.moveCard(Object.assign({ card_id: cardToMove.id, column_id: destinationColumn.id, position: 'top' }, _constants__WEBPACK_IMPORTED_MODULE_2__/* .GITHUB_OPTIONS */ .Cc));
-    }
-    else {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('No destination column or card to move was found');
-        return;
-    }
+const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
+    const openIssues = yield paginateAllOpenIssues(constants/* PRIORITY_LABELS.join */.rF.join(','));
+    const warningThreshold = Number(days);
+    const getFirstPriorityLabelFoundOnIssue = (issueLabels) => constants/* PRIORITY_LABELS.find */.rF.find(priorityLabel => issueLabels.some(issueLabel => {
+        const labelName = typeof issueLabel === 'string' ? issueLabel : issueLabel.name;
+        return labelName === priorityLabel;
+    }));
+    yield (0,bluebird.map)(openIssues, (issue) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
+        const { labels, created_at, assignee, number: issue_number, comments } = issue;
+        const priority = getFirstPriorityLabelFoundOnIssue(labels);
+        if (!priority) {
+            return;
+        }
+        const createdDate = new Date(created_at);
+        const daysSinceCreation = Math.ceil((Date.now() - createdDate.getTime()) / constants/* SECONDS_IN_A_DAY */.K5);
+        const deadline = constants/* PRIORITY_TO_DAYS_MAP */.gd[priority];
+        const labelToAdd = daysSinceCreation > deadline ? constants/* OVERDUE_ISSUE */.wH : daysSinceCreation > deadline - warningThreshold ? constants/* ALMOST_OVERDUE_ISSUE */.aT : undefined;
+        if (assignee && labelToAdd) {
+            yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `@${assignee}, this issue assigned to you is now ${labelToAdd.toLowerCase()}` }, github.context.repo));
+        }
+        if (labelToAdd) {
+            yield octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [labelToAdd], issue_number }, github.context.repo));
+        }
+        yield addDueDateComment(deadline, createdDate, issue_number, comments);
+    }));
 });
-const getCardToMove = (originColumn) => __awaiter(void 0, void 0, void 0, function* () {
-    const { data: { issue_url } } = yield _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo));
-    const cardsResponse = yield _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.projects.listCards */ .K.projects.listCards(Object.assign({ column_id: originColumn.id }, _constants__WEBPACK_IMPORTED_MODULE_2__/* .GITHUB_OPTIONS */ .Cc));
-    return cardsResponse.data.find(card => card.content_url === issue_url);
-});
-const getOriginColumn = (columns, project_origin_column_name) => columns.data.find(column => column.name === project_origin_column_name);
 
 
 /***/ }),
@@ -228,57 +328,8 @@ class HelperInputs {
 }
 
 
-/***/ }),
-
-/***/ 3041:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "N": () => (/* binding */ getProjectColumns),
-/* harmony export */   "Y": () => (/* binding */ getDestinationColumn)
-/* harmony export */ });
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9042);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
-/*
-Copyright 2021 Expedia, Inc.
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-    https://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-
-
-
-const getProjectColumns = ({ project_name }) => __awaiter(void 0, void 0, void 0, function* () {
-    const projectList = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.listForRepo */ .K.projects.listForRepo(Object.assign(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
-    const project = findProjectToModify(projectList, project_name);
-    if (!project) {
-        return null;
-    }
-    return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.listColumns */ .K.projects.listColumns(Object.assign({ project_id: project.id, per_page: 100 }, _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
-});
-const findProjectToModify = (projectsResponse, project_name) => projectsResponse.data.find(project => project.name === project_name);
-const getDestinationColumn = (columns, project_destination_column_name) => columns.data.find(column => column.name === project_destination_column_name);
-
-
 /***/ })
 
 };
 ;
-//# sourceMappingURL=263.index.js.map
+//# sourceMappingURL=325.index.js.map

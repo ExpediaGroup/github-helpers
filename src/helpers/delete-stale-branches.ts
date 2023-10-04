@@ -19,6 +19,7 @@ import { map } from 'bluebird';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
 import { PullRequestBranchesList } from '../types/github';
 import { getDefaultBranch } from '../utils/get-default-branch';
+import { SECONDS_IN_A_DAY } from '../constants';
 
 export class DeleteStaleBranches extends HelperInputs {
   days?: string;
@@ -61,7 +62,7 @@ const branchIsTooOld = (dateLastUpdated: string, daysThreshold: string) => {
   const lastUpdated = new Date(dateLastUpdated);
   const now = Date.now();
   const timeSinceLastUpdated = now - lastUpdated.getTime();
-  const threshold = Number(daysThreshold) * 86400000;
+  const threshold = Number(daysThreshold) * SECONDS_IN_A_DAY;
 
   return timeSinceLastUpdated > threshold;
 };
