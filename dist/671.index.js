@@ -16,6 +16,7 @@ exports.modules = {
 /* harmony export */   "HW": () => (/* binding */ DEFAULT_PR_TITLE_REGEX),
 /* harmony export */   "Hc": () => (/* binding */ PRODUCTION_ENVIRONMENT),
 /* harmony export */   "IH": () => (/* binding */ FIRST_QUEUED_PR_LABEL),
+/* harmony export */   "K5": () => (/* binding */ SECONDS_IN_A_DAY),
 /* harmony export */   "Km": () => (/* binding */ DEFAULT_PIPELINE_DESCRIPTION),
 /* harmony export */   "N5": () => (/* binding */ PRIORITY_1),
 /* harmony export */   "Xt": () => (/* binding */ PEER_APPROVED_PR_LABEL),
@@ -47,6 +48,7 @@ const GITHUB_OPTIONS = {
         accept: PREVIEWS.map(preview => `application/vnd.github.${preview}-preview+json`).join()
     }
 };
+const SECONDS_IN_A_DAY = 86400000;
 const DEFAULT_EXEMPT_DESCRIPTION = 'Passed in case the check is exempt.';
 const DEFAULT_PIPELINE_STATUS = 'Pipeline Status';
 const DEFAULT_PIPELINE_DESCRIPTION = 'Pipeline clear.';
@@ -137,6 +139,7 @@ const paginateAllOpenIssues = (priorityLabels, page = 1) => __awaiter(void 0, vo
 ;// CONCATENATED MODULE: ./src/utils/add-overdue-labels.ts
 
 
+
 const addOverdueLabel = (priority, createdDate, issue_number, assignee, warningThreshold, almostOverdueLabel, overdueLabel, priorityLabels) => {
     const SLAGuidelines = {
         [priorityLabels[0]]: 2,
@@ -144,7 +147,7 @@ const addOverdueLabel = (priority, createdDate, issue_number, assignee, warningT
         [priorityLabels[2]]: 45,
         [priorityLabels[3]]: 90
     };
-    const daysSinceCreation = Math.ceil((Date.now() - createdDate.getTime()) / 86400000);
+    const daysSinceCreation = Math.ceil((Date.now() - createdDate.getTime()) / constants/* SECONDS_IN_A_DAY */.K5);
     const labelToAdd = daysSinceCreation > SLAGuidelines[priority]
         ? overdueLabel
         : daysSinceCreation > SLAGuidelines[priority] - warningThreshold
@@ -203,12 +206,13 @@ var add_due_date_comment_awaiter = (undefined && undefined.__awaiter) || functio
 
 
 
+
 const addDueDateComment = (deadline, createdDate, issue_number, numComments) => add_due_date_comment_awaiter(void 0, void 0, void 0, function* () {
     const hasExistingComments = numComments > 0;
     const commentList = hasExistingComments ? yield paginateAllCommentsOnIssue(issue_number) : [];
     // Create due date comment if there are no existing comments or the comment list does not contain a due date comment
-    if (!hasExistingComments || commentList.findIndex((comment) => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.startsWith('This issue is due on'); }) === -1) {
-        const dueDate = new Date(createdDate.getTime() + deadline * 86400000);
+    if (!hasExistingComments || !commentList.find((comment) => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.startsWith('This issue is due on'); })) {
+        const dueDate = new Date(createdDate.getTime() + deadline * constants/* SECONDS_IN_A_DAY */.K5);
         yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `This issue is due on ${dueDate.toDateString()}` }, github.context.repo));
     }
 });
@@ -245,9 +249,10 @@ var manage_issue_due_dates_awaiter = (undefined && undefined.__awaiter) || funct
 
 class ManageIssueDueDates extends generated/* HelperInputs */.s {
 }
-const manageIssueDueDates = ({ warningThreshold = '7', almostOverdueLabel = constants/* ALMOST_OVERDUE_ISSUE */.aT, overdueLabel = constants/* OVERDUE_ISSUE */.wH, customPriorityLabels = [constants/* PRIORITY_1 */.N5, constants/* PRIORITY_2 */.eK, constants/* PRIORITY_3 */.Yc, constants/* PRIORITY_4 */.CA].join() }) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
+const manageIssueDueDates = ({ days, almostOverdueLabel = constants/* ALMOST_OVERDUE_ISSUE */.aT, overdueLabel = constants/* OVERDUE_ISSUE */.wH, customPriorityLabels = [constants/* PRIORITY_1 */.N5, constants/* PRIORITY_2 */.eK, constants/* PRIORITY_3 */.Yc, constants/* PRIORITY_4 */.CA].join() }) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
     const priorityLabels = customPriorityLabels.split(',');
     const openIssues = yield paginateAllOpenIssues(customPriorityLabels);
+    const warningThreshold = Number(days) || 7;
     const getPriorityLabel = (labels) => {
         if (!labels) {
             return;
@@ -261,21 +266,20 @@ const manageIssueDueDates = ({ warningThreshold = '7', almostOverdueLabel = cons
         return;
     };
     yield (0,bluebird.map)(openIssues, (issue) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
-        var _a;
         const { labels, created_at, assignee, number: issue_number, comments } = issue;
         const priority = getPriorityLabel(labels);
         if (!priority) {
             return;
         }
         const createdDate = new Date(created_at);
-        const assigneeName = typeof assignee === 'string' ? assignee : (_a = assignee === null || assignee === void 0 ? void 0 : assignee.name) !== null && _a !== void 0 ? _a : '';
+        const assigneeName = typeof assignee === 'string' ? assignee : assignee === null || assignee === void 0 ? void 0 : assignee.name;
         const daysOpenBasedOnPriority = {
             [priorityLabels[0]]: 2,
             [priorityLabels[1]]: 14,
             [priorityLabels[2]]: 45,
             [priorityLabels[3]]: 90
         };
-        addOverdueLabel(priority, createdDate, issue_number, assigneeName, Number(warningThreshold), almostOverdueLabel, overdueLabel, priorityLabels);
+        addOverdueLabel(priority, createdDate, issue_number, assigneeName, warningThreshold, almostOverdueLabel, overdueLabel, priorityLabels);
         yield addDueDateComment(daysOpenBasedOnPriority[priority], createdDate, issue_number, comments);
     }));
 });

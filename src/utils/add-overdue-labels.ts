@@ -1,11 +1,12 @@
 import { octokit } from '../octokit';
 import { context } from '@actions/github';
+import { SECONDS_IN_A_DAY } from '../constants';
 
 export const addOverdueLabel = (
   priority: string,
   createdDate: Date,
   issue_number: number,
-  assignee: string,
+  assignee: string | null | undefined,
   warningThreshold: number,
   almostOverdueLabel: string,
   overdueLabel: string,
@@ -18,7 +19,7 @@ export const addOverdueLabel = (
     [priorityLabels[3]]: 90
   };
 
-  const daysSinceCreation = Math.ceil((Date.now() - createdDate.getTime()) / 86400000);
+  const daysSinceCreation = Math.ceil((Date.now() - createdDate.getTime()) / SECONDS_IN_A_DAY);
 
   const labelToAdd =
     daysSinceCreation > SLAGuidelines[priority]

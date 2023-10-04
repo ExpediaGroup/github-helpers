@@ -23,20 +23,21 @@ export class ManageIssueDueDates extends HelperInputs {
   /* The threshold (in days) of when to apply the "due soon" label
    * @default 7
    */
-  warningThreshold?: string;
+  days?: string;
   almostOverdueLabel?: string;
   overdueLabel?: string;
   customPriorityLabels?: string;
 }
 
 export const manageIssueDueDates = async ({
-  warningThreshold = '7',
+  days,
   almostOverdueLabel = ALMOST_OVERDUE_ISSUE,
   overdueLabel = OVERDUE_ISSUE,
   customPriorityLabels = [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join()
 }: ManageIssueDueDates) => {
   const priorityLabels = customPriorityLabels.split(',');
   const openIssues: IssueList = await paginateAllOpenIssues(customPriorityLabels);
+  const warningThreshold = Number(days) || 7;
 
   const getPriorityLabel = (labels: IssueLabels) => {
     if (!labels) {
@@ -58,7 +59,7 @@ export const manageIssueDueDates = async ({
       return;
     }
     const createdDate = new Date(created_at);
-    const assigneeName: string = typeof assignee === 'string' ? assignee : assignee?.name ?? '';
+    const assigneeName = typeof assignee === 'string' ? assignee : assignee?.name;
 
     const daysOpenBasedOnPriority = {
       [priorityLabels[0]]: 2,
@@ -67,16 +68,7 @@ export const manageIssueDueDates = async ({
       [priorityLabels[3]]: 90
     };
 
-    addOverdueLabel(
-      priority,
-      createdDate,
-      issue_number,
-      assigneeName,
-      Number(warningThreshold),
-      almostOverdueLabel,
-      overdueLabel,
-      priorityLabels
-    );
+    addOverdueLabel(priority, createdDate, issue_number, assigneeName, warningThreshold, almostOverdueLabel, overdueLabel, priorityLabels);
 
     await addDueDateComment(daysOpenBasedOnPriority[priority], createdDate, issue_number, comments);
   });

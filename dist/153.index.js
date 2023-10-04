@@ -16,6 +16,7 @@ exports.modules = {
 /* harmony export */   "HW": () => (/* binding */ DEFAULT_PR_TITLE_REGEX),
 /* harmony export */   "Hc": () => (/* binding */ PRODUCTION_ENVIRONMENT),
 /* harmony export */   "IH": () => (/* binding */ FIRST_QUEUED_PR_LABEL),
+/* harmony export */   "K5": () => (/* binding */ SECONDS_IN_A_DAY),
 /* harmony export */   "Km": () => (/* binding */ DEFAULT_PIPELINE_DESCRIPTION),
 /* harmony export */   "N5": () => (/* binding */ PRIORITY_1),
 /* harmony export */   "Xt": () => (/* binding */ PEER_APPROVED_PR_LABEL),
@@ -47,6 +48,7 @@ const GITHUB_OPTIONS = {
         accept: PREVIEWS.map(preview => `application/vnd.github.${preview}-preview+json`).join()
     }
 };
+const SECONDS_IN_A_DAY = 86400000;
 const DEFAULT_EXEMPT_DESCRIPTION = 'Passed in case the check is exempt.';
 const DEFAULT_PIPELINE_STATUS = 'Pipeline Status';
 const DEFAULT_PIPELINE_DESCRIPTION = 'Pipeline clear.';

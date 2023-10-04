@@ -19,6 +19,7 @@ export const GITHUB_OPTIONS = {
   }
 };
 
+export const SECONDS_IN_A_DAY = 86400000;
 export const DEFAULT_EXEMPT_DESCRIPTION = 'Passed in case the check is exempt.';
 export const DEFAULT_PIPELINE_STATUS = 'Pipeline Status';
 export const DEFAULT_PIPELINE_DESCRIPTION = 'Pipeline clear.';
