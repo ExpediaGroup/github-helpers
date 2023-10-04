@@ -140,19 +140,9 @@ const paginateAllOpenIssues = (priorityLabels, page = 1) => __awaiter(void 0, vo
 
 
 
-const addOverdueLabel = (priority, createdDate, issue_number, assignee, warningThreshold, almostOverdueLabel, overdueLabel, priorityLabels) => {
-    const SLAGuidelines = {
-        [priorityLabels[0]]: 2,
-        [priorityLabels[1]]: 14,
-        [priorityLabels[2]]: 45,
-        [priorityLabels[3]]: 90
-    };
+const addOverdueLabel = (createdDate, issue_number, assignee, warningThreshold, SLAGuidelines) => {
     const daysSinceCreation = Math.ceil((Date.now() - createdDate.getTime()) / constants/* SECONDS_IN_A_DAY */.K5);
-    const labelToAdd = daysSinceCreation > SLAGuidelines[priority]
-        ? overdueLabel
-        : daysSinceCreation > SLAGuidelines[priority] - warningThreshold
-            ? almostOverdueLabel
-            : '';
+    const labelToAdd = daysSinceCreation > SLAGuidelines ? constants/* OVERDUE_ISSUE */.wH : daysSinceCreation > SLAGuidelines - warningThreshold ? constants/* ALMOST_OVERDUE_ISSUE */.aT : '';
     if (!labelToAdd.length) {
         return;
     }
@@ -249,9 +239,9 @@ var manage_issue_due_dates_awaiter = (undefined && undefined.__awaiter) || funct
 
 class ManageIssueDueDates extends generated/* HelperInputs */.s {
 }
-const manageIssueDueDates = ({ days, customPriorityLabels = [constants/* PRIORITY_1 */.N5, constants/* PRIORITY_2 */.eK, constants/* PRIORITY_3 */.Yc, constants/* PRIORITY_4 */.CA].join() }) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
-    const priorityLabels = customPriorityLabels.split(',');
-    const openIssues = yield paginateAllOpenIssues(customPriorityLabels);
+const manageIssueDueDates = ({ days }) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
+    const priorityLabels = [constants/* PRIORITY_1 */.N5, constants/* PRIORITY_2 */.eK, constants/* PRIORITY_3 */.Yc, constants/* PRIORITY_4 */.CA];
+    const openIssues = yield paginateAllOpenIssues(priorityLabels.join());
     const warningThreshold = Number(days) || 7;
     const getPriorityLabel = (labels) => {
         if (!labels) {
@@ -259,7 +249,7 @@ const manageIssueDueDates = ({ days, customPriorityLabels = [constants/* PRIORIT
         }
         for (const priorityLabel of priorityLabels) {
             // Label can either be a string or an object with a 'name' property
-            if (labels.find(label => (typeof label !== 'string' ? label.name : label) === priorityLabel) !== undefined)
+            if (labels.find(label => (typeof label !== 'string' ? label.name : label) === priorityLabel))
                 return priorityLabel;
         }
         // no priority label was found
@@ -273,14 +263,14 @@ const manageIssueDueDates = ({ days, customPriorityLabels = [constants/* PRIORIT
         }
         const createdDate = new Date(created_at);
         const assigneeName = typeof assignee === 'string' ? assignee : assignee === null || assignee === void 0 ? void 0 : assignee.name;
-        const daysOpenBasedOnPriority = {
+        const SLAGuidelines = {
             [priorityLabels[0]]: 2,
             [priorityLabels[1]]: 14,
             [priorityLabels[2]]: 45,
             [priorityLabels[3]]: 90
         };
-        addOverdueLabel(priority, createdDate, issue_number, assigneeName, warningThreshold, constants/* ALMOST_OVERDUE_ISSUE */.aT, constants/* OVERDUE_ISSUE */.wH, priorityLabels);
-        yield addDueDateComment(daysOpenBasedOnPriority[priority], createdDate, issue_number, comments);
+        addOverdueLabel(createdDate, issue_number, assigneeName, warningThreshold, SLAGuidelines[priority]);
+        yield addDueDateComment(SLAGuidelines[priority], createdDate, issue_number, comments);
     }));
 });
 

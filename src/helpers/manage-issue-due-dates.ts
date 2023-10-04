@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { OVERDUE_ISSUE, ALMOST_OVERDUE_ISSUE, PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4 } from '../constants';
+import { PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4 } from '../constants';
 import { HelperInputs } from '../types/generated';
 import { paginateAllOpenIssues } from '../utils/paginate-open-issues';
 import { addOverdueLabel } from '../utils/add-overdue-labels';
@@ -24,17 +24,11 @@ export class ManageIssueDueDates extends HelperInputs {
    * @default 7
    */
   days?: string;
-  almostOverdueLabel?: string;
-  overdueLabel?: string;
-  customPriorityLabels?: string;
 }
 
-export const manageIssueDueDates = async ({
-  days,
-  customPriorityLabels = [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join()
-}: ManageIssueDueDates) => {
-  const priorityLabels = customPriorityLabels.split(',');
-  const openIssues: IssueList = await paginateAllOpenIssues(customPriorityLabels);
+export const manageIssueDueDates = async ({ days }: ManageIssueDueDates) => {
+  const priorityLabels = [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4];
+  const openIssues: IssueList = await paginateAllOpenIssues(priorityLabels.join());
   const warningThreshold = Number(days) || 7;
 
   const getPriorityLabel = (labels: IssueLabels) => {
@@ -43,7 +37,7 @@ export const manageIssueDueDates = async ({
     }
     for (const priorityLabel of priorityLabels) {
       // Label can either be a string or an object with a 'name' property
-      if (labels.find(label => (typeof label !== 'string' ? label.name : label) === priorityLabel) !== undefined) return priorityLabel;
+      if (labels.find(label => (typeof label !== 'string' ? label.name : label) === priorityLabel)) return priorityLabel;
     }
 
     // no priority label was found
@@ -59,24 +53,15 @@ export const manageIssueDueDates = async ({
     const createdDate = new Date(created_at);
     const assigneeName = typeof assignee === 'string' ? assignee : assignee?.name;
 
-    const daysOpenBasedOnPriority = {
+    const SLAGuidelines = {
       [priorityLabels[0]]: 2,
       [priorityLabels[1]]: 14,
       [priorityLabels[2]]: 45,
       [priorityLabels[3]]: 90
     };
 
-    addOverdueLabel(
-      priority,
-      createdDate,
-      issue_number,
-      assigneeName,
-      warningThreshold,
-      ALMOST_OVERDUE_ISSUE,
-      OVERDUE_ISSUE,
-      priorityLabels
-    );
+    addOverdueLabel(createdDate, issue_number, assigneeName, warningThreshold, SLAGuidelines[priority]);
 
-    await addDueDateComment(daysOpenBasedOnPriority[priority], createdDate, issue_number, comments);
+    await addDueDateComment(SLAGuidelines[priority], createdDate, issue_number, comments);
   });
 };
