@@ -19,7 +19,6 @@ import { IssueList, IssueLabels } from '../types/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
 import { context } from '@actions/github';
-import * as core from '@actions/core';
 
 export class ManageIssueDueDates extends HelperInputs {
   days?: string;
@@ -41,17 +40,13 @@ export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) =
     const { labels, created_at, assignee, number: issue_number, comments } = issue;
     const priority = getFirstPriorityLabelFoundOnIssue(labels);
     if (!priority) {
-      core.warning(`No priority found for issue #${issue_number}.`);
       return;
     }
     const createdDate = new Date(created_at);
     const daysSinceCreation = Math.ceil((Date.now() - createdDate.getTime()) / SECONDS_IN_A_DAY);
+    const deadline = PRIORITY_TO_DAYS_MAP[priority];
     const labelToAdd =
-      daysSinceCreation > PRIORITY_TO_DAYS_MAP[priority]
-        ? OVERDUE_ISSUE
-        : daysSinceCreation > PRIORITY_TO_DAYS_MAP[priority] - warningThreshold
-        ? ALMOST_OVERDUE_ISSUE
-        : undefined;
+      daysSinceCreation > deadline ? OVERDUE_ISSUE : daysSinceCreation > deadline - warningThreshold ? ALMOST_OVERDUE_ISSUE : undefined;
     if (assignee && labelToAdd) {
       await octokit.issues.createComment({
         issue_number,
@@ -66,6 +61,6 @@ export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) =
         ...context.repo
       });
     }
-    await addDueDateComment(PRIORITY_TO_DAYS_MAP[priority], createdDate, issue_number, comments);
+    await addDueDateComment(deadline, createdDate, issue_number, comments);
   });
 };

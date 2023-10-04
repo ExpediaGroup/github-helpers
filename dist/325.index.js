@@ -211,8 +211,6 @@ const addDueDateComment = (deadline, createdDate, issue_number, numComments) => 
 
 // EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
 var bluebird = __webpack_require__(8710);
-// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
-var core = __webpack_require__(2186);
 ;// CONCATENATED MODULE: ./src/helpers/manage-issue-due-dates.ts
 /*
 Copyright 2023 Expedia, Inc.
@@ -242,7 +240,6 @@ var manage_issue_due_dates_awaiter = (undefined && undefined.__awaiter) || funct
 
 
 
-
 class ManageIssueDueDates extends generated/* HelperInputs */.s {
 }
 const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
@@ -256,23 +253,19 @@ const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(v
         const { labels, created_at, assignee, number: issue_number, comments } = issue;
         const priority = getFirstPriorityLabelFoundOnIssue(labels);
         if (!priority) {
-            core.warning(`No priority found for issue #${issue_number}.`);
             return;
         }
         const createdDate = new Date(created_at);
         const daysSinceCreation = Math.ceil((Date.now() - createdDate.getTime()) / constants/* SECONDS_IN_A_DAY */.K5);
-        const labelToAdd = daysSinceCreation > constants/* PRIORITY_TO_DAYS_MAP */.gd[priority]
-            ? constants/* OVERDUE_ISSUE */.wH
-            : daysSinceCreation > constants/* PRIORITY_TO_DAYS_MAP */.gd[priority] - warningThreshold
-                ? constants/* ALMOST_OVERDUE_ISSUE */.aT
-                : undefined;
+        const deadline = constants/* PRIORITY_TO_DAYS_MAP */.gd[priority];
+        const labelToAdd = daysSinceCreation > deadline ? constants/* OVERDUE_ISSUE */.wH : daysSinceCreation > deadline - warningThreshold ? constants/* ALMOST_OVERDUE_ISSUE */.aT : undefined;
         if (assignee && labelToAdd) {
             yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `@${assignee}, this issue assigned to you is now ${labelToAdd.toLowerCase()}` }, github.context.repo));
         }
         if (labelToAdd) {
             yield octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [labelToAdd], issue_number }, github.context.repo));
         }
-        yield addDueDateComment(constants/* PRIORITY_TO_DAYS_MAP */.gd[priority], createdDate, issue_number, comments);
+        yield addDueDateComment(deadline, createdDate, issue_number, comments);
     }));
 });
 
