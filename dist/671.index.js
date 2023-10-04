@@ -249,7 +249,7 @@ var manage_issue_due_dates_awaiter = (undefined && undefined.__awaiter) || funct
 
 class ManageIssueDueDates extends generated/* HelperInputs */.s {
 }
-const manageIssueDueDates = ({ days, almostOverdueLabel = constants/* ALMOST_OVERDUE_ISSUE */.aT, overdueLabel = constants/* OVERDUE_ISSUE */.wH, customPriorityLabels = [constants/* PRIORITY_1 */.N5, constants/* PRIORITY_2 */.eK, constants/* PRIORITY_3 */.Yc, constants/* PRIORITY_4 */.CA].join() }) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
+const manageIssueDueDates = ({ days, customPriorityLabels = [constants/* PRIORITY_1 */.N5, constants/* PRIORITY_2 */.eK, constants/* PRIORITY_3 */.Yc, constants/* PRIORITY_4 */.CA].join() }) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
     const priorityLabels = customPriorityLabels.split(',');
     const openIssues = yield paginateAllOpenIssues(customPriorityLabels);
     const warningThreshold = Number(days) || 7;
@@ -279,7 +279,7 @@ const manageIssueDueDates = ({ days, almostOverdueLabel = constants/* ALMOST_OVE
             [priorityLabels[2]]: 45,
             [priorityLabels[3]]: 90
         };
-        addOverdueLabel(priority, createdDate, issue_number, assigneeName, warningThreshold, almostOverdueLabel, overdueLabel, priorityLabels);
+        addOverdueLabel(priority, createdDate, issue_number, assigneeName, warningThreshold, constants/* ALMOST_OVERDUE_ISSUE */.aT, constants/* OVERDUE_ISSUE */.wH, priorityLabels);
         yield addDueDateComment(daysOpenBasedOnPriority[priority], createdDate, issue_number, comments);
     }));
 });

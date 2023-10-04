@@ -54,5 +54,4 @@ export class HelperInputs {
   team?: string;
   ignore_deleted?: string;
   return_full_payload?: string;
-  custom_priority_labels?: string;
 }

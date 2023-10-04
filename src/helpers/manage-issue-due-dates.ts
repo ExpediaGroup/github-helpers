@@ -31,8 +31,6 @@ export class ManageIssueDueDates extends HelperInputs {
 
 export const manageIssueDueDates = async ({
   days,
-  almostOverdueLabel = ALMOST_OVERDUE_ISSUE,
-  overdueLabel = OVERDUE_ISSUE,
   customPriorityLabels = [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join()
 }: ManageIssueDueDates) => {
   const priorityLabels = customPriorityLabels.split(',');
@@ -68,7 +66,16 @@ export const manageIssueDueDates = async ({
       [priorityLabels[3]]: 90
     };
 
-    addOverdueLabel(priority, createdDate, issue_number, assigneeName, warningThreshold, almostOverdueLabel, overdueLabel, priorityLabels);
+    addOverdueLabel(
+      priority,
+      createdDate,
+      issue_number,
+      assigneeName,
+      warningThreshold,
+      ALMOST_OVERDUE_ISSUE,
+      OVERDUE_ISSUE,
+      priorityLabels
+    );
 
     await addDueDateComment(daysOpenBasedOnPriority[priority], createdDate, issue_number, comments);
   });

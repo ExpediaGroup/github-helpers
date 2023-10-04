@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { LATE_REVIEW } from '../constants';
+import { LATE_REVIEW, SECONDS_IN_A_DAY } from '../constants';
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
@@ -43,7 +43,7 @@ const isLabelNeeded = ({ requested_reviewers, requested_teams, updated_at }: Sin
   const last_updated = new Date(updated_at);
   const now = new Date();
   const timeSinceLastUpdated = now.getTime() - last_updated.getTime();
-  const dayThreshold = days * 86400000;
+  const dayThreshold = days * SECONDS_IN_A_DAY;
   const isWaitingOnReviewers = Boolean(requested_reviewers || requested_teams);
   return timeSinceLastUpdated > dayThreshold && isWaitingOnReviewers;
 };

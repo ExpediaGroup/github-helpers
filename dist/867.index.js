@@ -142,7 +142,7 @@ const isLabelNeeded = ({ requested_reviewers, requested_teams, updated_at }, day
     const last_updated = new Date(updated_at);
     const now = new Date();
     const timeSinceLastUpdated = now.getTime() - last_updated.getTime();
-    const dayThreshold = days * 86400000;
+    const dayThreshold = days * _constants__WEBPACK_IMPORTED_MODULE_0__/* .SECONDS_IN_A_DAY */ .K5;
     const isWaitingOnReviewers = Boolean(requested_reviewers || requested_teams);
     return timeSinceLastUpdated > dayThreshold && isWaitingOnReviewers;
 };
