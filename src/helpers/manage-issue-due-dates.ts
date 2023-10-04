@@ -54,7 +54,7 @@ export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) =
         ? ALMOST_OVERDUE_ISSUE
         : undefined;
     if (!labelToAdd) {
-      core.warning(`No label to add for #${issue_number}.`);
+      core.warning(`No label to add for issue #${issue_number}.`);
       return;
     }
     if (assignee) {

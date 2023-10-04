@@ -296,7 +296,7 @@ const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(v
                 ? constants/* ALMOST_OVERDUE_ISSUE */.aT
                 : undefined;
         if (!labelToAdd) {
-            core.warning(`No label to add for #${issue_number}.`);
+            core.warning(`No label to add for issue #${issue_number}.`);
             return;
         }
         if (assignee) {
