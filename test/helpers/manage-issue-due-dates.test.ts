@@ -58,7 +58,7 @@ describe('manageIssueDueDates', () => {
     });
 
     await manageIssueDueDates({});
-    expect(octokit.issues.createComment).toHaveBeenNthCalledWith(1, {
+    expect(octokit.issues.createComment).toHaveBeenCalledWith({
       body: 'This issue is due on Thu Sep 28 2023',
       issue_number: 123,
       ...context.repo
@@ -68,17 +68,17 @@ describe('manageIssueDueDates', () => {
       issue_number: 123,
       ...context.repo
     });
-    expect(octokit.issues.createComment).toHaveBeenNthCalledWith(2, {
+    expect(octokit.issues.createComment).toHaveBeenCalledWith({
       body: 'This issue is due on Tue Oct 10 2023',
       issue_number: 234,
       ...context.repo
     });
-    expect(octokit.issues.createComment).toHaveBeenNthCalledWith(3, {
+    expect(octokit.issues.createComment).toHaveBeenCalledWith({
       body: 'This issue is due on Fri Nov 10 2023',
       issue_number: 345,
       ...context.repo
     });
-    expect(octokit.issues.createComment).toHaveBeenNthCalledWith(4, {
+    expect(octokit.issues.createComment).toHaveBeenCalledWith({
       body: 'This issue is due on Mon Dec 25 2023',
       issue_number: 456,
       ...context.repo

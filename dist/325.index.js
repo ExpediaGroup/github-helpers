@@ -254,14 +254,12 @@ const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(v
             : daysSinceCreation > constants/* PRIORITY_TO_DAYS_MAP */.gd[priority] - warningThreshold
                 ? constants/* ALMOST_OVERDUE_ISSUE */.aT
                 : undefined;
-        if (!labelToAdd) {
-            core.warning(`No label to add for issue #${issue_number}.`);
-            return;
-        }
-        if (assignee) {
+        if (assignee && labelToAdd) {
             yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `@${assignee}, this issue assigned to you is now ${labelToAdd.toLowerCase()}` }, github.context.repo));
         }
-        yield octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [labelToAdd], issue_number }, github.context.repo));
+        if (labelToAdd) {
+            yield octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [labelToAdd], issue_number }, github.context.repo));
+        }
         yield addDueDateComment(constants/* PRIORITY_TO_DAYS_MAP */.gd[priority], createdDate, issue_number, comments);
     }));
 });

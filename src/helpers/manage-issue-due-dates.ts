@@ -52,22 +52,20 @@ export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) =
         : daysSinceCreation > PRIORITY_TO_DAYS_MAP[priority] - warningThreshold
         ? ALMOST_OVERDUE_ISSUE
         : undefined;
-    if (!labelToAdd) {
-      core.warning(`No label to add for issue #${issue_number}.`);
-      return;
-    }
-    if (assignee) {
+    if (assignee && labelToAdd) {
       await octokit.issues.createComment({
         issue_number,
         body: `@${assignee}, this issue assigned to you is now ${labelToAdd.toLowerCase()}`,
         ...context.repo
       });
     }
-    await octokit.issues.addLabels({
-      labels: [labelToAdd],
-      issue_number,
-      ...context.repo
-    });
+    if (labelToAdd) {
+      await octokit.issues.addLabels({
+        labels: [labelToAdd],
+        issue_number,
+        ...context.repo
+      });
+    }
     await addDueDateComment(PRIORITY_TO_DAYS_MAP[priority], createdDate, issue_number, comments);
   });
 };
