@@ -60,7 +60,7 @@ export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) =
     if (assignee) {
       await octokit.issues.createComment({
         issue_number,
-        body: `@${assignee.name}, this issue assigned to you is now ${labelToAdd.toLowerCase()}`,
+        body: `@${assignee}, this issue assigned to you is now ${labelToAdd.toLowerCase()}`,
         ...context.repo
       });
     }

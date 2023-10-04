@@ -300,7 +300,7 @@ const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(v
             return;
         }
         if (assignee) {
-            yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `@${assignee.name}, this issue assigned to you is now ${labelToAdd.toLowerCase()}` }, github.context.repo));
+            yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `@${assignee}, this issue assigned to you is now ${labelToAdd.toLowerCase()}` }, github.context.repo));
         }
         yield (0,add_labels.addLabels)({ labels: labelToAdd });
         yield addDueDateComment(constants/* PRIORITY_TO_DAYS_MAP */.gd[priority], createdDate, issue_number, comments);

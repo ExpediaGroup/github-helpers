@@ -197,7 +197,8 @@ describe('manageIssueDueDates', () => {
           {
             number: 123,
             created_at: '2020-05-29T20:09:21Z',
-            assignee: 'octocat'
+            assignee: 'octocat',
+            labels: []
           }
         ]
       })
