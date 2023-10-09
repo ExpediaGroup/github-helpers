@@ -495,7 +495,7 @@ var import_endpoint = __webpack_require__(9440);
 var import_universal_user_agent = __webpack_require__(5030);
 
 // pkg/dist-src/version.js
-var VERSION = "8.1.2";
+var VERSION = "8.1.3";
 
 // pkg/dist-src/fetch-wrapper.js
 var import_is_plain_object = __webpack_require__(3287);
@@ -601,7 +601,11 @@ function fetchWrapper(requestOptions) {
       throw error;
     else if (error.name === "AbortError")
       throw error;
-    throw new import_request_error.RequestError(error.message, 500, {
+    let message = error.message;
+    if (error instanceof TypeError && "cause" in error && typeof error.cause === "string") {
+      message = error.cause;
+    }
+    throw new import_request_error.RequestError(message, 500, {
       request: requestOptions
     });
   });
