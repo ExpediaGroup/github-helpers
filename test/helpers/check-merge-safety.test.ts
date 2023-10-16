@@ -33,7 +33,10 @@ jest.mock('@actions/github', () => ({
   getOctokit: jest.fn(() => ({
     rest: {
       repos: {
-        compareCommitsWithBasehead: jest.fn()
+        compareCommitsWithBasehead: jest.fn(),
+        getCombinedStatusForRef: jest.fn(() => ({
+          data: { state: 'success', statuses: [] }
+        }))
       },
       pulls: {
         get: jest.fn(() => ({
@@ -61,6 +64,12 @@ const mockGithubRequests = (filesOutOfDate: string[], changedFilesOnPr: string[]
 const allProjectPaths = ['packages/package-1/', 'packages/package-2/', 'packages/package-3/'].join('\n');
 
 describe('checkMergeSafety', () => {
+  beforeEach(async () => {
+    (octokit.repos.getCombinedStatusForRef as unknown as jest.Mock).mockResolvedValue({
+      data: { state: 'success', statuses: [] }
+    });
+  });
+
   it('should prevent merge when branch is out of date for a changed project', async () => {
     const filesOutOfDate = ['packages/package-1/src/another-file.ts'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
@@ -116,6 +125,21 @@ describe('checkMergeSafety', () => {
       repo: 'repo',
       owner: 'owner'
     });
+  });
+
+  it('should skip setting merge safety commit status when a PR already has the failure context set', async () => {
+    const filesOutOfDate = ['packages/package-1/src/another-file.ts'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
+    (octokit.repos.getCombinedStatusForRef as unknown as jest.Mock).mockResolvedValue({
+      data: { state: 'failure', statuses: [{ context: 'Merge Safety' }] }
+    });
+    await checkMergeSafety({
+      paths: allProjectPaths,
+      ...context.repo
+    });
+    expect(setCommitStatus).not.toHaveBeenCalled();
+    expect(core.setFailed).toHaveBeenCalledWith('This branch has one or more outdated projects. Please update with main.');
   });
 
   it('should prevent merge when branch is out of date on override filter paths, even when changed project paths are up to date', async () => {

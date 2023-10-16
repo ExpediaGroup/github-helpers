@@ -21,6 +21,7 @@ import { map } from 'bluebird';
 import { setCommitStatus } from './set-commit-status';
 import * as core from '@actions/core';
 
+const maxBranchNameLength = 50;
 export class CheckMergeSafety extends HelperInputs {
   context?: string;
   paths?: string;
@@ -44,13 +45,26 @@ export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
 
 const setMergeSafetyStatus = async (pullRequest: PullRequest, { context = 'Merge Safety', ...inputs }: CheckMergeSafety) => {
   const { state, message } = await getMergeSafetyStateAndMessage(pullRequest, inputs);
-  await setCommitStatus({
-    sha: pullRequest.head.sha,
-    state,
-    context,
-    description: message,
-    ...githubContext.repo
-  });
+  const hasExistingFailureStatus = await checkForExistingFailureStatus(pullRequest, context);
+  if (hasExistingFailureStatus) {
+    const {
+      head: {
+        ref,
+        user: { login: username }
+      }
+    } = pullRequest;
+    const truncatedRef = ref.length > maxBranchNameLength ? `${ref.substring(0, maxBranchNameLength)}...` : ref;
+    const truncatedBranchName = `${username}:${truncatedRef}`;
+    core.info(`Found existing failure status for ${truncatedBranchName}, skipping setting new status`);
+  } else {
+    await setCommitStatus({
+      sha: pullRequest.head.sha,
+      state,
+      context,
+      description: message,
+      ...githubContext.repo
+    });
+  }
 
   return { state, message };
 };
@@ -59,6 +73,18 @@ const handlePushWorkflow = async (inputs: CheckMergeSafety) => {
   const pullRequests = await paginateAllOpenPullRequests();
   const filteredPullRequests = pullRequests.filter(({ base, draft }) => !draft && base.ref === base.repo.default_branch);
   await map(filteredPullRequests, pullRequest => setMergeSafetyStatus(pullRequest as PullRequest, inputs));
+};
+
+const checkForExistingFailureStatus = async (pullRequest: PullRequest, context: string) => {
+  const { data } = await octokit.repos.getCombinedStatusForRef({
+    ...githubContext.repo,
+    ref: pullRequest.head.sha
+  });
+  if (data.state === 'failure') {
+    const existingContext = data.statuses.find(status => status.context === context);
+    return Boolean(existingContext);
+  }
+  return false;
 };
 
 const getMergeSafetyStateAndMessage = async (
@@ -78,7 +104,6 @@ const getMergeSafetyStateAndMessage = async (
     }
   } = pullRequest;
 
-  const maxBranchNameLength = 50;
   const branchName = `${username}:${ref}`;
   const truncatedRef = ref.length > maxBranchNameLength ? `${ref.substring(0, maxBranchNameLength)}...` : ref;
   const truncatedBranchName = `${username}:${truncatedRef}`;
