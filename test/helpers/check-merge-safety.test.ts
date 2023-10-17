@@ -142,6 +142,28 @@ describe('checkMergeSafety', () => {
     expect(core.setFailed).toHaveBeenCalledWith('This branch has one or more outdated projects. Please update with main.');
   });
 
+  it('should not skip setting merge safety commit status when context state changes', async () => {
+    const filesOutOfDate = ['packages/package-1/src/another-file.ts'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
+    (octokit.repos.getCombinedStatusForRef as unknown as jest.Mock).mockResolvedValue({
+      data: { state: 'success', statuses: [{ context: 'Merge Safety' }] }
+    });
+    await checkMergeSafety({
+      paths: allProjectPaths,
+      ...context.repo
+    });
+    expect(setCommitStatus).toHaveBeenCalledWith({
+      sha,
+      state: 'failure',
+      context: 'Merge Safety',
+      description: 'This branch has one or more outdated projects. Please update with main.',
+      repo: 'repo',
+      owner: 'owner'
+    });
+    expect(core.setFailed).toHaveBeenCalledWith('This branch has one or more outdated projects. Please update with main.');
+  });
+
   it('should prevent merge when branch is out of date on override filter paths, even when changed project paths are up to date', async () => {
     const filesOutOfDate = ['packages/package-2/src/file1.ts', 'package.json'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];

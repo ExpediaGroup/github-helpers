@@ -46,7 +46,7 @@ export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
 const setMergeSafetyStatus = async (pullRequest: PullRequest, { context = 'Merge Safety', ...inputs }: CheckMergeSafety) => {
   const { state, message } = await getMergeSafetyStateAndMessage(pullRequest, inputs);
   const hasExistingFailureStatus = await checkForExistingFailureStatus(pullRequest, context);
-  if (hasExistingFailureStatus) {
+  if (hasExistingFailureStatus && state === 'failure') {
     const {
       head: {
         ref,

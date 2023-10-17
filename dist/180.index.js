@@ -81,7 +81,7 @@ const setMergeSafetyStatus = (pullRequest, _a) => __awaiter(void 0, void 0, void
     var { context = 'Merge Safety' } = _a, inputs = __rest(_a, ["context"]);
     const { state, message } = yield getMergeSafetyStateAndMessage(pullRequest, inputs);
     const hasExistingFailureStatus = yield checkForExistingFailureStatus(pullRequest, context);
-    if (hasExistingFailureStatus) {
+    if (hasExistingFailureStatus && state === 'failure') {
         const { head: { ref, user: { login: username } } } = pullRequest;
         const truncatedRef = ref.length > maxBranchNameLength ? `${ref.substring(0, maxBranchNameLength)}...` : ref;
         const truncatedBranchName = `${username}:${truncatedRef}`;
