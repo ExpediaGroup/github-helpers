@@ -31,7 +31,7 @@
     "@types/lodash.chunk": "4.2.8",
     "@types/lodash.samplesize": "4.2.7",
     "@types/lodash.union": "4.6.7",
-    "@types/lodash.uniq": "4.5.7",
+    "@types/lodash.uniq": "4.5.8",
     "@types/micromatch": "4.0.3",
     "@types/node": "20.8.6",
     "@types/node-fetch": "2.6.6",
