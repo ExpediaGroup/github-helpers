@@ -28,7 +28,7 @@
     "@types/jest": "29.5.5",
     "@types/js-yaml": "4.0.6",
     "@types/lodash.camelcase": "4.3.7",
-    "@types/lodash.chunk": "4.2.7",
+    "@types/lodash.chunk": "4.2.8",
     "@types/lodash.samplesize": "4.2.7",
     "@types/lodash.union": "4.6.7",
     "@types/lodash.uniq": "4.5.7",
