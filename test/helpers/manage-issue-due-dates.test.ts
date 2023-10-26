@@ -112,7 +112,6 @@ describe('manageIssueDueDates', () => {
       sort: 'created',
       direction: 'desc',
       state: 'open',
-      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(','),
       ...context.repo
     });
 
@@ -122,7 +121,6 @@ describe('manageIssueDueDates', () => {
       sort: 'created',
       direction: 'desc',
       state: 'open',
-      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(','),
       ...context.repo
     });
 
@@ -167,7 +165,6 @@ describe('manageIssueDueDates', () => {
       sort: 'created',
       direction: 'desc',
       state: 'open',
-      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(','),
       ...context.repo
     });
 
@@ -177,7 +174,6 @@ describe('manageIssueDueDates', () => {
       sort: 'created',
       direction: 'desc',
       state: 'open',
-      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(','),
       ...context.repo
     });
 
@@ -189,7 +185,7 @@ describe('manageIssueDueDates', () => {
     });
   });
 
-  it('should not add a label to a PR without any priority labels, regardless of creation date', async () => {
+  it('should filter out issues that do not have a priority label', async () => {
     (octokit.issues.listForRepo as unknown as Mocktokit)
       .mockResolvedValueOnce({
         status: '200',
@@ -199,6 +195,12 @@ describe('manageIssueDueDates', () => {
             created_at: '2020-05-29T20:09:21Z',
             assignee: 'octocat',
             labels: []
+          },
+          {
+            number: 234,
+            created_at: '2023-10-29T20:09:21Z',
+            assignee: 'octocat',
+            labels: [PRIORITY_4]
           }
         ]
       })
@@ -215,7 +217,6 @@ describe('manageIssueDueDates', () => {
       sort: 'created',
       direction: 'desc',
       state: 'open',
-      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(','),
       ...context.repo
     });
 
@@ -225,15 +226,19 @@ describe('manageIssueDueDates', () => {
       sort: 'created',
       direction: 'desc',
       state: 'open',
-      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(','),
       ...context.repo
     });
 
-    expect(octokit.issues.createComment).not.toHaveBeenCalled();
+    expect(octokit.issues.createComment).toHaveBeenCalledWith({
+      body: 'This issue is due on Sat Jan 27 2024',
+      issue_number: 234,
+      ...context.repo
+    });
+    expect(octokit.issues.createComment).not.toHaveBeenCalledWith({ issue_number: 123 });
     expect(octokit.issues.addLabels).not.toHaveBeenCalled();
   });
 
-  it('should not add a label to a PR with medium priority that is 10 days old', async () => {
+  it('should not add a label or due date comment to a PR that needs neither', async () => {
     (octokit.issues.listForRepo as unknown as Mocktokit)
       .mockResolvedValueOnce({
         status: '200',
@@ -242,7 +247,8 @@ describe('manageIssueDueDates', () => {
             number: 123,
             labels: [PRIORITY_3],
             created_at: '2023-09-16T20:09:21Z',
-            assignee: 'octocat'
+            assignee: 'octocat',
+            comments: 1
           }
         ]
       })
@@ -273,7 +279,6 @@ describe('manageIssueDueDates', () => {
       sort: 'created',
       direction: 'desc',
       state: 'open',
-      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(','),
       ...context.repo
     });
 
@@ -283,9 +288,9 @@ describe('manageIssueDueDates', () => {
       sort: 'created',
       direction: 'desc',
       state: 'open',
-      labels: [PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4].join(','),
       ...context.repo
     });
+    expect(octokit.issues.createComment).not.toHaveBeenCalled();
     expect(octokit.issues.addLabels).not.toHaveBeenCalled();
   });
 });

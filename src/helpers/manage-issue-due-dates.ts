@@ -11,7 +11,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { OVERDUE_ISSUE, ALMOST_OVERDUE_ISSUE, PRIORITY_LABELS, PRIORITY_TO_DAYS_MAP, SECONDS_IN_A_DAY } from '../constants';
+import {
+  OVERDUE_ISSUE,
+  ALMOST_OVERDUE_ISSUE,
+  PRIORITY_LABELS,
+  PRIORITY_TO_DAYS_MAP,
+  SECONDS_IN_A_DAY,
+  PRIORITY_1,
+  PRIORITY_2,
+  PRIORITY_3,
+  PRIORITY_4
+} from '../constants';
 import { HelperInputs } from '../types/generated';
 import { paginateAllOpenIssues } from '../utils/paginate-open-issues';
 import { addDueDateComment } from '../utils/add-due-date-comment';
@@ -25,7 +35,14 @@ export class ManageIssueDueDates extends HelperInputs {
 }
 
 export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) => {
-  const openIssues: IssueList = await paginateAllOpenIssues(PRIORITY_LABELS.join(','));
+  const openIssues: IssueList = (await paginateAllOpenIssues()).filter(
+    issue =>
+      issue.labels.includes(PRIORITY_1) ||
+      issue.labels.includes(PRIORITY_2) ||
+      issue.labels.includes(PRIORITY_3) ||
+      issue.labels.includes(PRIORITY_4)
+  );
+
   const warningThreshold = Number(days);
 
   const getFirstPriorityLabelFoundOnIssue = (issueLabels: IssueLabels) =>

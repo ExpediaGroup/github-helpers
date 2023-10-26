@@ -9,6 +9,7 @@ exports.modules = {
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "$9": () => (/* binding */ DEFAULT_PIPELINE_STATUS),
 /* harmony export */   "Ak": () => (/* binding */ READY_FOR_MERGE_PR_LABEL),
+/* harmony export */   "CA": () => (/* binding */ PRIORITY_4),
 /* harmony export */   "Cb": () => (/* binding */ MERGE_QUEUE_STATUS),
 /* harmony export */   "Cc": () => (/* binding */ GITHUB_OPTIONS),
 /* harmony export */   "Ee": () => (/* binding */ QUEUED_FOR_MERGE_PREFIX),
@@ -17,16 +18,19 @@ exports.modules = {
 /* harmony export */   "IH": () => (/* binding */ FIRST_QUEUED_PR_LABEL),
 /* harmony export */   "K5": () => (/* binding */ SECONDS_IN_A_DAY),
 /* harmony export */   "Km": () => (/* binding */ DEFAULT_PIPELINE_DESCRIPTION),
+/* harmony export */   "N5": () => (/* binding */ PRIORITY_1),
 /* harmony export */   "Xt": () => (/* binding */ PEER_APPROVED_PR_LABEL),
+/* harmony export */   "Yc": () => (/* binding */ PRIORITY_3),
 /* harmony export */   "_d": () => (/* binding */ CORE_APPROVED_PR_LABEL),
 /* harmony export */   "aT": () => (/* binding */ ALMOST_OVERDUE_ISSUE),
+/* harmony export */   "eK": () => (/* binding */ PRIORITY_2),
 /* harmony export */   "fy": () => (/* binding */ LATE_REVIEW),
 /* harmony export */   "gd": () => (/* binding */ PRIORITY_TO_DAYS_MAP),
 /* harmony export */   "nJ": () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL),
 /* harmony export */   "rF": () => (/* binding */ PRIORITY_LABELS),
 /* harmony export */   "wH": () => (/* binding */ OVERDUE_ISSUE)
 /* harmony export */ });
-/* unused harmony exports DEFAULT_EXEMPT_DESCRIPTION, PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4, COPYRIGHT_HEADER */
+/* unused harmony exports DEFAULT_EXEMPT_DESCRIPTION, COPYRIGHT_HEADER */
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -133,12 +137,12 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 };
 
 
-const paginateAllOpenIssues = (labels, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
-    const response = yield octokit/* octokit.issues.listForRepo */.K.issues.listForRepo(Object.assign({ state: 'open', labels, sort: 'created', direction: 'desc', per_page: 100, page }, github.context.repo));
+const paginateAllOpenIssues = (page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+    const response = yield octokit/* octokit.issues.listForRepo */.K.issues.listForRepo(Object.assign({ state: 'open', sort: 'created', direction: 'desc', per_page: 100, page }, github.context.repo));
     if (!response || !response.data.length) {
         return [];
     }
-    return response.data.concat(yield paginateAllOpenIssues(labels, page + 1));
+    return response.data.concat(yield paginateAllOpenIssues(page + 1));
 });
 
 ;// CONCATENATED MODULE: ./src/utils/paginate-comments-on-issue.ts
@@ -243,7 +247,10 @@ var manage_issue_due_dates_awaiter = (undefined && undefined.__awaiter) || funct
 class ManageIssueDueDates extends generated/* HelperInputs */.s {
 }
 const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
-    const openIssues = yield paginateAllOpenIssues(constants/* PRIORITY_LABELS.join */.rF.join(','));
+    const openIssues = (yield paginateAllOpenIssues()).filter(issue => issue.labels.includes(constants/* PRIORITY_1 */.N5) ||
+        issue.labels.includes(constants/* PRIORITY_2 */.eK) ||
+        issue.labels.includes(constants/* PRIORITY_3 */.Yc) ||
+        issue.labels.includes(constants/* PRIORITY_4 */.CA));
     const warningThreshold = Number(days);
     const getFirstPriorityLabelFoundOnIssue = (issueLabels) => constants/* PRIORITY_LABELS.find */.rF.find(priorityLabel => issueLabels.some(issueLabel => {
         const labelName = typeof issueLabel === 'string' ? issueLabel : issueLabel.name;
