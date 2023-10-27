@@ -15,7 +15,7 @@ import { manageIssueDueDates } from '../../src/helpers/manage-issue-due-dates';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
 import { Mocktokit } from '../types';
-import { ALMOST_OVERDUE_ISSUE, OVERDUE_ISSUE, PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4 } from '../../src/constants';
+import { ALMOST_OVERDUE_ISSUE, OVERDUE_ISSUE, PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4, PRIORITY_LABELS } from '../../src/constants';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
@@ -106,23 +106,17 @@ describe('manageIssueDueDates', () => {
 
     await manageIssueDueDates({});
 
-    expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
-      page: 1,
-      per_page: 100,
-      sort: 'created',
-      direction: 'desc',
-      state: 'open',
-      ...context.repo
-    });
-
-    expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
-      page: 2,
-      per_page: 100,
-      sort: 'created',
-      direction: 'desc',
-      state: 'open',
-      ...context.repo
-    });
+    PRIORITY_LABELS.forEach(priorityLabel =>
+      expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
+        page: 1,
+        labels: priorityLabel,
+        per_page: 100,
+        sort: 'created',
+        direction: 'desc',
+        state: 'open',
+        ...context.repo
+      })
+    );
 
     expect(octokit.issues.addLabels).toHaveBeenCalledWith({ labels: [OVERDUE_ISSUE], issue_number: 123, ...context.repo });
     expect(octokit.issues.createComment).toHaveBeenCalledWith({
@@ -159,23 +153,17 @@ describe('manageIssueDueDates', () => {
 
     await manageIssueDueDates({});
 
-    expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
-      page: 1,
-      per_page: 100,
-      sort: 'created',
-      direction: 'desc',
-      state: 'open',
-      ...context.repo
-    });
-
-    expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
-      page: 2,
-      per_page: 100,
-      sort: 'created',
-      direction: 'desc',
-      state: 'open',
-      ...context.repo
-    });
+    PRIORITY_LABELS.forEach(priorityLabel =>
+      expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
+        page: 1,
+        labels: priorityLabel,
+        per_page: 100,
+        sort: 'created',
+        direction: 'desc',
+        state: 'open',
+        ...context.repo
+      })
+    );
 
     expect(octokit.issues.addLabels).toHaveBeenCalledWith({ labels: [ALMOST_OVERDUE_ISSUE], issue_number: 123, ...context.repo });
     expect(octokit.issues.createComment).toHaveBeenCalledWith({
@@ -211,23 +199,17 @@ describe('manageIssueDueDates', () => {
 
     await manageIssueDueDates({});
 
-    expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
-      page: 1,
-      per_page: 100,
-      sort: 'created',
-      direction: 'desc',
-      state: 'open',
-      ...context.repo
-    });
-
-    expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
-      page: 2,
-      per_page: 100,
-      sort: 'created',
-      direction: 'desc',
-      state: 'open',
-      ...context.repo
-    });
+    PRIORITY_LABELS.forEach(priorityLabel =>
+      expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
+        page: 1,
+        labels: priorityLabel,
+        per_page: 100,
+        sort: 'created',
+        direction: 'desc',
+        state: 'open',
+        ...context.repo
+      })
+    );
 
     expect(octokit.issues.createComment).toHaveBeenCalledWith({
       body: 'This issue is due on Sat Jan 27 2024',
@@ -280,23 +262,18 @@ describe('manageIssueDueDates', () => {
 
     await manageIssueDueDates({});
 
-    expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
-      page: 1,
-      per_page: 100,
-      sort: 'created',
-      direction: 'desc',
-      state: 'open',
-      ...context.repo
-    });
+    PRIORITY_LABELS.forEach(priorityLabel =>
+      expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
+        page: 1,
+        labels: priorityLabel,
+        per_page: 100,
+        sort: 'created',
+        direction: 'desc',
+        state: 'open',
+        ...context.repo
+      })
+    );
 
-    expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
-      page: 2,
-      per_page: 100,
-      sort: 'created',
-      direction: 'desc',
-      state: 'open',
-      ...context.repo
-    });
     expect(octokit.issues.createComment).not.toHaveBeenCalled();
     expect(octokit.issues.addLabels).not.toHaveBeenCalled();
   });

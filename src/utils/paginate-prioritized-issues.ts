@@ -14,18 +14,30 @@ limitations under the License.
 import { IssueList } from '../types/github';
 import { octokit } from '../octokit';
 import { context } from '@actions/github';
+import { PRIORITY_LABELS } from '../constants';
 
-export const paginateAllOpenIssues = async (page = 1): Promise<IssueList> => {
+export const paginateAllPrioritizedIssues = async () => {
+  const prioritizedIssues: IssueList = [];
+  PRIORITY_LABELS.forEach(async label => {
+    const issues: IssueList = await paginateIssuesOfSpecificPriority(label);
+    // eslint-disable-next-line functional/immutable-data
+    prioritizedIssues.push(...issues);
+  });
+  return prioritizedIssues;
+};
+
+export const paginateIssuesOfSpecificPriority = async (label: string, page = 1): Promise<IssueList> => {
   const response = await octokit.issues.listForRepo({
     state: 'open',
     sort: 'created',
     direction: 'desc',
     per_page: 100,
+    labels: label,
     page,
     ...context.repo
   });
   if (!response || !response.data.length) {
     return [];
   }
-  return (response.data as IssueList).concat(await paginateAllOpenIssues(page + 1));
+  return (response.data as IssueList).concat(await paginateIssuesOfSpecificPriority(label, page + 1));
 };

@@ -1,6 +1,6 @@
 "use strict";
-exports.id = 325;
-exports.ids = [325];
+exports.id = 950;
+exports.ids = [950];
 exports.modules = {
 
 /***/ 9042:
@@ -89,7 +89,7 @@ limitations under the License.
 
 /***/ }),
 
-/***/ 2325:
+/***/ 4950:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 // ESM COMPAT FLAG
@@ -109,7 +109,7 @@ var generated = __webpack_require__(3476);
 var octokit = __webpack_require__(6161);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __webpack_require__(5438);
-;// CONCATENATED MODULE: ./src/utils/paginate-open-issues.ts
+;// CONCATENATED MODULE: ./src/utils/paginate-prioritized-issues.ts
 /*
 Copyright 2023 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -133,12 +133,22 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 };
 
 
-const paginateAllOpenIssues = (page = 1) => __awaiter(void 0, void 0, void 0, function* () {
-    const response = yield octokit/* octokit.issues.listForRepo */.K.issues.listForRepo(Object.assign({ state: 'open', sort: 'created', direction: 'desc', per_page: 100, page }, github.context.repo));
+
+const paginateAllPrioritizedIssues = () => __awaiter(void 0, void 0, void 0, function* () {
+    const prioritizedIssues = [];
+    constants/* PRIORITY_LABELS.forEach */.rF.forEach((label) => __awaiter(void 0, void 0, void 0, function* () {
+        const issues = yield paginateIssuesOfSpecificPriority(label);
+        // eslint-disable-next-line functional/immutable-data
+        prioritizedIssues.push(...issues);
+    }));
+    return prioritizedIssues;
+});
+const paginateIssuesOfSpecificPriority = (label, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+    const response = yield octokit/* octokit.issues.listForRepo */.K.issues.listForRepo(Object.assign({ state: 'open', sort: 'created', direction: 'desc', per_page: 100, labels: label, page }, github.context.repo));
     if (!response || !response.data.length) {
         return [];
     }
-    return response.data.concat(yield paginateAllOpenIssues(page + 1));
+    return response.data.concat(yield paginateIssuesOfSpecificPriority(label, page + 1));
 });
 
 ;// CONCATENATED MODULE: ./src/utils/paginate-comments-on-issue.ts
@@ -242,24 +252,8 @@ var manage_issue_due_dates_awaiter = (undefined && undefined.__awaiter) || funct
 
 class ManageIssueDueDates extends generated/* HelperInputs */.s {
 }
-// issues is an array of objects, each one has an array of (string | object)s called labels;
-// return all issues which have labels that contains one of the priority labels in the array PRIORITY_LABELS
-const filterByPriorityLabels = (issues) => {
-    const filteredIssues = [];
-    issues.forEach((issue) => {
-        const { labels } = issue;
-        labels.filter(label => {
-            const labelName = typeof label === 'string' ? label : label.name;
-            labelName && constants/* PRIORITY_LABELS.includes */.rF.includes(labelName);
-        });
-        // eslint-disable-next-line functional/immutable-data
-        if (labels)
-            filteredIssues.push(issue);
-    });
-    return filteredIssues;
-};
 const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
-    const openIssues = filterByPriorityLabels(yield paginateAllOpenIssues());
+    const openIssues = yield paginateAllPrioritizedIssues();
     const warningThreshold = Number(days);
     const getFirstPriorityLabelFoundOnIssue = (issueLabels) => constants/* PRIORITY_LABELS.find */.rF.find(priorityLabel => issueLabels.some(issueLabel => {
         const labelName = typeof issueLabel === 'string' ? issueLabel : issueLabel.name;
@@ -348,4 +342,4 @@ class HelperInputs {
 
 };
 ;
-//# sourceMappingURL=325.index.js.map
+//# sourceMappingURL=950.index.js.map

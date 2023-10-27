@@ -13,7 +13,7 @@ limitations under the License.
 
 import { OVERDUE_ISSUE, ALMOST_OVERDUE_ISSUE, PRIORITY_LABELS, PRIORITY_TO_DAYS_MAP, SECONDS_IN_A_DAY } from '../constants';
 import { HelperInputs } from '../types/generated';
-import { paginateAllOpenIssues } from '../utils/paginate-open-issues';
+import { paginateAllPrioritizedIssues } from '../utils/paginate-prioritized-issues';
 import { addDueDateComment } from '../utils/add-due-date-comment';
 import { IssueList, IssueLabels } from '../types/github';
 import { map } from 'bluebird';
@@ -24,24 +24,8 @@ export class ManageIssueDueDates extends HelperInputs {
   days?: string;
 }
 
-// issues is an array of objects, each one has an array of (string | object)s called labels;
-// return all issues which have labels that contains one of the priority labels in the array PRIORITY_LABELS
-const filterByPriorityLabels = (issues: IssueList) => {
-  const filteredIssues: IssueList = [];
-  issues.forEach((issue: IssueList[number]) => {
-    const { labels } = issue;
-    labels.filter(label => {
-      const labelName = typeof label === 'string' ? label : label.name;
-      labelName && PRIORITY_LABELS.includes(labelName);
-    });
-    // eslint-disable-next-line functional/immutable-data
-    if (labels) filteredIssues.push(issue);
-  });
-  return filteredIssues;
-};
-
 export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) => {
-  const openIssues: IssueList = filterByPriorityLabels(await paginateAllOpenIssues());
+  const openIssues: IssueList = await paginateAllPrioritizedIssues();
 
   const warningThreshold = Number(days);
 
