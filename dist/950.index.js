@@ -109,6 +109,8 @@ var generated = __webpack_require__(3476);
 var octokit = __webpack_require__(6161);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __webpack_require__(5438);
+// EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
+var bluebird = __webpack_require__(8710);
 ;// CONCATENATED MODULE: ./src/utils/paginate-prioritized-issues.ts
 /*
 Copyright 2023 Expedia, Inc.
@@ -134,15 +136,8 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-const paginateAllPrioritizedIssues = () => __awaiter(void 0, void 0, void 0, function* () {
-    const prioritizedIssues = [];
-    constants/* PRIORITY_LABELS.forEach */.rF.forEach((label) => __awaiter(void 0, void 0, void 0, function* () {
-        const issues = yield paginateIssuesOfSpecificPriority(label);
-        // eslint-disable-next-line functional/immutable-data
-        prioritizedIssues.push(...issues);
-    }));
-    return prioritizedIssues;
-});
+
+const paginateAllPrioritizedIssues = () => __awaiter(void 0, void 0, void 0, function* () { return (yield (0,bluebird.map)(constants/* PRIORITY_LABELS */.rF, (label) => __awaiter(void 0, void 0, void 0, function* () { return yield paginateIssuesOfSpecificPriority(label); }))).filter(issues => issues.length > 0)[0]; });
 const paginateIssuesOfSpecificPriority = (label, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
     const response = yield octokit/* octokit.issues.listForRepo */.K.issues.listForRepo(Object.assign({ state: 'open', sort: 'created', direction: 'desc', per_page: 100, labels: label, page }, github.context.repo));
     if (!response || !response.data.length) {
@@ -219,8 +214,6 @@ const addDueDateComment = (deadline, createdDate, issue_number, numComments) => 
     }
 });
 
-// EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
-var bluebird = __webpack_require__(8710);
 ;// CONCATENATED MODULE: ./src/helpers/manage-issue-due-dates.ts
 /*
 Copyright 2023 Expedia, Inc.

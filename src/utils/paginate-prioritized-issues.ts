@@ -15,16 +15,10 @@ import { IssueList } from '../types/github';
 import { octokit } from '../octokit';
 import { context } from '@actions/github';
 import { PRIORITY_LABELS } from '../constants';
+import { map } from 'bluebird';
 
-export const paginateAllPrioritizedIssues = async () => {
-  const prioritizedIssues: IssueList = [];
-  PRIORITY_LABELS.forEach(async label => {
-    const issues: IssueList = await paginateIssuesOfSpecificPriority(label);
-    // eslint-disable-next-line functional/immutable-data
-    prioritizedIssues.push(...issues);
-  });
-  return prioritizedIssues;
-};
+export const paginateAllPrioritizedIssues = async () =>
+  (await map(PRIORITY_LABELS, async label => await paginateIssuesOfSpecificPriority(label))).filter(issues => issues.length > 0)[0];
 
 export const paginateIssuesOfSpecificPriority = async (label: string, page = 1): Promise<IssueList> => {
   const response = await octokit.issues.listForRepo({
