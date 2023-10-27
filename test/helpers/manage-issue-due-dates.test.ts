@@ -245,8 +245,15 @@ describe('manageIssueDueDates', () => {
         data: [
           {
             number: 123,
-            labels: [PRIORITY_3],
+            labels: [PRIORITY_3, 'bug'],
             created_at: '2023-09-16T20:09:21Z',
+            assignee: 'octocat',
+            comments: 1
+          },
+          {
+            number: 234,
+            labels: ['bug'],
+            created_at: '2023-09-16-T20:09:21Z',
             assignee: 'octocat',
             comments: 1
           }
