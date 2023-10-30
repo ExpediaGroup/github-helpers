@@ -5547,7 +5547,7 @@ var follow_redirects = __webpack_require__(7707);
 // EXTERNAL MODULE: external "zlib"
 var external_zlib_ = __webpack_require__(9796);
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/env/data.js
-const VERSION = "1.5.1";
+const VERSION = "1.6.0";
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/helpers/parseProtocol.js
 
 
@@ -6225,6 +6225,18 @@ const wrapAsync = (asyncExecutor) => {
   })
 };
 
+const resolveFamily = ({address, family}) => {
+  if (!utils.isString(address)) {
+    throw TypeError('address must be a string');
+  }
+  return ({
+    address,
+    family: family || (address.indexOf('.') < 0 ? 6 : 4)
+  });
+}
+
+const buildAddressEntry = (address, family) => resolveFamily(utils.isObject(address) ? address : {address, family});
+
 /*eslint consistent-return:0*/
 /* harmony default export */ const http = (isHttpAdapterSupported && function httpAdapter(config) {
   return wrapAsync(async function dispatchHttpRequest(resolve, reject, onDone) {
@@ -6235,15 +6247,16 @@ const wrapAsync = (asyncExecutor) => {
     let rejected = false;
     let req;
 
-    if (lookup && utils.isAsyncFn(lookup)) {
-      lookup = helpers_callbackify(lookup, (entry) => {
-        if(utils.isString(entry)) {
-          entry = [entry, entry.indexOf('.') < 0 ? 6 : 4]
-        } else if (!utils.isArray(entry)) {
-          throw new TypeError('lookup async function must return an array [ip: string, family: number]]')
-        }
-        return entry;
-      })
+    if (lookup) {
+      const _lookup = helpers_callbackify(lookup, (value) => utils.isArray(value) ? value : [value]);
+      // hotfix to support opt.all option which is required for node 20.x
+      lookup = (hostname, opt, cb) => {
+        _lookup(hostname, opt, (err, arg0, arg1) => {
+          const addresses = utils.isArray(arg0) ? arg0.map(addr => buildAddressEntry(addr)) : [buildAddressEntry(arg0, arg1)];
+
+          opt.all ? cb(err, addresses) : cb(err, addresses[0].address, addresses[0].family);
+        });
+      }
     }
 
     // temporary internal emitter until the AxiosRequest class will be implemented
@@ -6648,7 +6661,7 @@ const wrapAsync = (asyncExecutor) => {
             }
             response.data = responseData;
           } catch (err) {
-            reject(core_AxiosError.from(err, null, config, response.request, response));
+            return reject(core_AxiosError.from(err, null, config, response.request, response));
           }
           settle(resolve, reject, response);
         });
@@ -7062,8 +7075,8 @@ const isXHRAdapterSupported = typeof XMLHttpRequest !== 'undefined';
     // Specifically not if we're in a web worker, or react-native.
     if (node.isStandardBrowserEnv) {
       // Add xsrf header
-      const xsrfValue = (config.withCredentials || isURLSameOrigin(fullPath))
-        && config.xsrfCookieName && cookies.read(config.xsrfCookieName);
+      // regarding CVE-2023-45857 config.withCredentials condition was removed temporarily
+      const xsrfValue = isURLSameOrigin(fullPath) && config.xsrfCookieName && cookies.read(config.xsrfCookieName);
 
       if (xsrfValue) {
         requestHeaders.set(config.xsrfHeaderName, xsrfValue);
