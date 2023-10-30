@@ -24,7 +24,7 @@
     "@octokit/plugin-rest-endpoint-methods": "10.0.1",
     "@swc/jest": "0.2.29",
     "@total-typescript/ts-reset": "0.5.1",
-    "@types/bluebird": "3.5.39",
+    "@types/bluebird": "3.5.41",
     "@types/jest": "29.5.5",
     "@types/js-yaml": "4.0.6",
     "@types/lodash.camelcase": "4.3.7",
