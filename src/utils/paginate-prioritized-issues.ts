@@ -33,5 +33,5 @@ export const paginateIssuesOfSpecificPriority = async (label: string, page = 1):
   if (!response || !response.data.length) {
     return [];
   }
-  return (response.data as IssueList).concat(await paginateIssuesOfSpecificPriority(label, page + 1));
+  return response.data.concat(await paginateIssuesOfSpecificPriority(label, page + 1));
 };

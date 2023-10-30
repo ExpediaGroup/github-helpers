@@ -27,5 +27,5 @@ export const paginateAllCommentsOnIssue = async (issue_number: number, page = 1)
   if (!response.data.length) {
     return [];
   }
-  return (response.data as CommentList).concat(await paginateAllCommentsOnIssue(issue_number, page + 1));
+  return response.data.concat(await paginateAllCommentsOnIssue(issue_number, page + 1));
 };

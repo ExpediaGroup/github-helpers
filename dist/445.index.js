@@ -435,7 +435,7 @@ module.exports.argument = escapeArgument;
 
 
 const fs = __webpack_require__(7147);
-const shebangCommand = __webpack_require__(7032);
+const shebangCommand = __webpack_require__(1347);
 
 function readShebang(command) {
     // Read the first 150 bytes from the file
@@ -1672,7 +1672,7 @@ module.exports["default"] = pathKey;
 
 /***/ }),
 
-/***/ 7032:
+/***/ 1347:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
