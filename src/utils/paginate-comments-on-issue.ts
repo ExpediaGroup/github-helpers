@@ -24,7 +24,7 @@ export const paginateAllCommentsOnIssue = async (issue_number: number, page = 1)
     page,
     ...context.repo
   });
-  if (!response.data.length) {
+  if (!response?.data?.length) {
     return [];
   }
   return response.data.concat(await paginateAllCommentsOnIssue(issue_number, page + 1));

@@ -46,12 +46,6 @@ with:
 
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
 
-### [manage-issue-due-dates](.github/workflows/manage-issue-due-dates.yml)
-
--   Adds a comment listing the due date (based on SLA guidelines) to issues with a priority label attached
--   Adds a &#x27;due soon&#x27; label to issues with a priority label that will become overdue in 7 days
--   Adds an &#x27;overdue&#x27; label to issues with a priority label that are overdue
-
 ### [are-reviewers-required](.github/workflows/are-reviewers-required.yml)
 
 -   Returns true if all teams specified are requested for review on a pull request
@@ -197,6 +191,12 @@ Additionally, the following parameters can be used for additional control over t
 ### [is-user-in-team](.github/workflows/is-user-in-team.yml)
 
 -   Checks if the specifed GitHub user exists within an organization team
+
+### [manage-issue-due-dates](.github/workflows/manage-issue-due-dates.yml)
+
+-   Adds a comment listing the due date (based on SLA guidelines) to issues with a priority label attached
+-   Adds a &#x27;due soon&#x27; label to issues with a priority label that will become overdue in 7 days
+-   Adds an &#x27;overdue&#x27; label to issues with a priority label that are overdue
 
 ### [manage-merge-queue](.github/workflows/manage-merge-queue.yml)
 

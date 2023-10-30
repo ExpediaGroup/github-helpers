@@ -1,6 +1,6 @@
 "use strict";
-exports.id = 325;
-exports.ids = [325];
+exports.id = 950;
+exports.ids = [950];
 exports.modules = {
 
 /***/ 9042:
@@ -89,7 +89,7 @@ limitations under the License.
 
 /***/ }),
 
-/***/ 2325:
+/***/ 4950:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 // ESM COMPAT FLAG
@@ -109,7 +109,9 @@ var generated = __webpack_require__(3476);
 var octokit = __webpack_require__(6161);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __webpack_require__(5438);
-;// CONCATENATED MODULE: ./src/utils/paginate-open-issues.ts
+// EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
+var bluebird = __webpack_require__(267);
+;// CONCATENATED MODULE: ./src/utils/paginate-prioritized-issues.ts
 /*
 Copyright 2023 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -133,12 +135,16 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 };
 
 
-const paginateAllOpenIssues = (labels, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
-    const response = yield octokit/* octokit.issues.listForRepo */.K.issues.listForRepo(Object.assign({ state: 'open', labels, sort: 'created', direction: 'desc', per_page: 100, page }, github.context.repo));
-    if (!response || !response.data.length) {
+
+
+const paginateAllPrioritizedIssues = () => __awaiter(void 0, void 0, void 0, function* () { return (yield (0,bluebird.map)(constants/* PRIORITY_LABELS */.rF, (label) => __awaiter(void 0, void 0, void 0, function* () { return yield paginateIssuesOfSpecificPriority(label); }))).flat(); });
+const paginateIssuesOfSpecificPriority = (label, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const response = yield octokit/* octokit.issues.listForRepo */.K.issues.listForRepo(Object.assign({ state: 'open', sort: 'created', direction: 'desc', per_page: 100, labels: label, page }, github.context.repo));
+    if (!((_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.length)) {
         return [];
     }
-    return response.data.concat(yield paginateAllOpenIssues(labels, page + 1));
+    return response.data.concat(yield paginateIssuesOfSpecificPriority(label, page + 1));
 });
 
 ;// CONCATENATED MODULE: ./src/utils/paginate-comments-on-issue.ts
@@ -166,8 +172,9 @@ var paginate_comments_on_issue_awaiter = (undefined && undefined.__awaiter) || f
 
 
 const paginateAllCommentsOnIssue = (issue_number, page = 1) => paginate_comments_on_issue_awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const response = yield octokit/* octokit.issues.listComments */.K.issues.listComments(Object.assign({ issue_number, sort: 'created', direction: 'desc', per_page: 100, page }, github.context.repo));
-    if (!response.data.length) {
+    if (!((_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.length)) {
         return [];
     }
     return response.data.concat(yield paginateAllCommentsOnIssue(issue_number, page + 1));
@@ -209,8 +216,6 @@ const addDueDateComment = (deadline, createdDate, issue_number, numComments) => 
     }
 });
 
-// EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
-var bluebird = __webpack_require__(267);
 ;// CONCATENATED MODULE: ./src/helpers/manage-issue-due-dates.ts
 /*
 Copyright 2023 Expedia, Inc.
@@ -243,7 +248,7 @@ var manage_issue_due_dates_awaiter = (undefined && undefined.__awaiter) || funct
 class ManageIssueDueDates extends generated/* HelperInputs */.s {
 }
 const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
-    const openIssues = yield paginateAllOpenIssues(constants/* PRIORITY_LABELS.join */.rF.join(','));
+    const openIssues = yield paginateAllPrioritizedIssues();
     const warningThreshold = Number(days);
     const getFirstPriorityLabelFoundOnIssue = (issueLabels) => constants/* PRIORITY_LABELS.find */.rF.find(priorityLabel => issueLabels.some(issueLabel => {
         const labelName = typeof issueLabel === 'string' ? issueLabel : issueLabel.name;
@@ -332,4 +337,4 @@ class HelperInputs {
 
 };
 ;
-//# sourceMappingURL=325.index.js.map
+//# sourceMappingURL=950.index.js.map

@@ -13,7 +13,7 @@ limitations under the License.
 
 import { OVERDUE_ISSUE, ALMOST_OVERDUE_ISSUE, PRIORITY_LABELS, PRIORITY_TO_DAYS_MAP, SECONDS_IN_A_DAY } from '../constants';
 import { HelperInputs } from '../types/generated';
-import { paginateAllOpenIssues } from '../utils/paginate-open-issues';
+import { paginateAllPrioritizedIssues } from '../utils/paginate-prioritized-issues';
 import { addDueDateComment } from '../utils/add-due-date-comment';
 import { IssueList, IssueLabels } from '../types/github';
 import { map } from 'bluebird';
@@ -25,7 +25,8 @@ export class ManageIssueDueDates extends HelperInputs {
 }
 
 export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) => {
-  const openIssues: IssueList = await paginateAllOpenIssues(PRIORITY_LABELS.join(','));
+  const openIssues: IssueList = await paginateAllPrioritizedIssues();
+
   const warningThreshold = Number(days);
 
   const getFirstPriorityLabelFoundOnIssue = (issueLabels: IssueLabels) =>

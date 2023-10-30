@@ -14,19 +14,24 @@ limitations under the License.
 import { IssueList } from '../types/github';
 import { octokit } from '../octokit';
 import { context } from '@actions/github';
+import { PRIORITY_LABELS } from '../constants';
+import { map } from 'bluebird';
 
-export const paginateAllOpenIssues = async (labels?: string, page = 1): Promise<IssueList> => {
+export const paginateAllPrioritizedIssues = async () =>
+  (await map(PRIORITY_LABELS, async label => await paginateIssuesOfSpecificPriority(label))).flat();
+
+export const paginateIssuesOfSpecificPriority = async (label: string, page = 1): Promise<IssueList> => {
   const response = await octokit.issues.listForRepo({
     state: 'open',
-    labels,
     sort: 'created',
     direction: 'desc',
     per_page: 100,
+    labels: label,
     page,
     ...context.repo
   });
-  if (!response || !response.data.length) {
+  if (!response?.data?.length) {
     return [];
   }
-  return response.data.concat(await paginateAllOpenIssues(labels, page + 1));
+  return response.data.concat(await paginateIssuesOfSpecificPriority(label, page + 1));
 };
