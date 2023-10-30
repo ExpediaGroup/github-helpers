@@ -31,31 +31,47 @@ describe('manageIssueDueDates', () => {
   beforeEach(() => {});
 
   it('should add due date comments to PRs with any priority label', async () => {
-    (octokit.issues.listForRepo as unknown as Mocktokit).mockResolvedValueOnce({
-      status: '200',
-      data: [
-        {
-          number: 123,
-          labels: [PRIORITY_1],
-          created_at: Date.now()
-        },
-        {
-          number: 234,
-          labels: [PRIORITY_2],
-          created_at: Date.now()
-        },
-        {
-          number: 345,
-          labels: [PRIORITY_3],
-          created_at: Date.now()
-        },
-        {
-          number: 456,
-          labels: [PRIORITY_4],
-          created_at: Date.now()
-        }
-      ]
-    });
+    (octokit.issues.listForRepo as unknown as Mocktokit)
+      .mockResolvedValueOnce({
+        status: '200',
+        data: [
+          {
+            number: 123,
+            labels: [PRIORITY_1],
+            created_at: Date.now()
+          }
+        ]
+      })
+      .mockResolvedValueOnce({
+        status: '200',
+        data: [
+          {
+            number: 234,
+            labels: [PRIORITY_2],
+            created_at: Date.now()
+          }
+        ]
+      })
+      .mockResolvedValueOnce({
+        status: '200',
+        data: [
+          {
+            number: 345,
+            labels: [PRIORITY_3],
+            created_at: Date.now()
+          }
+        ]
+      })
+      .mockResolvedValueOnce({
+        status: '200',
+        data: [
+          {
+            number: 456,
+            labels: [PRIORITY_4],
+            created_at: Date.now()
+          }
+        ]
+      });
 
     await manageIssueDueDates({});
     expect(octokit.issues.createComment).toHaveBeenCalledWith({
@@ -87,22 +103,17 @@ describe('manageIssueDueDates', () => {
   });
 
   it('should add overdue label to a PR with high priority that is 20 days old', async () => {
-    (octokit.issues.listForRepo as unknown as Mocktokit)
-      .mockResolvedValueOnce({
-        status: '200',
-        data: [
-          {
-            number: 123,
-            labels: [PRIORITY_2],
-            created_at: '2023-09-06T20:09:21Z',
-            assignee: 'octocat'
-          }
-        ]
-      })
-      .mockResolvedValueOnce({
-        status: '200',
-        data: []
-      });
+    (octokit.issues.listForRepo as unknown as Mocktokit).mockResolvedValueOnce({
+      status: '200',
+      data: [
+        {
+          number: 123,
+          labels: [PRIORITY_2],
+          created_at: '2023-09-06T20:09:21Z',
+          assignee: 'octocat'
+        }
+      ]
+    });
 
     await manageIssueDueDates({});
 
@@ -127,30 +138,22 @@ describe('manageIssueDueDates', () => {
   });
 
   it('should add due soon label to a PR with low priority that is 85 days old', async () => {
-    (octokit.issues.listForRepo as unknown as Mocktokit)
-      .mockResolvedValueOnce({
-        status: '200',
-        data: [
-          {
-            number: 123,
-            labels: [PRIORITY_4],
-            created_at: '2023-07-03T20:09:21Z',
-            assignee: 'octocat'
-          }
-        ]
-      })
-      .mockResolvedValueOnce({
-        status: '200',
-        data: []
-      });
+    (octokit.issues.listForRepo as unknown as Mocktokit).mockResolvedValueOnce({
+      status: '200',
+      data: [
+        {
+          number: 123,
+          labels: [PRIORITY_4],
+          created_at: '2023-07-03T20:09:21Z',
+          assignee: 'octocat'
+        }
+      ]
+    });
 
-    (octokit.issues.listComments as unknown as Mocktokit)
-      .mockResolvedValueOnce({
-        status: '200',
-        data: [{ body: 'This issue is due on Sun Oct 1 2023' }]
-      })
-      .mockResolvedValueOnce({ status: '200', data: [] });
-
+    (octokit.issues.listComments as unknown as Mocktokit).mockResolvedValueOnce({
+      status: '200',
+      data: [{ body: 'This issue is due on Sun Oct 1 2023' }]
+    });
     await manageIssueDueDates({});
 
     PRIORITY_LABELS.forEach(priorityLabel =>
@@ -183,7 +186,12 @@ describe('manageIssueDueDates', () => {
             created_at: '2020-05-29T20:09:21Z',
             assignee: 'octocat',
             labels: []
-          },
+          }
+        ]
+      })
+      .mockResolvedValueOnce({
+        status: '200',
+        data: [
           {
             number: 234,
             created_at: '2023-10-29T20:09:21Z',
@@ -191,10 +199,6 @@ describe('manageIssueDueDates', () => {
             labels: [PRIORITY_4]
           }
         ]
-      })
-      .mockResolvedValueOnce({
-        status: '200',
-        data: []
       });
 
     await manageIssueDueDates({});
@@ -231,7 +235,12 @@ describe('manageIssueDueDates', () => {
             created_at: '2023-09-16T20:09:21Z',
             assignee: 'octocat',
             comments: 1
-          },
+          }
+        ]
+      })
+      .mockResolvedValueOnce({
+        status: '200',
+        data: [
           {
             number: 234,
             labels: ['bug'],
@@ -240,25 +249,16 @@ describe('manageIssueDueDates', () => {
             comments: 1
           }
         ]
-      })
-      .mockResolvedValueOnce({
-        status: '200',
-        data: []
       });
 
-    (octokit.issues.listComments as unknown as Mocktokit)
-      .mockResolvedValueOnce({
-        status: '200',
-        data: [
-          {
-            body: 'This issue is due on Tue Oct 31 2023'
-          }
-        ]
-      })
-      .mockResolvedValueOnce({
-        status: '200',
-        data: []
-      });
+    (octokit.issues.listComments as unknown as Mocktokit).mockResolvedValueOnce({
+      status: '200',
+      data: [
+        {
+          body: 'This issue is due on Tue Oct 31 2023'
+        }
+      ]
+    });
 
     await manageIssueDueDates({});
 

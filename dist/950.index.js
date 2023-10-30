@@ -137,10 +137,11 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-const paginateAllPrioritizedIssues = () => __awaiter(void 0, void 0, void 0, function* () { return (yield (0,bluebird.map)(constants/* PRIORITY_LABELS */.rF, (label) => __awaiter(void 0, void 0, void 0, function* () { return yield paginateIssuesOfSpecificPriority(label); }))).filter(issues => issues.length > 0)[0]; });
+const paginateAllPrioritizedIssues = () => __awaiter(void 0, void 0, void 0, function* () { return (yield (0,bluebird.map)(constants/* PRIORITY_LABELS */.rF, (label) => __awaiter(void 0, void 0, void 0, function* () { return yield paginateIssuesOfSpecificPriority(label); }))).flat(); });
 const paginateIssuesOfSpecificPriority = (label, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const response = yield octokit/* octokit.issues.listForRepo */.K.issues.listForRepo(Object.assign({ state: 'open', sort: 'created', direction: 'desc', per_page: 100, labels: label, page }, github.context.repo));
-    if (!response || !response.data.length) {
+    if (!((_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.length)) {
         return [];
     }
     return response.data.concat(yield paginateIssuesOfSpecificPriority(label, page + 1));
@@ -171,8 +172,9 @@ var paginate_comments_on_issue_awaiter = (undefined && undefined.__awaiter) || f
 
 
 const paginateAllCommentsOnIssue = (issue_number, page = 1) => paginate_comments_on_issue_awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const response = yield octokit/* octokit.issues.listComments */.K.issues.listComments(Object.assign({ issue_number, sort: 'created', direction: 'desc', per_page: 100, page }, github.context.repo));
-    if (!response.data.length) {
+    if (!((_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.length)) {
         return [];
     }
     return response.data.concat(yield paginateAllCommentsOnIssue(issue_number, page + 1));

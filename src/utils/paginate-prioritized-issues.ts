@@ -18,7 +18,7 @@ import { PRIORITY_LABELS } from '../constants';
 import { map } from 'bluebird';
 
 export const paginateAllPrioritizedIssues = async () =>
-  (await map(PRIORITY_LABELS, async label => await paginateIssuesOfSpecificPriority(label))).filter(issues => issues.length > 0)[0];
+  (await map(PRIORITY_LABELS, async label => await paginateIssuesOfSpecificPriority(label))).flat();
 
 export const paginateIssuesOfSpecificPriority = async (label: string, page = 1): Promise<IssueList> => {
   const response = await octokit.issues.listForRepo({
@@ -30,7 +30,7 @@ export const paginateIssuesOfSpecificPriority = async (label: string, page = 1):
     page,
     ...context.repo
   });
-  if (!response || !response.data.length) {
+  if (!response?.data?.length) {
     return [];
   }
   return response.data.concat(await paginateIssuesOfSpecificPriority(label, page + 1));
