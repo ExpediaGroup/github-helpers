@@ -39,7 +39,7 @@ export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMerge
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
   if (pullRequest.merged || !pullRequest.labels.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
     core.info('This PR is not in the merge queue.');
-    return removePrFromQueue(pullRequest as PullRequest);
+    return removePrFromQueue(pullRequest);
   }
   const queuedPrs = await getQueuedPullRequests();
   const queuePosition = queuedPrs.length;
@@ -47,7 +47,7 @@ export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMerge
     return updateMergeQueue(queuedPrs);
   }
   if (!pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))) {
-    await addPrToQueue(pullRequest as PullRequest, queuePosition);
+    await addPrToQueue(pullRequest, queuePosition);
   }
 
   const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === FIRST_QUEUED_PR_LABEL);

@@ -210,7 +210,7 @@ const addDueDateComment = (deadline, createdDate, issue_number, numComments) => 
 });
 
 // EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
-var bluebird = __webpack_require__(8710);
+var bluebird = __webpack_require__(267);
 ;// CONCATENATED MODULE: ./src/helpers/manage-issue-due-dates.ts
 /*
 Copyright 2023 Expedia, Inc.
