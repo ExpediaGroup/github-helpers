@@ -41,10 +41,11 @@ export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) =
     const { labels, created_at, assignee, number: issue_number, comments } = issue;
     const priority = getFirstPriorityLabelFoundOnIssue(labels);
     const alreadyHasOverdueLabel =
-      labels.find(label => {
-        if (typeof label === 'string') return label === OVERDUE_ISSUE || label === ALMOST_OVERDUE_ISSUE;
-        else return label.name === OVERDUE_ISSUE || label.name === ALMOST_OVERDUE_ISSUE;
-      }) !== undefined;
+      Boolean(labels.find(label => {
+        const overdueLabels = [OVERDUE_ISSUE, ALMOST_OVERDUE_ISSUE];
+        const label = typeof label === 'string' ? label : label.name;
+        return overdueLabels.includes(label);
+      }));
 
     if (!priority || alreadyHasOverdueLabel) {
       return;
