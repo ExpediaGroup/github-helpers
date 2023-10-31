@@ -49,9 +49,10 @@ export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) =
     const labelToAdd =
       daysSinceCreation > deadline ? OVERDUE_ISSUE : daysSinceCreation > deadline - warningThreshold ? ALMOST_OVERDUE_ISSUE : undefined;
     if (assignee && labelToAdd) {
+      const { name, login } = assignee;
       await octokit.issues.createComment({
         issue_number,
-        body: `@${assignee}, this issue assigned to you is now ${labelToAdd.toLowerCase()}`,
+        body: `@${name || login}, this issue assigned to you is now ${labelToAdd.toLowerCase()}`,
         ...context.repo
       });
     }

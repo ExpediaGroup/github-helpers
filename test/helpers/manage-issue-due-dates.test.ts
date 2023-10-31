@@ -110,7 +110,7 @@ describe('manageIssueDueDates', () => {
           number: 123,
           labels: [PRIORITY_2],
           created_at: '2023-09-06T20:09:21Z',
-          assignee: 'octocat'
+          assignee: { login: 'octocat' }
         }
       ]
     });
@@ -145,7 +145,7 @@ describe('manageIssueDueDates', () => {
           number: 123,
           labels: [PRIORITY_4],
           created_at: '2023-07-03T20:09:21Z',
-          assignee: 'octocat'
+          assignee: { login: 'octocat' }
         }
       ]
     });
@@ -184,7 +184,7 @@ describe('manageIssueDueDates', () => {
           {
             number: 123,
             created_at: '2020-05-29T20:09:21Z',
-            assignee: 'octocat',
+            assignee: { login: 'octocat' },
             labels: []
           }
         ]
@@ -195,7 +195,7 @@ describe('manageIssueDueDates', () => {
           {
             number: 234,
             created_at: '2023-10-29T20:09:21Z',
-            assignee: 'octocat',
+            assignee: { login: 'octocat' },
             labels: [PRIORITY_4]
           }
         ]
@@ -233,7 +233,7 @@ describe('manageIssueDueDates', () => {
             number: 123,
             labels: [PRIORITY_3, 'bug'],
             created_at: '2023-09-16T20:09:21Z',
-            assignee: 'octocat',
+            assignee: { login: 'octocat' },
             comments: 1
           }
         ]
@@ -245,7 +245,7 @@ describe('manageIssueDueDates', () => {
             number: 234,
             labels: ['bug'],
             created_at: '2023-09-16-T20:09:21Z',
-            assignee: 'octocat',
+            assignee: { login: 'octocat' },
             comments: 1
           }
         ]
