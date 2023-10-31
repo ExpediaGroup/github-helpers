@@ -257,7 +257,13 @@ const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(v
     yield (0,bluebird.map)(openIssues, (issue) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
         const { labels, created_at, assignee, number: issue_number, comments } = issue;
         const priority = getFirstPriorityLabelFoundOnIssue(labels);
-        if (!priority) {
+        const alreadyHasOverdueLabel = labels.find(label => {
+            if (typeof label === 'string')
+                return label === constants/* OVERDUE_ISSUE */.wH || label === constants/* ALMOST_OVERDUE_ISSUE */.aT;
+            else
+                return label.name === constants/* OVERDUE_ISSUE */.wH || label.name === constants/* ALMOST_OVERDUE_ISSUE */.aT;
+        }) !== undefined;
+        if (!priority || alreadyHasOverdueLabel) {
             return;
         }
         const createdDate = new Date(created_at);

@@ -40,7 +40,13 @@ export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) =
   await map(openIssues, async issue => {
     const { labels, created_at, assignee, number: issue_number, comments } = issue;
     const priority = getFirstPriorityLabelFoundOnIssue(labels);
-    if (!priority) {
+    const alreadyHasOverdueLabel =
+      labels.find(label => {
+        if (typeof label === 'string') return label === OVERDUE_ISSUE || label === ALMOST_OVERDUE_ISSUE;
+        else return label.name === OVERDUE_ISSUE || label.name === ALMOST_OVERDUE_ISSUE;
+      }) !== undefined;
+
+    if (!priority || alreadyHasOverdueLabel) {
       return;
     }
     const createdDate = new Date(created_at);

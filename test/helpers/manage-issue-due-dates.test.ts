@@ -277,4 +277,35 @@ describe('manageIssueDueDates', () => {
     expect(octokit.issues.createComment).not.toHaveBeenCalled();
     expect(octokit.issues.addLabels).not.toHaveBeenCalled();
   });
+
+  it('should not add an overdue label to an issue which already has one', async () => {
+    (octokit.issues.listForRepo as unknown as Mocktokit).mockResolvedValueOnce({
+      status: '200',
+      data: [
+        {
+          number: 123,
+          labels: [PRIORITY_2, OVERDUE_ISSUE],
+          created_at: '2023-08-16T20:09:21Z',
+          assignee: { login: 'octocat' }
+        }
+      ]
+    });
+
+    await manageIssueDueDates({});
+
+    PRIORITY_LABELS.forEach(priorityLabel =>
+      expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
+        page: 1,
+        labels: priorityLabel,
+        per_page: 100,
+        sort: 'created',
+        direction: 'desc',
+        state: 'open',
+        ...context.repo
+      })
+    );
+
+    expect(octokit.issues.createComment).not.toHaveBeenCalled();
+    expect(octokit.issues.addLabels).not.toHaveBeenCalled();
+  });
 });
