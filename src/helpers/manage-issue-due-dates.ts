@@ -19,6 +19,7 @@ import { IssueList, IssueLabels } from '../types/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
 import { context } from '@actions/github';
+import { removeLabelIfExists } from './remove-label';
 
 export class ManageIssueDueDates extends HelperInputs {
   days?: string;
@@ -57,7 +58,7 @@ export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) =
     }
     if (labelToAdd) {
       if (labelToAdd === OVERDUE_ISSUE) {
-        await octokit.issues.removeLabel({ name: ALMOST_OVERDUE_ISSUE, issue_number, ...context.repo });
+        removeLabelIfExists(ALMOST_OVERDUE_ISSUE, issue_number);
       }
       await octokit.issues.addLabels({
         labels: [labelToAdd],
