@@ -33,7 +33,7 @@
     "@types/lodash.union": "4.6.8",
     "@types/lodash.uniq": "4.5.8",
     "@types/micromatch": "4.0.4",
-    "@types/node": "20.8.6",
+    "@types/node": "20.8.10",
     "@types/node-fetch": "2.6.8",
     "@typescript-eslint/eslint-plugin": "6.9.0",
     "@vercel/ncc": "0.38.0",
