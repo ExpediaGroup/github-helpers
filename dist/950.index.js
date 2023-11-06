@@ -268,6 +268,9 @@ const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(v
             yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `@${assignee}, this issue assigned to you is now ${labelToAdd.toLowerCase()}` }, github.context.repo));
         }
         if (labelToAdd) {
+            if (labelToAdd === constants/* OVERDUE_ISSUE */.wH) {
+                yield octokit/* octokit.issues.removeLabel */.K.issues.removeLabel(Object.assign({ name: constants/* ALMOST_OVERDUE_ISSUE */.aT, issue_number }, github.context.repo));
+            }
             yield octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [labelToAdd], issue_number }, github.context.repo));
         }
         yield addDueDateComment(deadline, createdDate, issue_number, comments);

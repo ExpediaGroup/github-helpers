@@ -56,6 +56,9 @@ export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) =
       });
     }
     if (labelToAdd) {
+      if (labelToAdd === OVERDUE_ISSUE) {
+        await octokit.issues.removeLabel({ name: ALMOST_OVERDUE_ISSUE, issue_number, ...context.repo });
+      }
       await octokit.issues.addLabels({
         labels: [labelToAdd],
         issue_number,
