@@ -16,12 +16,16 @@ import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
 import { Mocktokit } from '../types';
 import { ALMOST_OVERDUE_ISSUE, OVERDUE_ISSUE, PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4, PRIORITY_LABELS } from '../../src/constants';
+import { removeLabelIfExists } from '../../src/helpers/remove-label';
 
+jest.mock('../../src/helpers/remove-label');
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' } },
   getOctokit: jest.fn(() => ({
-    rest: { issues: { addLabels: jest.fn(), listForRepo: jest.fn(), createComment: jest.fn(), listComments: jest.fn() } }
+    rest: {
+      issues: { addLabels: jest.fn(), listForRepo: jest.fn(), createComment: jest.fn(), listComments: jest.fn() }
+    }
   }))
 }));
 
@@ -108,7 +112,7 @@ describe('manageIssueDueDates', () => {
       data: [
         {
           number: 123,
-          labels: [PRIORITY_2],
+          labels: [PRIORITY_2, ALMOST_OVERDUE_ISSUE],
           created_at: '2023-09-06T20:09:21Z',
           assignee: { login: 'octocat' }
         }
@@ -129,6 +133,7 @@ describe('manageIssueDueDates', () => {
       })
     );
 
+    expect(removeLabelIfExists).toHaveBeenCalledWith(ALMOST_OVERDUE_ISSUE, 123);
     expect(octokit.issues.addLabels).toHaveBeenCalledWith({ labels: [OVERDUE_ISSUE], issue_number: 123, ...context.repo });
     expect(octokit.issues.createComment).toHaveBeenCalledWith({
       body: '@octocat, this issue assigned to you is now overdue',

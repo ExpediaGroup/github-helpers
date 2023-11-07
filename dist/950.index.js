@@ -1,6 +1,6 @@
 "use strict";
 exports.id = 950;
-exports.ids = [950];
+exports.ids = [950,61];
 exports.modules = {
 
 /***/ 9042:
@@ -216,6 +216,8 @@ const addDueDateComment = (deadline, createdDate, issue_number, numComments) => 
     }
 });
 
+// EXTERNAL MODULE: ./src/helpers/remove-label.ts
+var remove_label = __webpack_require__(61);
 ;// CONCATENATED MODULE: ./src/helpers/manage-issue-due-dates.ts
 /*
 Copyright 2023 Expedia, Inc.
@@ -245,6 +247,7 @@ var manage_issue_due_dates_awaiter = (undefined && undefined.__awaiter) || funct
 
 
 
+
 class ManageIssueDueDates extends generated/* HelperInputs */.s {
 }
 const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
@@ -258,7 +261,7 @@ const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(v
         const { labels, created_at, assignee, number: issue_number, comments } = issue;
         const priority = getFirstPriorityLabelFoundOnIssue(labels);
         const alreadyHasOverdueLabel = Boolean(labels.find(label => {
-            const overdueLabels = [constants/* OVERDUE_ISSUE */.wH, constants/* ALMOST_OVERDUE_ISSUE */.aT];
+            const overdueLabels = [constants/* OVERDUE_ISSUE */.wH];
             const labelName = typeof label === 'string' ? label : label.name || '';
             return overdueLabels.includes(labelName);
         }));
@@ -273,10 +276,74 @@ const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(v
             yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `@${assignee.name || assignee.login}, this issue assigned to you is now ${labelToAdd.toLowerCase()}` }, github.context.repo));
         }
         if (labelToAdd) {
+            if (labelToAdd === constants/* OVERDUE_ISSUE */.wH) {
+                (0,remove_label.removeLabelIfExists)(constants/* ALMOST_OVERDUE_ISSUE */.aT, issue_number);
+            }
             yield octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [labelToAdd], issue_number }, github.context.repo));
         }
         yield addDueDateComment(deadline, createdDate, issue_number, comments);
     }));
+});
+
+
+/***/ }),
+
+/***/ 61:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "RemoveLabel": () => (/* binding */ RemoveLabel),
+/* harmony export */   "removeLabel": () => (/* binding */ removeLabel),
+/* harmony export */   "removeLabelIfExists": () => (/* binding */ removeLabelIfExists)
+/* harmony export */ });
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3476);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
+/*
+Copyright 2021 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+
+
+class RemoveLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .s {
+    constructor() {
+        super(...arguments);
+        this.label = '';
+    }
+}
+const removeLabel = ({ label }) => __awaiter(void 0, void 0, void 0, function* () { return removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number); });
+const removeLabelIfExists = (labelName, issue_number) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel(Object.assign({ name: labelName, issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    }
+    catch (error) {
+        if (error.status === 404) {
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Label is not present on PR.');
+        }
+    }
 });
 
 
