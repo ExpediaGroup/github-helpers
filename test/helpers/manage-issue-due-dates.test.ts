@@ -114,7 +114,7 @@ describe('manageIssueDueDates', () => {
           number: 123,
           labels: [PRIORITY_2, ALMOST_OVERDUE_ISSUE],
           created_at: '2023-09-06T20:09:21Z',
-          assignee: 'octocat'
+          assignee: { login: 'octocat' }
         }
       ]
     });
@@ -150,7 +150,7 @@ describe('manageIssueDueDates', () => {
           number: 123,
           labels: [PRIORITY_4],
           created_at: '2023-07-03T20:09:21Z',
-          assignee: 'octocat'
+          assignee: { login: 'octocat' }
         }
       ]
     });
@@ -189,7 +189,7 @@ describe('manageIssueDueDates', () => {
           {
             number: 123,
             created_at: '2020-05-29T20:09:21Z',
-            assignee: 'octocat',
+            assignee: { login: 'octocat' },
             labels: []
           }
         ]
@@ -200,7 +200,7 @@ describe('manageIssueDueDates', () => {
           {
             number: 234,
             created_at: '2023-10-29T20:09:21Z',
-            assignee: 'octocat',
+            assignee: { login: 'octocat' },
             labels: [PRIORITY_4]
           }
         ]
@@ -238,7 +238,7 @@ describe('manageIssueDueDates', () => {
             number: 123,
             labels: [PRIORITY_3, 'bug'],
             created_at: '2023-09-16T20:09:21Z',
-            assignee: 'octocat',
+            assignee: { login: 'octocat' },
             comments: 1
           }
         ]
@@ -250,7 +250,7 @@ describe('manageIssueDueDates', () => {
             number: 234,
             labels: ['bug'],
             created_at: '2023-09-16-T20:09:21Z',
-            assignee: 'octocat',
+            assignee: { login: 'octocat' },
             comments: 1
           }
         ]
@@ -261,6 +261,37 @@ describe('manageIssueDueDates', () => {
       data: [
         {
           body: 'This issue is due on Tue Oct 31 2023'
+        }
+      ]
+    });
+
+    await manageIssueDueDates({});
+
+    PRIORITY_LABELS.forEach(priorityLabel =>
+      expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
+        page: 1,
+        labels: priorityLabel,
+        per_page: 100,
+        sort: 'created',
+        direction: 'desc',
+        state: 'open',
+        ...context.repo
+      })
+    );
+
+    expect(octokit.issues.createComment).not.toHaveBeenCalled();
+    expect(octokit.issues.addLabels).not.toHaveBeenCalled();
+  });
+
+  it('should not add an overdue label to an issue which already has one', async () => {
+    (octokit.issues.listForRepo as unknown as Mocktokit).mockResolvedValueOnce({
+      status: '200',
+      data: [
+        {
+          number: 123,
+          labels: [PRIORITY_2, OVERDUE_ISSUE],
+          created_at: '2023-08-16T20:09:21Z',
+          assignee: { login: 'octocat' }
         }
       ]
     });

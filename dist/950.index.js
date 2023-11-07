@@ -260,7 +260,12 @@ const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(v
     yield (0,bluebird.map)(openIssues, (issue) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
         const { labels, created_at, assignee, number: issue_number, comments } = issue;
         const priority = getFirstPriorityLabelFoundOnIssue(labels);
-        if (!priority) {
+        const alreadyHasOverdueLabel = Boolean(labels.find(label => {
+            const overdueLabels = [constants/* OVERDUE_ISSUE */.wH, constants/* ALMOST_OVERDUE_ISSUE */.aT];
+            const labelName = typeof label === 'string' ? label : label.name || '';
+            return overdueLabels.includes(labelName);
+        }));
+        if (!priority || alreadyHasOverdueLabel) {
             return;
         }
         const createdDate = new Date(created_at);
@@ -268,7 +273,7 @@ const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(v
         const deadline = constants/* PRIORITY_TO_DAYS_MAP */.gd[priority];
         const labelToAdd = daysSinceCreation > deadline ? constants/* OVERDUE_ISSUE */.wH : daysSinceCreation > deadline - warningThreshold ? constants/* ALMOST_OVERDUE_ISSUE */.aT : undefined;
         if (assignee && labelToAdd) {
-            yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `@${assignee}, this issue assigned to you is now ${labelToAdd.toLowerCase()}` }, github.context.repo));
+            yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `@${assignee.name || assignee.login}, this issue assigned to you is now ${labelToAdd.toLowerCase()}` }, github.context.repo));
         }
         if (labelToAdd) {
             if (labelToAdd === constants/* OVERDUE_ISSUE */.wH) {

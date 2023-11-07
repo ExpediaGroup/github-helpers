@@ -41,7 +41,15 @@ export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) =
   await map(openIssues, async issue => {
     const { labels, created_at, assignee, number: issue_number, comments } = issue;
     const priority = getFirstPriorityLabelFoundOnIssue(labels);
-    if (!priority) {
+    const alreadyHasOverdueLabel = Boolean(
+      labels.find(label => {
+        const overdueLabels = [OVERDUE_ISSUE, ALMOST_OVERDUE_ISSUE];
+        const labelName: string = typeof label === 'string' ? label : label.name || '';
+        return overdueLabels.includes(labelName);
+      })
+    );
+
+    if (!priority || alreadyHasOverdueLabel) {
       return;
     }
     const createdDate = new Date(created_at);
@@ -52,7 +60,7 @@ export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) =
     if (assignee && labelToAdd) {
       await octokit.issues.createComment({
         issue_number,
-        body: `@${assignee}, this issue assigned to you is now ${labelToAdd.toLowerCase()}`,
+        body: `@${assignee.name || assignee.login}, this issue assigned to you is now ${labelToAdd.toLowerCase()}`,
         ...context.repo
       });
     }
