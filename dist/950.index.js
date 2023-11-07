@@ -261,7 +261,7 @@ const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(v
         const { labels, created_at, assignee, number: issue_number, comments } = issue;
         const priority = getFirstPriorityLabelFoundOnIssue(labels);
         const alreadyHasOverdueLabel = Boolean(labels.find(label => {
-            const overdueLabels = [constants/* OVERDUE_ISSUE */.wH, constants/* ALMOST_OVERDUE_ISSUE */.aT];
+            const overdueLabels = [constants/* OVERDUE_ISSUE */.wH];
             const labelName = typeof label === 'string' ? label : label.name || '';
             return overdueLabels.includes(labelName);
         }));
