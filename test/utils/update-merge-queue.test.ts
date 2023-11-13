@@ -167,6 +167,12 @@ describe('updateMergeQueue', () => {
         state: 'success',
         description: 'This PR is next to merge.'
       });
+      expect(setCommitStatus).not.toHaveBeenCalledWith({
+        sha: 'sha123',
+        context: MERGE_QUEUE_STATUS,
+        state: 'pending',
+        description: 'This PR is in line to merge.'
+      });
     });
 
     it('should update pr with default branch', () => {
