@@ -119,8 +119,8 @@ const getMergeSafetyStateAndMessage = async (
   const globalFilesOutdatedOnBranch = override_filter_globs
     ? micromatch(fileNamesWhichBranchIsBehindOn, override_filter_globs.split(/[\n,]/))
     : override_filter_paths
-    ? fileNamesWhichBranchIsBehindOn.filter(changedFile => override_filter_paths.split(/[\n,]/).includes(changedFile))
-    : [];
+      ? fileNamesWhichBranchIsBehindOn.filter(changedFile => override_filter_paths.split(/[\n,]/).includes(changedFile))
+      : [];
 
   if (globalFilesOutdatedOnBranch.length) {
     core.error(buildErrorMessage(globalFilesOutdatedOnBranch, 'global files', truncatedBranchName));
