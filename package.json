@@ -29,7 +29,7 @@
     "@types/js-yaml": "4.0.8",
     "@types/lodash.camelcase": "4.3.8",
     "@types/lodash.chunk": "4.2.8",
-    "@types/lodash.samplesize": "4.2.7",
+    "@types/lodash.samplesize": "4.2.9",
     "@types/lodash.union": "4.6.8",
     "@types/lodash.uniq": "4.5.8",
     "@types/micromatch": "4.0.4",
