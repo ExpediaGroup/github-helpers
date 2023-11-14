@@ -176,14 +176,9 @@ const updateQueuePosition = (pr, index) => __awaiter(void 0, void 0, void 0, fun
     if (!label || isNaN(queuePosition) || queuePosition === newQueuePosition) {
         return;
     }
-    if (newQueuePosition === 1) {
+    const prIsNowFirstInQueue = newQueuePosition === 1;
+    if (prIsNowFirstInQueue) {
         const { data: firstPrInQueue } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: number }, github.context.repo));
-        yield (0,set_commit_status.setCommitStatus)({
-            sha: firstPrInQueue.head.sha,
-            context: constants/* MERGE_QUEUE_STATUS */.Cb,
-            state: 'success',
-            description: 'This PR is next to merge.'
-        });
         yield Promise.all([(0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, number), (0,prepare_queued_pr_for_merge.updatePrWithDefaultBranch)(firstPrInQueue)]);
     }
     return Promise.all([
@@ -192,8 +187,8 @@ const updateQueuePosition = (pr, index) => __awaiter(void 0, void 0, void 0, fun
         (0,set_commit_status.setCommitStatus)({
             sha,
             context: constants/* MERGE_QUEUE_STATUS */.Cb,
-            state: 'pending',
-            description: 'This PR is in line to merge.'
+            state: prIsNowFirstInQueue ? 'success' : 'pending',
+            description: `This PR is ${prIsNowFirstInQueue ? 'next' : 'in line'} to merge.`
         })
     ]);
 });

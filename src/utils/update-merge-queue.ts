@@ -46,14 +46,9 @@ const updateQueuePosition = async (pr: ReturnType<typeof sortPrsByQueuePosition>
   if (!label || isNaN(queuePosition) || queuePosition === newQueuePosition) {
     return;
   }
-  if (newQueuePosition === 1) {
+  const prIsNowFirstInQueue = newQueuePosition === 1;
+  if (prIsNowFirstInQueue) {
     const { data: firstPrInQueue } = await octokit.pulls.get({ pull_number: number, ...context.repo });
-    await setCommitStatus({
-      sha: firstPrInQueue.head.sha,
-      context: MERGE_QUEUE_STATUS,
-      state: 'success',
-      description: 'This PR is next to merge.'
-    });
     await Promise.all([removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, number), updatePrWithDefaultBranch(firstPrInQueue)]);
   }
 
@@ -67,8 +62,8 @@ const updateQueuePosition = async (pr: ReturnType<typeof sortPrsByQueuePosition>
     setCommitStatus({
       sha,
       context: MERGE_QUEUE_STATUS,
-      state: 'pending',
-      description: 'This PR is in line to merge.'
+      state: prIsNowFirstInQueue ? 'success' : 'pending',
+      description: `This PR is ${prIsNowFirstInQueue ? 'next' : 'in line'} to merge.`
     })
   ]);
 };

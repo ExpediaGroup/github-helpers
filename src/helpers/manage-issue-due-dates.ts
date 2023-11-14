@@ -48,6 +48,7 @@ export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) =
         return overdueLabels.includes(labelName);
       })
     );
+
     if (!priority || alreadyHasOverdueLabel) {
       return;
     }
