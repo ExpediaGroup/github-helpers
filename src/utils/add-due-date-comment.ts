@@ -11,17 +11,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { CommentList, SingleComment } from '../types/github';
+import { IssueAssignees, CommentList, SingleComment } from '../types/github';
 import { paginateAllCommentsOnIssue } from './paginate-comments-on-issue';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import { SECONDS_IN_A_DAY } from '../constants';
 
-export const addDueDateComment = async (deadline: number, createdDate: Date, issue_number: number, numComments: number) => {
-  const hasExistingComments = numComments > 0;
-  const commentList: CommentList = hasExistingComments ? await paginateAllCommentsOnIssue(issue_number) : [];
-  // Create due date comment if there are no existing comments or the comment list does not contain a due date comment
-  if (!hasExistingComments || !commentList.find((comment: SingleComment) => comment.body?.startsWith('This issue is due on'))) {
+export const addDueDateComment = async (deadline: number, createdDate: Date, issue_number: number) => {
+  const commentList: CommentList = await paginateAllCommentsOnIssue(issue_number);
+  if (
+    !commentList ||
+    !commentList.find(
+      (comment: SingleComment) => comment.user?.login === 'github-actions[bot]' && comment.body?.startsWith('This issue is due on')
+    )
+  ) {
     const dueDate = new Date(createdDate.getTime() + deadline * SECONDS_IN_A_DAY);
 
     await octokit.issues.createComment({
@@ -30,4 +33,19 @@ export const addDueDateComment = async (deadline: number, createdDate: Date, iss
       ...context.repo
     });
   }
+};
+
+export const pingAssigneesForDueDate = async (assignees: IssueAssignees, labelToAdd: string, issue_number: number) => {
+  const commentList: CommentList = await paginateAllCommentsOnIssue(issue_number);
+
+  assignees?.map(async assignee => {
+    const commentToAdd = `@${assignee.name || assignee.login}, this issue assigned to you is now ${labelToAdd.toLowerCase()}`;
+    if (!commentList?.find((comment: SingleComment) => comment.user?.login === 'github-actions[bot]' && comment.body === commentToAdd)) {
+      await octokit.issues.createComment({
+        issue_number,
+        body: commentToAdd,
+        ...context.repo
+      });
+    }
+  });
 };
