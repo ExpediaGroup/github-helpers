@@ -51,8 +51,8 @@ export const generatePathMatrix = async ({
   const basePaths = shouldOverrideFilter
     ? splitPaths
     : paths
-      ? splitPaths.filter(path => changedFiles.some(changedFile => changedFile.startsWith(path)))
-      : splitPaths.filter(glob => micromatch(changedFiles, glob).length > 0);
+    ? splitPaths.filter(path => changedFiles.some(changedFile => changedFile.startsWith(path)))
+    : splitPaths.filter(glob => micromatch(changedFiles, glob).length > 0);
   const extraPaths: string[] = paths_no_filter?.split(/[\n,]/) ?? [];
   const matrixValues = uniq(basePaths.concat(extraPaths));
   if (batches) {

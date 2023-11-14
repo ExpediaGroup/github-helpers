@@ -17,7 +17,9 @@ import { octokit } from '../../src/octokit';
 import { Mocktokit } from '../types';
 import { ALMOST_OVERDUE_ISSUE, OVERDUE_ISSUE, PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4, PRIORITY_LABELS } from '../../src/constants';
 import { paginateAllCommentsOnIssue } from '../../src/utils/paginate-comments-on-issue';
+import { removeLabelIfExists } from '../../src/helpers/remove-label';
 
+jest.mock('../../src/helpers/remove-label');
 jest.mock('../../src/utils/paginate-comments-on-issue');
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
