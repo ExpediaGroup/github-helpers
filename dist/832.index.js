@@ -3853,7 +3853,7 @@ var import_endpoint = __webpack_require__(9440);
 var import_universal_user_agent = __webpack_require__(5030);
 
 // pkg/dist-src/version.js
-var VERSION = "8.1.4";
+var VERSION = "8.1.5";
 
 // pkg/dist-src/fetch-wrapper.js
 var import_is_plain_object = __webpack_require__(3287);
@@ -3975,7 +3975,7 @@ function fetchWrapper(requestOptions) {
 async function getResponseData(response) {
   const contentType = response.headers.get("content-type");
   if (/application\/json/.test(contentType)) {
-    return response.json();
+    return response.json().catch(() => response.text()).catch(() => "");
   }
   if (!contentType || /^text\/|charset=utf-8$/.test(contentType)) {
     return response.text();
