@@ -208,7 +208,7 @@ var add_due_date_comment_awaiter = (undefined && undefined.__awaiter) || functio
 
 const addDueDateComment = (deadline, createdDate, issue_number) => add_due_date_comment_awaiter(void 0, void 0, void 0, function* () {
     const commentList = yield paginateAllCommentsOnIssue(issue_number);
-    if (!commentList || !commentList.find((comment) => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.startsWith('This issue is due on'); })) {
+    if (!(commentList === null || commentList === void 0 ? void 0 : commentList.find((comment) => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.startsWith('This issue is due on'); }))) {
         const dueDate = new Date(createdDate.getTime() + deadline * constants/* SECONDS_IN_A_DAY */.K5);
         yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `This issue is due on ${dueDate.toDateString()}` }, github.context.repo));
     }
