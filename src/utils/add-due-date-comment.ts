@@ -19,7 +19,7 @@ import { SECONDS_IN_A_DAY } from '../constants';
 
 export const addDueDateComment = async (deadline: number, createdDate: Date, issue_number: number) => {
   const commentList: CommentList = await paginateAllCommentsOnIssue(issue_number);
-  if (!commentList || !commentList.find((comment: SingleComment) => comment.body?.startsWith('This issue is due on'))) {
+  if (!commentList?.find((comment: SingleComment) => comment.body?.startsWith('This issue is due on'))) {
     const dueDate = new Date(createdDate.getTime() + deadline * SECONDS_IN_A_DAY);
 
     await octokit.issues.createComment({
