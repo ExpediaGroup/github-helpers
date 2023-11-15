@@ -208,8 +208,7 @@ var add_due_date_comment_awaiter = (undefined && undefined.__awaiter) || functio
 
 const addDueDateComment = (deadline, createdDate, issue_number) => add_due_date_comment_awaiter(void 0, void 0, void 0, function* () {
     const commentList = yield paginateAllCommentsOnIssue(issue_number);
-    if (!commentList ||
-        !commentList.find((comment) => { var _a, _b; return ((_a = comment.user) === null || _a === void 0 ? void 0 : _a.login) === 'github-actions[bot]' && ((_b = comment.body) === null || _b === void 0 ? void 0 : _b.startsWith('This issue is due on')); })) {
+    if (!commentList || !commentList.find((comment) => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.startsWith('This issue is due on'); })) {
         const dueDate = new Date(createdDate.getTime() + deadline * constants/* SECONDS_IN_A_DAY */.K5);
         yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `This issue is due on ${dueDate.toDateString()}` }, github.context.repo));
     }
@@ -218,7 +217,7 @@ const pingAssigneesForDueDate = (assignees, labelToAdd, issue_number) => add_due
     const commentList = yield paginateAllCommentsOnIssue(issue_number);
     assignees === null || assignees === void 0 ? void 0 : assignees.map((assignee) => add_due_date_comment_awaiter(void 0, void 0, void 0, function* () {
         const commentToAdd = `@${assignee.name || assignee.login}, this issue assigned to you is now ${labelToAdd.toLowerCase()}`;
-        if (!(commentList === null || commentList === void 0 ? void 0 : commentList.find((comment) => { var _a; return ((_a = comment.user) === null || _a === void 0 ? void 0 : _a.login) === 'github-actions[bot]' && comment.body === commentToAdd; }))) {
+        if (!(commentList === null || commentList === void 0 ? void 0 : commentList.find((comment) => comment.body === commentToAdd))) {
             yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: commentToAdd }, github.context.repo));
         }
     }));

@@ -156,9 +156,7 @@ describe('manageIssueDueDates', () => {
       ]
     });
 
-    (paginateAllCommentsOnIssue as jest.Mock).mockResolvedValue([
-      { body: 'This issue is due on Sun Oct 1 2023', user: { login: 'github-actions[bot]' } }
-    ]);
+    (paginateAllCommentsOnIssue as jest.Mock).mockResolvedValue([{ body: 'This issue is due on Sun Oct 1 2023' }]);
     await manageIssueDueDates({});
 
     PRIORITY_LABELS.forEach(priorityLabel =>
@@ -196,8 +194,7 @@ describe('manageIssueDueDates', () => {
 
     (paginateAllCommentsOnIssue as jest.Mock).mockResolvedValue([
       {
-        body: '@octocat, this issue assigned to you is now due soon',
-        user: { login: 'github-actions[bot]' }
+        body: '@octocat, this issue assigned to you is now due soon'
       }
     ]);
 
@@ -317,8 +314,7 @@ describe('manageIssueDueDates', () => {
 
     (paginateAllCommentsOnIssue as jest.Mock).mockResolvedValue([
       {
-        body: 'This issue is due on Tue Oct 31 2023',
-        user: { login: 'github-actions[bot]' }
+        body: 'This issue is due on Tue Oct 31 2023'
       }
     ]);
 

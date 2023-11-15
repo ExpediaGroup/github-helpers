@@ -19,12 +19,7 @@ import { SECONDS_IN_A_DAY } from '../constants';
 
 export const addDueDateComment = async (deadline: number, createdDate: Date, issue_number: number) => {
   const commentList: CommentList = await paginateAllCommentsOnIssue(issue_number);
-  if (
-    !commentList ||
-    !commentList.find(
-      (comment: SingleComment) => comment.user?.login === 'github-actions[bot]' && comment.body?.startsWith('This issue is due on')
-    )
-  ) {
+  if (!commentList || !commentList.find((comment: SingleComment) => comment.body?.startsWith('This issue is due on'))) {
     const dueDate = new Date(createdDate.getTime() + deadline * SECONDS_IN_A_DAY);
 
     await octokit.issues.createComment({
@@ -40,7 +35,7 @@ export const pingAssigneesForDueDate = async (assignees: IssueAssignees, labelTo
 
   assignees?.map(async assignee => {
     const commentToAdd = `@${assignee.name || assignee.login}, this issue assigned to you is now ${labelToAdd.toLowerCase()}`;
-    if (!commentList?.find((comment: SingleComment) => comment.user?.login === 'github-actions[bot]' && comment.body === commentToAdd)) {
+    if (!commentList?.find((comment: SingleComment) => comment.body === commentToAdd)) {
       await octokit.issues.createComment({
         issue_number,
         body: commentToAdd,
