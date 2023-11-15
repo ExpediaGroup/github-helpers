@@ -14,7 +14,7 @@ limitations under the License.
 import { OVERDUE_ISSUE, ALMOST_OVERDUE_ISSUE, PRIORITY_LABELS, PRIORITY_TO_DAYS_MAP, SECONDS_IN_A_DAY } from '../constants';
 import { HelperInputs } from '../types/generated';
 import { paginateAllPrioritizedIssues } from '../utils/paginate-prioritized-issues';
-import { addDueDateComment } from '../utils/add-due-date-comment';
+import { addDueDateComment, pingAssigneesForDueDate } from '../utils/add-due-date-comment';
 import { IssueList, IssueLabels } from '../types/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
@@ -39,7 +39,7 @@ export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) =
     );
 
   await map(openIssues, async issue => {
-    const { labels, created_at, assignee, number: issue_number, comments } = issue;
+    const { labels, created_at, assignees, number: issue_number } = issue;
     const priority = getFirstPriorityLabelFoundOnIssue(labels);
     const alreadyHasOverdueLabel = Boolean(
       labels.find(label => {
@@ -55,16 +55,11 @@ export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) =
     const createdDate = new Date(created_at);
     const daysSinceCreation = Math.ceil((Date.now() - createdDate.getTime()) / SECONDS_IN_A_DAY);
     const deadline = PRIORITY_TO_DAYS_MAP[priority];
+    await addDueDateComment(deadline, createdDate, issue_number);
     const labelToAdd =
       daysSinceCreation > deadline ? OVERDUE_ISSUE : daysSinceCreation > deadline - warningThreshold ? ALMOST_OVERDUE_ISSUE : undefined;
-    if (assignee && labelToAdd) {
-      await octokit.issues.createComment({
-        issue_number,
-        body: `@${assignee.name || assignee.login}, this issue assigned to you is now ${labelToAdd.toLowerCase()}`,
-        ...context.repo
-      });
-    }
     if (labelToAdd) {
+      assignees && (await pingAssigneesForDueDate(assignees, labelToAdd, issue_number));
       if (labelToAdd === OVERDUE_ISSUE) {
         removeLabelIfExists(ALMOST_OVERDUE_ISSUE, issue_number);
       }
@@ -74,6 +69,5 @@ export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) =
         ...context.repo
       });
     }
-    await addDueDateComment(deadline, createdDate, issue_number, comments);
   });
 };

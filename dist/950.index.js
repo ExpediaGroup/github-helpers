@@ -206,14 +206,21 @@ var add_due_date_comment_awaiter = (undefined && undefined.__awaiter) || functio
 
 
 
-const addDueDateComment = (deadline, createdDate, issue_number, numComments) => add_due_date_comment_awaiter(void 0, void 0, void 0, function* () {
-    const hasExistingComments = numComments > 0;
-    const commentList = hasExistingComments ? yield paginateAllCommentsOnIssue(issue_number) : [];
-    // Create due date comment if there are no existing comments or the comment list does not contain a due date comment
-    if (!hasExistingComments || !commentList.find((comment) => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.startsWith('This issue is due on'); })) {
+const addDueDateComment = (deadline, createdDate, issue_number) => add_due_date_comment_awaiter(void 0, void 0, void 0, function* () {
+    const commentList = yield paginateAllCommentsOnIssue(issue_number);
+    if (!(commentList === null || commentList === void 0 ? void 0 : commentList.find((comment) => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.startsWith('This issue is due on'); }))) {
         const dueDate = new Date(createdDate.getTime() + deadline * constants/* SECONDS_IN_A_DAY */.K5);
         yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `This issue is due on ${dueDate.toDateString()}` }, github.context.repo));
     }
+});
+const pingAssigneesForDueDate = (assignees, labelToAdd, issue_number) => add_due_date_comment_awaiter(void 0, void 0, void 0, function* () {
+    const commentList = yield paginateAllCommentsOnIssue(issue_number);
+    assignees === null || assignees === void 0 ? void 0 : assignees.map((assignee) => add_due_date_comment_awaiter(void 0, void 0, void 0, function* () {
+        const commentToAdd = `@${assignee.name || assignee.login}, this issue assigned to you is now ${labelToAdd.toLowerCase()}`;
+        if (!(commentList === null || commentList === void 0 ? void 0 : commentList.find((comment) => comment.body === commentToAdd))) {
+            yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: commentToAdd }, github.context.repo));
+        }
+    }));
 });
 
 // EXTERNAL MODULE: ./src/helpers/remove-label.ts
@@ -258,7 +265,7 @@ const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(v
         return labelName === priorityLabel;
     }));
     yield (0,bluebird.map)(openIssues, (issue) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
-        const { labels, created_at, assignee, number: issue_number, comments } = issue;
+        const { labels, created_at, assignees, number: issue_number } = issue;
         const priority = getFirstPriorityLabelFoundOnIssue(labels);
         const alreadyHasOverdueLabel = Boolean(labels.find(label => {
             const overdueLabels = [constants/* OVERDUE_ISSUE */.wH];
@@ -271,17 +278,15 @@ const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(v
         const createdDate = new Date(created_at);
         const daysSinceCreation = Math.ceil((Date.now() - createdDate.getTime()) / constants/* SECONDS_IN_A_DAY */.K5);
         const deadline = constants/* PRIORITY_TO_DAYS_MAP */.gd[priority];
+        yield addDueDateComment(deadline, createdDate, issue_number);
         const labelToAdd = daysSinceCreation > deadline ? constants/* OVERDUE_ISSUE */.wH : daysSinceCreation > deadline - warningThreshold ? constants/* ALMOST_OVERDUE_ISSUE */.aT : undefined;
-        if (assignee && labelToAdd) {
-            yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `@${assignee.name || assignee.login}, this issue assigned to you is now ${labelToAdd.toLowerCase()}` }, github.context.repo));
-        }
         if (labelToAdd) {
+            assignees && (yield pingAssigneesForDueDate(assignees, labelToAdd, issue_number));
             if (labelToAdd === constants/* OVERDUE_ISSUE */.wH) {
                 (0,remove_label.removeLabelIfExists)(constants/* ALMOST_OVERDUE_ISSUE */.aT, issue_number);
             }
             yield octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [labelToAdd], issue_number }, github.context.repo));
         }
-        yield addDueDateComment(deadline, createdDate, issue_number, comments);
     }));
 });
 

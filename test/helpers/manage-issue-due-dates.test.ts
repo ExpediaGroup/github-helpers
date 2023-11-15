@@ -16,9 +16,11 @@ import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
 import { Mocktokit } from '../types';
 import { ALMOST_OVERDUE_ISSUE, OVERDUE_ISSUE, PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4, PRIORITY_LABELS } from '../../src/constants';
+import { paginateAllCommentsOnIssue } from '../../src/utils/paginate-comments-on-issue';
 import { removeLabelIfExists } from '../../src/helpers/remove-label';
 
 jest.mock('../../src/helpers/remove-label');
+jest.mock('../../src/utils/paginate-comments-on-issue');
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' } },
@@ -103,7 +105,6 @@ describe('manageIssueDueDates', () => {
       issue_number: 456,
       ...context.repo
     });
-    expect(octokit.issues.listComments).not.toHaveBeenCalled();
   });
 
   it('should add overdue label to a PR with high priority that is 20 days old', async () => {
@@ -114,7 +115,7 @@ describe('manageIssueDueDates', () => {
           number: 123,
           labels: [PRIORITY_2, ALMOST_OVERDUE_ISSUE],
           created_at: '2023-09-06T20:09:21Z',
-          assignee: { login: 'octocat' }
+          assignees: [{ login: 'octocat' }]
         }
       ]
     });
@@ -150,15 +151,12 @@ describe('manageIssueDueDates', () => {
           number: 123,
           labels: [PRIORITY_4],
           created_at: '2023-07-03T20:09:21Z',
-          assignee: { login: 'octocat' }
+          assignees: [{ login: 'octocat' }]
         }
       ]
     });
 
-    (octokit.issues.listComments as unknown as Mocktokit).mockResolvedValueOnce({
-      status: '200',
-      data: [{ body: 'This issue is due on Sun Oct 1 2023' }]
-    });
+    (paginateAllCommentsOnIssue as jest.Mock).mockResolvedValue([{ body: 'This issue is due on Sun Oct 1 2023' }]);
     await manageIssueDueDates({});
 
     PRIORITY_LABELS.forEach(priorityLabel =>
@@ -181,6 +179,66 @@ describe('manageIssueDueDates', () => {
     });
   });
 
+  it('should add due date comments for all assignees that do not already have one', async () => {
+    (octokit.issues.listForRepo as unknown as Mocktokit).mockResolvedValueOnce({
+      status: '200',
+      data: [
+        {
+          number: 123,
+          labels: [PRIORITY_4],
+          created_at: '2023-07-03T20:09:21Z',
+          assignees: [{ login: 'octocat' }, { login: 'octocat_2' }, { login: 'octocat_3' }]
+        }
+      ]
+    });
+
+    (paginateAllCommentsOnIssue as jest.Mock).mockResolvedValue([
+      {
+        body: '@octocat, this issue assigned to you is now due soon'
+      }
+    ]);
+
+    await manageIssueDueDates({});
+
+    PRIORITY_LABELS.forEach(priorityLabel =>
+      expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
+        page: 1,
+        labels: priorityLabel,
+        per_page: 100,
+        sort: 'created',
+        direction: 'desc',
+        state: 'open',
+        ...context.repo
+      })
+    );
+
+    expect(octokit.issues.createComment).toHaveBeenCalledWith({
+      body: 'This issue is due on Sun Oct 01 2023',
+      issue_number: 123,
+      ...context.repo
+    });
+
+    expect(octokit.issues.createComment).not.toHaveBeenCalledWith({
+      body: '@octocat, this issue assigned to you is now due soon',
+      issue_number: 123,
+      ...context.repo
+    });
+
+    expect(octokit.issues.createComment).toHaveBeenCalledWith({
+      body: '@octocat_2, this issue assigned to you is now due soon',
+      issue_number: 123,
+      ...context.repo
+    });
+
+    expect(octokit.issues.createComment).toHaveBeenCalledWith({
+      body: '@octocat_3, this issue assigned to you is now due soon',
+      issue_number: 123,
+      ...context.repo
+    });
+
+    expect(octokit.issues.addLabels).toHaveBeenCalledWith({ labels: [ALMOST_OVERDUE_ISSUE], issue_number: 123, ...context.repo });
+  });
+
   it('should filter out issues that do not have a priority label', async () => {
     (octokit.issues.listForRepo as unknown as Mocktokit)
       .mockResolvedValueOnce({
@@ -189,7 +247,7 @@ describe('manageIssueDueDates', () => {
           {
             number: 123,
             created_at: '2020-05-29T20:09:21Z',
-            assignee: { login: 'octocat' },
+            assignees: [{ login: 'octocat' }],
             labels: []
           }
         ]
@@ -200,7 +258,7 @@ describe('manageIssueDueDates', () => {
           {
             number: 234,
             created_at: '2023-10-29T20:09:21Z',
-            assignee: { login: 'octocat' },
+            assignees: [{ login: 'octocat' }],
             labels: [PRIORITY_4]
           }
         ]
@@ -238,8 +296,7 @@ describe('manageIssueDueDates', () => {
             number: 123,
             labels: [PRIORITY_3, 'bug'],
             created_at: '2023-09-16T20:09:21Z',
-            assignee: { login: 'octocat' },
-            comments: 1
+            assignees: [{ login: 'octocat' }]
           }
         ]
       })
@@ -250,17 +307,44 @@ describe('manageIssueDueDates', () => {
             number: 234,
             labels: ['bug'],
             created_at: '2023-09-16-T20:09:21Z',
-            assignee: { login: 'octocat' },
-            comments: 1
+            assignees: [{ login: 'octocat' }]
           }
         ]
       });
 
-    (octokit.issues.listComments as unknown as Mocktokit).mockResolvedValueOnce({
+    (paginateAllCommentsOnIssue as jest.Mock).mockResolvedValue([
+      {
+        body: 'This issue is due on Tue Oct 31 2023'
+      }
+    ]);
+
+    await manageIssueDueDates({});
+
+    PRIORITY_LABELS.forEach(priorityLabel =>
+      expect(octokit.issues.listForRepo).toHaveBeenCalledWith({
+        page: 1,
+        labels: priorityLabel,
+        per_page: 100,
+        sort: 'created',
+        direction: 'desc',
+        state: 'open',
+        ...context.repo
+      })
+    );
+
+    expect(octokit.issues.createComment).not.toHaveBeenCalled();
+    expect(octokit.issues.addLabels).not.toHaveBeenCalled();
+  });
+
+  it('should not add an overdue label to an issue which already has one', async () => {
+    (octokit.issues.listForRepo as unknown as Mocktokit).mockResolvedValueOnce({
       status: '200',
       data: [
         {
-          body: 'This issue is due on Tue Oct 31 2023'
+          number: 123,
+          labels: [PRIORITY_2, OVERDUE_ISSUE],
+          created_at: '2023-08-16T20:09:21Z',
+          assignees: [{ login: 'octocat' }]
         }
       ]
     });

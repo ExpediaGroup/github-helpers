@@ -20,6 +20,7 @@ export type PullRequestList = RestEndpointMethodTypes['pulls']['list']['response
 export type IssueList = RestEndpointMethodTypes['issues']['listForRepo']['response']['data'];
 export type CommentList = RestEndpointMethodTypes['issues']['listComments']['response']['data'];
 export type SingleComment = CommentList[number];
+export type IssueAssignees = IssueList[number]['assignees'];
 export type PullRequestReviewList = RestEndpointMethodTypes['pulls']['listReviews']['response']['data'];
 export type SinglePullRequest = PullRequestList[number];
 export type IssueLabels = IssueList[number]['labels'];
