@@ -180,6 +180,17 @@ const updateQueuePosition = (pr, index) => __awaiter(void 0, void 0, void 0, fun
     if (prIsNowFirstInQueue) {
         const { data: firstPrInQueue } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: number }, github.context.repo));
         yield Promise.all([(0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, number), (0,prepare_queued_pr_for_merge.updatePrWithDefaultBranch)(firstPrInQueue)]);
+        const { data: { head: { sha: updatedHeadSha } } } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: number }, github.context.repo));
+        return Promise.all([
+            octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${newQueuePosition}`], issue_number: number }, github.context.repo)),
+            (0,remove_label.removeLabelIfExists)(label, number),
+            (0,set_commit_status.setCommitStatus)({
+                sha: updatedHeadSha,
+                context: constants/* MERGE_QUEUE_STATUS */.Cb,
+                state: 'success',
+                description: 'This PR is next to merge.'
+            })
+        ]);
     }
     return Promise.all([
         octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${newQueuePosition}`], issue_number: number }, github.context.repo)),
@@ -187,8 +198,8 @@ const updateQueuePosition = (pr, index) => __awaiter(void 0, void 0, void 0, fun
         (0,set_commit_status.setCommitStatus)({
             sha,
             context: constants/* MERGE_QUEUE_STATUS */.Cb,
-            state: prIsNowFirstInQueue ? 'success' : 'pending',
-            description: `This PR is ${prIsNowFirstInQueue ? 'next' : 'in line'} to merge.`
+            state: 'pending',
+            description: 'This PR is in line to merge.'
         })
     ]);
 });
