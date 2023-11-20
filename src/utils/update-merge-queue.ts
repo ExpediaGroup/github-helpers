@@ -50,6 +50,25 @@ const updateQueuePosition = async (pr: ReturnType<typeof sortPrsByQueuePosition>
   if (prIsNowFirstInQueue) {
     const { data: firstPrInQueue } = await octokit.pulls.get({ pull_number: number, ...context.repo });
     await Promise.all([removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, number), updatePrWithDefaultBranch(firstPrInQueue)]);
+    const {
+      data: {
+        head: { sha: updatedHeadSha }
+      }
+    } = await octokit.pulls.get({ pull_number: number, ...context.repo });
+    return Promise.all([
+      octokit.issues.addLabels({
+        labels: [`${QUEUED_FOR_MERGE_PREFIX} #${newQueuePosition}`],
+        issue_number: number,
+        ...context.repo
+      }),
+      removeLabelIfExists(label, number),
+      setCommitStatus({
+        sha: updatedHeadSha,
+        context: MERGE_QUEUE_STATUS,
+        state: 'success',
+        description: 'This PR is next to merge.'
+      })
+    ]);
   }
 
   return Promise.all([
@@ -62,8 +81,8 @@ const updateQueuePosition = async (pr: ReturnType<typeof sortPrsByQueuePosition>
     setCommitStatus({
       sha,
       context: MERGE_QUEUE_STATUS,
-      state: prIsNowFirstInQueue ? 'success' : 'pending',
-      description: `This PR is ${prIsNowFirstInQueue ? 'next' : 'in line'} to merge.`
+      state: 'pending',
+      description: 'This PR is in line to merge.'
     })
   ]);
 };
