@@ -27,7 +27,7 @@
     "@types/bluebird": "3.5.41",
     "@types/jest": "29.5.8",
     "@types/js-yaml": "4.0.8",
-    "@types/lodash.camelcase": "4.3.8",
+    "@types/lodash.camelcase": "4.3.9",
     "@types/lodash.chunk": "4.2.8",
     "@types/lodash.samplesize": "4.2.9",
     "@types/lodash.union": "4.6.8",
