@@ -21,7 +21,7 @@
     "typescript": "5.2.2"
   },
   "devDependencies": {
-    "@octokit/plugin-rest-endpoint-methods": "10.0.1",
+    "@octokit/plugin-rest-endpoint-methods": "10.1.5",
     "@swc/jest": "0.2.29",
     "@total-typescript/ts-reset": "0.5.1",
     "@types/bluebird": "3.5.41",
