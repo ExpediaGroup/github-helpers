@@ -139,6 +139,17 @@ describe('updateMergeQueue', () => {
       }
     ];
     beforeEach(async () => {
+      (octokit.pulls.get as unknown as Mocktokit)
+        .mockImplementationOnce(async input => ({
+          data: {
+            head: { sha: input.pull_number === 123 ? 'sha123' : 'sha456' }
+          }
+        }))
+        .mockImplementationOnce(async input => ({
+          data: {
+            head: { sha: input.pull_number === 123 ? 'updatedSha123' : 'updatedSha456' }
+          }
+        }));
       await updateMergeQueue(queuedPrs as PullRequestList);
     });
 
@@ -160,9 +171,9 @@ describe('updateMergeQueue', () => {
       expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #3', 456);
     });
 
-    it('should set commit status on first PR in queue', () => {
+    it('should set commit status on updated sha of first PR in queue', () => {
       expect(setCommitStatus).toHaveBeenCalledWith({
-        sha: 'sha123',
+        sha: 'updatedSha123',
         context: MERGE_QUEUE_STATUS,
         state: 'success',
         description: 'This PR is next to merge.'
