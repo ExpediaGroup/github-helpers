@@ -59,7 +59,6 @@ const generateCardParams = async (filteredColumn: SingleColumn, note?: string) =
     column_id: filteredColumn.id,
     content_id: pullRequest.id,
     content_type: 'PullRequest',
-    note,
     ...context.repo,
     ...GITHUB_OPTIONS
   };

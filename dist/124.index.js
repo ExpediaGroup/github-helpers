@@ -160,7 +160,7 @@ const generateCardParams = (filteredColumn, note) => __awaiter(void 0, void 0, v
     if (note) {
         return Object.assign(Object.assign({ column_id: filteredColumn === null || filteredColumn === void 0 ? void 0 : filteredColumn.id, note }, _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_2__/* .GITHUB_OPTIONS */ .Cc);
     }
-    return Object.assign(Object.assign({ column_id: filteredColumn.id, content_id: pullRequest.id, content_type: 'PullRequest', note }, _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_2__/* .GITHUB_OPTIONS */ .Cc);
+    return Object.assign(Object.assign({ column_id: filteredColumn.id, content_id: pullRequest.id, content_type: 'PullRequest' }, _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_2__/* .GITHUB_OPTIONS */ .Cc);
 });
 
 
