@@ -29,6 +29,7 @@ import { removeLabelIfExists } from './remove-label';
 import { setCommitStatus } from './set-commit-status';
 import { updateMergeQueue } from '../utils/update-merge-queue';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
+import { updatePrWithDefaultBranch } from './prepare-queued-pr-for-merge';
 
 export class ManageMergeQueue extends HelperInputs {
   login?: string;
@@ -51,6 +52,11 @@ export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMerge
   }
 
   const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === FIRST_QUEUED_PR_LABEL);
+
+  if (isFirstQueuePosition) {
+    await updatePrWithDefaultBranch(pullRequest);
+  }
+
   await setCommitStatus({
     sha: pullRequest.head.sha,
     context: MERGE_QUEUE_STATUS,
@@ -58,7 +64,7 @@ export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMerge
     description: isFirstQueuePosition ? 'This PR is next to merge.' : 'This PR is in line to merge.'
   });
 
-  if (slack_webhook_url && login && queuePosition === 1) {
+  if (isFirstQueuePosition && slack_webhook_url && login) {
     await notifyUser({
       login,
       pull_number: context.issue.number,

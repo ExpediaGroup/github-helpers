@@ -20,11 +20,13 @@ import { octokit, octokitGraphql } from '../../src/octokit';
 import { removeLabelIfExists } from '../../src/helpers/remove-label';
 import { setCommitStatus } from '../../src/helpers/set-commit-status';
 import { updateMergeQueue } from '../../src/utils/update-merge-queue';
+import { updatePrWithDefaultBranch } from '../../src/helpers/prepare-queued-pr-for-merge';
 
 jest.mock('../../src/helpers/remove-label');
 jest.mock('../../src/helpers/set-commit-status');
 jest.mock('../../src/utils/notify-user');
 jest.mock('../../src/utils/update-merge-queue');
+jest.mock('../../src/utils/../../src/helpers/prepare-queued-pr-for-merge');
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
@@ -103,7 +105,7 @@ describe('manageMergeQueue', () => {
     });
   });
 
-  describe('pr ready for merge case', () => {
+  describe('pr ready for merge case queued #2', () => {
     const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }, { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
     beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
@@ -134,6 +136,10 @@ describe('manageMergeQueue', () => {
         issue_number: 123,
         ...context.repo
       });
+    });
+
+    it('should not update PR with default branch', () => {
+      expect(updatePrWithDefaultBranch).not.toHaveBeenCalled();
     });
 
     it('should enable auto-merge', () => {
@@ -171,6 +177,14 @@ describe('manageMergeQueue', () => {
         labels: ['QUEUED FOR MERGE #1'],
         issue_number: 123,
         ...context.repo
+      });
+    });
+
+    it('should update PR with default branch', () => {
+      expect(updatePrWithDefaultBranch).toHaveBeenCalledWith({
+        merged: false,
+        head: { sha: 'sha' },
+        labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
       });
     });
 
