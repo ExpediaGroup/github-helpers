@@ -149,16 +149,17 @@ describe('manageMergeQueue', () => {
 
   describe('pr ready for merge case queued #1', () => {
     const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
+    const pullRequest = {
+      merged: false,
+      head: { sha: 'sha' },
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+    };
     beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
         data: page === 1 ? queuedPrs : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          merged: false,
-          head: { sha: 'sha' },
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
-        }
+        data: pullRequest
       }));
       await manageMergeQueue();
     });
@@ -181,11 +182,7 @@ describe('manageMergeQueue', () => {
     });
 
     it('should update PR with default branch', () => {
-      expect(updatePrWithDefaultBranch).toHaveBeenCalledWith({
-        merged: false,
-        head: { sha: 'sha' },
-        labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
-      });
+      expect(updatePrWithDefaultBranch).toHaveBeenCalledWith(pullRequest);
     });
 
     it('should enable auto-merge', () => {
