@@ -239,6 +239,7 @@ var manage_merge_queue_awaiter = (undefined && undefined.__awaiter) || function 
 
 
 
+
 class ManageMergeQueue extends generated/* HelperInputs */.s {
 }
 const manageMergeQueue = ({ login, slack_webhook_url } = {}) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
@@ -256,13 +257,16 @@ const manageMergeQueue = ({ login, slack_webhook_url } = {}) => manage_merge_que
         yield addPrToQueue(pullRequest, queuePosition);
     }
     const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH);
+    if (isFirstQueuePosition) {
+        yield (0,prepare_queued_pr_for_merge.updatePrWithDefaultBranch)(pullRequest);
+    }
     yield (0,set_commit_status.setCommitStatus)({
         sha: pullRequest.head.sha,
         context: constants/* MERGE_QUEUE_STATUS */.Cb,
         state: isFirstQueuePosition ? 'success' : 'pending',
         description: isFirstQueuePosition ? 'This PR is next to merge.' : 'This PR is in line to merge.'
     });
-    if (slack_webhook_url && login && queuePosition === 1) {
+    if (isFirstQueuePosition && slack_webhook_url && login) {
         yield (0,notify_user/* notifyUser */.b)({
             login,
             pull_number: github.context.issue.number,
