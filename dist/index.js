@@ -47554,7 +47554,7 @@ limitations under the License.
 
 const getActionInputs = (requiredInputs = []) => {
     const yamlContents = (0,external_fs_.readFileSync)(`${__dirname}/action.yml`).toString();
-    const inputsFromFile = getInputsFromFile(yamlContents).reduce((acc, current) => (Object.assign(Object.assign({}, acc), { [current]: (0,core.getInput)(current, { required: requiredInputs.includes(current) }) })), {});
+    const inputsFromFile = getInputsFromFile(yamlContents).reduce((acc, current) => (Object.assign(Object.assign({}, acc), { [current]: (0,core.getInput)(current, { required: requiredInputs.includes(current), trimWhitespace: false }) })), {});
     return (0,lodash.pickBy)(inputsFromFile);
 };
 
