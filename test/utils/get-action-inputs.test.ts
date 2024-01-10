@@ -26,13 +26,13 @@ jest.mock('fs', () => ({
   }))
 }));
 
-(getInputsFromFile as jest.Mock).mockReturnValue(['input1', 'input2', 'input3']);
 (getInput as jest.Mock).mockImplementation(input => (input === 'input2' ? '' : input));
 
 describe('getActionInputs', () => {
   const requiredInputs = ['input1'];
 
   it('should call getInput with correct params and return expected inputs', () => {
+    (getInputsFromFile as jest.Mock).mockReturnValue(['input1', 'input2', 'input3']);
     const result = getActionInputs(requiredInputs);
 
     expect(getInput).toHaveBeenCalledWith('input1', { required: true });
@@ -41,6 +41,19 @@ describe('getActionInputs', () => {
     expect(result).toEqual({
       input1: 'input1',
       input3: 'input3'
+    });
+  });
+
+  it('should call getInput with trimWhiteSpace false for delimiter input', () => {
+    (getInputsFromFile as jest.Mock).mockReturnValue(['input1', 'input2', 'delimiter']);
+    const result = getActionInputs(requiredInputs);
+
+    expect(getInput).toHaveBeenCalledWith('input1', { required: true });
+    expect(getInput).toHaveBeenCalledWith('input2', { required: false });
+    expect(getInput).toHaveBeenCalledWith('delimiter', { required: false, trimWhitespace: false });
+    expect(result).toEqual({
+      input1: 'input1',
+      delimiter: 'delimiter'
     });
   });
 });
