@@ -18,13 +18,13 @@ import { readFileSync } from 'fs';
 
 export const getActionInputs = (requiredInputs: string[] = []) => {
   const yamlContents = readFileSync(`${__dirname}/action.yml`).toString();
-  const inputsFromFile = getInputsFromFile(yamlContents).reduce(
-    (acc, current) => ({
+  const inputsFromFile = getInputsFromFile(yamlContents).reduce((acc, current) => {
+    const trimWhitespaceOptions = current === 'delimiter' ? { trimWhitespace: false } : {};
+    return {
       ...acc,
-      [current]: getInput(current, { required: requiredInputs.includes(current) })
-    }),
-    {}
-  );
+      [current]: getInput(current, { required: requiredInputs.includes(current), ...trimWhitespaceOptions })
+    };
+  }, {});
 
   return pickBy(inputsFromFile);
 };
