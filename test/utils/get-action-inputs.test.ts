@@ -35,9 +35,9 @@ describe('getActionInputs', () => {
   it('should call getInput with correct params and return expected inputs', () => {
     const result = getActionInputs(requiredInputs);
 
-    expect(getInput).toHaveBeenCalledWith('input1', { required: true });
-    expect(getInput).toHaveBeenCalledWith('input2', { required: false });
-    expect(getInput).toHaveBeenCalledWith('input3', { required: false });
+    expect(getInput).toHaveBeenCalledWith('input1', { required: true, trimWhitespace: false });
+    expect(getInput).toHaveBeenCalledWith('input2', { required: false, trimWhitespace: false });
+    expect(getInput).toHaveBeenCalledWith('input3', { required: false, trimWhitespace: false });
     expect(result).toEqual({
       input1: 'input1',
       input3: 'input3'
