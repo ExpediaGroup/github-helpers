@@ -21,7 +21,7 @@ export const getActionInputs = (requiredInputs: string[] = []) => {
   const inputsFromFile = getInputsFromFile(yamlContents).reduce(
     (acc, current) => ({
       ...acc,
-      [current]: getInput(current, { required: requiredInputs.includes(current), trimWhitespace: false })
+      [current]: getInput(current, { required: requiredInputs.includes(current) })
     }),
     {}
   );
