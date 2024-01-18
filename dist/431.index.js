@@ -103,6 +103,7 @@ const approvalsSatisfied = ({ teams, number_of_reviewers = '1', pull_number } = 
     core.debug(`PR already approved by: ${approverLogins.toString()}`);
     const teamsList = teams === null || teams === void 0 ? void 0 : teams.split('\n');
     const requiredCodeOwnersEntries = teamsList ? createArtificialCodeOwnersEntry(teamsList) : yield (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.q)(prNumber);
+    const requiredCodeOwnersEntriesWithOwners = requiredCodeOwnersEntries.filter(({ owners }) => owners.length);
     const codeOwnersEntrySatisfiesApprovals = (entry) => approvals_satisfied_awaiter(void 0, void 0, void 0, function* () {
         const teamsAndLoginsLists = yield (0,bluebird.map)(entry.owners, (team) => approvals_satisfied_awaiter(void 0, void 0, void 0, function* () {
             const { data } = yield octokit/* octokit.teams.listMembersInOrg */.K.teams.listMembersInOrg({
@@ -119,8 +120,8 @@ const approvalsSatisfied = ({ teams, number_of_reviewers = '1', pull_number } = 
         core.debug(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
         return numberOfApprovals >= Number(number_of_reviewers);
     });
-    core.debug(`Required code owners: ${requiredCodeOwnersEntries.map(({ owners }) => owners).toString()}`);
-    const booleans = yield Promise.all(requiredCodeOwnersEntries.map(codeOwnersEntrySatisfiesApprovals));
+    core.debug(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
+    const booleans = yield Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
     return booleans.every(Boolean);
 });
 const createArtificialCodeOwnersEntry = (teams) => teams.map(team => ({ owners: [team] }));

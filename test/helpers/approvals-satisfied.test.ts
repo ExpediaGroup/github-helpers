@@ -304,4 +304,46 @@ describe('approvalsSatisfied', () => {
     const result = await approvalsSatisfied({ number_of_reviewers: '2' });
     expect(result).toBe(true);
   });
+
+  it('should return true when there are no code owners for one file and the other file is satisfied', async () => {
+    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
+      { owners: [] },
+      { owners: ['@ExpediaGroup/team5', '@ExpediaGroup/team6'] }
+    ]);
+    mockPagination({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user4' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user5' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user8' }
+        }
+      ]
+    });
+    const result = await approvalsSatisfied({ number_of_reviewers: '2' });
+    expect(result).toBe(true);
+  });
+
+  it('should return false when there are no code owners for one file and the other file is not satisfied', async () => {
+    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
+      { owners: [] },
+      { owners: ['@ExpediaGroup/team5', '@ExpediaGroup/team6'] }
+    ]);
+    mockPagination({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user4' }
+        }
+      ]
+    });
+    const result = await approvalsSatisfied({ number_of_reviewers: '2' });
+    expect(result).toBe(false);
+  });
 });
