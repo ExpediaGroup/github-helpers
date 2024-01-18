@@ -38,6 +38,7 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
 
   const teamsList = teams?.split('\n');
   const requiredCodeOwnersEntries = teamsList ? createArtificialCodeOwnersEntry(teamsList) : await getRequiredCodeOwnersEntries(prNumber);
+  const requiredCodeOwnersEntriesWithOwners = requiredCodeOwnersEntries.filter(({ owners }) => owners.length);
 
   const codeOwnersEntrySatisfiesApprovals = async (entry: Pick<CodeOwnersEntry, 'owners'>) => {
     const teamsAndLoginsLists = await map(entry.owners, async team => {
@@ -59,8 +60,8 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
     return numberOfApprovals >= Number(number_of_reviewers);
   };
 
-  core.debug(`Required code owners: ${requiredCodeOwnersEntries.map(({ owners }) => owners).toString()}`);
-  const booleans = await Promise.all(requiredCodeOwnersEntries.map(codeOwnersEntrySatisfiesApprovals));
+  core.debug(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
+  const booleans = await Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
   return booleans.every(Boolean);
 };
 
