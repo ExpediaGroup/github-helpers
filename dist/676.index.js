@@ -248,6 +248,10 @@ const manageMergeQueue = ({ login, slack_webhook_url } = {}) => manage_merge_que
         core.info('This PR is not in the merge queue.');
         return removePrFromQueue(pullRequest);
     }
+    if (!pullRequest.labels.find(label => label.name === constants/* CORE_APPROVED_PR_LABEL */._d)) {
+        core.info('This PR is not core approved.');
+        return removePrFromQueue(pullRequest);
+    }
     const queuedPrs = yield getQueuedPullRequests();
     const queuePosition = queuedPrs.length;
     if (pullRequest.labels.find(label => label.name === constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ)) {

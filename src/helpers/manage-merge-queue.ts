@@ -13,6 +13,7 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import {
+  CORE_APPROVED_PR_LABEL,
   FIRST_QUEUED_PR_LABEL,
   JUMP_THE_QUEUE_PR_LABEL,
   MERGE_QUEUE_STATUS,
@@ -40,6 +41,10 @@ export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMerge
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
   if (pullRequest.merged || !pullRequest.labels.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
     core.info('This PR is not in the merge queue.');
+    return removePrFromQueue(pullRequest);
+  }
+  if (!pullRequest.labels.find(label => label.name === CORE_APPROVED_PR_LABEL)) {
+    core.info('This PR is not core approved.');
     return removePrFromQueue(pullRequest);
   }
   const queuedPrs = await getQueuedPullRequests();

@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { JUMP_THE_QUEUE_PR_LABEL, MERGE_QUEUE_STATUS, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
+import { CORE_APPROVED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, MERGE_QUEUE_STATUS, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { manageMergeQueue } from '../../src/helpers/manage-merge-queue';
@@ -53,6 +53,33 @@ describe('manageMergeQueue', () => {
           merged: true,
           head: { sha: 'sha' },
           number: 123,
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: CORE_APPROVED_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
+        }
+      }));
+      await manageMergeQueue();
+    });
+
+    it('should call remove label with correct params', () => {
+      expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 123);
+      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #1', 123);
+    });
+
+    it('should call updateMergeQueue with correct params', () => {
+      expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
+    });
+  });
+
+  describe('pr not core approved case', () => {
+    const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }, { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
+    beforeEach(async () => {
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+        data: page === 1 ? queuedPrs : []
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          merged: false,
+          head: { sha: 'sha' },
+          number: 123,
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
         }
       }));
@@ -80,7 +107,7 @@ describe('manageMergeQueue', () => {
           merged: false,
           head: { sha: 'sha' },
           number: 123,
-          labels: [{ name: 'QUEUED FOR MERGE #2' }]
+          labels: [{ name: 'QUEUED FOR MERGE #2' }, { name: CORE_APPROVED_PR_LABEL }]
         }
       }));
       await manageMergeQueue();
@@ -115,7 +142,7 @@ describe('manageMergeQueue', () => {
         data: {
           merged: false,
           head: { sha: 'sha' },
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: CORE_APPROVED_PR_LABEL }]
         }
       }));
       await manageMergeQueue();
@@ -152,7 +179,7 @@ describe('manageMergeQueue', () => {
     const pullRequest = {
       merged: false,
       head: { sha: 'sha' },
-      labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: CORE_APPROVED_PR_LABEL }]
     };
     beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
@@ -200,7 +227,7 @@ describe('manageMergeQueue', () => {
         data: {
           merged: false,
           head: { sha: 'sha' },
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: CORE_APPROVED_PR_LABEL }]
         }
       }));
       (octokitGraphql as unknown as jest.Mock).mockRejectedValue(new Error('Auto merge is not allowed for this repo'));
@@ -245,7 +272,7 @@ describe('manageMergeQueue', () => {
         data: {
           merged: false,
           head: { sha: 'sha' },
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }, { name: CORE_APPROVED_PR_LABEL }]
         }
       }));
       await manageMergeQueue();
@@ -274,7 +301,12 @@ describe('manageMergeQueue', () => {
         data: {
           merged: false,
           head: { sha: 'sha' },
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: JUMP_THE_QUEUE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
+          labels: [
+            { name: READY_FOR_MERGE_PR_LABEL },
+            { name: JUMP_THE_QUEUE_PR_LABEL },
+            { name: 'QUEUED FOR MERGE #5' },
+            { name: CORE_APPROVED_PR_LABEL }
+          ]
         }
       }));
       await manageMergeQueue();
@@ -298,7 +330,7 @@ describe('manageMergeQueue', () => {
         data: {
           merged: false,
           head: { sha: 'sha' },
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: CORE_APPROVED_PR_LABEL }]
         }
       }));
 
@@ -322,7 +354,7 @@ describe('manageMergeQueue', () => {
         data: {
           merged: false,
           head: { sha: 'sha' },
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }, { name: CORE_APPROVED_PR_LABEL }]
         }
       }));
       await manageMergeQueue({ login, slack_webhook_url });
@@ -339,7 +371,7 @@ describe('manageMergeQueue', () => {
         data: {
           merged: false,
           head: { sha: 'sha' },
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: CORE_APPROVED_PR_LABEL }]
         }
       }));
 
@@ -357,7 +389,7 @@ describe('manageMergeQueue', () => {
         data: {
           merged: false,
           head: { sha: 'sha' },
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: CORE_APPROVED_PR_LABEL }]
         }
       }));
 
@@ -380,7 +412,7 @@ describe('manageMergeQueue', () => {
           merged: true,
           head: { sha: 'sha' },
           number: 123,
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }, { name: CORE_APPROVED_PR_LABEL }]
         }
       }));
       await manageMergeQueue();
