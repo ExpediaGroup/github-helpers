@@ -13,7 +13,6 @@ limitations under the License.
 
 import * as core from '@actions/core';
 import {
-  CORE_APPROVED_PR_LABEL,
   FIRST_QUEUED_PR_LABEL,
   JUMP_THE_QUEUE_PR_LABEL,
   MERGE_QUEUE_STATUS,
@@ -31,6 +30,8 @@ import { setCommitStatus } from './set-commit-status';
 import { updateMergeQueue } from '../utils/update-merge-queue';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
 import { updatePrWithDefaultBranch } from './prepare-queued-pr-for-merge';
+import { approvalsSatisfied } from './approvals-satisfied';
+import { createPrComment } from './create-pr-comment';
 
 export class ManageMergeQueue extends HelperInputs {
   login?: string;
@@ -43,8 +44,9 @@ export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMerge
     core.info('This PR is not in the merge queue.');
     return removePrFromQueue(pullRequest);
   }
-  if (!pullRequest.labels.find(label => label.name === CORE_APPROVED_PR_LABEL)) {
-    core.info('This PR is not core approved.');
+  const result = await approvalsSatisfied();
+  if (!result) {
+    await createPrComment({ body: 'The PR fails to meet the approval requirements' });
     return removePrFromQueue(pullRequest);
   }
   const queuedPrs = await getQueuedPullRequests();
