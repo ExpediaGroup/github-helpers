@@ -91,7 +91,7 @@ describe('manageMergeQueue', () => {
       await manageMergeQueue();
     });
 
-    it('should check for approvals satisfied', () => {
+    it('should check for no commit status being published', () => {
       expect(setCommitStatus).not.toHaveBeenCalledWith({
         sha: 'sha',
         context: MERGE_QUEUE_STATUS,
