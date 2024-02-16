@@ -87,6 +87,7 @@ describe('manageMergeQueue', () => {
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
         }
       }));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(false);
       await manageMergeQueue();
     });
 
@@ -113,6 +114,7 @@ describe('manageMergeQueue', () => {
           labels: [{ name: 'QUEUED FOR MERGE #2' }]
         }
       }));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -148,6 +150,7 @@ describe('manageMergeQueue', () => {
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
         }
       }));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -191,6 +194,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: pullRequest
       }));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -234,6 +238,7 @@ describe('manageMergeQueue', () => {
         }
       }));
       (octokitGraphql as unknown as jest.Mock).mockRejectedValue(new Error('Auto merge is not allowed for this repo'));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -278,6 +283,7 @@ describe('manageMergeQueue', () => {
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
         }
       }));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -307,6 +313,7 @@ describe('manageMergeQueue', () => {
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: JUMP_THE_QUEUE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
         }
       }));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -331,7 +338,7 @@ describe('manageMergeQueue', () => {
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
         }
       }));
-
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue({ login, slack_webhook_url });
 
       expect(notifyUser).toHaveBeenCalled();
@@ -355,6 +362,7 @@ describe('manageMergeQueue', () => {
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
         }
       }));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue({ login, slack_webhook_url });
 
       expect(notifyUser).not.toHaveBeenCalled();
@@ -372,7 +380,7 @@ describe('manageMergeQueue', () => {
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
         }
       }));
-
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue({ login });
 
       expect(notifyUser).not.toHaveBeenCalled();
@@ -390,7 +398,7 @@ describe('manageMergeQueue', () => {
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
         }
       }));
-
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue({ slack_webhook_url });
 
       expect(notifyUser).not.toHaveBeenCalled();
@@ -413,6 +421,7 @@ describe('manageMergeQueue', () => {
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
         }
       }));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue();
     });
 
