@@ -84,7 +84,7 @@ describe('manageMergeQueue', () => {
           merged: false,
           head: { sha: 'sha' },
           number: 123,
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #2' }]
         }
       }));
       (approvalsSatisfied as jest.Mock).mockResolvedValue(false);
@@ -92,7 +92,12 @@ describe('manageMergeQueue', () => {
     });
 
     it('should check for approvals satisfied', () => {
-      expect(approvalsSatisfied).toHaveBeenCalledWith();
+      expect(setCommitStatus).not.toHaveBeenCalledWith({
+        sha: 'sha',
+        context: MERGE_QUEUE_STATUS,
+        state: 'pending',
+        description: 'This PR is in line to merge.'
+      });
     });
 
     it('should add pr comment', () => {
