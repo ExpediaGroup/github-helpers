@@ -16,7 +16,7 @@ import { getCoreMemberLogins, getRequiredCodeOwnersEntries } from '../../src/uti
 import { octokit } from '../../src/octokit';
 
 jest.mock('@actions/core');
-const ownerMap: { [key: string]: Object } = {
+const ownerMap: { [key: string]: { data: { login: string }[] } } = {
   'test-owners-1': { data: [{ login: 'user1' }, { login: 'user2' }] },
   'test-owners-2': { data: [{ login: 'user2' }, { login: 'user3' }] },
   'test-shared-owners-1': { data: [{ login: 'user4' }, { login: 'user5' }] },
