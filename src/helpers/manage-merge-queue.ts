@@ -30,6 +30,8 @@ import { setCommitStatus } from './set-commit-status';
 import { updateMergeQueue } from '../utils/update-merge-queue';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
 import { updatePrWithDefaultBranch } from './prepare-queued-pr-for-merge';
+import { approvalsSatisfied } from './approvals-satisfied';
+import { createPrComment } from './create-pr-comment';
 
 export class ManageMergeQueue extends HelperInputs {
   login?: string;
@@ -40,6 +42,11 @@ export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMerge
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
   if (pullRequest.merged || !pullRequest.labels.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
     core.info('This PR is not in the merge queue.');
+    return removePrFromQueue(pullRequest);
+  }
+  const prMeetsRequiredApprovals = await approvalsSatisfied();
+  if (!prMeetsRequiredApprovals) {
+    await createPrComment({ body: 'PRs must meet all required approvals before entering the merge queue.' });
     return removePrFromQueue(pullRequest);
   }
   const queuedPrs = await getQueuedPullRequests();
