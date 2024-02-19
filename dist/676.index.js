@@ -110,7 +110,7 @@ var octokit = __webpack_require__(6161);
 // EXTERNAL MODULE: ./src/utils/get-core-member-logins.ts
 var get_core_member_logins = __webpack_require__(7290);
 // EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
-var bluebird = __webpack_require__(267);
+var bluebird = __webpack_require__(8710);
 // EXTERNAL MODULE: ./src/utils/convert-to-team-slug.ts
 var convert_to_team_slug = __webpack_require__(489);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
@@ -316,7 +316,7 @@ var generated = __webpack_require__(3476);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __webpack_require__(5438);
 // EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
-var bluebird = __webpack_require__(267);
+var bluebird = __webpack_require__(8710);
 // EXTERNAL MODULE: ./src/utils/notify-user.ts
 var notify_user = __webpack_require__(9938);
 // EXTERNAL MODULE: ./src/octokit.ts
@@ -693,7 +693,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(3476);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(267);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8710);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6161);
 /*
@@ -895,7 +895,7 @@ const paginateAllChangedFilepaths = (pull_number, page = 1) => __awaiter(void 0,
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(9180);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(267);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(8710);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(6161);
 /* harmony import */ var _convert_to_team_slug__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(489);
