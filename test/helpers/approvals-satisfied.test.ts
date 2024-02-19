@@ -16,7 +16,7 @@ import { approvalsSatisfied } from '../../src/helpers/approvals-satisfied';
 import { octokit } from '../../src/octokit';
 import { getRequiredCodeOwnersEntries } from '../../src/utils/get-core-member-logins';
 
-const ownerMap: { [key: string]: Object } = {
+const ownerMap: { [key: string]: { data: { login: string }[] } } = {
   team1: { data: [{ login: 'user1' }] },
   team2: { data: [{ login: 'user2' }, { login: 'user3' }] },
   team3: { data: [{ login: 'user1' }] },

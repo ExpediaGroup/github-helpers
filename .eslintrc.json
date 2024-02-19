@@ -6,7 +6,7 @@
     "promise"
   ],
   "extends": [
-    "plugin:github/recommended"
+    "plugin:@typescript-eslint/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -63,7 +63,6 @@
     "github/no-then": "off",
     "i18n-text/no-en": "off",
     "import/no-unresolved": "off",
-    "filenames/match-regex": [2, "(^[a-z-]+$)|(^[a-z-]+\\.test$)"],
     "quotes": ["error", "single"],
     "functional/immutable-data": "error",
     "functional/no-let": "error"
