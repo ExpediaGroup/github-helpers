@@ -458,9 +458,9 @@ const manageMergeQueue = ({ login, slack_webhook_url } = {}) => manage_merge_que
         core.info('This PR is not in the merge queue.');
         return removePrFromQueue(pullRequest);
     }
-    const result = yield (0,approvals_satisfied.approvalsSatisfied)();
-    if (!result) {
-        yield (0,create_pr_comment.createPrComment)({ body: 'The PR fails to meet the approval requirements' });
+    const prMeetsRequiredApprovals = yield (0,approvals_satisfied.approvalsSatisfied)();
+    if (!prMeetsRequiredApprovals) {
+        yield (0,create_pr_comment.createPrComment)({ body: 'PRs must meet all required approvals before entering the merge queue.' });
         return removePrFromQueue(pullRequest);
     }
     const queuedPrs = yield getQueuedPullRequests();

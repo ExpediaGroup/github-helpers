@@ -44,9 +44,9 @@ export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMerge
     core.info('This PR is not in the merge queue.');
     return removePrFromQueue(pullRequest);
   }
-  const result = await approvalsSatisfied();
-  if (!result) {
-    await createPrComment({ body: 'The PR fails to meet the approval requirements' });
+  const prMeetsRequiredApprovals = await approvalsSatisfied();
+  if (!prMeetsRequiredApprovals) {
+    await createPrComment({ body: 'PRs must meet all required approvals before entering the merge queue.' });
     return removePrFromQueue(pullRequest);
   }
   const queuedPrs = await getQueuedPullRequests();
