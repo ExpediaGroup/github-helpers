@@ -36,9 +36,10 @@ import { createPrComment } from './create-pr-comment';
 export class ManageMergeQueue extends HelperInputs {
   login?: string;
   slack_webhook_url?: string;
+  skip_auto_merge?: string;
 }
 
-export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMergeQueue = {}) => {
+export const manageMergeQueue = async ({ login, slack_webhook_url, skip_auto_merge }: ManageMergeQueue = {}) => {
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
   if (pullRequest.merged || !pullRequest.labels.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
     core.info('This PR is not in the merge queue.');
@@ -55,7 +56,7 @@ export const manageMergeQueue = async ({ login, slack_webhook_url }: ManageMerge
     return updateMergeQueue(queuedPrs);
   }
   if (!pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))) {
-    await addPrToQueue(pullRequest, queuePosition);
+    await addPrToQueue(pullRequest, queuePosition, skip_auto_merge);
   }
 
   const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === FIRST_QUEUED_PR_LABEL);
@@ -95,14 +96,14 @@ export const removePrFromQueue = async (pullRequest: PullRequest) => {
   }
 };
 
-const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number) =>
+const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number, skip_auto_merge: string | undefined) =>
   Promise.all([
     octokit.issues.addLabels({
       labels: [`${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`],
       issue_number: context.issue.number,
       ...context.repo
     }),
-    enableAutoMerge(pullRequest.node_id)
+    enableAutoMerge(pullRequest.node_id, skip_auto_merge)
   ]);
 
 const getQueuedPullRequests = async (): Promise<PullRequestList> => {
@@ -110,17 +111,19 @@ const getQueuedPullRequests = async (): Promise<PullRequestList> => {
   return openPullRequests.filter(pr => pr.labels.some(label => label.name === READY_FOR_MERGE_PR_LABEL));
 };
 
-export const enableAutoMerge = async (pullRequestId: string, mergeMethod = 'SQUASH') => {
-  try {
-    return await octokitGraphql(`
-    mutation {
-      enablePullRequestAutoMerge(input: { pullRequestId: "${pullRequestId}", mergeMethod: ${mergeMethod} }) {
-        clientMutationId
+export const enableAutoMerge = async (pullRequestId: string, skip_auto_merge: string | undefined, mergeMethod = 'SQUASH') => {
+  if (!skip_auto_merge || skip_auto_merge != 'true') {
+    try {
+      return await octokitGraphql(`
+      mutation {
+        enablePullRequestAutoMerge(input: { pullRequestId: "${pullRequestId}", mergeMethod: ${mergeMethod} }) {
+          clientMutationId
+        }
       }
+    `);
+    } catch (error) {
+      core.warning('Auto merge could not be enabled. Perhaps you need to enable auto-merge on your repo?');
+      core.warning(error as Error);
     }
-  `);
-  } catch (error) {
-    core.warning('Auto merge could not be enabled. Perhaps you need to enable auto-merge on your repo?');
-    core.warning(error as Error);
   }
 };

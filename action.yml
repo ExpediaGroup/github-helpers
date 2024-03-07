@@ -128,6 +128,9 @@ inputs:
   return_full_payload:
     description: 'Return full payload from GitHub rather than a trimmed-down version of the response'
     required: false
+  skip_auto_merge:
+    description: 'Do not enable auto-merge automatically for the PRs from the merge queue'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'
