@@ -452,7 +452,7 @@ var manage_merge_queue_awaiter = (undefined && undefined.__awaiter) || function 
 
 class ManageMergeQueue extends generated/* HelperInputs */.s {
 }
-const manageMergeQueue = ({ login, slack_webhook_url } = {}) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
+const manageMergeQueue = ({ login, slack_webhook_url, skip_auto_merge } = {}) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
     const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: github.context.issue.number }, github.context.repo));
     if (pullRequest.merged || !pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak)) {
         core.info('This PR is not in the merge queue.');
@@ -469,7 +469,7 @@ const manageMergeQueue = ({ login, slack_webhook_url } = {}) => manage_merge_que
         return updateMergeQueue(queuedPrs);
     }
     if (!pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) {
-        yield addPrToQueue(pullRequest, queuePosition);
+        yield addPrToQueue(pullRequest, queuePosition, skip_auto_merge);
     }
     const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH);
     if (isFirstQueuePosition) {
@@ -504,11 +504,13 @@ const removePrFromQueue = (pullRequest) => manage_merge_queue_awaiter(void 0, vo
         yield updateMergeQueue(queuedPrs);
     }
 });
-const addPrToQueue = (pullRequest, queuePosition) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
-    return Promise.all([
-        octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`], issue_number: github.context.issue.number }, github.context.repo)),
-        enableAutoMerge(pullRequest.node_id)
-    ]);
+const addPrToQueue = (pullRequest, queuePosition, skip_auto_merge) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
+    yield octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`], issue_number: github.context.issue.number }, github.context.repo));
+    if (skip_auto_merge == 'true') {
+        core.info('Skipping auto merge per configuration.');
+        return;
+    }
+    yield enableAutoMerge(pullRequest.node_id);
 });
 const getQueuedPullRequests = () => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
     const openPullRequests = yield (0,paginate_open_pull_requests/* paginateAllOpenPullRequests */.P)();

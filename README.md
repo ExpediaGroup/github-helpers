@@ -207,7 +207,7 @@ Additionally, the following parameters can be used for additional control over t
     -   Adding the `JUMP THE QUEUE` label to a PR will make that PR first in the queue immediately.
     -   When a PR is merged, it automatically updates the first-queued PR with the default branch.
 -   You can also pass `login` and `slack_webhook_url` to notify the PR author when they are in the 1st position of the merge queue.
-
+-   Passing `skip_auto_merge: true` changes the default behaviour of automatically enabling auto-merge for PRs from the merge queue. In such case auto-merging should be enabled manually on individual PRs. It can be useful to avoid unattended deployments in case of CICD pipelines which are not fully prepared for continuous deployment.
 ### [move-project-card](.github/workflows/move-project-card.yml)
 
 -   Moves a GitHub Project card to a new column, using the `project_origin_column_name` and`project_destination_column_name` you provide.

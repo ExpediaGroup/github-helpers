@@ -299,6 +299,39 @@ describe('manageMergeQueue', () => {
     });
   });
 
+  describe('skip_auto_merge is used', () => {
+    const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
+    const pullRequest = {
+      merged: false,
+      head: { sha: 'sha' },
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+    };
+
+    it('should not enable auto-merge on PR if skip_auto_merge is true', async () => {
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+        data: page === 1 ? queuedPrs : []
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: pullRequest
+      }));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      await manageMergeQueue({ skip_auto_merge: 'true' });
+      expect(octokitGraphql).not.toHaveBeenCalled();
+    });
+
+    it('should enable auto-merge on PR if skip_auto_merge is false', async () => {
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+        data: page === 1 ? queuedPrs : []
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: pullRequest
+      }));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      await manageMergeQueue({ skip_auto_merge: 'false' });
+      expect(octokitGraphql).toHaveBeenCalled();
+    });
+  });
+
   describe('jump the queue case', () => {
     const queuedPrs = [
       { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
