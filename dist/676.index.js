@@ -505,30 +505,30 @@ const removePrFromQueue = (pullRequest) => manage_merge_queue_awaiter(void 0, vo
     }
 });
 const addPrToQueue = (pullRequest, queuePosition, skip_auto_merge) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
-    return Promise.all([
-        octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`], issue_number: github.context.issue.number }, github.context.repo)),
-        enableAutoMerge(pullRequest.node_id, skip_auto_merge)
-    ]);
+    yield octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`], issue_number: github.context.issue.number }, github.context.repo));
+    if (Boolean(skip_auto_merge) && skip_auto_merge != 'false') {
+        core.info('Skipping auto merge per configuration.');
+        return;
+    }
+    yield enableAutoMerge(pullRequest.node_id);
 });
 const getQueuedPullRequests = () => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
     const openPullRequests = yield (0,paginate_open_pull_requests/* paginateAllOpenPullRequests */.P)();
     return openPullRequests.filter(pr => pr.labels.some(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak));
 });
-const enableAutoMerge = (pullRequestId, skip_auto_merge, mergeMethod = 'SQUASH') => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
-    if (!skip_auto_merge || skip_auto_merge != 'true') {
-        try {
-            return yield (0,octokit/* octokitGraphql */.o)(`
-      mutation {
-        enablePullRequestAutoMerge(input: { pullRequestId: "${pullRequestId}", mergeMethod: ${mergeMethod} }) {
-          clientMutationId
-        }
+const enableAutoMerge = (pullRequestId, mergeMethod = 'SQUASH') => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
+    try {
+        return yield (0,octokit/* octokitGraphql */.o)(`
+    mutation {
+      enablePullRequestAutoMerge(input: { pullRequestId: "${pullRequestId}", mergeMethod: ${mergeMethod} }) {
+        clientMutationId
       }
-    `);
-        }
-        catch (error) {
-            core.warning('Auto merge could not be enabled. Perhaps you need to enable auto-merge on your repo?');
-            core.warning(error);
-        }
+    }
+  `);
+    }
+    catch (error) {
+        core.warning('Auto merge could not be enabled. Perhaps you need to enable auto-merge on your repo?');
+        core.warning(error);
     }
 });
 

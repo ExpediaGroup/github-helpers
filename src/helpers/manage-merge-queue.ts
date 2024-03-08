@@ -96,34 +96,35 @@ export const removePrFromQueue = async (pullRequest: PullRequest) => {
   }
 };
 
-const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number, skip_auto_merge: string | undefined) =>
-  Promise.all([
-    octokit.issues.addLabels({
-      labels: [`${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`],
-      issue_number: context.issue.number,
-      ...context.repo
-    }),
-    enableAutoMerge(pullRequest.node_id, skip_auto_merge)
-  ]);
+const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number, skip_auto_merge?: string) => {
+  await octokit.issues.addLabels({
+    labels: [`${QUEUED_FOR_MERGE_PREFIX} #${queuePosition}`],
+    issue_number: context.issue.number,
+    ...context.repo
+  });
+  if (Boolean(skip_auto_merge) && skip_auto_merge != 'false') {
+    core.info('Skipping auto merge per configuration.');
+    return;
+  }
+  await enableAutoMerge(pullRequest.node_id);
+};
 
 const getQueuedPullRequests = async (): Promise<PullRequestList> => {
   const openPullRequests = await paginateAllOpenPullRequests();
   return openPullRequests.filter(pr => pr.labels.some(label => label.name === READY_FOR_MERGE_PR_LABEL));
 };
 
-export const enableAutoMerge = async (pullRequestId: string, skip_auto_merge: string | undefined, mergeMethod = 'SQUASH') => {
-  if (!skip_auto_merge || skip_auto_merge != 'true') {
-    try {
-      return await octokitGraphql(`
-      mutation {
-        enablePullRequestAutoMerge(input: { pullRequestId: "${pullRequestId}", mergeMethod: ${mergeMethod} }) {
-          clientMutationId
-        }
+export const enableAutoMerge = async (pullRequestId: string, mergeMethod = 'SQUASH') => {
+  try {
+    return await octokitGraphql(`
+    mutation {
+      enablePullRequestAutoMerge(input: { pullRequestId: "${pullRequestId}", mergeMethod: ${mergeMethod} }) {
+        clientMutationId
       }
-    `);
-    } catch (error) {
-      core.warning('Auto merge could not be enabled. Perhaps you need to enable auto-merge on your repo?');
-      core.warning(error as Error);
     }
+  `);
+  } catch (error) {
+    core.warning('Auto merge could not be enabled. Perhaps you need to enable auto-merge on your repo?');
+    core.warning(error as Error);
   }
 };
