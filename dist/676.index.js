@@ -506,7 +506,7 @@ const removePrFromQueue = (pullRequest) => manage_merge_queue_awaiter(void 0, vo
 });
 const addPrToQueue = (pullRequest, queuePosition, skip_auto_merge) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
     yield octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`], issue_number: github.context.issue.number }, github.context.repo));
-    if (Boolean(skip_auto_merge) && skip_auto_merge != 'false') {
+    if (skip_auto_merge == 'true') {
         core.info('Skipping auto merge per configuration.');
         return;
     }

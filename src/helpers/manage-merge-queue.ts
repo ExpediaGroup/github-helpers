@@ -102,7 +102,7 @@ const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number, ski
     issue_number: context.issue.number,
     ...context.repo
   });
-  if (Boolean(skip_auto_merge) && skip_auto_merge != 'false') {
+  if (skip_auto_merge == 'true') {
     core.info('Skipping auto merge per configuration.');
     return;
   }
