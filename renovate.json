@@ -1,13 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "local>ExpediaGroup/renovate-config"
-  ],
+  "extends": ["local>ExpediaGroup/renovate-config"],
   "assignAutomerge": true,
   "assigneesFromCodeOwners": true,
   "packageRules": [
     {
       "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "groupName": "devDependencies",
       "automerge": true
     }
   ]
