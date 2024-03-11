@@ -135,7 +135,7 @@ class RemoveLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .Helpe
         this.label = '';
     }
 }
-const removeLabel = ({ label }) => __awaiter(void 0, void 0, void 0, function* () { return removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number); });
+const removeLabel = (_a) => __awaiter(void 0, [_a], void 0, function* ({ label }) { return removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number); });
 const removeLabelIfExists = (labelName, issue_number) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel(Object.assign({ name: labelName, issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
@@ -202,7 +202,7 @@ class RemovePrFromMergeQueue extends _types_generated__WEBPACK_IMPORTED_MODULE_6
         this.seconds = '';
     }
 }
-const removePrFromMergeQueue = ({ seconds }) => __awaiter(void 0, void 0, void 0, function* () {
+const removePrFromMergeQueue = (_a) => __awaiter(void 0, [_a], void 0, function* ({ seconds }) {
     const { data: pullRequests } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
     const firstQueuedPr = pullRequests.find(pr => pr.labels.some(label => label.name === _constants__WEBPACK_IMPORTED_MODULE_1__/* .FIRST_QUEUED_PR_LABEL */ .IH));
     if (!firstQueuedPr) {

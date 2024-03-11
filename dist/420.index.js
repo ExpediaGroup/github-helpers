@@ -134,7 +134,7 @@ class InitiateDeployment extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/*
         this.environment = '';
     }
 }
-const initiateDeployment = ({ sha, state = 'in_progress', environment, environment_url, description, target_url }) => __awaiter(void 0, void 0, void 0, function* () {
+const initiateDeployment = (_a) => __awaiter(void 0, [_a], void 0, function* ({ sha, state = 'in_progress', environment, environment_url, description, target_url }) {
     const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createDeployment */ .K.repos.createDeployment(Object.assign(Object.assign({ ref: sha, environment, auto_merge: false, required_contexts: [] }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
     const deployment_id = 'ref' in data ? data.id : undefined;
     if (deployment_id) {

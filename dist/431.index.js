@@ -53,7 +53,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 };
 
 
-const paginateAllReviews = (prNumber, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+const paginateAllReviews = (prNumber_1, ...args_1) => __awaiter(void 0, [prNumber_1, ...args_1], void 0, function* (prNumber, page = 1) {
     const response = yield octokit/* octokit.pulls.listReviews */.K.pulls.listReviews(Object.assign({ pull_number: prNumber, per_page: 100, page }, github.context.repo));
     if (!response.data.length) {
         return [];
@@ -93,7 +93,7 @@ var approvals_satisfied_awaiter = (undefined && undefined.__awaiter) || function
 
 class ApprovalsSatisfied extends generated/* HelperInputs */.s {
 }
-const approvalsSatisfied = ({ teams, number_of_reviewers = '1', pull_number } = {}) => approvals_satisfied_awaiter(void 0, void 0, void 0, function* () {
+const approvalsSatisfied = (...args_1) => approvals_satisfied_awaiter(void 0, [...args_1], void 0, function* ({ teams, number_of_reviewers = '1', pull_number } = {}) {
     const prNumber = pull_number ? Number(pull_number) : github.context.issue.number;
     const reviews = yield paginateAllReviews(prNumber);
     const approverLogins = reviews
@@ -247,7 +247,7 @@ const getChangedFilepaths = (pull_number, ignore_deleted) => __awaiter(void 0, v
     const filesToMap = ignore_deleted ? changedFiles.filter(file => file.status !== 'removed') : changedFiles;
     return filesToMap.map(file => file.filename);
 });
-const paginateAllChangedFilepaths = (pull_number, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+const paginateAllChangedFilepaths = (pull_number_1, ...args_1) => __awaiter(void 0, [pull_number_1, ...args_1], void 0, function* (pull_number, page = 1) {
     const response = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number, per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     if (!response.data.length) {
         return [];

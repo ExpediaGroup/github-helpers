@@ -48,7 +48,7 @@ class AreReviewersRequired extends _types_generated__WEBPACK_IMPORTED_MODULE_3__
         this.teams = '';
     }
 }
-const areReviewersRequired = ({ teams }) => __awaiter(void 0, void 0, void 0, function* () {
+const areReviewersRequired = (_a) => __awaiter(void 0, [_a], void 0, function* ({ teams }) {
     const prNumber = _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.issue.number;
     const teamsList = teams === null || teams === void 0 ? void 0 : teams.split('\n');
     const requiredCodeOwnersEntries = (yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_1__/* .getRequiredCodeOwnersEntries */ .q)(prNumber)).map(({ owners }) => owners).flat();
@@ -181,7 +181,7 @@ const getChangedFilepaths = (pull_number, ignore_deleted) => __awaiter(void 0, v
     const filesToMap = ignore_deleted ? changedFiles.filter(file => file.status !== 'removed') : changedFiles;
     return filesToMap.map(file => file.filename);
 });
-const paginateAllChangedFilepaths = (pull_number, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+const paginateAllChangedFilepaths = (pull_number_1, ...args_1) => __awaiter(void 0, [pull_number_1, ...args_1], void 0, function* (pull_number, page = 1) {
     const response = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number, per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     if (!response.data.length) {
         return [];
