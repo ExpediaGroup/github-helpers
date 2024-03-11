@@ -50,14 +50,14 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 class GeneratePathMatrix extends _types_generated__WEBPACK_IMPORTED_MODULE_5__/* .HelperInputs */ .s {
 }
-const generatePathMatrix = ({ paths, globs, 
+const generatePathMatrix = (_a) => __awaiter(void 0, [_a], void 0, function* ({ paths, globs, 
 /** paths that override the changed files filter, causing the action to return all paths */
 override_filter_paths, override_filter_globs, 
 /** paths that will be returned regardless of their adherence to the filter */
 paths_no_filter, 
 /** number of evenly-sized batches to separate matching paths into (returns comma-separated result) */
-batches }) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+batches }) {
+    var _b;
     const pathsToUse = paths || globs;
     if (!pathsToUse) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.error('Must supply one of paths, globs');
@@ -73,7 +73,7 @@ batches }) => __awaiter(void 0, void 0, void 0, function* () {
         : paths
             ? splitPaths.filter(path => changedFiles.some(changedFile => changedFile.startsWith(path)))
             : splitPaths.filter(glob => micromatch__WEBPACK_IMPORTED_MODULE_4___default()(changedFiles, glob).length > 0);
-    const extraPaths = (_a = paths_no_filter === null || paths_no_filter === void 0 ? void 0 : paths_no_filter.split(/[\n,]/)) !== null && _a !== void 0 ? _a : [];
+    const extraPaths = (_b = paths_no_filter === null || paths_no_filter === void 0 ? void 0 : paths_no_filter.split(/[\n,]/)) !== null && _b !== void 0 ? _b : [];
     const matrixValues = (0,lodash__WEBPACK_IMPORTED_MODULE_1__.uniq)(basePaths.concat(extraPaths));
     if (batches) {
         return {
@@ -183,7 +183,7 @@ const getChangedFilepaths = (pull_number, ignore_deleted) => __awaiter(void 0, v
     const filesToMap = ignore_deleted ? changedFiles.filter(file => file.status !== 'removed') : changedFiles;
     return filesToMap.map(file => file.filename);
 });
-const paginateAllChangedFilepaths = (pull_number, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+const paginateAllChangedFilepaths = (pull_number_1, ...args_1) => __awaiter(void 0, [pull_number_1, ...args_1], void 0, function* (pull_number, page = 1) {
     const response = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number, per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     if (!response.data.length) {
         return [];

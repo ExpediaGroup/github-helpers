@@ -47,7 +47,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 class FilterPaths extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
 }
-const filterPaths = ({ paths, globs }) => __awaiter(void 0, void 0, void 0, function* () {
+const filterPaths = (_a) => __awaiter(void 0, [_a], void 0, function* ({ paths, globs }) {
     const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ per_page: 100, pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     const fileNames = data.map(file => file.filename);
     if (globs) {

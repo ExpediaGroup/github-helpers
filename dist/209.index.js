@@ -53,7 +53,7 @@ class SetCommitStatus extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .H
         this.state = '';
     }
 }
-const setCommitStatus = ({ sha, context, state, description, target_url, skip_if_already_set }) => __awaiter(void 0, void 0, void 0, function* () {
+const setCommitStatus = (_a) => __awaiter(void 0, [_a], void 0, function* ({ sha, context, state, description, target_url, skip_if_already_set }) {
     yield (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(context.split('\n').filter(Boolean), (context) => __awaiter(void 0, void 0, void 0, function* () {
         if (skip_if_already_set === 'true') {
             const check_runs = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.checks.listForRef */ .K.checks.listForRef(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), { ref: sha }));

@@ -134,7 +134,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 class AddLateReviewLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_5__/* .HelperInputs */ .s {
 }
-const addLateReviewLabel = ({ days = '1' }) => __awaiter(void 0, void 0, void 0, function* () {
+const addLateReviewLabel = (_a) => __awaiter(void 0, [_a], void 0, function* ({ days = '1' }) {
     const openPullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__/* .paginateAllOpenPullRequests */ .P)();
     return (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(openPullRequests, pr => {
         if (!isLabelNeeded(pr, Number(days))) {
@@ -245,7 +245,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 };
 
 
-const paginateAllOpenPullRequests = (page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+const paginateAllOpenPullRequests = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* (page = 1) {
     const response = yield _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', sort: 'updated', direction: 'desc', per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     if (!response.data.length) {
         return [];

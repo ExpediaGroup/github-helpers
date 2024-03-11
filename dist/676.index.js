@@ -139,7 +139,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 };
 
 
-const paginateAllReviews = (prNumber, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+const paginateAllReviews = (prNumber_1, ...args_1) => __awaiter(void 0, [prNumber_1, ...args_1], void 0, function* (prNumber, page = 1) {
     const response = yield octokit/* octokit.pulls.listReviews */.K.pulls.listReviews(Object.assign({ pull_number: prNumber, per_page: 100, page }, github.context.repo));
     if (!response.data.length) {
         return [];
@@ -179,7 +179,7 @@ var approvals_satisfied_awaiter = (undefined && undefined.__awaiter) || function
 
 class ApprovalsSatisfied extends generated/* HelperInputs */.s {
 }
-const approvalsSatisfied = ({ teams, number_of_reviewers = '1', pull_number } = {}) => approvals_satisfied_awaiter(void 0, void 0, void 0, function* () {
+const approvalsSatisfied = (...args_1) => approvals_satisfied_awaiter(void 0, [...args_1], void 0, function* ({ teams, number_of_reviewers = '1', pull_number } = {}) {
     const prNumber = pull_number ? Number(pull_number) : github.context.issue.number;
     const reviews = yield paginateAllReviews(prNumber);
     const approverLogins = reviews
@@ -274,13 +274,13 @@ const getCommentByUser = (login) => __awaiter(void 0, void 0, void 0, function* 
         emptyResponse;
     return (_b = comments.data.find(comment => { var _a; return ((_a = comment === null || comment === void 0 ? void 0 : comment.user) === null || _a === void 0 ? void 0 : _a.login) === login; })) === null || _b === void 0 ? void 0 : _b.id;
 });
-const createPrComment = ({ body, sha, login }) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c;
+const createPrComment = (_c) => __awaiter(void 0, [_c], void 0, function* ({ body, sha, login }) {
+    var _d;
     if (!sha && !login) {
         return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     }
     const defaultPrNumber = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number;
-    const prNumber = (_c = (yield getPrsByCommit(sha))) !== null && _c !== void 0 ? _c : defaultPrNumber;
+    const prNumber = (_d = (yield getPrsByCommit(sha))) !== null && _d !== void 0 ? _d : defaultPrNumber;
     const commentId = yield getCommentByUser(login);
     if (commentId) {
         return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.updateComment */ .K.issues.updateComment(Object.assign({ comment_id: commentId, body }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
@@ -452,7 +452,7 @@ var manage_merge_queue_awaiter = (undefined && undefined.__awaiter) || function 
 
 class ManageMergeQueue extends generated/* HelperInputs */.s {
 }
-const manageMergeQueue = ({ login, slack_webhook_url, skip_auto_merge } = {}) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
+const manageMergeQueue = (...args_1) => manage_merge_queue_awaiter(void 0, [...args_1], void 0, function* ({ login, slack_webhook_url, skip_auto_merge } = {}) {
     const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: github.context.issue.number }, github.context.repo));
     if (pullRequest.merged || !pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak)) {
         core.info('This PR is not in the merge queue.');
@@ -516,7 +516,7 @@ const getQueuedPullRequests = () => manage_merge_queue_awaiter(void 0, void 0, v
     const openPullRequests = yield (0,paginate_open_pull_requests/* paginateAllOpenPullRequests */.P)();
     return openPullRequests.filter(pr => pr.labels.some(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak));
 });
-const enableAutoMerge = (pullRequestId, mergeMethod = 'SQUASH') => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
+const enableAutoMerge = (pullRequestId_1, ...args_2) => manage_merge_queue_awaiter(void 0, [pullRequestId_1, ...args_2], void 0, function* (pullRequestId, mergeMethod = 'SQUASH') {
     try {
         return yield (0,octokit/* octokitGraphql */.o)(`
     mutation {
@@ -667,7 +667,7 @@ class RemoveLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .Helpe
         this.label = '';
     }
 }
-const removeLabel = ({ label }) => __awaiter(void 0, void 0, void 0, function* () { return removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number); });
+const removeLabel = (_a) => __awaiter(void 0, [_a], void 0, function* ({ label }) { return removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number); });
 const removeLabelIfExists = (labelName, issue_number) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel(Object.assign({ name: labelName, issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
@@ -732,7 +732,7 @@ class SetCommitStatus extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .H
         this.state = '';
     }
 }
-const setCommitStatus = ({ sha, context, state, description, target_url, skip_if_already_set }) => __awaiter(void 0, void 0, void 0, function* () {
+const setCommitStatus = (_a) => __awaiter(void 0, [_a], void 0, function* ({ sha, context, state, description, target_url, skip_if_already_set }) {
     yield (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(context.split('\n').filter(Boolean), (context) => __awaiter(void 0, void 0, void 0, function* () {
         if (skip_if_already_set === 'true') {
             const check_runs = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.checks.listForRef */ .K.checks.listForRef(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), { ref: sha }));
@@ -870,7 +870,7 @@ const getChangedFilepaths = (pull_number, ignore_deleted) => __awaiter(void 0, v
     const filesToMap = ignore_deleted ? changedFiles.filter(file => file.status !== 'removed') : changedFiles;
     return filesToMap.map(file => file.filename);
 });
-const paginateAllChangedFilepaths = (pull_number, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+const paginateAllChangedFilepaths = (pull_number_1, ...args_1) => __awaiter(void 0, [pull_number_1, ...args_1], void 0, function* (pull_number, page = 1) {
     const response = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number, per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     if (!response.data.length) {
         return [];
@@ -1004,7 +1004,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-const notifyUser = ({ login, pull_number, slack_webhook_url }) => __awaiter(void 0, void 0, void 0, function* () {
+const notifyUser = (_a) => __awaiter(void 0, [_a], void 0, function* ({ login, pull_number, slack_webhook_url }) {
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Notifying user ${login}...`);
     const { data: { email } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.users.getByUsername */ .K.users.getByUsername({ username: login });
     if (!email) {
@@ -1061,7 +1061,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 };
 
 
-const paginateAllOpenPullRequests = (page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+const paginateAllOpenPullRequests = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* (page = 1) {
     const response = yield _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', sort: 'updated', direction: 'desc', per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     if (!response.data.length) {
         return [];

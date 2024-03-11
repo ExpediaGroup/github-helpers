@@ -142,7 +142,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 class AssignPrReviewer extends _types_generated__WEBPACK_IMPORTED_MODULE_8__/* .HelperInputs */ .s {
 }
-const assignPrReviewers = ({ teams, login, number_of_assignees = '1', slack_webhook_url, pull_number = String(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number) }) => __awaiter(void 0, void 0, void 0, function* () {
+const assignPrReviewers = (_a) => __awaiter(void 0, [_a], void 0, function* ({ teams, login, number_of_assignees = '1', slack_webhook_url, pull_number = String(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number) }) {
     const coreMemberLogins = yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .c)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number, teams === null || teams === void 0 ? void 0 : teams.split('\n'));
     const { data: { user, labels } } = yield _octokit__WEBPACK_IMPORTED_MODULE_5__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     if (login && coreMemberLogins.includes(login)) {
@@ -289,7 +289,7 @@ const getChangedFilepaths = (pull_number, ignore_deleted) => __awaiter(void 0, v
     const filesToMap = ignore_deleted ? changedFiles.filter(file => file.status !== 'removed') : changedFiles;
     return filesToMap.map(file => file.filename);
 });
-const paginateAllChangedFilepaths = (pull_number, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+const paginateAllChangedFilepaths = (pull_number_1, ...args_1) => __awaiter(void 0, [pull_number_1, ...args_1], void 0, function* (pull_number, page = 1) {
     const response = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number, per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     if (!response.data.length) {
         return [];
@@ -423,7 +423,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-const notifyUser = ({ login, pull_number, slack_webhook_url }) => __awaiter(void 0, void 0, void 0, function* () {
+const notifyUser = (_a) => __awaiter(void 0, [_a], void 0, function* ({ login, pull_number, slack_webhook_url }) {
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Notifying user ${login}...`);
     const { data: { email } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.users.getByUsername */ .K.users.getByUsername({ username: login });
     if (!email) {

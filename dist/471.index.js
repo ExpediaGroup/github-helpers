@@ -139,13 +139,13 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 class DeleteStaleBranches extends _types_generated__WEBPACK_IMPORTED_MODULE_7__/* .HelperInputs */ .s {
 }
-const deleteStaleBranches = ({ days = '30' } = {}) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteStaleBranches = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* ({ days = '30' } = {}) {
     const openPullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__/* .paginateAllOpenPullRequests */ .P)();
     const openPullRequestBranches = new Set(openPullRequests.map(pr => pr.head.ref));
     const allBranches = yield paginateAllUnprotectedBranches();
     const defaultBranch = yield (0,_utils_get_default_branch__WEBPACK_IMPORTED_MODULE_5__/* .getDefaultBranch */ ._)();
     const featureBranchesWithNoOpenPullRequest = allBranches.filter(({ name }) => !openPullRequestBranches.has(name) && name !== defaultBranch);
-    const branchesWithUpdatedDates = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(featureBranchesWithNoOpenPullRequest, ({ name, commit: { sha } }) => __awaiter(void 0, void 0, void 0, function* () {
+    const branchesWithUpdatedDates = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(featureBranchesWithNoOpenPullRequest, (_a) => __awaiter(void 0, [_a], void 0, function* ({ name, commit: { sha } }) {
         const { data: { committer: { date } } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.git.getCommit */ .K.git.getCommit(Object.assign({ commit_sha: sha }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
         return {
             name,
@@ -165,7 +165,7 @@ const branchIsTooOld = (dateLastUpdated, daysThreshold) => {
     const threshold = Number(daysThreshold) * _constants__WEBPACK_IMPORTED_MODULE_6__/* .SECONDS_IN_A_DAY */ .K5;
     return timeSinceLastUpdated > threshold;
 };
-const paginateAllUnprotectedBranches = (page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+const paginateAllUnprotectedBranches = (...args_2) => __awaiter(void 0, [...args_2], void 0, function* (page = 1) {
     const response = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.listBranches */ .K.repos.listBranches(Object.assign({ protected: false, per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
     if (!response.data.length) {
         return [];
@@ -306,7 +306,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 };
 
 
-const paginateAllOpenPullRequests = (page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+const paginateAllOpenPullRequests = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* (page = 1) {
     const response = yield _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', sort: 'updated', direction: 'desc', per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     if (!response.data.length) {
         return [];

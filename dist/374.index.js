@@ -46,7 +46,7 @@ class IsUserInTeam extends _types_generated__WEBPACK_IMPORTED_MODULE_2__/* .Help
         this.team = '';
     }
 }
-const isUserInTeam = ({ login = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.actor, team }) => __awaiter(void 0, void 0, void 0, function* () {
+const isUserInTeam = (_a) => __awaiter(void 0, [_a], void 0, function* ({ login = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.actor, team }) {
     const response = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
         org: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner,
         team_slug: team
