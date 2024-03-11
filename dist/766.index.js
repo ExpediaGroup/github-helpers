@@ -57,7 +57,7 @@ const rerunPrChecks = () => __awaiter(void 0, void 0, void 0, function* () {
     }
     const latestWorkflowRuns = workflowRuns.filter(({ head_sha }) => head_sha === latestHash);
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`There are ${latestWorkflowRuns.length} checks associated with the latest commit, triggering reruns...`);
-    return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(latestWorkflowRuns, ({ id, name, rerun_url }) => __awaiter(void 0, void 0, void 0, function* () {
+    return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(latestWorkflowRuns, (_a) => __awaiter(void 0, [_a], void 0, function* ({ id, name, rerun_url }) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`- Rerunning ${name} (${id})`);
         yield (0,_octokit_request__WEBPACK_IMPORTED_MODULE_4__.request)(`POST ${rerun_url}`, {
             headers: {

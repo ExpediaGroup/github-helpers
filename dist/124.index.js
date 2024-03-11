@@ -139,10 +139,10 @@ class CreateProjectCardProps extends _types_generated__WEBPACK_IMPORTED_MODULE_5
         this.project_destination_column_name = '';
     }
 }
-const createProjectCard = ({ project_name, project_destination_column_name, note }) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+const createProjectCard = (_a) => __awaiter(void 0, [_a], void 0, function* ({ project_name, project_destination_column_name, note }) {
+    var _b;
     const columnsList = yield (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__/* .getProjectColumns */ .N)({ project_name });
-    if (!((_a = columnsList === null || columnsList === void 0 ? void 0 : columnsList.data) === null || _a === void 0 ? void 0 : _a.length)) {
+    if (!((_b = columnsList === null || columnsList === void 0 ? void 0 : columnsList.data) === null || _b === void 0 ? void 0 : _b.length)) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(`There are no columns associated to ${project_name} project.`);
         return;
     }
@@ -259,7 +259,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-const getProjectColumns = ({ project_name }) => __awaiter(void 0, void 0, void 0, function* () {
+const getProjectColumns = (_a) => __awaiter(void 0, [_a], void 0, function* ({ project_name }) {
     const projectList = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.listForRepo */ .K.projects.listForRepo(Object.assign(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
     const project = findProjectToModify(projectList, project_name);
     if (!project) {

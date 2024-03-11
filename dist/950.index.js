@@ -138,7 +138,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const paginateAllPrioritizedIssues = () => __awaiter(void 0, void 0, void 0, function* () { return (yield (0,bluebird.map)(constants/* PRIORITY_LABELS */.rF, (label) => __awaiter(void 0, void 0, void 0, function* () { return yield paginateIssuesOfSpecificPriority(label); }))).flat(); });
-const paginateIssuesOfSpecificPriority = (label, page = 1) => __awaiter(void 0, void 0, void 0, function* () {
+const paginateIssuesOfSpecificPriority = (label_1, ...args_1) => __awaiter(void 0, [label_1, ...args_1], void 0, function* (label, page = 1) {
     var _a;
     const response = yield octokit/* octokit.issues.listForRepo */.K.issues.listForRepo(Object.assign({ state: 'open', sort: 'created', direction: 'desc', per_page: 100, labels: label, page }, github.context.repo));
     if (!((_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.length)) {
@@ -171,7 +171,7 @@ var paginate_comments_on_issue_awaiter = (undefined && undefined.__awaiter) || f
 };
 
 
-const paginateAllCommentsOnIssue = (issue_number, page = 1) => paginate_comments_on_issue_awaiter(void 0, void 0, void 0, function* () {
+const paginateAllCommentsOnIssue = (issue_number_1, ...args_1) => paginate_comments_on_issue_awaiter(void 0, [issue_number_1, ...args_1], void 0, function* (issue_number, page = 1) {
     var _a;
     const response = yield octokit/* octokit.issues.listComments */.K.issues.listComments(Object.assign({ issue_number, sort: 'created', direction: 'desc', per_page: 100, page }, github.context.repo));
     if (!((_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.length)) {
@@ -257,7 +257,7 @@ var manage_issue_due_dates_awaiter = (undefined && undefined.__awaiter) || funct
 
 class ManageIssueDueDates extends generated/* HelperInputs */.s {
 }
-const manageIssueDueDates = ({ days = '7' }) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
+const manageIssueDueDates = (_a) => manage_issue_due_dates_awaiter(void 0, [_a], void 0, function* ({ days = '7' }) {
     const openIssues = yield paginateAllPrioritizedIssues();
     const warningThreshold = Number(days);
     const getFirstPriorityLabelFoundOnIssue = (issueLabels) => constants/* PRIORITY_LABELS.find */.rF.find(priorityLabel => issueLabels.some(issueLabel => {
@@ -339,7 +339,7 @@ class RemoveLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .Helpe
         this.label = '';
     }
 }
-const removeLabel = ({ label }) => __awaiter(void 0, void 0, void 0, function* () { return removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number); });
+const removeLabel = (_a) => __awaiter(void 0, [_a], void 0, function* ({ label }) { return removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number); });
 const removeLabelIfExists = (labelName, issue_number) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel(Object.assign({ name: labelName, issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));

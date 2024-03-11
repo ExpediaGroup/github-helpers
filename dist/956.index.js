@@ -132,7 +132,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 class CheckPrTitle extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
 }
-const checkPrTitle = ({ pattern = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PR_TITLE_REGEX */ .HW }) => __awaiter(void 0, void 0, void 0, function* () {
+const checkPrTitle = (_a) => __awaiter(void 0, [_a], void 0, function* ({ pattern = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PR_TITLE_REGEX */ .HW }) {
     const regex = new RegExp(pattern);
     const { data: { title } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     if (regex.test(title)) {
