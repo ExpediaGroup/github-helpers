@@ -92,7 +92,7 @@ export const removePrFromQueue = async (pullRequest: PullRequest) => {
       description: 'This PR is not in the merge queue.'
     });
     const queuedPrs = await getQueuedPullRequests();
-    await updateMergeQueue(queuedPrs);
+    return updateMergeQueue(queuedPrs);
   }
 };
 
@@ -116,7 +116,7 @@ const getQueuedPullRequests = async (): Promise<PullRequestList> => {
 
 export const enableAutoMerge = async (pullRequestId: string, mergeMethod = 'SQUASH') => {
   try {
-    return await octokitGraphql(`
+    await octokitGraphql(`
     mutation {
       enablePullRequestAutoMerge(input: { pullRequestId: "${pullRequestId}", mergeMethod: ${mergeMethod} }) {
         clientMutationId

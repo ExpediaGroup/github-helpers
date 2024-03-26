@@ -501,7 +501,7 @@ const removePrFromQueue = (pullRequest) => manage_merge_queue_awaiter(void 0, vo
             description: 'This PR is not in the merge queue.'
         });
         const queuedPrs = yield getQueuedPullRequests();
-        yield updateMergeQueue(queuedPrs);
+        return updateMergeQueue(queuedPrs);
     }
 });
 const addPrToQueue = (pullRequest, queuePosition, skip_auto_merge) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
@@ -518,7 +518,7 @@ const getQueuedPullRequests = () => manage_merge_queue_awaiter(void 0, void 0, v
 });
 const enableAutoMerge = (pullRequestId_1, ...args_2) => manage_merge_queue_awaiter(void 0, [pullRequestId_1, ...args_2], void 0, function* (pullRequestId, mergeMethod = 'SQUASH') {
     try {
-        return yield (0,octokit/* octokitGraphql */.o)(`
+        yield (0,octokit/* octokitGraphql */.o)(`
     mutation {
       enablePullRequestAutoMerge(input: { pullRequestId: "${pullRequestId}", mergeMethod: ${mergeMethod} }) {
         clientMutationId
