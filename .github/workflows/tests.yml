@@ -25,7 +25,7 @@ jobs:
             devDependencies
 
       - name: Setup Bun
-        uses: actions/setup-bun@v1
+        uses: oven-sh/setup-bun@v1
 
       - name: Validate Copyright Headers
         run: bun ./scripts/verify-file-headers.ts
