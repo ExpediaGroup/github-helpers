@@ -43,23 +43,18 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
   const requiredCodeOwnersEntriesWithOwners = requiredCodeOwnersEntries.filter(({ owners }) => owners.length);
 
   const codeOwnersEntrySatisfiesApprovals = async (entry: Pick<CodeOwnersEntry, 'owners'>) => {
-    const loginsLists = await map(entry.owners, async entity => {
-      if (entity.contains("/")) {
-        const { data } = await octokit.teams.listMembersInOrg({
-          org: context.repo.owner,
-          team_slug: convertToTeamSlug(team),
-          per_page: 100
-        });
-        return data.map(({ login }) => login);
+    const loginsLists = await map(entry.owners, async teamOrUser => {
+      if (teamOrUser.contains("/")) {
+        return fetchTeamLogins(teamOrUser);
       } else {
-        return [entity];
+        return [teamOrUser];
       }
     });
     const codeOwnerLogins = distinct(loginsLists.flat());
 
     const numberOfCollectiveApprovalsAcrossTeamsAndUsers = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
     const numberOfApprovalsForSingleTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
-    const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovalsAcrossTeamsAndUsers : numberOfApprovalsForSingleTeam;
+    const numberOfApprovals = numberOfCollectiveApprovalsAcrossTeamsAndUsers;
 
     core.debug(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
 
@@ -73,3 +68,11 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
 
 const createArtificialCodeOwnersEntry = (teams?: string[], users?: String[]) => ({ owners: (teams || []).concat(users || []) });
 const distinct = (arrayWithDuplicates: string[]) => arrayWithDuplicates.filter((n, i) => arrayWithDuplicates.indexOf(n) === i);
+const fetchTeamLogins = (team: string) => {
+  const { data } = await octokit.teams.listMembersInOrg({
+    org: context.repo.owner,
+    team_slug: convertToTeamSlug(team),
+    per_page: 100
+  });
+  return data.map(({ login }) => login);
+}
