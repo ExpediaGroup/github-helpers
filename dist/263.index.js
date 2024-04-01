@@ -117,15 +117,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -140,10 +131,9 @@ class MoveProjectCardProps extends _types_generated__WEBPACK_IMPORTED_MODULE_5__
         this.project_origin_column_name = '';
     }
 }
-const moveProjectCard = (_a) => __awaiter(void 0, [_a], void 0, function* ({ project_destination_column_name, project_origin_column_name, project_name }) {
-    var _b;
-    const columnsList = yield (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__/* .getProjectColumns */ .N)({ project_name });
-    if (!((_b = columnsList === null || columnsList === void 0 ? void 0 : columnsList.data) === null || _b === void 0 ? void 0 : _b.length)) {
+const moveProjectCard = async ({ project_destination_column_name, project_origin_column_name, project_name }) => {
+    const columnsList = await (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__/* .getProjectColumns */ .N)({ project_name });
+    if (!columnsList?.data?.length) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(`There are no columns associated to ${project_name} project.`);
         return;
     }
@@ -153,20 +143,20 @@ const moveProjectCard = (_a) => __awaiter(void 0, [_a], void 0, function* ({ pro
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`No origin column was found for the name ${project_origin_column_name}`);
         return;
     }
-    const cardToMove = yield getCardToMove(originColumn);
+    const cardToMove = await getCardToMove(originColumn);
     if (cardToMove && destinationColumn) {
-        return _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.projects.moveCard */ .K.projects.moveCard(Object.assign({ card_id: cardToMove.id, column_id: destinationColumn.id, position: 'top' }, _constants__WEBPACK_IMPORTED_MODULE_2__/* .GITHUB_OPTIONS */ .Cc));
+        return _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.projects.moveCard */ .K.projects.moveCard({ card_id: cardToMove.id, column_id: destinationColumn.id, position: 'top', ..._constants__WEBPACK_IMPORTED_MODULE_2__/* .GITHUB_OPTIONS */ .Cc });
     }
     else {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('No destination column or card to move was found');
         return;
     }
-});
-const getCardToMove = (originColumn) => __awaiter(void 0, void 0, void 0, function* () {
-    const { data: { issue_url } } = yield _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo));
-    const cardsResponse = yield _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.projects.listCards */ .K.projects.listCards(Object.assign({ column_id: originColumn.id }, _constants__WEBPACK_IMPORTED_MODULE_2__/* .GITHUB_OPTIONS */ .Cc));
+};
+const getCardToMove = async (originColumn) => {
+    const { data: { issue_url } } = await _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.pulls.get */ .K.pulls.get({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.issue.number, ..._actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo });
+    const cardsResponse = await _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.projects.listCards */ .K.projects.listCards({ column_id: originColumn.id, ..._constants__WEBPACK_IMPORTED_MODULE_2__/* .GITHUB_OPTIONS */ .Cc });
     return cardsResponse.data.find(card => card.content_url === issue_url);
-});
+};
 const getOriginColumn = (columns, project_origin_column_name) => columns.data.find(column => column.name === project_origin_column_name);
 
 
@@ -253,26 +243,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
-const getProjectColumns = (_a) => __awaiter(void 0, [_a], void 0, function* ({ project_name }) {
-    const projectList = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.listForRepo */ .K.projects.listForRepo(Object.assign(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
+const getProjectColumns = async ({ project_name }) => {
+    const projectList = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.listForRepo */ .K.projects.listForRepo({ state: 'open', per_page: 100, ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo, ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc });
     const project = findProjectToModify(projectList, project_name);
     if (!project) {
         return null;
     }
-    return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.listColumns */ .K.projects.listColumns(Object.assign({ project_id: project.id, per_page: 100 }, _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
-});
+    return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.projects.listColumns */ .K.projects.listColumns({ project_id: project.id, per_page: 100, ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc });
+};
 const findProjectToModify = (projectsResponse, project_name) => projectsResponse.data.find(project => project.name === project_name);
 const getDestinationColumn = (columns, project_destination_column_name) => columns.data.find(column => column.name === project_destination_column_name);
 

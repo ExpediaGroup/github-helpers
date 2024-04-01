@@ -35,26 +35,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __rest = (undefined && undefined.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 
 
 
@@ -66,21 +46,20 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
 const maxBranchNameLength = 50;
 class CheckMergeSafety extends _types_generated__WEBPACK_IMPORTED_MODULE_7__/* .HelperInputs */ .s {
 }
-const checkMergeSafety = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
+const checkMergeSafety = async (inputs) => {
     const isPrWorkflow = Boolean(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number);
     if (!isPrWorkflow) {
         return handlePushWorkflow(inputs);
     }
-    const { data: pullRequest } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
-    const { state, message } = yield setMergeSafetyStatus(pullRequest, inputs);
+    const { data: pullRequest } = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.get */ .K.pulls.get({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number, ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo });
+    const { state, message } = await setMergeSafetyStatus(pullRequest, inputs);
     if (state === 'failure') {
         _actions_core__WEBPACK_IMPORTED_MODULE_6__.setFailed(message);
     }
-});
-const setMergeSafetyStatus = (pullRequest, _a) => __awaiter(void 0, void 0, void 0, function* () {
-    var { context = 'Merge Safety' } = _a, inputs = __rest(_a, ["context"]);
-    const { state, message } = yield getMergeSafetyStateAndMessage(pullRequest, inputs);
-    const hasExistingFailureStatus = yield checkForExistingFailureStatus(pullRequest, context);
+};
+const setMergeSafetyStatus = async (pullRequest, { context = 'Merge Safety', ...inputs }) => {
+    const { state, message } = await getMergeSafetyStateAndMessage(pullRequest, inputs);
+    const hasExistingFailureStatus = await checkForExistingFailureStatus(pullRequest, context);
     if (hasExistingFailureStatus && state === 'failure') {
         const { head: { ref, user: { login: username } } } = pullRequest;
         const truncatedRef = ref.length > maxBranchNameLength ? `${ref.substring(0, maxBranchNameLength)}...` : ref;
@@ -88,32 +67,42 @@ const setMergeSafetyStatus = (pullRequest, _a) => __awaiter(void 0, void 0, void
         _actions_core__WEBPACK_IMPORTED_MODULE_6__.info(`Found existing failure status for ${truncatedBranchName}, skipping setting new status`);
     }
     else {
-        yield (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_5__.setCommitStatus)(Object.assign({ sha: pullRequest.head.sha, state,
-            context, description: message }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+        await (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_5__.setCommitStatus)({
+            sha: pullRequest.head.sha,
+            state,
+            context,
+            description: message,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo
+        });
     }
     return { state, message };
-});
-const handlePushWorkflow = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
-    const pullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__/* .paginateAllOpenPullRequests */ .P)();
+};
+const handlePushWorkflow = async (inputs) => {
+    const pullRequests = await (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__/* .paginateAllOpenPullRequests */ .P)();
     const filteredPullRequests = pullRequests.filter(({ base, draft }) => !draft && base.ref === base.repo.default_branch);
-    yield (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(filteredPullRequests, pullRequest => setMergeSafetyStatus(pullRequest, inputs));
-});
-const checkForExistingFailureStatus = (pullRequest, context) => __awaiter(void 0, void 0, void 0, function* () {
-    const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.getCombinedStatusForRef */ .K.repos.getCombinedStatusForRef(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { ref: pullRequest.head.sha }));
+    await (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(filteredPullRequests, pullRequest => setMergeSafetyStatus(pullRequest, inputs));
+};
+const checkForExistingFailureStatus = async (pullRequest, context) => {
+    const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.getCombinedStatusForRef */ .K.repos.getCombinedStatusForRef({
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo,
+        ref: pullRequest.head.sha
+    });
     if (data.state === 'failure') {
         const existingContext = data.statuses.find(status => status.context === context);
         return Boolean(existingContext);
     }
     return false;
-});
-const getMergeSafetyStateAndMessage = (pullRequest_1, _b) => __awaiter(void 0, [pullRequest_1, _b], void 0, function* (pullRequest, { paths, ignore_globs, override_filter_paths, override_filter_globs }) {
-    var _c;
+};
+const getMergeSafetyStateAndMessage = async (pullRequest, { paths, ignore_globs, override_filter_paths, override_filter_globs }) => {
     const { base: { repo: { default_branch, owner: { login: baseOwner } } }, head: { ref, user: { login: username } } } = pullRequest;
     const branchName = `${username}:${ref}`;
     const truncatedRef = ref.length > maxBranchNameLength ? `${ref.substring(0, maxBranchNameLength)}...` : ref;
     const truncatedBranchName = `${username}:${truncatedRef}`;
-    const { data: { files: filesWhichBranchIsBehindOn } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${branchName}...${baseOwner}:${default_branch}` }));
-    const fileNamesWhichBranchIsBehindOn = (_c = filesWhichBranchIsBehindOn === null || filesWhichBranchIsBehindOn === void 0 ? void 0 : filesWhichBranchIsBehindOn.map(file => file.filename)) !== null && _c !== void 0 ? _c : [];
+    const { data: { files: filesWhichBranchIsBehindOn } } = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead({
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo,
+        basehead: `${branchName}...${baseOwner}:${default_branch}`
+    });
+    const fileNamesWhichBranchIsBehindOn = filesWhichBranchIsBehindOn?.map(file => file.filename) ?? [];
     const globalFilesOutdatedOnBranch = override_filter_globs
         ? micromatch__WEBPACK_IMPORTED_MODULE_2___default()(fileNamesWhichBranchIsBehindOn, override_filter_globs.split(/[\n,]/))
         : override_filter_paths
@@ -126,13 +115,16 @@ const getMergeSafetyStateAndMessage = (pullRequest_1, _b) => __awaiter(void 0, [
             message: `This branch has one or more outdated global files. Please update with ${default_branch}.`
         };
     }
-    const { data: { files: changedFiles } } = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo), { basehead: `${baseOwner}:${default_branch}...${branchName}` }));
-    const changedFileNames = changedFiles === null || changedFiles === void 0 ? void 0 : changedFiles.map(file => file.filename);
+    const { data: { files: changedFiles } } = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.repos.compareCommitsWithBasehead */ .K.repos.compareCommitsWithBasehead({
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo,
+        basehead: `${baseOwner}:${default_branch}...${branchName}`
+    });
+    const changedFileNames = changedFiles?.map(file => file.filename);
     const changedFilesToIgnore = changedFileNames && ignore_globs ? micromatch__WEBPACK_IMPORTED_MODULE_2___default()(changedFileNames, ignore_globs.split(/[\n,]/)) : [];
-    const filteredFileNames = changedFileNames === null || changedFileNames === void 0 ? void 0 : changedFileNames.filter(file => !changedFilesToIgnore.includes(file));
-    const allProjectDirectories = paths === null || paths === void 0 ? void 0 : paths.split(/[\n,]/);
-    const changedProjectsOutdatedOnBranch = allProjectDirectories === null || allProjectDirectories === void 0 ? void 0 : allProjectDirectories.filter(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && (filteredFileNames === null || filteredFileNames === void 0 ? void 0 : filteredFileNames.some(file => file.includes(dir))));
-    if (changedProjectsOutdatedOnBranch === null || changedProjectsOutdatedOnBranch === void 0 ? void 0 : changedProjectsOutdatedOnBranch.length) {
+    const filteredFileNames = changedFileNames?.filter(file => !changedFilesToIgnore.includes(file));
+    const allProjectDirectories = paths?.split(/[\n,]/);
+    const changedProjectsOutdatedOnBranch = allProjectDirectories?.filter(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && filteredFileNames?.some(file => file.includes(dir)));
+    if (changedProjectsOutdatedOnBranch?.length) {
         _actions_core__WEBPACK_IMPORTED_MODULE_6__.error(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects', truncatedBranchName));
         return {
             state: 'failure',
@@ -145,7 +137,7 @@ const getMergeSafetyStateAndMessage = (pullRequest_1, _b) => __awaiter(void 0, [
         state: 'success',
         message: safeMessage
     };
-});
+};
 const buildErrorMessage = (paths, pathType, branchName) => `
 The following ${pathType} are outdated on branch ${branchName}
 
@@ -184,15 +176,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -206,22 +189,30 @@ class SetCommitStatus extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .H
         this.state = '';
     }
 }
-const setCommitStatus = (_a) => __awaiter(void 0, [_a], void 0, function* ({ sha, context, state, description, target_url, skip_if_already_set }) {
-    yield (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(context.split('\n').filter(Boolean), (context) => __awaiter(void 0, void 0, void 0, function* () {
+const setCommitStatus = async ({ sha, context, state, description, target_url, skip_if_already_set }) => {
+    await (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(context.split('\n').filter(Boolean), async (context) => {
         if (skip_if_already_set === 'true') {
-            const check_runs = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.checks.listForRef */ .K.checks.listForRef(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), { ref: sha }));
+            const check_runs = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.checks.listForRef */ .K.checks.listForRef({
+                ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+                ref: sha
+            });
             const run = check_runs.data.check_runs.find(({ name }) => name === context);
-            const runCompletedAndIsValid = (run === null || run === void 0 ? void 0 : run.status) === 'completed' && ((run === null || run === void 0 ? void 0 : run.conclusion) === 'failure' || (run === null || run === void 0 ? void 0 : run.conclusion) === 'success');
+            const runCompletedAndIsValid = run?.status === 'completed' && (run?.conclusion === 'failure' || run?.conclusion === 'success');
             if (runCompletedAndIsValid) {
                 _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`${context} already completed with a ${run.conclusion} conclusion.`);
                 return;
             }
         }
-        _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
-            context, state: state, description,
-            target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
-    }));
-});
+        _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus({
+            sha,
+            context,
+            state: state,
+            description,
+            target_url,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        });
+    });
+};
 
 
 /***/ }),
@@ -305,24 +296,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
+
+
+const paginateAllOpenPullRequests = async (page = 1) => {
+    const response = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.list */ .K.pulls.list({
+        state: 'open',
+        sort: 'updated',
+        direction: 'desc',
+        per_page: 100,
+        page,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
     });
-};
-
-
-const paginateAllOpenPullRequests = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* (page = 1) {
-    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', sort: 'updated', direction: 'desc', per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     if (!response.data.length) {
         return [];
     }
-    return response.data.concat(yield paginateAllOpenPullRequests(page + 1));
-});
+    return response.data.concat(await paginateAllOpenPullRequests(page + 1));
+};
 
 
 /***/ })

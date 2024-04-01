@@ -114,15 +114,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -134,35 +125,51 @@ class CreatePrComment extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .H
     }
 }
 const emptyResponse = { data: [] };
-const getPrsByCommit = (sha) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+const getPrsByCommit = async (sha) => {
     const prs = (sha &&
-        (yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.listPullRequestsAssociatedWithCommit */ .K.repos.listPullRequestsAssociatedWithCommit(Object.assign(Object.assign({ commit_sha: sha }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc)))) ||
+        (await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.listPullRequestsAssociatedWithCommit */ .K.repos.listPullRequestsAssociatedWithCommit({
+            commit_sha: sha,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+            ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc
+        }))) ||
         emptyResponse;
-    return (_a = prs.data.find(Boolean)) === null || _a === void 0 ? void 0 : _a.number;
-});
-const getCommentByUser = (login) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+    return prs.data.find(Boolean)?.number;
+};
+const getCommentByUser = async (login) => {
     const comments = (login &&
-        (yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.listComments */ .K.issues.listComments(Object.assign({ issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo)))) ||
+        (await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.listComments */ .K.issues.listComments({
+            issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        }))) ||
         emptyResponse;
-    return (_b = comments.data.find(comment => { var _a; return ((_a = comment === null || comment === void 0 ? void 0 : comment.user) === null || _a === void 0 ? void 0 : _a.login) === login; })) === null || _b === void 0 ? void 0 : _b.id;
-});
-const createPrComment = (_c) => __awaiter(void 0, [_c], void 0, function* ({ body, sha, login }) {
-    var _d;
+    return comments.data.find(comment => comment?.user?.login === login)?.id;
+};
+const createPrComment = async ({ body, sha, login }) => {
     if (!sha && !login) {
-        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.createComment */ .K.issues.createComment({
+            body,
+            issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        });
     }
     const defaultPrNumber = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number;
-    const prNumber = (_d = (yield getPrsByCommit(sha))) !== null && _d !== void 0 ? _d : defaultPrNumber;
-    const commentId = yield getCommentByUser(login);
+    const prNumber = (await getPrsByCommit(sha)) ?? defaultPrNumber;
+    const commentId = await getCommentByUser(login);
     if (commentId) {
-        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.updateComment */ .K.issues.updateComment(Object.assign({ comment_id: commentId, body }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.updateComment */ .K.issues.updateComment({
+            comment_id: commentId,
+            body,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        });
     }
     else {
-        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: prNumber }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.createComment */ .K.issues.createComment({
+            body,
+            issue_number: prNumber,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        });
     }
-});
+};
 
 
 /***/ }),

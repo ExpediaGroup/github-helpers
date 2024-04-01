@@ -1,11 +1,15 @@
-import getFiles from 'https://deno.land/x/getfiles@v1.0.0/mod.ts';
+import { sync } from 'glob';
+import { filter } from 'bluebird';
 
-const filePaths = getFiles({ root: '.', include: ['src', 'test'] }).filter(file => !file.path.endsWith('.DS_Store')).map(file => file.path);
-const filesWithoutCopyrightHeader = filePaths.filter(filePath => !Deno.readTextFileSync(filePath).startsWith('/*\nCopyright'));
+const filePaths = sync('{src,test}/**/*.ts');
+const filesWithoutCopyrightHeader = await filter(filePaths, async filePath => {
+  const fileContents = await Bun.file(filePath).text();
+  return !fileContents.startsWith('/*\nCopyright')
+});
 
 if (filesWithoutCopyrightHeader.length) {
   console.error(`\nThe following files are missing a valid copyright header:${filesWithoutCopyrightHeader.map(file => `\n   • ${file}`).join()}`);
-  Deno.exit(1);
+  process.exit(1);
 }
 
 console.info('All files contain a valid copyright header!');

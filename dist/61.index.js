@@ -30,15 +30,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -49,17 +40,21 @@ class RemoveLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .Helpe
         this.label = '';
     }
 }
-const removeLabel = (_a) => __awaiter(void 0, [_a], void 0, function* ({ label }) { return removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number); });
-const removeLabelIfExists = (labelName, issue_number) => __awaiter(void 0, void 0, void 0, function* () {
+const removeLabel = async ({ label }) => removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number);
+const removeLabelIfExists = async (labelName, issue_number) => {
     try {
-        yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel(Object.assign({ name: labelName, issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+        await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel({
+            name: labelName,
+            issue_number,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        });
     }
     catch (error) {
         if (error.status === 404) {
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Label is not present on PR.');
         }
     }
-});
+};
 
 
 /***/ }),

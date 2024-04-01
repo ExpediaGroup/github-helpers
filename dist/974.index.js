@@ -116,15 +116,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -135,17 +126,21 @@ class RemoveLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .Helpe
         this.label = '';
     }
 }
-const removeLabel = (_a) => __awaiter(void 0, [_a], void 0, function* ({ label }) { return removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number); });
-const removeLabelIfExists = (labelName, issue_number) => __awaiter(void 0, void 0, void 0, function* () {
+const removeLabel = async ({ label }) => removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number);
+const removeLabelIfExists = async (labelName, issue_number) => {
     try {
-        yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel(Object.assign({ name: labelName, issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+        await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel({
+            name: labelName,
+            issue_number,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        });
     }
     catch (error) {
         if (error.status === 404) {
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Label is not present on PR.');
         }
     }
-});
+};
 
 
 /***/ }),
@@ -180,15 +175,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -202,27 +188,34 @@ class RemovePrFromMergeQueue extends _types_generated__WEBPACK_IMPORTED_MODULE_6
         this.seconds = '';
     }
 }
-const removePrFromMergeQueue = (_a) => __awaiter(void 0, [_a], void 0, function* ({ seconds }) {
-    const { data: pullRequests } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
+const removePrFromMergeQueue = async ({ seconds }) => {
+    const { data: pullRequests } = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.list */ .K.pulls.list({
+        state: 'open',
+        per_page: 100,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo
+    });
     const firstQueuedPr = pullRequests.find(pr => pr.labels.some(label => label.name === _constants__WEBPACK_IMPORTED_MODULE_1__/* .FIRST_QUEUED_PR_LABEL */ .IH));
     if (!firstQueuedPr) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('No PR is first in the merge queue.');
         return (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(pullRequests, pr => {
             const queueLabel = pr.labels.find(label => label.name.startsWith(_constants__WEBPACK_IMPORTED_MODULE_1__/* .QUEUED_FOR_MERGE_PREFIX */ .Ee));
-            if (queueLabel === null || queueLabel === void 0 ? void 0 : queueLabel.name) {
+            if (queueLabel?.name) {
                 _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Cleaning up PR with queue label ${queueLabel.name}...`);
                 return Promise.all([(0,_remove_label__WEBPACK_IMPORTED_MODULE_4__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, pr.number), (0,_remove_label__WEBPACK_IMPORTED_MODULE_4__.removeLabelIfExists)(queueLabel.name, pr.number)]);
             }
         });
     }
     const { number, head: { sha } } = firstQueuedPr;
-    const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listCommitStatusesForRef */ .K.repos.listCommitStatusesForRef(Object.assign({ ref: sha }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
+    const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listCommitStatusesForRef */ .K.repos.listCommitStatusesForRef({
+        ref: sha,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo
+    });
     const failingStatus = data.find(status => status.state === 'failure');
     if (failingStatus && timestampIsStale(failingStatus.created_at, seconds)) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Removing stale PR from first queued position...');
         return Promise.all([(0,_remove_label__WEBPACK_IMPORTED_MODULE_4__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, number), (0,_remove_label__WEBPACK_IMPORTED_MODULE_4__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_1__/* .FIRST_QUEUED_PR_LABEL */ .IH, number)]);
     }
-});
+};
 const timestampIsStale = (timestamp, seconds) => {
     const ageOfTimestampInMiliseconds = Date.now() - new Date(timestamp).getTime();
     const milisecondsConsideredStale = Number(seconds) * 1000;

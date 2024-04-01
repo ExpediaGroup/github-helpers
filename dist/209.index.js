@@ -31,15 +31,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -53,22 +44,30 @@ class SetCommitStatus extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .H
         this.state = '';
     }
 }
-const setCommitStatus = (_a) => __awaiter(void 0, [_a], void 0, function* ({ sha, context, state, description, target_url, skip_if_already_set }) {
-    yield (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(context.split('\n').filter(Boolean), (context) => __awaiter(void 0, void 0, void 0, function* () {
+const setCommitStatus = async ({ sha, context, state, description, target_url, skip_if_already_set }) => {
+    await (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(context.split('\n').filter(Boolean), async (context) => {
         if (skip_if_already_set === 'true') {
-            const check_runs = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.checks.listForRef */ .K.checks.listForRef(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), { ref: sha }));
+            const check_runs = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.checks.listForRef */ .K.checks.listForRef({
+                ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+                ref: sha
+            });
             const run = check_runs.data.check_runs.find(({ name }) => name === context);
-            const runCompletedAndIsValid = (run === null || run === void 0 ? void 0 : run.status) === 'completed' && ((run === null || run === void 0 ? void 0 : run.conclusion) === 'failure' || (run === null || run === void 0 ? void 0 : run.conclusion) === 'success');
+            const runCompletedAndIsValid = run?.status === 'completed' && (run?.conclusion === 'failure' || run?.conclusion === 'success');
             if (runCompletedAndIsValid) {
                 _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`${context} already completed with a ${run.conclusion} conclusion.`);
                 return;
             }
         }
-        _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
-            context, state: state, description,
-            target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
-    }));
-});
+        _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus({
+            sha,
+            context,
+            state: state,
+            description,
+            target_url,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        });
+    });
+};
 
 
 /***/ }),

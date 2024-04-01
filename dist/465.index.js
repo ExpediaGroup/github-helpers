@@ -29,15 +29,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -48,17 +39,17 @@ class AreReviewersRequired extends _types_generated__WEBPACK_IMPORTED_MODULE_3__
         this.teams = '';
     }
 }
-const areReviewersRequired = (_a) => __awaiter(void 0, [_a], void 0, function* ({ teams }) {
+const areReviewersRequired = async ({ teams }) => {
     const prNumber = _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.issue.number;
-    const teamsList = teams === null || teams === void 0 ? void 0 : teams.split('\n');
-    const requiredCodeOwnersEntries = (yield (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_1__/* .getRequiredCodeOwnersEntries */ .q)(prNumber)).map(({ owners }) => owners).flat();
+    const teamsList = teams?.split('\n');
+    const requiredCodeOwnersEntries = (await (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_1__/* .getRequiredCodeOwnersEntries */ .q)(prNumber)).map(({ owners }) => owners).flat();
     const notRequiredTeams = teamsList.filter(team => !requiredCodeOwnersEntries.includes(team));
     if (notRequiredTeams.length) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`${notRequiredTeams.join(', ')} not in list of required reviewers (${requiredCodeOwnersEntries.join(', ')})`);
         return false;
     }
     return true;
-});
+};
 
 
 /***/ }),
@@ -165,29 +156,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
-const getChangedFilepaths = (pull_number, ignore_deleted) => __awaiter(void 0, void 0, void 0, function* () {
-    const changedFiles = yield paginateAllChangedFilepaths(pull_number);
+const getChangedFilepaths = async (pull_number, ignore_deleted) => {
+    const changedFiles = await paginateAllChangedFilepaths(pull_number);
     const filesToMap = ignore_deleted ? changedFiles.filter(file => file.status !== 'removed') : changedFiles;
     return filesToMap.map(file => file.filename);
-});
-const paginateAllChangedFilepaths = (pull_number_1, ...args_1) => __awaiter(void 0, [pull_number_1, ...args_1], void 0, function* (pull_number, page = 1) {
-    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number, per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+};
+const paginateAllChangedFilepaths = async (pull_number, page = 1) => {
+    const response = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles({
+        pull_number,
+        per_page: 100,
+        page,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo
+    });
     if (!response.data.length) {
         return [];
     }
-    return response.data.concat(yield paginateAllChangedFilepaths(pull_number, page + 1));
-});
+    return response.data.concat(await paginateAllChangedFilepaths(pull_number, page + 1));
+};
 
 
 /***/ }),
@@ -224,15 +211,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -241,32 +219,29 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-const getCoreMemberLogins = (pull_number, teams) => __awaiter(void 0, void 0, void 0, function* () {
-    const codeOwners = teams !== null && teams !== void 0 ? teams : getCodeOwnersFromEntries(yield getRequiredCodeOwnersEntries(pull_number));
-    const teamsAndLogins = yield getCoreTeamsAndLogins(codeOwners);
+const getCoreMemberLogins = async (pull_number, teams) => {
+    const codeOwners = teams ?? getCodeOwnersFromEntries(await getRequiredCodeOwnersEntries(pull_number));
+    const teamsAndLogins = await getCoreTeamsAndLogins(codeOwners);
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(teamsAndLogins.map(({ login }) => login));
-});
-const getRequiredCodeOwnersEntries = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const codeOwners = (_a = (yield (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd()))) !== null && _a !== void 0 ? _a : [];
-    const changedFilePaths = yield (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__/* .getChangedFilepaths */ .s)(pull_number);
+};
+const getRequiredCodeOwnersEntries = async (pull_number) => {
+    const codeOwners = (await (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd())) ?? [];
+    const changedFilePaths = await (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__/* .getChangedFilepaths */ .s)(pull_number);
     return changedFilePaths.map(filePath => (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.matchFile)(filePath, codeOwners)).filter(Boolean);
-});
-const getCoreTeamsAndLogins = (codeOwners) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!(codeOwners === null || codeOwners === void 0 ? void 0 : codeOwners.length)) {
+};
+const getCoreTeamsAndLogins = async (codeOwners) => {
+    if (!codeOwners?.length) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No code owners found. Please provide a "teams" input or set up a CODEOWNERS file in your repo.');
         throw new Error();
     }
-    const teamsAndLogins = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(codeOwners, (team) => __awaiter(void 0, void 0, void 0, function* () {
-        return _octokit__WEBPACK_IMPORTED_MODULE_6__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
-            org: _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo.owner,
-            team_slug: team,
-            per_page: 100
-        })
-            .then(listMembersResponse => listMembersResponse.data.map(({ login }) => ({ team, login })));
-    }));
+    const teamsAndLogins = await (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(codeOwners, async (team) => _octokit__WEBPACK_IMPORTED_MODULE_6__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
+        org: _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo.owner,
+        team_slug: team,
+        per_page: 100
+    })
+        .then(listMembersResponse => listMembersResponse.data.map(({ login }) => ({ team, login }))));
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.union)(...teamsAndLogins);
-});
+};
 const getCodeOwnersFromEntries = (codeOwnersEntries) => {
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(codeOwnersEntries
         .map(entry => entry.owners)

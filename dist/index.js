@@ -48249,7 +48249,10 @@ const getActionInputs = (requiredInputs = []) => {
     const yamlContents = (0,external_fs_.readFileSync)(`${__dirname}/action.yml`).toString();
     const inputsFromFile = getInputsFromFile(yamlContents).reduce((acc, current) => {
         const trimWhitespaceOptions = current === 'delimiter' ? { trimWhitespace: false } : {};
-        return Object.assign(Object.assign({}, acc), { [current]: (0,core.getInput)(current, Object.assign({ required: requiredInputs.includes(current) }, trimWhitespaceOptions)) });
+        return {
+            ...acc,
+            [current]: (0,core.getInput)(current, { required: requiredInputs.includes(current), ...trimWhitespaceOptions })
+        };
     }, {});
     return (0,lodash.pickBy)(inputsFromFile);
 };
@@ -48267,31 +48270,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
-const run = () => __awaiter(void 0, void 0, void 0, function* () {
+const run = async () => {
     try {
         const helper = core.getInput('helper', { required: true });
-        const { [(0,lodash.camelCase)(helper)]: method, [(0,lodash.upperFirst)((0,lodash.camelCase)(helper))]: HelperInterface } = yield __nccwpck_require__(1933)(`./${helper}`);
+        const { [(0,lodash.camelCase)(helper)]: method, [(0,lodash.upperFirst)((0,lodash.camelCase)(helper))]: HelperInterface } = await __nccwpck_require__(1933)(`./${helper}`);
         const requiredInputs = HelperInterface ? Object.keys(new HelperInterface()) : [];
         const actionInputs = getActionInputs(requiredInputs);
-        const output = yield method(actionInputs);
+        const output = await method(actionInputs);
         core.setOutput('output', output);
     }
     catch (error) {
         core.setFailed(error);
     }
-});
+};
 run();
 
 })();

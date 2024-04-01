@@ -116,15 +116,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -132,15 +123,22 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 class NotifyPipelineComplete extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
 }
-const notifyPipelineComplete = (_a) => __awaiter(void 0, [_a], void 0, function* ({ context = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PIPELINE_STATUS */ .$9, description = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PIPELINE_DESCRIPTION */ .Km, target_url }) {
-    const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+const notifyPipelineComplete = async ({ context = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PIPELINE_STATUS */ .$9, description = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PIPELINE_DESCRIPTION */ .Km, target_url }) => {
+    const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.list */ .K.pulls.list({
+        state: 'open',
+        per_page: 100,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+    });
     const commitHashes = data.map(pullRequest => pullRequest.head.sha);
-    return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(commitHashes, (sha) => __awaiter(void 0, void 0, void 0, function* () {
-        return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
-            context, state: 'success', description,
-            target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(commitHashes, async (sha) => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus({
+        sha,
+        context,
+        state: 'success',
+        description,
+        target_url,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
     }));
-});
+};
 
 
 /***/ }),

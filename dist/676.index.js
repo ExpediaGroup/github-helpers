@@ -128,24 +128,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
+
+
+const paginateAllReviews = async (prNumber, page = 1) => {
+    const response = await octokit/* octokit.pulls.listReviews */.K.pulls.listReviews({
+        pull_number: prNumber,
+        per_page: 100,
+        page,
+        ...github.context.repo
     });
-};
-
-
-const paginateAllReviews = (prNumber_1, ...args_1) => __awaiter(void 0, [prNumber_1, ...args_1], void 0, function* (prNumber, page = 1) {
-    const response = yield octokit/* octokit.pulls.listReviews */.K.pulls.listReviews(Object.assign({ pull_number: prNumber, per_page: 100, page }, github.context.repo));
     if (!response.data.length) {
         return [];
     }
-    return response.data.concat(yield paginateAllReviews(prNumber, page + 1));
-});
+    return response.data.concat(await paginateAllReviews(prNumber, page + 1));
+};
 
 ;// CONCATENATED MODULE: ./src/helpers/approvals-satisfied.ts
 /*
@@ -160,15 +156,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var approvals_satisfied_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -179,37 +166,37 @@ var approvals_satisfied_awaiter = (undefined && undefined.__awaiter) || function
 
 class ApprovalsSatisfied extends generated/* HelperInputs */.s {
 }
-const approvalsSatisfied = (...args_1) => approvals_satisfied_awaiter(void 0, [...args_1], void 0, function* ({ teams, number_of_reviewers = '1', pull_number } = {}) {
+const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pull_number } = {}) => {
     const prNumber = pull_number ? Number(pull_number) : github.context.issue.number;
-    const reviews = yield paginateAllReviews(prNumber);
+    const reviews = await paginateAllReviews(prNumber);
     const approverLogins = reviews
         .filter(({ state }) => state === 'APPROVED')
-        .map(({ user }) => user === null || user === void 0 ? void 0 : user.login)
+        .map(({ user }) => user?.login)
         .filter(Boolean);
     core.debug(`PR already approved by: ${approverLogins.toString()}`);
-    const teamsList = teams === null || teams === void 0 ? void 0 : teams.split('\n');
-    const requiredCodeOwnersEntries = teamsList ? createArtificialCodeOwnersEntry(teamsList) : yield (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.q)(prNumber);
+    const teamsList = teams?.split('\n');
+    const requiredCodeOwnersEntries = teamsList ? createArtificialCodeOwnersEntry(teamsList) : await (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.q)(prNumber);
     const requiredCodeOwnersEntriesWithOwners = requiredCodeOwnersEntries.filter(({ owners }) => owners.length);
-    const codeOwnersEntrySatisfiesApprovals = (entry) => approvals_satisfied_awaiter(void 0, void 0, void 0, function* () {
-        const teamsAndLoginsLists = yield (0,bluebird.map)(entry.owners, (team) => approvals_satisfied_awaiter(void 0, void 0, void 0, function* () {
-            const { data } = yield octokit/* octokit.teams.listMembersInOrg */.K.teams.listMembersInOrg({
+    const codeOwnersEntrySatisfiesApprovals = async (entry) => {
+        const teamsAndLoginsLists = await (0,bluebird.map)(entry.owners, async (team) => {
+            const { data } = await octokit/* octokit.teams.listMembersInOrg */.K.teams.listMembersInOrg({
                 org: github.context.repo.owner,
                 team_slug: (0,convert_to_team_slug/* convertToTeamSlug */.$)(team),
                 per_page: 100
             });
             return data.map(({ login }) => ({ team, login }));
-        }));
+        });
         const codeOwnerLogins = teamsAndLoginsLists.flat().map(({ login }) => login);
         const numberOfCollectiveApprovalsAcrossTeams = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
         const numberOfApprovalsForSingleTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
         const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovalsAcrossTeams : numberOfApprovalsForSingleTeam;
         core.debug(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
         return numberOfApprovals >= Number(number_of_reviewers);
-    });
+    };
     core.debug(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
-    const booleans = yield Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
+    const booleans = await Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
     return booleans.every(Boolean);
-});
+};
 const createArtificialCodeOwnersEntry = (teams) => teams.map(team => ({ owners: [team] }));
 
 
@@ -240,15 +227,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -260,35 +238,51 @@ class CreatePrComment extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .H
     }
 }
 const emptyResponse = { data: [] };
-const getPrsByCommit = (sha) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+const getPrsByCommit = async (sha) => {
     const prs = (sha &&
-        (yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.listPullRequestsAssociatedWithCommit */ .K.repos.listPullRequestsAssociatedWithCommit(Object.assign(Object.assign({ commit_sha: sha }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc)))) ||
+        (await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.listPullRequestsAssociatedWithCommit */ .K.repos.listPullRequestsAssociatedWithCommit({
+            commit_sha: sha,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+            ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc
+        }))) ||
         emptyResponse;
-    return (_a = prs.data.find(Boolean)) === null || _a === void 0 ? void 0 : _a.number;
-});
-const getCommentByUser = (login) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+    return prs.data.find(Boolean)?.number;
+};
+const getCommentByUser = async (login) => {
     const comments = (login &&
-        (yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.listComments */ .K.issues.listComments(Object.assign({ issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo)))) ||
+        (await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.listComments */ .K.issues.listComments({
+            issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        }))) ||
         emptyResponse;
-    return (_b = comments.data.find(comment => { var _a; return ((_a = comment === null || comment === void 0 ? void 0 : comment.user) === null || _a === void 0 ? void 0 : _a.login) === login; })) === null || _b === void 0 ? void 0 : _b.id;
-});
-const createPrComment = (_c) => __awaiter(void 0, [_c], void 0, function* ({ body, sha, login }) {
-    var _d;
+    return comments.data.find(comment => comment?.user?.login === login)?.id;
+};
+const createPrComment = async ({ body, sha, login }) => {
     if (!sha && !login) {
-        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.createComment */ .K.issues.createComment({
+            body,
+            issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        });
     }
     const defaultPrNumber = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number;
-    const prNumber = (_d = (yield getPrsByCommit(sha))) !== null && _d !== void 0 ? _d : defaultPrNumber;
-    const commentId = yield getCommentByUser(login);
+    const prNumber = (await getPrsByCommit(sha)) ?? defaultPrNumber;
+    const commentId = await getCommentByUser(login);
     if (commentId) {
-        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.updateComment */ .K.issues.updateComment(Object.assign({ comment_id: commentId, body }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.updateComment */ .K.issues.updateComment({
+            comment_id: commentId,
+            body,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        });
     }
     else {
-        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.createComment */ .K.issues.createComment(Object.assign({ body, issue_number: prNumber }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.createComment */ .K.issues.createComment({
+            body,
+            issue_number: prNumber,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        });
     }
-});
+};
 
 
 /***/ }),
@@ -340,15 +334,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -362,10 +347,9 @@ const updateMergeQueue = (queuedPrs) => {
 };
 const sortPrsByQueuePosition = (queuedPrs) => queuedPrs
     .map(pr => {
-    var _a, _b;
-    const label = (_a = pr.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
+    const label = pr.labels.find(label => label.name?.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee))?.name;
     const isJumpingTheQueue = Boolean(pr.labels.find(label => label.name === constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ));
-    const queuePosition = isJumpingTheQueue ? 0 : Number((_b = label === null || label === void 0 ? void 0 : label.split('#')) === null || _b === void 0 ? void 0 : _b[1]);
+    const queuePosition = isJumpingTheQueue ? 0 : Number(label?.split('#')?.[1]);
     return {
         number: pr.number,
         label,
@@ -374,7 +358,7 @@ const sortPrsByQueuePosition = (queuedPrs) => queuedPrs
     };
 })
     .sort((pr1, pr2) => pr1.queuePosition - pr2.queuePosition);
-const updateQueuePosition = (pr, index) => __awaiter(void 0, void 0, void 0, function* () {
+const updateQueuePosition = async (pr, index) => {
     const { number, label, queuePosition, sha } = pr;
     const newQueuePosition = index + 1;
     if (!label || isNaN(queuePosition) || queuePosition === newQueuePosition) {
@@ -382,11 +366,15 @@ const updateQueuePosition = (pr, index) => __awaiter(void 0, void 0, void 0, fun
     }
     const prIsNowFirstInQueue = newQueuePosition === 1;
     if (prIsNowFirstInQueue) {
-        const { data: firstPrInQueue } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: number }, github.context.repo));
-        yield Promise.all([(0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, number), (0,prepare_queued_pr_for_merge.updatePrWithDefaultBranch)(firstPrInQueue)]);
-        const { data: { head: { sha: updatedHeadSha } } } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: number }, github.context.repo));
+        const { data: firstPrInQueue } = await octokit/* octokit.pulls.get */.K.pulls.get({ pull_number: number, ...github.context.repo });
+        await Promise.all([(0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, number), (0,prepare_queued_pr_for_merge.updatePrWithDefaultBranch)(firstPrInQueue)]);
+        const { data: { head: { sha: updatedHeadSha } } } = await octokit/* octokit.pulls.get */.K.pulls.get({ pull_number: number, ...github.context.repo });
         return Promise.all([
-            octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${newQueuePosition}`], issue_number: number }, github.context.repo)),
+            octokit/* octokit.issues.addLabels */.K.issues.addLabels({
+                labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${newQueuePosition}`],
+                issue_number: number,
+                ...github.context.repo
+            }),
             (0,remove_label.removeLabelIfExists)(label, number),
             (0,set_commit_status.setCommitStatus)({
                 sha: updatedHeadSha,
@@ -397,7 +385,11 @@ const updateQueuePosition = (pr, index) => __awaiter(void 0, void 0, void 0, fun
         ]);
     }
     return Promise.all([
-        octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${newQueuePosition}`], issue_number: number }, github.context.repo)),
+        octokit/* octokit.issues.addLabels */.K.issues.addLabels({
+            labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${newQueuePosition}`],
+            issue_number: number,
+            ...github.context.repo
+        }),
         (0,remove_label.removeLabelIfExists)(label, number),
         (0,set_commit_status.setCommitStatus)({
             sha,
@@ -406,7 +398,7 @@ const updateQueuePosition = (pr, index) => __awaiter(void 0, void 0, void 0, fun
             description: 'This PR is in line to merge.'
         })
     ]);
-});
+};
 
 // EXTERNAL MODULE: ./src/utils/paginate-open-pull-requests.ts
 var paginate_open_pull_requests = __webpack_require__(5757);
@@ -427,15 +419,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var manage_merge_queue_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -452,73 +435,76 @@ var manage_merge_queue_awaiter = (undefined && undefined.__awaiter) || function 
 
 class ManageMergeQueue extends generated/* HelperInputs */.s {
 }
-const manageMergeQueue = (...args_1) => manage_merge_queue_awaiter(void 0, [...args_1], void 0, function* ({ login, slack_webhook_url, skip_auto_merge } = {}) {
-    const { data: pullRequest } = yield octokit/* octokit.pulls.get */.K.pulls.get(Object.assign({ pull_number: github.context.issue.number }, github.context.repo));
+const manageMergeQueue = async ({ login, slack_webhook_url, skip_auto_merge } = {}) => {
+    const { data: pullRequest } = await octokit/* octokit.pulls.get */.K.pulls.get({ pull_number: github.context.issue.number, ...github.context.repo });
     if (pullRequest.merged || !pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak)) {
         core.info('This PR is not in the merge queue.');
         return removePrFromQueue(pullRequest);
     }
-    const prMeetsRequiredApprovals = yield (0,approvals_satisfied.approvalsSatisfied)();
+    const prMeetsRequiredApprovals = await (0,approvals_satisfied.approvalsSatisfied)();
     if (!prMeetsRequiredApprovals) {
-        yield (0,create_pr_comment.createPrComment)({ body: 'PRs must meet all required approvals before entering the merge queue.' });
+        await (0,create_pr_comment.createPrComment)({ body: 'PRs must meet all required approvals before entering the merge queue.' });
         return removePrFromQueue(pullRequest);
     }
-    const queuedPrs = yield getQueuedPullRequests();
+    const queuedPrs = await getQueuedPullRequests();
     const queuePosition = queuedPrs.length;
     if (pullRequest.labels.find(label => label.name === constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ)) {
         return updateMergeQueue(queuedPrs);
     }
-    if (!pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) {
-        yield addPrToQueue(pullRequest, queuePosition, skip_auto_merge);
+    if (!pullRequest.labels.find(label => label.name?.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee))) {
+        await addPrToQueue(pullRequest, queuePosition, skip_auto_merge);
     }
     const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH);
     if (isFirstQueuePosition) {
-        yield (0,prepare_queued_pr_for_merge.updatePrWithDefaultBranch)(pullRequest);
+        await (0,prepare_queued_pr_for_merge.updatePrWithDefaultBranch)(pullRequest);
     }
-    yield (0,set_commit_status.setCommitStatus)({
+    await (0,set_commit_status.setCommitStatus)({
         sha: pullRequest.head.sha,
         context: constants/* MERGE_QUEUE_STATUS */.Cb,
         state: isFirstQueuePosition ? 'success' : 'pending',
         description: isFirstQueuePosition ? 'This PR is next to merge.' : 'This PR is in line to merge.'
     });
     if (isFirstQueuePosition && slack_webhook_url && login) {
-        yield (0,notify_user/* notifyUser */.b)({
+        await (0,notify_user/* notifyUser */.b)({
             login,
             pull_number: github.context.issue.number,
             slack_webhook_url
         });
     }
-});
-const removePrFromQueue = (pullRequest) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const queueLabel = (_a = pullRequest.labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee); })) === null || _a === void 0 ? void 0 : _a.name;
+};
+const removePrFromQueue = async (pullRequest) => {
+    const queueLabel = pullRequest.labels.find(label => label.name?.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee))?.name;
     if (queueLabel) {
-        yield (0,bluebird.map)([constants/* READY_FOR_MERGE_PR_LABEL */.Ak, queueLabel], (label) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () { return (0,remove_label.removeLabelIfExists)(label, pullRequest.number); }));
-        yield (0,set_commit_status.setCommitStatus)({
+        await (0,bluebird.map)([constants/* READY_FOR_MERGE_PR_LABEL */.Ak, queueLabel], async (label) => (0,remove_label.removeLabelIfExists)(label, pullRequest.number));
+        await (0,set_commit_status.setCommitStatus)({
             sha: pullRequest.head.sha,
             context: constants/* MERGE_QUEUE_STATUS */.Cb,
             state: 'pending',
             description: 'This PR is not in the merge queue.'
         });
-        const queuedPrs = yield getQueuedPullRequests();
+        const queuedPrs = await getQueuedPullRequests();
         return updateMergeQueue(queuedPrs);
     }
-});
-const addPrToQueue = (pullRequest, queuePosition, skip_auto_merge) => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
-    yield octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`], issue_number: github.context.issue.number }, github.context.repo));
+};
+const addPrToQueue = async (pullRequest, queuePosition, skip_auto_merge) => {
+    await octokit/* octokit.issues.addLabels */.K.issues.addLabels({
+        labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.Ee} #${queuePosition}`],
+        issue_number: github.context.issue.number,
+        ...github.context.repo
+    });
     if (skip_auto_merge == 'true') {
         core.info('Skipping auto merge per configuration.');
         return;
     }
-    yield enableAutoMerge(pullRequest.node_id);
-});
-const getQueuedPullRequests = () => manage_merge_queue_awaiter(void 0, void 0, void 0, function* () {
-    const openPullRequests = yield (0,paginate_open_pull_requests/* paginateAllOpenPullRequests */.P)();
+    await enableAutoMerge(pullRequest.node_id);
+};
+const getQueuedPullRequests = async () => {
+    const openPullRequests = await (0,paginate_open_pull_requests/* paginateAllOpenPullRequests */.P)();
     return openPullRequests.filter(pr => pr.labels.some(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak));
-});
-const enableAutoMerge = (pullRequestId_1, ...args_2) => manage_merge_queue_awaiter(void 0, [pullRequestId_1, ...args_2], void 0, function* (pullRequestId, mergeMethod = 'SQUASH') {
+};
+const enableAutoMerge = async (pullRequestId, mergeMethod = 'SQUASH') => {
     try {
-        yield (0,octokit/* octokitGraphql */.o)(`
+        await (0,octokit/* octokitGraphql */.o)(`
     mutation {
       enablePullRequestAutoMerge(input: { pullRequestId: "${pullRequestId}", mergeMethod: ${mergeMethod} }) {
         clientMutationId
@@ -530,7 +516,7 @@ const enableAutoMerge = (pullRequestId_1, ...args_2) => manage_merge_queue_await
         core.warning('Auto merge could not be enabled. Perhaps you need to enable auto-merge on your repo?');
         core.warning(error);
     }
-});
+};
 
 
 /***/ }),
@@ -562,38 +548,33 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
+
+
+
+
+
+const prepareQueuedPrForMerge = async () => {
+    const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.list */ .K.pulls.list({
+        state: 'open',
+        per_page: 100,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo
     });
-};
-
-
-
-
-
-const prepareQueuedPrForMerge = () => __awaiter(void 0, void 0, void 0, function* () {
-    const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', per_page: 100 }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
     const pullRequest = findNextPrToMerge(data);
     if (pullRequest) {
         return updatePrWithDefaultBranch(pullRequest);
     }
-});
-const findNextPrToMerge = (pullRequests) => {
-    var _a;
-    return (_a = pullRequests.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_1__/* .JUMP_THE_QUEUE_PR_LABEL */ .nJ]))) !== null && _a !== void 0 ? _a : pullRequests.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_1__/* .FIRST_QUEUED_PR_LABEL */ .IH]));
 };
+const findNextPrToMerge = (pullRequests) => pullRequests.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_1__/* .JUMP_THE_QUEUE_PR_LABEL */ .nJ])) ??
+    pullRequests.find(pr => hasRequiredLabels(pr, [_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, _constants__WEBPACK_IMPORTED_MODULE_1__/* .FIRST_QUEUED_PR_LABEL */ .IH]));
 const hasRequiredLabels = (pr, requiredLabels) => requiredLabels.every(mergeQueueLabel => pr.labels.some(label => label.name === mergeQueueLabel));
-const updatePrWithDefaultBranch = (pullRequest) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
-    if (((_a = pullRequest.head.user) === null || _a === void 0 ? void 0 : _a.login) && ((_b = pullRequest.base.user) === null || _b === void 0 ? void 0 : _b.login) && ((_c = pullRequest.head.user) === null || _c === void 0 ? void 0 : _c.login) !== ((_d = pullRequest.base.user) === null || _d === void 0 ? void 0 : _d.login)) {
+const updatePrWithDefaultBranch = async (pullRequest) => {
+    if (pullRequest.head.user?.login && pullRequest.base.user?.login && pullRequest.head.user?.login !== pullRequest.base.user?.login) {
         try {
             // update fork default branch with upstream
-            yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.mergeUpstream */ .K.repos.mergeUpstream(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo), { branch: pullRequest.base.repo.default_branch }));
+            await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.mergeUpstream */ .K.repos.mergeUpstream({
+                ..._actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo,
+                branch: pullRequest.base.repo.default_branch
+            });
         }
         catch (error) {
             if (error.status === 409) {
@@ -604,19 +585,23 @@ const updatePrWithDefaultBranch = (pullRequest) => __awaiter(void 0, void 0, voi
         }
     }
     try {
-        yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.merge */ .K.repos.merge(Object.assign({ base: pullRequest.head.ref, head: 'HEAD' }, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo));
+        await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.merge */ .K.repos.merge({
+            base: pullRequest.head.ref,
+            head: 'HEAD',
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo
+        });
     }
     catch (error) {
         const noEvictUponConflict = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getBooleanInput('no_evict_upon_conflict');
         if (error.status === 409) {
             if (!noEvictUponConflict)
-                yield (0,_manage_merge_queue__WEBPACK_IMPORTED_MODULE_4__.removePrFromQueue)(pullRequest);
+                await (0,_manage_merge_queue__WEBPACK_IMPORTED_MODULE_4__.removePrFromQueue)(pullRequest);
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('The first PR in the queue has a merge conflict.');
         }
         else
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
     }
-});
+};
 
 
 /***/ }),
@@ -648,15 +633,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -667,17 +643,21 @@ class RemoveLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .Helpe
         this.label = '';
     }
 }
-const removeLabel = (_a) => __awaiter(void 0, [_a], void 0, function* ({ label }) { return removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number); });
-const removeLabelIfExists = (labelName, issue_number) => __awaiter(void 0, void 0, void 0, function* () {
+const removeLabel = async ({ label }) => removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number);
+const removeLabelIfExists = async (labelName, issue_number) => {
     try {
-        yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel(Object.assign({ name: labelName, issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+        await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel({
+            name: labelName,
+            issue_number,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        });
     }
     catch (error) {
         if (error.status === 404) {
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Label is not present on PR.');
         }
     }
-});
+};
 
 
 /***/ }),
@@ -710,15 +690,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -732,22 +703,30 @@ class SetCommitStatus extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .H
         this.state = '';
     }
 }
-const setCommitStatus = (_a) => __awaiter(void 0, [_a], void 0, function* ({ sha, context, state, description, target_url, skip_if_already_set }) {
-    yield (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(context.split('\n').filter(Boolean), (context) => __awaiter(void 0, void 0, void 0, function* () {
+const setCommitStatus = async ({ sha, context, state, description, target_url, skip_if_already_set }) => {
+    await (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(context.split('\n').filter(Boolean), async (context) => {
         if (skip_if_already_set === 'true') {
-            const check_runs = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.checks.listForRef */ .K.checks.listForRef(Object.assign(Object.assign({}, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), { ref: sha }));
+            const check_runs = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.checks.listForRef */ .K.checks.listForRef({
+                ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+                ref: sha
+            });
             const run = check_runs.data.check_runs.find(({ name }) => name === context);
-            const runCompletedAndIsValid = (run === null || run === void 0 ? void 0 : run.status) === 'completed' && ((run === null || run === void 0 ? void 0 : run.conclusion) === 'failure' || (run === null || run === void 0 ? void 0 : run.conclusion) === 'success');
+            const runCompletedAndIsValid = run?.status === 'completed' && (run?.conclusion === 'failure' || run?.conclusion === 'success');
             if (runCompletedAndIsValid) {
                 _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`${context} already completed with a ${run.conclusion} conclusion.`);
                 return;
             }
         }
-        _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus(Object.assign({ sha,
-            context, state: state, description,
-            target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
-    }));
-});
+        _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.createCommitStatus */ .K.repos.createCommitStatus({
+            sha,
+            context,
+            state: state,
+            description,
+            target_url,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        });
+    });
+};
 
 
 /***/ }),
@@ -854,29 +833,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
-const getChangedFilepaths = (pull_number, ignore_deleted) => __awaiter(void 0, void 0, void 0, function* () {
-    const changedFiles = yield paginateAllChangedFilepaths(pull_number);
+const getChangedFilepaths = async (pull_number, ignore_deleted) => {
+    const changedFiles = await paginateAllChangedFilepaths(pull_number);
     const filesToMap = ignore_deleted ? changedFiles.filter(file => file.status !== 'removed') : changedFiles;
     return filesToMap.map(file => file.filename);
-});
-const paginateAllChangedFilepaths = (pull_number_1, ...args_1) => __awaiter(void 0, [pull_number_1, ...args_1], void 0, function* (pull_number, page = 1) {
-    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number, per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+};
+const paginateAllChangedFilepaths = async (pull_number, page = 1) => {
+    const response = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles({
+        pull_number,
+        per_page: 100,
+        page,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo
+    });
     if (!response.data.length) {
         return [];
     }
-    return response.data.concat(yield paginateAllChangedFilepaths(pull_number, page + 1));
-});
+    return response.data.concat(await paginateAllChangedFilepaths(pull_number, page + 1));
+};
 
 
 /***/ }),
@@ -913,15 +888,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -930,32 +896,29 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-const getCoreMemberLogins = (pull_number, teams) => __awaiter(void 0, void 0, void 0, function* () {
-    const codeOwners = teams !== null && teams !== void 0 ? teams : getCodeOwnersFromEntries(yield getRequiredCodeOwnersEntries(pull_number));
-    const teamsAndLogins = yield getCoreTeamsAndLogins(codeOwners);
+const getCoreMemberLogins = async (pull_number, teams) => {
+    const codeOwners = teams ?? getCodeOwnersFromEntries(await getRequiredCodeOwnersEntries(pull_number));
+    const teamsAndLogins = await getCoreTeamsAndLogins(codeOwners);
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(teamsAndLogins.map(({ login }) => login));
-});
-const getRequiredCodeOwnersEntries = (pull_number) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const codeOwners = (_a = (yield (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd()))) !== null && _a !== void 0 ? _a : [];
-    const changedFilePaths = yield (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__/* .getChangedFilepaths */ .s)(pull_number);
+};
+const getRequiredCodeOwnersEntries = async (pull_number) => {
+    const codeOwners = (await (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd())) ?? [];
+    const changedFilePaths = await (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__/* .getChangedFilepaths */ .s)(pull_number);
     return changedFilePaths.map(filePath => (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.matchFile)(filePath, codeOwners)).filter(Boolean);
-});
-const getCoreTeamsAndLogins = (codeOwners) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!(codeOwners === null || codeOwners === void 0 ? void 0 : codeOwners.length)) {
+};
+const getCoreTeamsAndLogins = async (codeOwners) => {
+    if (!codeOwners?.length) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No code owners found. Please provide a "teams" input or set up a CODEOWNERS file in your repo.');
         throw new Error();
     }
-    const teamsAndLogins = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(codeOwners, (team) => __awaiter(void 0, void 0, void 0, function* () {
-        return _octokit__WEBPACK_IMPORTED_MODULE_6__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
-            org: _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo.owner,
-            team_slug: team,
-            per_page: 100
-        })
-            .then(listMembersResponse => listMembersResponse.data.map(({ login }) => ({ team, login })));
-    }));
+    const teamsAndLogins = await (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(codeOwners, async (team) => _octokit__WEBPACK_IMPORTED_MODULE_6__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
+        org: _actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo.owner,
+        team_slug: team,
+        per_page: 100
+    })
+        .then(listMembersResponse => listMembersResponse.data.map(({ login }) => ({ team, login }))));
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.union)(...teamsAndLogins);
-});
+};
 const getCodeOwnersFromEntries = (codeOwnersEntries) => {
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(codeOwnersEntries
         .map(entry => entry.owners)
@@ -991,29 +954,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
 
-const notifyUser = (_a) => __awaiter(void 0, [_a], void 0, function* ({ login, pull_number, slack_webhook_url }) {
+const notifyUser = async ({ login, pull_number, slack_webhook_url }) => {
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Notifying user ${login}...`);
-    const { data: { email } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.users.getByUsername */ .K.users.getByUsername({ username: login });
+    const { data: { email } } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.users.getByUsername */ .K.users.getByUsername({ username: login });
     if (!email) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`No github email found for user ${login}. Ensure you have set your email to be publicly visible on your Github profile.`);
         return;
     }
-    const { data: { title, html_url } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    const { data: { title, html_url } } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get({ pull_number, ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo });
     try {
-        yield axios__WEBPACK_IMPORTED_MODULE_3__/* ["default"].post */ .Z.post(slack_webhook_url, {
+        await axios__WEBPACK_IMPORTED_MODULE_3__/* ["default"].post */ .Z.post(slack_webhook_url, {
             assignee: email,
             title,
             html_url,
@@ -1024,7 +978,7 @@ const notifyUser = (_a) => __awaiter(void 0, [_a], void 0, function* ({ login, p
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.warning('User notification failed');
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.warning(error);
     }
-});
+};
 
 
 /***/ }),
@@ -1050,24 +1004,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
+
+
+const paginateAllOpenPullRequests = async (page = 1) => {
+    const response = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.list */ .K.pulls.list({
+        state: 'open',
+        sort: 'updated',
+        direction: 'desc',
+        per_page: 100,
+        page,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
     });
-};
-
-
-const paginateAllOpenPullRequests = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* (page = 1) {
-    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', sort: 'updated', direction: 'desc', per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     if (!response.data.length) {
         return [];
     }
-    return response.data.concat(yield paginateAllOpenPullRequests(page + 1));
-});
+    return response.data.concat(await paginateAllOpenPullRequests(page + 1));
+};
 
 
 /***/ })

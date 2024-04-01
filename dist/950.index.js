@@ -124,28 +124,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
+
+
+
+
+const paginateAllPrioritizedIssues = async () => (await (0,bluebird.map)(constants/* PRIORITY_LABELS */.rF, async (label) => await paginateIssuesOfSpecificPriority(label))).flat();
+const paginateIssuesOfSpecificPriority = async (label, page = 1) => {
+    const response = await octokit/* octokit.issues.listForRepo */.K.issues.listForRepo({
+        state: 'open',
+        sort: 'created',
+        direction: 'desc',
+        per_page: 100,
+        labels: label,
+        page,
+        ...github.context.repo
     });
-};
-
-
-
-
-const paginateAllPrioritizedIssues = () => __awaiter(void 0, void 0, void 0, function* () { return (yield (0,bluebird.map)(constants/* PRIORITY_LABELS */.rF, (label) => __awaiter(void 0, void 0, void 0, function* () { return yield paginateIssuesOfSpecificPriority(label); }))).flat(); });
-const paginateIssuesOfSpecificPriority = (label_1, ...args_1) => __awaiter(void 0, [label_1, ...args_1], void 0, function* (label, page = 1) {
-    var _a;
-    const response = yield octokit/* octokit.issues.listForRepo */.K.issues.listForRepo(Object.assign({ state: 'open', sort: 'created', direction: 'desc', per_page: 100, labels: label, page }, github.context.repo));
-    if (!((_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.length)) {
+    if (!response?.data?.length) {
         return [];
     }
-    return response.data.concat(yield paginateIssuesOfSpecificPriority(label, page + 1));
-});
+    return response.data.concat(await paginateIssuesOfSpecificPriority(label, page + 1));
+};
 
 ;// CONCATENATED MODULE: ./src/utils/paginate-comments-on-issue.ts
 /*
@@ -160,25 +158,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var paginate_comments_on_issue_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
+
+
+const paginateAllCommentsOnIssue = async (issue_number, page = 1) => {
+    const response = await octokit/* octokit.issues.listComments */.K.issues.listComments({
+        issue_number,
+        sort: 'created',
+        direction: 'desc',
+        per_page: 100,
+        page,
+        ...github.context.repo
     });
-};
-
-
-const paginateAllCommentsOnIssue = (issue_number_1, ...args_1) => paginate_comments_on_issue_awaiter(void 0, [issue_number_1, ...args_1], void 0, function* (issue_number, page = 1) {
-    var _a;
-    const response = yield octokit/* octokit.issues.listComments */.K.issues.listComments(Object.assign({ issue_number, sort: 'created', direction: 'desc', per_page: 100, page }, github.context.repo));
-    if (!((_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.length)) {
+    if (!response?.data?.length) {
         return [];
     }
-    return response.data.concat(yield paginateAllCommentsOnIssue(issue_number, page + 1));
-});
+    return response.data.concat(await paginateAllCommentsOnIssue(issue_number, page + 1));
+};
 
 ;// CONCATENATED MODULE: ./src/utils/add-due-date-comment.ts
 /*
@@ -193,35 +188,34 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var add_due_date_comment_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
+
+
+
+
+const addDueDateComment = async (deadline, createdDate, issue_number) => {
+    const commentList = await paginateAllCommentsOnIssue(issue_number);
+    if (!commentList?.find((comment) => comment.body?.startsWith('This issue is due on'))) {
+        const dueDate = new Date(createdDate.getTime() + deadline * constants/* SECONDS_IN_A_DAY */.K5);
+        await octokit/* octokit.issues.createComment */.K.issues.createComment({
+            issue_number,
+            body: `This issue is due on ${dueDate.toDateString()}`,
+            ...github.context.repo
+        });
+    }
+};
+const pingAssigneesForDueDate = async (assignees, labelToAdd, issue_number) => {
+    const commentList = await paginateAllCommentsOnIssue(issue_number);
+    assignees?.map(async (assignee) => {
+        const commentToAdd = `@${assignee.name || assignee.login}, this issue assigned to you is now ${labelToAdd.toLowerCase()}`;
+        if (!commentList?.find((comment) => comment.body === commentToAdd)) {
+            await octokit/* octokit.issues.createComment */.K.issues.createComment({
+                issue_number,
+                body: commentToAdd,
+                ...github.context.repo
+            });
+        }
     });
 };
-
-
-
-
-const addDueDateComment = (deadline, createdDate, issue_number) => add_due_date_comment_awaiter(void 0, void 0, void 0, function* () {
-    const commentList = yield paginateAllCommentsOnIssue(issue_number);
-    if (!(commentList === null || commentList === void 0 ? void 0 : commentList.find((comment) => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.startsWith('This issue is due on'); }))) {
-        const dueDate = new Date(createdDate.getTime() + deadline * constants/* SECONDS_IN_A_DAY */.K5);
-        yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: `This issue is due on ${dueDate.toDateString()}` }, github.context.repo));
-    }
-});
-const pingAssigneesForDueDate = (assignees, labelToAdd, issue_number) => add_due_date_comment_awaiter(void 0, void 0, void 0, function* () {
-    const commentList = yield paginateAllCommentsOnIssue(issue_number);
-    assignees === null || assignees === void 0 ? void 0 : assignees.map((assignee) => add_due_date_comment_awaiter(void 0, void 0, void 0, function* () {
-        const commentToAdd = `@${assignee.name || assignee.login}, this issue assigned to you is now ${labelToAdd.toLowerCase()}`;
-        if (!(commentList === null || commentList === void 0 ? void 0 : commentList.find((comment) => comment.body === commentToAdd))) {
-            yield octokit/* octokit.issues.createComment */.K.issues.createComment(Object.assign({ issue_number, body: commentToAdd }, github.context.repo));
-        }
-    }));
-});
 
 // EXTERNAL MODULE: ./src/helpers/remove-label.ts
 var remove_label = __webpack_require__(61);
@@ -238,15 +232,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var manage_issue_due_dates_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -257,14 +242,14 @@ var manage_issue_due_dates_awaiter = (undefined && undefined.__awaiter) || funct
 
 class ManageIssueDueDates extends generated/* HelperInputs */.s {
 }
-const manageIssueDueDates = (_a) => manage_issue_due_dates_awaiter(void 0, [_a], void 0, function* ({ days = '7' }) {
-    const openIssues = yield paginateAllPrioritizedIssues();
+const manageIssueDueDates = async ({ days = '7' }) => {
+    const openIssues = await paginateAllPrioritizedIssues();
     const warningThreshold = Number(days);
     const getFirstPriorityLabelFoundOnIssue = (issueLabels) => constants/* PRIORITY_LABELS.find */.rF.find(priorityLabel => issueLabels.some(issueLabel => {
         const labelName = typeof issueLabel === 'string' ? issueLabel : issueLabel.name;
         return labelName === priorityLabel;
     }));
-    yield (0,bluebird.map)(openIssues, (issue) => manage_issue_due_dates_awaiter(void 0, void 0, void 0, function* () {
+    await (0,bluebird.map)(openIssues, async (issue) => {
         const { labels, created_at, assignees, number: issue_number } = issue;
         const priority = getFirstPriorityLabelFoundOnIssue(labels);
         const alreadyHasOverdueLabel = Boolean(labels.find(label => {
@@ -278,17 +263,21 @@ const manageIssueDueDates = (_a) => manage_issue_due_dates_awaiter(void 0, [_a],
         const createdDate = new Date(created_at);
         const daysSinceCreation = Math.ceil((Date.now() - createdDate.getTime()) / constants/* SECONDS_IN_A_DAY */.K5);
         const deadline = constants/* PRIORITY_TO_DAYS_MAP */.gd[priority];
-        yield addDueDateComment(deadline, createdDate, issue_number);
+        await addDueDateComment(deadline, createdDate, issue_number);
         const labelToAdd = daysSinceCreation > deadline ? constants/* OVERDUE_ISSUE */.wH : daysSinceCreation > deadline - warningThreshold ? constants/* ALMOST_OVERDUE_ISSUE */.aT : undefined;
         if (labelToAdd) {
-            assignees && (yield pingAssigneesForDueDate(assignees, labelToAdd, issue_number));
+            assignees && (await pingAssigneesForDueDate(assignees, labelToAdd, issue_number));
             if (labelToAdd === constants/* OVERDUE_ISSUE */.wH) {
                 (0,remove_label.removeLabelIfExists)(constants/* ALMOST_OVERDUE_ISSUE */.aT, issue_number);
             }
-            yield octokit/* octokit.issues.addLabels */.K.issues.addLabels(Object.assign({ labels: [labelToAdd], issue_number }, github.context.repo));
+            await octokit/* octokit.issues.addLabels */.K.issues.addLabels({
+                labels: [labelToAdd],
+                issue_number,
+                ...github.context.repo
+            });
         }
-    }));
-});
+    });
+};
 
 
 /***/ }),
@@ -320,15 +309,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -339,17 +319,21 @@ class RemoveLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .Helpe
         this.label = '';
     }
 }
-const removeLabel = (_a) => __awaiter(void 0, [_a], void 0, function* ({ label }) { return removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number); });
-const removeLabelIfExists = (labelName, issue_number) => __awaiter(void 0, void 0, void 0, function* () {
+const removeLabel = async ({ label }) => removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number);
+const removeLabelIfExists = async (labelName, issue_number) => {
     try {
-        yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel(Object.assign({ name: labelName, issue_number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+        await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.removeLabel */ .K.issues.removeLabel({
+            name: labelName,
+            issue_number,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        });
     }
     catch (error) {
         if (error.status === 404) {
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Label is not present on PR.');
         }
     }
-});
+};
 
 
 /***/ }),

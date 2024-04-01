@@ -117,15 +117,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -134,15 +125,19 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 class AddLateReviewLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_5__/* .HelperInputs */ .s {
 }
-const addLateReviewLabel = (_a) => __awaiter(void 0, [_a], void 0, function* ({ days = '1' }) {
-    const openPullRequests = yield (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__/* .paginateAllOpenPullRequests */ .P)();
+const addLateReviewLabel = async ({ days = '1' }) => {
+    const openPullRequests = await (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__/* .paginateAllOpenPullRequests */ .P)();
     return (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(openPullRequests, pr => {
         if (!isLabelNeeded(pr, Number(days))) {
             return;
         }
-        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: [_constants__WEBPACK_IMPORTED_MODULE_0__/* .LATE_REVIEW */ .fy], issue_number: pr.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+        return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.addLabels */ .K.issues.addLabels({
+            labels: [_constants__WEBPACK_IMPORTED_MODULE_0__/* .LATE_REVIEW */ .fy],
+            issue_number: pr.number,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        });
     });
-});
+};
 const isLabelNeeded = ({ requested_reviewers, requested_teams, updated_at }, days) => {
     const last_updated = new Date(updated_at);
     const now = new Date();
@@ -234,24 +229,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
+
+
+const paginateAllOpenPullRequests = async (page = 1) => {
+    const response = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.list */ .K.pulls.list({
+        state: 'open',
+        sort: 'updated',
+        direction: 'desc',
+        per_page: 100,
+        page,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
     });
-};
-
-
-const paginateAllOpenPullRequests = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* (page = 1) {
-    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit.pulls.list */ .K.pulls.list(Object.assign({ state: 'open', sort: 'updated', direction: 'desc', per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
     if (!response.data.length) {
         return [];
     }
-    return response.data.concat(yield paginateAllOpenPullRequests(page + 1));
-});
+    return response.data.concat(await paginateAllOpenPullRequests(page + 1));
+};
 
 
 /***/ })
