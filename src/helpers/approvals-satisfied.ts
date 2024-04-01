@@ -23,6 +23,7 @@ import { paginateAllReviews } from '../utils/paginate-all-reviews';
 
 export class ApprovalsSatisfied extends HelperInputs {
   teams?: string;
+  users?: string;
   number_of_reviewers?: string;
   pull_number?: string;
 }
@@ -37,23 +38,28 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
   core.debug(`PR already approved by: ${approverLogins.toString()}`);
 
   const teamsList = teams?.split('\n');
-  const requiredCodeOwnersEntries = teamsList ? createArtificialCodeOwnersEntry(teamsList) : await getRequiredCodeOwnersEntries(prNumber);
+  const usersList = users?.split('\n');
+  const requiredCodeOwnersEntries = (teamsList || usersList) ? createArtificialCodeOwnersEntry(teamsList, usersList) : await getRequiredCodeOwnersEntries(prNumber);
   const requiredCodeOwnersEntriesWithOwners = requiredCodeOwnersEntries.filter(({ owners }) => owners.length);
 
   const codeOwnersEntrySatisfiesApprovals = async (entry: Pick<CodeOwnersEntry, 'owners'>) => {
-    const teamsAndLoginsLists = await map(entry.owners, async team => {
-      const { data } = await octokit.teams.listMembersInOrg({
-        org: context.repo.owner,
-        team_slug: convertToTeamSlug(team),
-        per_page: 100
-      });
-      return data.map(({ login }) => ({ team, login }));
+    const loginsLists = await map(entry.owners, async entity => {
+      if (entity.contains("/")) {
+        const { data } = await octokit.teams.listMembersInOrg({
+          org: context.repo.owner,
+          team_slug: convertToTeamSlug(team),
+          per_page: 100
+        });
+        return data.map(({ login }) => login);
+      } else {
+        return [entity];
+      }
     });
-    const codeOwnerLogins = teamsAndLoginsLists.flat().map(({ login }) => login);
+    const codeOwnerLogins = distinct(loginsLists.flat());
 
-    const numberOfCollectiveApprovalsAcrossTeams = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
+    const numberOfCollectiveApprovalsAcrossTeamsAndUsers = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
     const numberOfApprovalsForSingleTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
-    const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovalsAcrossTeams : numberOfApprovalsForSingleTeam;
+    const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovalsAcrossTeamsAndUsers : numberOfApprovalsForSingleTeam;
 
     core.debug(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
 
@@ -65,4 +71,5 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
   return booleans.every(Boolean);
 };
 
-const createArtificialCodeOwnersEntry = (teams: string[]) => teams.map(team => ({ owners: [team] }));
+const createArtificialCodeOwnersEntry = (teams?: string[], users?: String[]) => ({ owners: (teams || []).concat(users || []) });
+const distinct = (arrayWithDuplicates: string[]) => arrayWithDuplicates.filter((n, i) => arrayWithDuplicates.indexOf(n) === i);
