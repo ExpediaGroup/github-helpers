@@ -53,7 +53,6 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
     const codeOwnerLogins = distinct(loginsLists.flat());
 
     const numberOfCollectiveApprovalsAcrossTeamsAndUsers = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
-    const numberOfApprovalsForSingleTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
     const numberOfApprovals = numberOfCollectiveApprovalsAcrossTeamsAndUsers;
 
     core.debug(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
