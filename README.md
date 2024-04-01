@@ -246,6 +246,10 @@ Additionally, the following parameters can be used for additional control over t
 
 -   Determines whether the pipeline is clear for a PR. This means it will set the "pipeline" commit status to `pending` if there is an in-progress production deployment for the repo, and `success` otherwise.
 
+### [update-check-result](.github/workflows/update-check-result.yml)
+-
+- Updates the result of a previous PR check tied to a commit status.
+
 ## Legal
 
 This project is available under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0.html).

@@ -30,7 +30,7 @@ inputs:
     description: 'The status context or contexts for updating commit status. Multiple contexts must be newline separated'
     required: false
   state:
-    description: 'The state for updating commit status. Can be pending, success, or failure'
+    description: 'The state for updating commit status. Typically will be "success" or "failure"'
     required: false
   description:
     description: 'A description'

@@ -28,6 +28,7 @@ export type PullRequestBranchesList = RestEndpointMethodTypes['repos']['listBran
 export type ChangedFilesList = RestEndpointMethodTypes['pulls']['listFiles']['response']['data'];
 export type ProjectListResponse = RestEndpointMethodTypes['projects']['listForRepo']['response'];
 export type ColumnListResponse = RestEndpointMethodTypes['projects']['listColumns']['response'];
+export type ChecksUpdateConclusion = RestEndpointMethodTypes['checks']['update']['parameters']['conclusion'];
 
 export type GithubError = {
   status: number;
