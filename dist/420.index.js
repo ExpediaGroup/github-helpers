@@ -114,15 +114,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -134,18 +125,29 @@ class InitiateDeployment extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/*
         this.environment = '';
     }
 }
-const initiateDeployment = (_a) => __awaiter(void 0, [_a], void 0, function* ({ sha, state = 'in_progress', environment, environment_url, description, target_url }) {
-    const { data } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createDeployment */ .K.repos.createDeployment(Object.assign(Object.assign({ ref: sha, environment, auto_merge: false, required_contexts: [] }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
+const initiateDeployment = async ({ sha, state = 'in_progress', environment, environment_url, description, target_url }) => {
+    const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createDeployment */ .K.repos.createDeployment({
+        ref: sha,
+        environment,
+        auto_merge: false,
+        required_contexts: [],
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+        ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc
+    });
     const deployment_id = 'ref' in data ? data.id : undefined;
     if (deployment_id) {
-        yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createDeploymentStatus */ .K.repos.createDeploymentStatus(Object.assign(Object.assign({ state,
+        await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.createDeploymentStatus */ .K.repos.createDeploymentStatus({
+            state,
             deployment_id,
             description,
             environment_url,
-            target_url }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), _constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc));
+            target_url,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+            ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc
+        });
     }
     return deployment_id;
-});
+};
 
 
 /***/ }),

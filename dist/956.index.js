@@ -116,15 +116,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
@@ -132,15 +123,18 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 class CheckPrTitle extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .s {
 }
-const checkPrTitle = (_a) => __awaiter(void 0, [_a], void 0, function* ({ pattern = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PR_TITLE_REGEX */ .HW }) {
+const checkPrTitle = async ({ pattern = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PR_TITLE_REGEX */ .HW }) => {
     const regex = new RegExp(pattern);
-    const { data: { title } } = yield _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
+    const { data: { title } } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get({
+        pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+    });
     if (regex.test(title)) {
         return true;
     }
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.setFailed)(`Pull request title does not meet requirements. The title must match the following regex: ${pattern}`);
     return false;
-});
+};
 
 
 /***/ }),

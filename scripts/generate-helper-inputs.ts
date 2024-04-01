@@ -1,8 +1,8 @@
-import { parse } from 'https://deno.land/std@0.82.0/encoding/yaml.ts';
-import { COPYRIGHT_HEADER } from '../src/constants.ts';
+import { load } from 'js-yaml';
+import { COPYRIGHT_HEADER } from '../src/constants';
 
-const yamlContents = Deno.readTextFileSync('action.yml');
-const inputs = (parse(yamlContents) as { inputs: { [input: string]: { description: string; required: boolean }} }).inputs
+const yamlContents = await Bun.file('action.yml').text();
+const inputs = (load(yamlContents) as { inputs: { [input: string]: { description: string; required: boolean }} }).inputs
 
 const newContents = `${COPYRIGHT_HEADER}
 
@@ -11,4 +11,4 @@ ${Object.keys(inputs).map(input => `  ${input}?: string;`).join('\n')}
 }
 `
 
-Deno.writeTextFileSync('src/types/generated.ts', newContents);
+await Bun.write('src/types/generated.ts', newContents);

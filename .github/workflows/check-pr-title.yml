@@ -13,11 +13,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Deno
-        uses: denoland/setup-deno@v1
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
 
       - name: Validate PR Title Contains Valid Descriptor
-        run: deno run -A scripts/verify-pr-title-has-valid-descriptor.ts
+        run: bun ./scripts/verify-pr-title-has-valid-descriptor.ts
         env:
           TITLE: ${{ github.event.pull_request.title }}
 

@@ -36,7 +36,11 @@ class AddLabels extends _types_generated__WEBPACK_IMPORTED_MODULE_2__/* .HelperI
         this.labels = '';
     }
 }
-const addLabels = ({ labels }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.addLabels */ .K.issues.addLabels(Object.assign({ labels: labels.split('\n'), issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+const addLabels = ({ labels }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.issues.addLabels */ .K.issues.addLabels({
+    labels: labels.split('\n'),
+    issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number,
+    ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo
+});
 
 
 /***/ }),

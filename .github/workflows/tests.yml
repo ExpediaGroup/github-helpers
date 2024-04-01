@@ -24,11 +24,11 @@ jobs:
             dependencies
             devDependencies
 
-      - name: Setup Deno
-        uses: denoland/setup-deno@v1
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
 
       - name: Validate Copyright Headers
-        run: deno run -A scripts/verify-file-headers.ts
+        run: bun ./scripts/verify-file-headers.ts
 
       - name: Setup Node
         uses: actions/setup-node@v4

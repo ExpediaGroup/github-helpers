@@ -31,25 +31,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
 
 
-const rerunPrChecks = () => __awaiter(void 0, void 0, void 0, function* () {
+const rerunPrChecks = async () => {
     /** grab owner in case of fork branch */
-    const { data: { head: { user: { login: owner }, sha: latestHash, ref: branch } } } = yield _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.get */ .K.pulls.get(Object.assign({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo));
-    const workflowRunResponses = yield (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(['pull_request', 'pull_request_target'], event => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.actions.listWorkflowRunsForRepo */ .K.actions.listWorkflowRunsForRepo(Object.assign(Object.assign({ branch }, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo), { owner,
-        event, per_page: 100, status: 'completed' })));
+    const { data: { head: { user: { login: owner }, sha: latestHash, ref: branch } } } = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.get */ .K.pulls.get({
+        pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+    });
+    const workflowRunResponses = await (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(['pull_request', 'pull_request_target'], event => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.actions.listWorkflowRunsForRepo */ .K.actions.listWorkflowRunsForRepo({
+        branch,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+        owner,
+        event,
+        per_page: 100,
+        status: 'completed'
+    }));
     const workflowRuns = workflowRunResponses.map(response => response.data.workflow_runs).flat();
     if (!workflowRuns.length) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`No workflow runs found on branch ${branch} on ${owner}/${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo}`);
@@ -57,17 +57,17 @@ const rerunPrChecks = () => __awaiter(void 0, void 0, void 0, function* () {
     }
     const latestWorkflowRuns = workflowRuns.filter(({ head_sha }) => head_sha === latestHash);
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`There are ${latestWorkflowRuns.length} checks associated with the latest commit, triggering reruns...`);
-    return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(latestWorkflowRuns, (_a) => __awaiter(void 0, [_a], void 0, function* ({ id, name, rerun_url }) {
+    return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(latestWorkflowRuns, async ({ id, name, rerun_url }) => {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`- Rerunning ${name} (${id})`);
-        yield (0,_octokit_request__WEBPACK_IMPORTED_MODULE_4__.request)(`POST ${rerun_url}`, {
+        await (0,_octokit_request__WEBPACK_IMPORTED_MODULE_4__.request)(`POST ${rerun_url}`, {
             headers: {
                 authorization: `token ${_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token')}`
             }
         }).catch(error => {
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
         });
-    }));
-});
+    });
+};
 
 
 /***/ }),

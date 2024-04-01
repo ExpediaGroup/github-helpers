@@ -27,25 +27,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
 class GetChangedFiles extends _types_generated__WEBPACK_IMPORTED_MODULE_2__/* .HelperInputs */ .s {
 }
-const getChangedFiles = (_a) => __awaiter(void 0, [_a], void 0, function* ({ pattern, delimiter = ',', ignore_deleted }) {
-    const filePaths = yield (0,_utils_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_1__/* .getChangedFilepaths */ .s)(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number, Boolean(ignore_deleted));
+const getChangedFiles = async ({ pattern, delimiter = ',', ignore_deleted }) => {
+    const filePaths = await (0,_utils_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_1__/* .getChangedFilepaths */ .s)(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number, Boolean(ignore_deleted));
     const filteredFilePaths = pattern ? filePaths.filter(fileName => fileName.match(pattern)) : filePaths;
     return filteredFilePaths.join(delimiter);
-});
+};
 
 
 /***/ }),
@@ -129,29 +120,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
-const getChangedFilepaths = (pull_number, ignore_deleted) => __awaiter(void 0, void 0, void 0, function* () {
-    const changedFiles = yield paginateAllChangedFilepaths(pull_number);
+const getChangedFilepaths = async (pull_number, ignore_deleted) => {
+    const changedFiles = await paginateAllChangedFilepaths(pull_number);
     const filesToMap = ignore_deleted ? changedFiles.filter(file => file.status !== 'removed') : changedFiles;
     return filesToMap.map(file => file.filename);
-});
-const paginateAllChangedFilepaths = (pull_number_1, ...args_1) => __awaiter(void 0, [pull_number_1, ...args_1], void 0, function* (pull_number, page = 1) {
-    const response = yield _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles(Object.assign({ pull_number, per_page: 100, page }, _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo));
+};
+const paginateAllChangedFilepaths = async (pull_number, page = 1) => {
+    const response = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.listFiles */ .K.pulls.listFiles({
+        pull_number,
+        per_page: 100,
+        page,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo
+    });
     if (!response.data.length) {
         return [];
     }
-    return response.data.concat(yield paginateAllChangedFilepaths(pull_number, page + 1));
-});
+    return response.data.concat(await paginateAllChangedFilepaths(pull_number, page + 1));
+};
 
 
 /***/ })
