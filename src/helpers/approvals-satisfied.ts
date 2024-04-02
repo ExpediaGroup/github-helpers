@@ -28,7 +28,7 @@ export class ApprovalsSatisfied extends HelperInputs {
   pull_number?: string;
 }
 
-export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pull_number }: ApprovalsSatisfied = {}) => {
+export const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', pull_number }: ApprovalsSatisfied = {}) => {
   const prNumber = pull_number ? Number(pull_number) : context.issue.number;
   const reviews = await paginateAllReviews(prNumber);
   const approverLogins = reviews
@@ -39,21 +39,21 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
 
   const teamsList = teams?.split('\n');
   const usersList = users?.split('\n');
-  const requiredCodeOwnersEntries = (teamsList || usersList) ? createArtificialCodeOwnersEntry(teamsList, usersList) : await getRequiredCodeOwnersEntries(prNumber);
+  const requiredCodeOwnersEntries =
+    teamsList || usersList ? createArtificialCodeOwnersEntry(teamsList, usersList) : await getRequiredCodeOwnersEntries(prNumber);
   const requiredCodeOwnersEntriesWithOwners = requiredCodeOwnersEntries.filter(({ owners }) => owners.length);
 
   const codeOwnersEntrySatisfiesApprovals = async (entry: Pick<CodeOwnersEntry, 'owners'>) => {
     const loginsLists = await map(entry.owners, async teamOrUser => {
-      if (teamOrUser.contains("/")) {
-        return fetchTeamLogins(teamOrUser);
+      if (isTeam(teamOrUser)) {
+        return await fetchTeamLogins(teamOrUser);
       } else {
         return [teamOrUser];
       }
     });
     const codeOwnerLogins = distinct(loginsLists.flat());
 
-    const numberOfCollectiveApprovalsAcrossTeamsAndUsers = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
-    const numberOfApprovals = numberOfCollectiveApprovalsAcrossTeamsAndUsers;
+    const numberOfApprovals = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
 
     core.debug(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
 
@@ -65,13 +65,14 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
   return booleans.every(Boolean);
 };
 
-const createArtificialCodeOwnersEntry = (teams?: string[], users?: String[]) => ({ owners: (teams || []).concat(users || []) });
+const createArtificialCodeOwnersEntry = (teams?: string[], users?: string[]) => [{ owners: (teams || []).concat(users || []) }];
 const distinct = (arrayWithDuplicates: string[]) => arrayWithDuplicates.filter((n, i) => arrayWithDuplicates.indexOf(n) === i);
-const fetchTeamLogins = (team: string) => {
+const isTeam = (teamOrUser: string) => teamOrUser.includes('/');
+const fetchTeamLogins = async (team: string) => {
   const { data } = await octokit.teams.listMembersInOrg({
     org: context.repo.owner,
     team_slug: convertToTeamSlug(team),
     per_page: 100
   });
   return data.map(({ login }) => login);
-}
+};
