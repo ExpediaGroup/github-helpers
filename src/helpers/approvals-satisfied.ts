@@ -65,7 +65,7 @@ export const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '
   return booleans.every(Boolean);
 };
 
-const createArtificialCodeOwnersEntry = (teams?: string[], users?: string[]) => [{ owners: (teams || []).concat(users || []) }];
+const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }: { teams?: string[], users?: string[] }) => [{ owners: teams.concat(users) }];
 const distinct = (arrayWithDuplicates: string[]) => arrayWithDuplicates.filter((n, i) => arrayWithDuplicates.indexOf(n) === i);
 const isTeam = (teamOrUser: string) => teamOrUser.includes('/');
 const fetchTeamLogins = async (team: string) => {
