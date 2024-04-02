@@ -23,12 +23,21 @@ import { paginateAllReviews } from '../utils/paginate-all-reviews';
 
 export class ApprovalsSatisfied extends HelperInputs {
   teams?: string;
+  users?: string;
   number_of_reviewers?: string;
   pull_number?: string;
 }
 
-export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pull_number }: ApprovalsSatisfied = {}) => {
+export const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', pull_number }: ApprovalsSatisfied = {}) => {
   const prNumber = pull_number ? Number(pull_number) : context.issue.number;
+
+  const teamsList = updateTeamsList(teams?.split('\n'));
+  if (!validateTeamsList(teamsList)) {
+    core.setFailed('If teams input is in the format "org/team", then the org must be the same as the repository org');
+    return false;
+  }
+  const usersList = users?.split('\n');
+
   const reviews = await paginateAllReviews(prNumber);
   const approverLogins = reviews
     .filter(({ state }) => state === 'APPROVED')
@@ -36,24 +45,23 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
     .filter(Boolean);
   core.debug(`PR already approved by: ${approverLogins.toString()}`);
 
-  const teamsList = teams?.split('\n');
-  const requiredCodeOwnersEntries = teamsList ? createArtificialCodeOwnersEntry(teamsList) : await getRequiredCodeOwnersEntries(prNumber);
+  const requiredCodeOwnersEntries =
+    teamsList || usersList
+      ? createArtificialCodeOwnersEntry({ teams: teamsList, users: usersList })
+      : await getRequiredCodeOwnersEntries(prNumber);
   const requiredCodeOwnersEntriesWithOwners = requiredCodeOwnersEntries.filter(({ owners }) => owners.length);
 
   const codeOwnersEntrySatisfiesApprovals = async (entry: Pick<CodeOwnersEntry, 'owners'>) => {
-    const teamsAndLoginsLists = await map(entry.owners, async team => {
-      const { data } = await octokit.teams.listMembersInOrg({
-        org: context.repo.owner,
-        team_slug: convertToTeamSlug(team),
-        per_page: 100
-      });
-      return data.map(({ login }) => ({ team, login }));
+    const loginsLists = await map(entry.owners, async teamOrUser => {
+      if (isTeam(teamOrUser)) {
+        return await fetchTeamLogins(teamOrUser);
+      } else {
+        return [teamOrUser];
+      }
     });
-    const codeOwnerLogins = teamsAndLoginsLists.flat().map(({ login }) => login);
+    const codeOwnerLogins = distinct(loginsLists.flat());
 
-    const numberOfCollectiveApprovalsAcrossTeams = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
-    const numberOfApprovalsForSingleTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
-    const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovalsAcrossTeams : numberOfApprovalsForSingleTeam;
+    const numberOfApprovals = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
 
     core.debug(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
 
@@ -65,4 +73,34 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
   return booleans.every(Boolean);
 };
 
-const createArtificialCodeOwnersEntry = (teams: string[]) => [{ owners: teams }];
+const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }: { teams?: string[]; users?: string[] }) => [
+  { owners: teams.concat(users) }
+];
+const distinct = (arrayWithDuplicates: string[]) => arrayWithDuplicates.filter((n, i) => arrayWithDuplicates.indexOf(n) === i);
+const isTeam = (teamOrUser: string) => teamOrUser.includes('/');
+const fetchTeamLogins = async (team: string) => {
+  const { data } = await octokit.teams.listMembersInOrg({
+    org: context.repo.owner,
+    team_slug: convertToTeamSlug(team),
+    per_page: 100
+  });
+  return data.map(({ login }) => login);
+};
+const updateTeamsList = (teamsList?: string[]) => {
+  return teamsList?.map(team => {
+    if (!team.includes('/')) {
+      return `${context.repo.owner}/${team}`;
+    } else {
+      return team;
+    }
+  });
+};
+
+const validateTeamsList = (teamsList?: string[]) => {
+  return (
+    teamsList?.every(team => {
+      const inputOrg = team.split('/')[0];
+      return inputOrg === context.repo.owner;
+    }) ?? true
+  );
+};

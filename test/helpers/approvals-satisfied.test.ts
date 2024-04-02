@@ -15,6 +15,7 @@ import { Mocktokit } from '../types';
 import { approvalsSatisfied } from '../../src/helpers/approvals-satisfied';
 import { octokit } from '../../src/octokit';
 import { getRequiredCodeOwnersEntries } from '../../src/utils/get-core-member-logins';
+import * as core from '@actions/core';
 
 const ownerMap: { [key: string]: { data: { login: string }[] } } = {
   team1: { data: [{ login: 'user1' }] },
@@ -77,6 +78,13 @@ describe('approvalsSatisfied', () => {
     expect(result).toBe(true);
   });
 
+  it('should throw an error when passing teams override with full name and org is different than repo org', async () => {
+    const result = await approvalsSatisfied({ teams: 'owner/team2\nsomeOtherOrg/team1', pull_number: '12345' });
+    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(core.setFailed).toHaveBeenCalled();
+    expect(result).toBe(false);
+  });
+
   it('should return true when passing teams override and collective required approvals are met across multiple teams', async () => {
     mockPagination({
       data: [
@@ -91,6 +99,88 @@ describe('approvalsSatisfied', () => {
       ]
     });
     const result = await approvalsSatisfied({ teams: 'team1\nteam2', pull_number: '12345', number_of_reviewers: '2' });
+    expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
+    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(result).toBe(true);
+  });
+
+  it('should return false when passing users override and required approvals are not met', async () => {
+    mockPagination({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user3' }
+        }
+      ]
+    });
+
+    const result = await approvalsSatisfied({ users: 'user1', pull_number: '12345' });
+    expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
+    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(result).toBe(false);
+  });
+
+  it('should return true when passing users override and required approvals are met', async () => {
+    mockPagination({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user1' }
+        }
+      ]
+    });
+    const result = await approvalsSatisfied({ users: 'user1', pull_number: '12345' });
+    expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
+    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(result).toBe(true);
+  });
+
+  it('should return true when passing users override and required approvals are met when count > 1', async () => {
+    mockPagination({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user1' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user3' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user5' }
+        }
+      ]
+    });
+    const result = await approvalsSatisfied({ users: 'user1\nuser2\nuser3', pull_number: '12345', number_of_reviewers: '2' });
+    expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
+    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(result).toBe(true);
+  });
+
+  it('should return true when passing users and teams override and required approvals are met when count > 1', async () => {
+    mockPagination({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user1' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user3' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user5' }
+        }
+      ]
+    });
+    const result = await approvalsSatisfied({
+      users: 'user4\nuser2\nuser3',
+      teams: 'team1',
+      pull_number: '12345',
+      number_of_reviewers: '2'
+    });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
     expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(true);
@@ -171,6 +261,36 @@ describe('approvalsSatisfied', () => {
         {
           state: 'CHANGES_REQUESTED',
           user: { login: 'user3' }
+        }
+      ]
+    });
+    const result = await approvalsSatisfied();
+    expect(result).toBe(true);
+  });
+
+  it('should return true when a member from each owner group (teams and users) has approved', async () => {
+    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
+      { owners: ['@ExpediaGroup/team1'] },
+      { owners: ['@ExpediaGroup/team2'] },
+      { owners: ['@ExpediaGroup/team4', 'user10'] }
+    ]);
+    mockPagination({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user1' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user2' }
+        },
+        {
+          state: 'CHANGES_REQUESTED',
+          user: { login: 'user3' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user10' }
         }
       ]
     });

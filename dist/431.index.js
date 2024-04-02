@@ -80,30 +80,35 @@ limitations under the License.
 
 class ApprovalsSatisfied extends generated/* HelperInputs */.s {
 }
-const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pull_number } = {}) => {
+const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', pull_number } = {}) => {
     const prNumber = pull_number ? Number(pull_number) : github.context.issue.number;
+    const teamsList = updateTeamsList(teams?.split('\n'));
+    if (!validateTeamsList(teamsList)) {
+        core.setFailed('If teams input is in the format "org/team", then the org must be the same as the repository org');
+        return false;
+    }
+    const usersList = users?.split('\n');
     const reviews = await paginateAllReviews(prNumber);
     const approverLogins = reviews
         .filter(({ state }) => state === 'APPROVED')
         .map(({ user }) => user?.login)
         .filter(Boolean);
     core.debug(`PR already approved by: ${approverLogins.toString()}`);
-    const teamsList = teams?.split('\n');
-    const requiredCodeOwnersEntries = teamsList ? createArtificialCodeOwnersEntry(teamsList) : await (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.q)(prNumber);
+    const requiredCodeOwnersEntries = teamsList || usersList
+        ? createArtificialCodeOwnersEntry({ teams: teamsList, users: usersList })
+        : await (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.q)(prNumber);
     const requiredCodeOwnersEntriesWithOwners = requiredCodeOwnersEntries.filter(({ owners }) => owners.length);
     const codeOwnersEntrySatisfiesApprovals = async (entry) => {
-        const teamsAndLoginsLists = await (0,bluebird.map)(entry.owners, async (team) => {
-            const { data } = await octokit/* octokit.teams.listMembersInOrg */.K.teams.listMembersInOrg({
-                org: github.context.repo.owner,
-                team_slug: (0,convert_to_team_slug/* convertToTeamSlug */.$)(team),
-                per_page: 100
-            });
-            return data.map(({ login }) => ({ team, login }));
+        const loginsLists = await (0,bluebird.map)(entry.owners, async (teamOrUser) => {
+            if (isTeam(teamOrUser)) {
+                return await fetchTeamLogins(teamOrUser);
+            }
+            else {
+                return [teamOrUser];
+            }
         });
-        const codeOwnerLogins = teamsAndLoginsLists.flat().map(({ login }) => login);
-        const numberOfCollectiveApprovalsAcrossTeams = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
-        const numberOfApprovalsForSingleTeam = codeOwnerLogins.filter(login => approverLogins.includes(login)).length;
-        const numberOfApprovals = entry.owners.length > 1 ? numberOfCollectiveApprovalsAcrossTeams : numberOfApprovalsForSingleTeam;
+        const codeOwnerLogins = distinct(loginsLists.flat());
+        const numberOfApprovals = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
         core.debug(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
         return numberOfApprovals >= Number(number_of_reviewers);
     };
@@ -111,7 +116,35 @@ const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pull_numbe
     const booleans = await Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
     return booleans.every(Boolean);
 };
-const createArtificialCodeOwnersEntry = (teams) => [{ owners: teams }];
+const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }) => [
+    { owners: teams.concat(users) }
+];
+const distinct = (arrayWithDuplicates) => arrayWithDuplicates.filter((n, i) => arrayWithDuplicates.indexOf(n) === i);
+const isTeam = (teamOrUser) => teamOrUser.includes('/');
+const fetchTeamLogins = async (team) => {
+    const { data } = await octokit/* octokit.teams.listMembersInOrg */.K.teams.listMembersInOrg({
+        org: github.context.repo.owner,
+        team_slug: (0,convert_to_team_slug/* convertToTeamSlug */.$)(team),
+        per_page: 100
+    });
+    return data.map(({ login }) => login);
+};
+const updateTeamsList = (teamsList) => {
+    return teamsList?.map(team => {
+        if (!team.includes('/')) {
+            return `${github.context.repo.owner}/${team}`;
+        }
+        else {
+            return team;
+        }
+    });
+};
+const validateTeamsList = (teamsList) => {
+    return (teamsList?.every(team => {
+        const inputOrg = team.split('/')[0];
+        return inputOrg === github.context.repo.owner;
+    }) ?? true);
+};
 
 
 /***/ }),
