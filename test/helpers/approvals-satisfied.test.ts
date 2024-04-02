@@ -79,14 +79,6 @@ describe('approvalsSatisfied', () => {
   });
 
   it('should throw an error when passing teams override with full name and org is different than repo org', async () => {
-    mockPagination({
-      data: [
-        {
-          state: 'APPROVED',
-          user: { login: 'user1' }
-        }
-      ]
-    });
     const result = await approvalsSatisfied({ teams: 'owner/team2\nsomeOtherOrg/team1', pull_number: '12345' });
     expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(core.setFailed).toHaveBeenCalled();

@@ -168,18 +168,18 @@ class ApprovalsSatisfied extends generated/* HelperInputs */.s {
 }
 const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', pull_number } = {}) => {
     const prNumber = pull_number ? Number(pull_number) : github.context.issue.number;
-    const reviews = await paginateAllReviews(prNumber);
-    const approverLogins = reviews
-        .filter(({ state }) => state === 'APPROVED')
-        .map(({ user }) => user?.login)
-        .filter(Boolean);
-    core.debug(`PR already approved by: ${approverLogins.toString()}`);
     const teamsList = updateTeamsList(teams?.split('\n'));
     if (!validateTeamsList(teamsList)) {
         core.setFailed('Teams input must be in the format "org/team" or "team". The org must be the same as the repository owner.');
         return false;
     }
     const usersList = users?.split('\n');
+    const reviews = await paginateAllReviews(prNumber);
+    const approverLogins = reviews
+        .filter(({ state }) => state === 'APPROVED')
+        .map(({ user }) => user?.login)
+        .filter(Boolean);
+    core.debug(`PR already approved by: ${approverLogins.toString()}`);
     const requiredCodeOwnersEntries = teamsList || usersList
         ? createArtificialCodeOwnersEntry({ teams: teamsList, users: usersList })
         : await (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.q)(prNumber);
