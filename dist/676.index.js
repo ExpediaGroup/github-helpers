@@ -170,7 +170,7 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', pul
     const prNumber = pull_number ? Number(pull_number) : github.context.issue.number;
     const teamsList = updateTeamsList(teams?.split('\n'));
     if (!validateTeamsList(teamsList)) {
-        core.setFailed('Teams input must be in the format "org/team" or "team". The org must be the same as the repository owner.');
+        core.setFailed('If teams input is in the format "org/team", then the org must be the same as the repository org');
         return false;
     }
     const usersList = users?.split('\n');
@@ -232,14 +232,14 @@ const updateTeamsList = (teamsList) => {
 };
 const validateTeamsList = (teamsList) => {
     if (teamsList) {
-        teamsList.forEach(team => {
+        return teamsList.every(team => {
             const inputOrg = team.split('/')[0];
-            if (inputOrg !== github.context.repo.owner) {
-                return false;
-            }
+            return inputOrg === github.context.repo.owner;
         });
     }
-    return true;
+    else {
+        return true;
+    }
 };
 
 

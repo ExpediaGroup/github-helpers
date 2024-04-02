@@ -33,7 +33,7 @@ export const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '
 
   const teamsList = updateTeamsList(teams?.split('\n'));
   if (!validateTeamsList(teamsList)) {
-    core.setFailed('Teams input must be in the format "org/team" or "team". The org must be the same as the repository owner.');
+    core.setFailed('If teams input is in the format "org/team", then the org must be the same as the repository org');
     return false;
   }
   const usersList = users?.split('\n');
@@ -102,12 +102,11 @@ const updateTeamsList = (teamsList?: string[]) => {
 
 const validateTeamsList = (teamsList?: string[]) => {
   if (teamsList) {
-    teamsList.forEach(team => {
+    return teamsList.every(team => {
       const inputOrg = team.split('/')[0];
-      if (inputOrg !== context.repo.owner) {
-        return false;
-      }
+      return inputOrg === context.repo.owner;
     });
+  } else {
+    return true;
   }
-  return true;
 };
