@@ -184,6 +184,10 @@ Additionally, the following parameters can be used for additional control over t
 -   Returns a comma-separated list of changed files for a PR
 -   Include the regular expression parameter 'pattern' to add a filter, it will return any filepath that matches.
 
+### [get-merge-base](.github/workflows/get-merge-base.yml)
+
+-   Get merge base commit SHA for a PR
+
 ### [initiate-deployment](.github/workflows/deployments.yml#L12)
 
 -   Creates a new in-progress Github "deployment" for a commit. More information on Github deployment events can be found [here](https://docs.github.com/en/rest/reference/repos#deployments)
