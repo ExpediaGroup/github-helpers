@@ -71,6 +71,9 @@ inputs:
   teams:
     description: 'A list of github teams (newline separated)'
     required: false
+  users:
+    description: 'A list of github users (newline separated)'
+    required: false
   login:
     description: 'A github user login'
     required: false

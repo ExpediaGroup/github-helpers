@@ -35,6 +35,7 @@ export class HelperInputs {
   batches?: string;
   pattern?: string;
   teams?: string;
+  users?: string;
   login?: string;
   paths_no_filter?: string;
   slack_webhook_url?: string;
