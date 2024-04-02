@@ -38,7 +38,10 @@ export const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '
   core.debug(`PR already approved by: ${approverLogins.toString()}`);
 
   const teamsList = updateTeamsList(teams?.split('\n'));
-  validateTeamsList(teamsList);
+  if (!validateTeamsList(teamsList)) {
+    core.setFailed('Teams input must be in the format "org/team" or "team". The org must be the same as the repository owner.');
+    return false;
+  }
   const usersList = users?.split('\n');
   const requiredCodeOwnersEntries =
     teamsList || usersList
@@ -100,9 +103,9 @@ const validateTeamsList = (teamsList?: string[]) => {
     teamsList.forEach(team => {
       const inputOrg = team.split('/')[0];
       if (inputOrg !== context.repo.owner) {
-        core.setFailed('Teams input must be in the format "org/team" or "team". The org must be the same as the repository owner.');
-        throw new Error();
+        return false;
       }
     });
   }
+  return true;
 };

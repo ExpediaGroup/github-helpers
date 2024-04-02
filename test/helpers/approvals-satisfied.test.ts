@@ -87,9 +87,10 @@ describe('approvalsSatisfied', () => {
         }
       ]
     });
-    await approvalsSatisfied({ teams: 'owner/team2\nsomeOtherOrg/team1', pull_number: '12345' });
+    const result = await approvalsSatisfied({ teams: 'owner/team2\nsomeOtherOrg/team1', pull_number: '12345' });
     expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(core.setFailed).toHaveBeenCalled();
+    expect(result).toBe(false);
   });
 
   it('should return true when passing teams override and collective required approvals are met across multiple teams', async () => {
