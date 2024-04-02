@@ -111,7 +111,7 @@ const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pull_numbe
     const booleans = await Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
     return booleans.every(Boolean);
 };
-const createArtificialCodeOwnersEntry = (teams) => teams.map(team => ({ owners: [team] }));
+const createArtificialCodeOwnersEntry = (teams) => [{ owners: teams }];
 
 
 /***/ }),
