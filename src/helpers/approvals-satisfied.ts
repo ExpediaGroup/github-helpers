@@ -87,26 +87,20 @@ const fetchTeamLogins = async (team: string) => {
   return data.map(({ login }) => login);
 };
 const updateTeamsList = (teamsList?: string[]) => {
-  if (teamsList) {
-    return teamsList.map(team => {
-      if (!team.includes('/')) {
-        return `${context.repo.owner}/${team}`;
-      } else {
-        return team;
-      }
-    });
-  } else {
-    return undefined;
-  }
+  return teamsList?.map(team => {
+    if (!team.includes('/')) {
+      return `${context.repo.owner}/${team}`;
+    } else {
+      return team;
+    }
+  });
 };
 
 const validateTeamsList = (teamsList?: string[]) => {
-  if (teamsList) {
-    return teamsList.every(team => {
+  return (
+    teamsList?.every(team => {
       const inputOrg = team.split('/')[0];
       return inputOrg === context.repo.owner;
-    });
-  } else {
-    return true;
-  }
+    }) ?? true
+  );
 };
