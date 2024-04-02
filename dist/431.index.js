@@ -90,7 +90,9 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', pul
     core.debug(`PR already approved by: ${approverLogins.toString()}`);
     const teamsList = teams?.split('\n');
     const usersList = users?.split('\n');
-    const requiredCodeOwnersEntries = teamsList || usersList ? createArtificialCodeOwnersEntry(teamsList, usersList) : await (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.q)(prNumber);
+    const requiredCodeOwnersEntries = teamsList || usersList
+        ? createArtificialCodeOwnersEntry({ teams: teamsList, users: usersList })
+        : await (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.q)(prNumber);
     const requiredCodeOwnersEntriesWithOwners = requiredCodeOwnersEntries.filter(({ owners }) => owners.length);
     const codeOwnersEntrySatisfiesApprovals = async (entry) => {
         const loginsLists = await (0,bluebird.map)(entry.owners, async (teamOrUser) => {
@@ -110,7 +112,9 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', pul
     const booleans = await Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
     return booleans.every(Boolean);
 };
-const createArtificialCodeOwnersEntry = (teams, users) => [{ owners: (teams || []).concat(users || []) }];
+const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }) => [
+    { owners: teams.concat(users) }
+];
 const distinct = (arrayWithDuplicates) => arrayWithDuplicates.filter((n, i) => arrayWithDuplicates.indexOf(n) === i);
 const isTeam = (teamOrUser) => teamOrUser.includes('/');
 const fetchTeamLogins = async (team) => {

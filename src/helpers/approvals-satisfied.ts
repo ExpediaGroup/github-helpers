@@ -40,7 +40,9 @@ export const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '
   const teamsList = teams?.split('\n');
   const usersList = users?.split('\n');
   const requiredCodeOwnersEntries =
-    teamsList || usersList ? createArtificialCodeOwnersEntry(teamsList, usersList) : await getRequiredCodeOwnersEntries(prNumber);
+    teamsList || usersList
+      ? createArtificialCodeOwnersEntry({ teams: teamsList, users: usersList })
+      : await getRequiredCodeOwnersEntries(prNumber);
   const requiredCodeOwnersEntriesWithOwners = requiredCodeOwnersEntries.filter(({ owners }) => owners.length);
 
   const codeOwnersEntrySatisfiesApprovals = async (entry: Pick<CodeOwnersEntry, 'owners'>) => {
@@ -65,7 +67,9 @@ export const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '
   return booleans.every(Boolean);
 };
 
-const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }: { teams?: string[], users?: string[] }) => [{ owners: teams.concat(users) }];
+const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }: { teams?: string[]; users?: string[] }) => [
+  { owners: teams.concat(users) }
+];
 const distinct = (arrayWithDuplicates: string[]) => arrayWithDuplicates.filter((n, i) => arrayWithDuplicates.indexOf(n) === i);
 const isTeam = (teamOrUser: string) => teamOrUser.includes('/');
 const fetchTeamLogins = async (team: string) => {

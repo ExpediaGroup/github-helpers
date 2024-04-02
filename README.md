@@ -66,6 +66,7 @@ Each of the following helpers are defined in a file of the same name in `src/hel
 
 -   Returns `true` if the PR has been approved by the specified GitHub team(s) or user(s) and `false` otherwise
 -   If GitHub teams are omitted, uses `CODEOWNERS.md` to determine teams and/or users to use
+-   Note: Use full team name, not the team slug i.e. `org/team-name` not `team-name`
 
 ### [approve-pr](.github/workflows/approve-pr.yml)
 
