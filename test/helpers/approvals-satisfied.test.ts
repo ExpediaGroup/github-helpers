@@ -83,6 +83,10 @@ describe('approvalsSatisfied', () => {
         {
           state: 'APPROVED',
           user: { login: 'user1' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user2' }
         }
       ]
     });
