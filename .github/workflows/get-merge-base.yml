@@ -18,4 +18,4 @@ jobs:
         with:
           helper: get-merge-base
 
-      - run: echo "Merge Base is ${{ steps.changed.outputs.output }}"
+      - run: echo "Merge Base is ${{ steps.merge_base.outputs.output }}"
