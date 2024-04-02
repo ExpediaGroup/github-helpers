@@ -77,6 +77,25 @@ describe('approvalsSatisfied', () => {
     expect(result).toBe(true);
   });
 
+  it('should return true when passing teams override and collective required approvals are met across multiple teams', async () => {
+    mockPagination({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user1' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user2' }
+        }
+      ]
+    });
+    const result = await approvalsSatisfied({ teams: 'team1\nteam2', pull_number: '12345', number_of_reviewers: '2' });
+    expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
+    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(result).toBe(true);
+  });
+
   it('should return false when passing users override and required approvals are not met', async () => {
     mockPagination({
       data: [
