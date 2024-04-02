@@ -3,7 +3,7 @@ Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-    https://www.apache.org/licenses/LICENSE-2.0
+    https://www.apache.licenses/LICENSE-2.0
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,7 @@ import { Mocktokit } from '../types';
 import { approvalsSatisfied } from '../../src/helpers/approvals-satisfied';
 import { octokit } from '../../src/octokit';
 import { getRequiredCodeOwnersEntries } from '../../src/utils/get-core-member-logins';
+import * as core from '@actions/core';
 
 const ownerMap: { [key: string]: { data: { login: string }[] } } = {
   team1: { data: [{ login: 'user1' }] },
@@ -56,7 +57,7 @@ describe('approvalsSatisfied', () => {
       ]
     });
 
-    const result = await approvalsSatisfied({ teams: 'org/team1', pull_number: '12345' });
+    const result = await approvalsSatisfied({ teams: 'team1', pull_number: '12345' });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
     expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(false);
@@ -71,10 +72,24 @@ describe('approvalsSatisfied', () => {
         }
       ]
     });
-    const result = await approvalsSatisfied({ teams: 'org/team1', pull_number: '12345' });
+    const result = await approvalsSatisfied({ teams: 'team1', pull_number: '12345' });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
     expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(true);
+  });
+
+  it('should throw an error when passing teams override with full name and org is different than repo org', async () => {
+    mockPagination({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user1' }
+        }
+      ]
+    });
+    await approvalsSatisfied({ teams: 'owner/team2\nsomeOtherOrg/team1', pull_number: '12345' });
+    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(core.setFailed).toHaveBeenCalled();
   });
 
   it('should return true when passing teams override and collective required approvals are met across multiple teams', async () => {
@@ -90,7 +105,7 @@ describe('approvalsSatisfied', () => {
         }
       ]
     });
-    const result = await approvalsSatisfied({ teams: 'org/team1\norg/team2', pull_number: '12345', number_of_reviewers: '2' });
+    const result = await approvalsSatisfied({ teams: 'team1\nteam2', pull_number: '12345', number_of_reviewers: '2' });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
     expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(true);
@@ -169,7 +184,7 @@ describe('approvalsSatisfied', () => {
     });
     const result = await approvalsSatisfied({
       users: 'user4\nuser2\nuser3',
-      teams: 'org/team1',
+      teams: 'team1',
       pull_number: '12345',
       number_of_reviewers: '2'
     });
