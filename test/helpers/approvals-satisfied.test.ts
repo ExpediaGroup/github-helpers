@@ -86,7 +86,7 @@ describe('approvalsSatisfied', () => {
         }
       ]
     });
-    const result = await approvalsSatisfied({ teams: 'team1\nteam2', pull_number: '12345', number_of_reviewers: '2'});
+    const result = await approvalsSatisfied({ teams: 'team1\nteam2', pull_number: '12345', number_of_reviewers: '2' });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
     expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(true);

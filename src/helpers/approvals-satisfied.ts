@@ -65,4 +65,4 @@ export const approvalsSatisfied = async ({ teams, number_of_reviewers = '1', pul
   return booleans.every(Boolean);
 };
 
-const createArtificialCodeOwnersEntry = (teams: string[]) => { owners: teams };
+const createArtificialCodeOwnersEntry = (teams: string[]) => [{ owners: teams }];
