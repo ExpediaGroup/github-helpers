@@ -241,6 +241,36 @@ describe('approvalsSatisfied', () => {
     expect(result).toBe(true);
   });
 
+  it('should return true when a member from each owner group (teams and users) has approved', async () => {
+    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
+      { owners: ['@ExpediaGroup/team1'] },
+      { owners: ['@ExpediaGroup/team2'] },
+      { owners: ['@ExpediaGroup/team4', 'user10'] }
+    ]);
+    mockPagination({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user1' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user2' }
+        },
+        {
+          state: 'CHANGES_REQUESTED',
+          user: { login: 'user3' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user10' }
+        }
+      ]
+    });
+    const result = await approvalsSatisfied();
+    expect(result).toBe(true);
+  });
+
   it('should return false when not enough members from core teams have approved', async () => {
     (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
       { owners: ['@ExpediaGroup/team2'] },
