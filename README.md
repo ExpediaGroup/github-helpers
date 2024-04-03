@@ -125,11 +125,11 @@ The following parameters can be used for additional control over when it is safe
 
 ### [close-pr](.github/workflows/close-pr.yml)
 
--   Closes a pull request
+-   Closes a pull request in your current repo or in another repo.
 
 ### [create-pr](.github/workflows/create-pr.yml)
 
--   Opens a pull request
+-   Opens a pull request.
 
 ### [create-project-card](.github/workflows/create-project-card.yml)
 
@@ -143,7 +143,7 @@ The following parameters can be used for additional control over when it is safe
 
 ### [create-pr-comment](.github/workflows/create-pr-comment.yml)
 
--   Comments on a pull request or other issue
+-   Comments on a pull request or other issue in your current repo or in another repo
 
 ### [delete-stale-branches](.github/workflows/delete-stale-branches.yml)
 
@@ -209,6 +209,7 @@ Additionally, the following parameters can be used for additional control over t
     -   When a PR is merged, it automatically updates the first-queued PR with the default branch.
 -   You can also pass `login` and `slack_webhook_url` to notify the PR author when they are in the 1st position of the merge queue.
 -   Passing `skip_auto_merge: true` changes the default behaviour of automatically enabling auto-merge for PRs from the merge queue. In such case auto-merging should be enabled manually on individual PRs. It can be useful to avoid unattended deployments in case of CICD pipelines which are not fully prepared for continuous deployment.
+
 ### [move-project-card](.github/workflows/move-project-card.yml)
 
 -   Moves a GitHub Project card to a new column, using the `project_origin_column_name` and`project_destination_column_name` you provide.
@@ -248,8 +249,9 @@ Additionally, the following parameters can be used for additional control over t
 -   Determines whether the pipeline is clear for a PR. This means it will set the "pipeline" commit status to `pending` if there is an in-progress production deployment for the repo, and `success` otherwise.
 
 ### [update-check-result](.github/workflows/update-check-result.yml)
+
 -
-- Updates the result of a previous PR check tied to a commit status.
+-   Updates the result of a previous PR check tied to a commit status.
 
 ## Legal
 

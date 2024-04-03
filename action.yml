@@ -134,6 +134,12 @@ inputs:
   skip_auto_merge:
     description: 'Do not enable auto-merge automatically for the PRs from the merge queue'
     required: false
+  repo_name:
+    description: 'Repository to interact with'
+    required: false
+  repo_owner_name:
+    description: 'Organization in which repository is stored'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'
