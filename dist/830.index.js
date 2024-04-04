@@ -120,14 +120,18 @@ limitations under the License.
 
 class ClosePr extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .s {
 }
-const closePr = async ({ body } = {}) => {
+const closePr = async ({ body, pull_number, repo_name, repo_owner_name } = {}) => {
+    if ((repo_name || repo_owner_name) && !pull_number) {
+        throw new Error('pull_number is required when repo_name or repo_owner_name is provided');
+    }
     if (body) {
-        await (0,_create_pr_comment__WEBPACK_IMPORTED_MODULE_2__.createPrComment)({ body });
+        await (0,_create_pr_comment__WEBPACK_IMPORTED_MODULE_2__.createPrComment)({ body, pull_number, repo_name, repo_owner_name });
     }
     return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.pulls.update */ .K.pulls.update({
-        pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number,
-        state: 'closed',
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo
+        pull_number: pull_number ? Number(pull_number) : _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number,
+        repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo,
+        owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner,
+        state: 'closed'
     });
 };
 
@@ -170,48 +174,53 @@ class CreatePrComment extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .H
     }
 }
 const emptyResponse = { data: [] };
-const getPrsByCommit = async (sha) => {
+const getFirstPrByCommit = async (sha, repo_name, repo_owner_name) => {
     const prs = (sha &&
         (await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.repos.listPullRequestsAssociatedWithCommit */ .K.repos.listPullRequestsAssociatedWithCommit({
             commit_sha: sha,
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner,
             ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .Cc
         }))) ||
         emptyResponse;
     return prs.data.find(Boolean)?.number;
 };
-const getCommentByUser = async (login) => {
+const getCommentByUser = async (login, pull_number, repo_name, repo_owner_name) => {
     const comments = (login &&
         (await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.listComments */ .K.issues.listComments({
-            issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number,
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+            issue_number: pull_number ? Number(pull_number) : _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number,
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner
         }))) ||
         emptyResponse;
     return comments.data.find(comment => comment?.user?.login === login)?.id;
 };
-const createPrComment = async ({ body, sha, login }) => {
+const createPrComment = async ({ body, sha, login, pull_number, repo_name, repo_owner_name }) => {
+    const defaultPrNumber = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number;
     if (!sha && !login) {
         return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.createComment */ .K.issues.createComment({
             body,
-            issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number,
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+            issue_number: pull_number ? Number(pull_number) : defaultPrNumber,
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner
         });
     }
-    const defaultPrNumber = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number;
-    const prNumber = (await getPrsByCommit(sha)) ?? defaultPrNumber;
-    const commentId = await getCommentByUser(login);
+    const prNumber = (await getFirstPrByCommit(sha, repo_name, repo_owner_name)) ?? (pull_number ? Number(pull_number) : defaultPrNumber);
+    const commentId = await getCommentByUser(login, pull_number, repo_name, repo_owner_name);
     if (commentId) {
         return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.updateComment */ .K.issues.updateComment({
             comment_id: commentId,
             body,
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner
         });
     }
     else {
         return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.issues.createComment */ .K.issues.createComment({
             body,
             issue_number: prNumber,
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner
         });
     }
 };
