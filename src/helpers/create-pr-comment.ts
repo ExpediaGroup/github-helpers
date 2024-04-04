@@ -20,16 +20,20 @@ export class CreatePrComment extends HelperInputs {
   body = '';
   sha?: string;
   login?: string;
+  pull_number?: string;
+  repo_name?: string;
+  repo_owner_name?: string;
 }
 
 const emptyResponse = { data: [] };
 
-const getPrsByCommit = async (sha?: string) => {
+const getFirstPrByCommit = async (sha?: string, repo_name?: string, repo_owner_name?: string) => {
   const prs =
     (sha &&
       (await octokit.repos.listPullRequestsAssociatedWithCommit({
         commit_sha: sha,
-        ...context.repo,
+        repo: repo_name ?? context.repo.repo,
+        owner: repo_owner_name ?? context.repo.owner,
         ...GITHUB_OPTIONS
       }))) ||
     emptyResponse;
@@ -37,42 +41,47 @@ const getPrsByCommit = async (sha?: string) => {
   return prs.data.find(Boolean)?.number;
 };
 
-const getCommentByUser = async (login?: string) => {
+const getCommentByUser = async (login?: string, pull_number?: string, repo_name?: string, repo_owner_name?: string) => {
   const comments =
     (login &&
       (await octokit.issues.listComments({
-        issue_number: context.issue.number,
-        ...context.repo
+        issue_number: pull_number ? Number(pull_number) : context.issue.number,
+        repo: repo_name ?? context.repo.repo,
+        owner: repo_owner_name ?? context.repo.owner
       }))) ||
     emptyResponse;
 
   return comments.data.find(comment => comment?.user?.login === login)?.id;
 };
 
-export const createPrComment = async ({ body, sha, login }: CreatePrComment) => {
+export const createPrComment = async ({ body, sha, login, pull_number, repo_name, repo_owner_name }: CreatePrComment) => {
+  const defaultPrNumber = context.issue.number;
+
   if (!sha && !login) {
     return octokit.issues.createComment({
       body,
-      issue_number: context.issue.number,
-      ...context.repo
+      issue_number: pull_number ? Number(pull_number) : defaultPrNumber,
+      repo: repo_name ?? context.repo.repo,
+      owner: repo_owner_name ?? context.repo.owner
     });
   }
 
-  const defaultPrNumber = context.issue.number;
-  const prNumber = (await getPrsByCommit(sha)) ?? defaultPrNumber;
-  const commentId = await getCommentByUser(login);
+  const prNumber = (await getFirstPrByCommit(sha, repo_name, repo_owner_name)) ?? (pull_number ? Number(pull_number) : defaultPrNumber);
+  const commentId = await getCommentByUser(login, pull_number, repo_name, repo_owner_name);
 
   if (commentId) {
     return octokit.issues.updateComment({
       comment_id: commentId,
       body,
-      ...context.repo
+      repo: repo_name ?? context.repo.repo,
+      owner: repo_owner_name ?? context.repo.owner
     });
   } else {
     return octokit.issues.createComment({
       body,
       issue_number: prNumber,
-      ...context.repo
+      repo: repo_name ?? context.repo.repo,
+      owner: repo_owner_name ?? context.repo.owner
     });
   }
 };
