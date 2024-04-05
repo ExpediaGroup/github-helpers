@@ -64,7 +64,7 @@ jest.mock('@actions/github', () => ({
 }));
 
 describe('createPrComment', () => {
-  describe('create comment case', () => {
+  describe('create comment in same PR', () => {
     const body = 'body';
 
     beforeEach(() => {
@@ -76,6 +76,23 @@ describe('createPrComment', () => {
         body,
         issue_number: 123,
         ...context.repo
+      });
+    });
+  });
+
+  describe('create comment in other repo', () => {
+    const body = 'body';
+
+    beforeEach(() => {
+      createPrComment({ body, repo_name: 'another-repo', repo_owner_name: 'another-owner', pull_number: '456' });
+    });
+
+    it('should call createComment with correct params', () => {
+      expect(octokit.issues.createComment).toHaveBeenCalledWith({
+        body,
+        issue_number: 456,
+        repo: 'another-repo',
+        owner: 'another-owner'
       });
     });
   });

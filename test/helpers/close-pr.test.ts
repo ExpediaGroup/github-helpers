@@ -28,7 +28,7 @@ jest.mock('@actions/github', () => ({
 }));
 
 describe('closePr', () => {
-  describe('without comment', () => {
+  describe('without comment in the same PR', () => {
     beforeEach(() => {
       closePr();
     });
@@ -46,7 +46,44 @@ describe('closePr', () => {
     });
   });
 
-  describe('with comment', () => {
+  describe('without comment in different PR', () => {
+    beforeEach(() => {
+      closePr({ pull_number: '456' });
+    });
+
+    it('should not call createPrComment', () => {
+      expect(createPrComment).not.toHaveBeenCalled();
+    });
+
+    it('should call pulls.update with correct params', () => {
+      expect(octokit.pulls.update).toHaveBeenCalledWith({
+        pull_number: 456,
+        state: 'closed',
+        ...context.repo
+      });
+    });
+  });
+
+  describe('without comment in different repo', () => {
+    beforeEach(() => {
+      closePr({ repo_name: 'another-repo', repo_owner_name: 'another-owner', pull_number: '456' });
+    });
+
+    it('should not call createPrComment', () => {
+      expect(createPrComment).not.toHaveBeenCalled();
+    });
+
+    it('should call pulls.update with correct params', () => {
+      expect(octokit.pulls.update).toHaveBeenCalledWith({
+        pull_number: 456,
+        state: 'closed',
+        repo: 'another-repo',
+        owner: 'another-owner'
+      });
+    });
+  });
+
+  describe('with comment in the same PR', () => {
     const body = 'some comment';
 
     beforeEach(() => {
@@ -62,6 +99,52 @@ describe('closePr', () => {
         pull_number: 123,
         state: 'closed',
         ...context.repo
+      });
+    });
+  });
+
+  describe('with comment in different PR', () => {
+    const body = 'some comment';
+
+    beforeEach(() => {
+      closePr({ body, pull_number: '456' });
+    });
+
+    it('should call createPrComment', () => {
+      expect(createPrComment).toHaveBeenCalledWith({ body, pull_number: '456' });
+    });
+
+    it('should call pulls.update with correct params', () => {
+      expect(octokit.pulls.update).toHaveBeenCalledWith({
+        pull_number: 456,
+        state: 'closed',
+        ...context.repo
+      });
+    });
+  });
+
+  describe('with comment in different repo', () => {
+    const body = 'some comment';
+
+    beforeEach(() => {
+      closePr({ body, repo_name: 'another-repo', repo_owner_name: 'another-owner', pull_number: '456' });
+    });
+
+    it('should call createPrComment', () => {
+      expect(createPrComment).toHaveBeenCalledWith({
+        body,
+        repo_name: 'another-repo',
+        repo_owner_name: 'another-owner',
+        pull_number: '456'
+      });
+    });
+
+    it('should call pulls.update with correct params', () => {
+      expect(octokit.pulls.update).toHaveBeenCalledWith({
+        pull_number: 456,
+        state: 'closed',
+        repo: 'another-repo',
+        owner: 'another-owner'
       });
     });
   });
