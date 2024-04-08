@@ -4189,7 +4189,7 @@ var import_endpoint = __webpack_require__(9440);
 var import_universal_user_agent = __webpack_require__(5030);
 
 // pkg/dist-src/version.js
-var VERSION = "8.2.0";
+var VERSION = "8.3.1";
 
 // pkg/dist-src/is-plain-object.js
 function isPlainObject(value) {
