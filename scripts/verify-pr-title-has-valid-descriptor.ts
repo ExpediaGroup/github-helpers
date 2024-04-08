@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { sync } from 'glob';
 
 const title = process.env.TITLE;

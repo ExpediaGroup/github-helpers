@@ -56,4 +56,6 @@ export class HelperInputs {
   ignore_deleted?: string;
   return_full_payload?: string;
   skip_auto_merge?: string;
+  repo_name?: string;
+  repo_owner_name?: string;
 }

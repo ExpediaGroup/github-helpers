@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { sync } from 'glob';
 import { filter } from 'bluebird';
 

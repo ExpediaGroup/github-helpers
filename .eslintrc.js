@@ -1,9 +1,8 @@
-{
+module.exports = {
   "plugins": [
     "jest",
     "@typescript-eslint",
-    "functional",
-    "promise"
+    "functional"
   ],
   "extends": [
     "plugin:@typescript-eslint/recommended"
@@ -17,7 +16,6 @@
   "rules": {
     "prefer-arrow-callback": "error",
     "no-trailing-spaces": "error",
-    "promise/prefer-await-to-then": "error",
     "eslint-comments/no-use": "off",
     "import/named": "off",
     "import/no-namespace": "off",
@@ -67,9 +65,5 @@
     "functional/immutable-data": "error",
     "functional/no-let": "error"
   },
-  "env": {
-    "node": true,
-    "es6": true,
-    "jest/globals": true
-  }
+  ignorePatterns: ["dist", "node_modules"],
 }
