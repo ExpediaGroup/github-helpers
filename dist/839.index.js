@@ -14,6 +14,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3476);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(250);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
+/* eslint-disable functional/immutable-data */
+/* eslint-disable functional/no-let */
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,11 +36,45 @@ class GenerateMatrix extends _types_generated__WEBPACK_IMPORTED_MODULE_1__/* .He
         this.paths = '';
     }
 }
-const generateMatrix = ({ paths, batches = '1' }) => {
+const generateMatrix = ({ paths, batches: _batches = '1', load_balancing_sizes }) => {
     const matrixValues = paths.split(/[\n,]/);
-    return {
-        include: (0,lodash__WEBPACK_IMPORTED_MODULE_0__.chunk)(matrixValues, Math.ceil(matrixValues.length / Number(batches))).map(chunk => ({ path: chunk.join(',') }))
-    };
+    const batches = Number(_batches);
+    if (!load_balancing_sizes) {
+        return {
+            include: (0,lodash__WEBPACK_IMPORTED_MODULE_0__.chunk)(matrixValues, Math.ceil(matrixValues.length / batches)).map(chunk => ({ path: chunk.join(',') }))
+        };
+    }
+    else {
+        const loadBalancingSizes = load_balancing_sizes.split(/[\n,]/).map(size => Number(size));
+        if (loadBalancingSizes.length !== matrixValues.length)
+            throw new Error('load_balancing_sizes have the same length as paths');
+        const targetLoadSize = loadBalancingSizes.reduce((acc, size) => acc + size, 0) / batches;
+        const loadBalancedPaths = [];
+        let currentLoadSize = 0;
+        let currentBatch = [];
+        matrixValues.forEach((path, index) => {
+            const possibleLoadSize = currentLoadSize + loadBalancingSizes[index];
+            if (Math.abs(possibleLoadSize - targetLoadSize) <= Math.abs(loadBalancingSizes[index] - targetLoadSize)) {
+                currentLoadSize += loadBalancingSizes[index];
+                currentBatch.push(path);
+            }
+            else {
+                loadBalancedPaths.push(currentBatch.join(','));
+                currentBatch = [path];
+                currentLoadSize = loadBalancingSizes[index];
+            }
+            if (currentLoadSize >= targetLoadSize) {
+                loadBalancedPaths.push(currentBatch.join(','));
+                currentBatch = [];
+                currentLoadSize = 0;
+            }
+        });
+        if (currentBatch.length > 0)
+            loadBalancedPaths.push(currentBatch.join(','));
+        return {
+            include: loadBalancedPaths.map(path => ({ path }))
+        };
+    }
 };
 
 

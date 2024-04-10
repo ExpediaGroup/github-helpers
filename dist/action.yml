@@ -140,6 +140,8 @@ inputs:
   repo_owner_name:
     description: 'Organization in which repository is stored'
     required: false
+  load_balancing_sizes:
+    description: 'A list of sizes (integers) for load balancing (newline/comma separated). Should map directly to inputted paths list'
 outputs:
   output:
     description: 'The output of the helper'
