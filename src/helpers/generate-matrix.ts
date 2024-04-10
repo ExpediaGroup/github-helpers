@@ -29,32 +29,32 @@ export const generateMatrix = ({ paths, batches: _batches = '1', load_balancing_
     return {
       include: chunk(matrixValues, Math.ceil(matrixValues.length / batches)).map(chunk => ({ path: chunk.join(',') }))
     };
-  } else {
-    const loadBalancingSizes = load_balancing_sizes.split(/[\n,]/).map(size => Number(size));
-    if (loadBalancingSizes.length !== matrixValues.length) throw new Error('load_balancing_sizes have the same length as paths');
-    const targetLoadSize = loadBalancingSizes.reduce((acc, size) => acc + size, 0) / batches;
-    const loadBalancedPaths: string[] = [];
-    let currentLoadSize = 0;
-    let currentBatch: string[] = [];
-    matrixValues.forEach((path, index) => {
-      const possibleLoadSize = currentLoadSize + loadBalancingSizes[index];
-      if (Math.abs(possibleLoadSize - targetLoadSize) <= Math.abs(loadBalancingSizes[index] - targetLoadSize)) {
-        currentLoadSize += loadBalancingSizes[index];
-        currentBatch.push(path);
-      } else {
-        loadBalancedPaths.push(currentBatch.join(','));
-        currentBatch = [path];
-        currentLoadSize = loadBalancingSizes[index];
-      }
-      if (currentLoadSize >= targetLoadSize) {
-        loadBalancedPaths.push(currentBatch.join(','));
-        currentBatch = [];
-        currentLoadSize = 0;
-      }
-    });
-    if (currentBatch.length > 0) loadBalancedPaths.push(currentBatch.join(','));
-    return {
-      include: loadBalancedPaths.map(path => ({ path }))
-    };
   }
+  const loadBalancingSizes = load_balancing_sizes.split(/[\n,]/).map(size => Number(size));
+  if (loadBalancingSizes.length !== matrixValues.length)
+    throw new Error('load_balancing_sizes input must have the same length as paths input');
+  const targetLoadSize = loadBalancingSizes.reduce((acc, size) => acc + size, 0) / batches;
+  const loadBalancedPaths: string[] = [];
+  let currentLoadSize = 0;
+  let currentBatch: string[] = [];
+  matrixValues.forEach((path, index) => {
+    const possibleLoadSize = currentLoadSize + loadBalancingSizes[index];
+    if (Math.abs(possibleLoadSize - targetLoadSize) <= Math.abs(loadBalancingSizes[index] - targetLoadSize)) {
+      currentLoadSize += loadBalancingSizes[index];
+      currentBatch.push(path);
+    } else {
+      loadBalancedPaths.push(currentBatch.join(','));
+      currentBatch = [path];
+      currentLoadSize = loadBalancingSizes[index];
+    }
+    if (currentLoadSize >= targetLoadSize) {
+      loadBalancedPaths.push(currentBatch.join(','));
+      currentBatch = [];
+      currentLoadSize = 0;
+    }
+  });
+  if (currentBatch.length > 0) loadBalancedPaths.push(currentBatch.join(','));
+  return {
+    include: loadBalancedPaths.map(path => ({ path }))
+  };
 };

@@ -37,7 +37,7 @@ describe('generateMatrix', () => {
     });
   });
 
-  it('should generate matrix json with appropriate load balancing in naive case', () => {
+  it('should generate matrix json with appropriate load balancing in small case', () => {
     const result = generateMatrix({
       paths: 'path/1,path/2,path/3,path/4',
       load_balancing_sizes: '3,1,1,1',
@@ -55,7 +55,7 @@ describe('generateMatrix', () => {
     });
   });
 
-  it('should generate matrix json with appropriate load balancing in moderate case', () => {
+  it('should generate matrix json with appropriate load balancing in medium case', () => {
     const result = generateMatrix({
       paths: 'path/1,path/2,path/3,path/4,path/5,path/6',
       load_balancing_sizes: '2,4,1,12,6,2',
@@ -76,7 +76,7 @@ describe('generateMatrix', () => {
     });
   });
 
-  it('should generate matrix json with appropriate load balancing in advanced case', () => {
+  it('should generate matrix json with appropriate load balancing in larger case', () => {
     const result = generateMatrix({
       paths: 'path/1,path/2,path/3,path/4,path/5,path/6,path/7,path/8,path/9,path/10,path/11,path/12',
       load_balancing_sizes: '2,4,1,12,6,2,3,5,1,17,4,2',
