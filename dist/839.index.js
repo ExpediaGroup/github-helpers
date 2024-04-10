@@ -14,8 +14,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3476);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(250);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
-/* eslint-disable functional/immutable-data */
-/* eslint-disable functional/no-let */
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,6 +26,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+/* eslint-disable functional/immutable-data */
+/* eslint-disable functional/no-let */
 
 
 class GenerateMatrix extends _types_generated__WEBPACK_IMPORTED_MODULE_1__/* .HelperInputs */ .s {
