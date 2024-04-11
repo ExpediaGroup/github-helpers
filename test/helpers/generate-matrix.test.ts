@@ -102,4 +102,28 @@ describe('generateMatrix', () => {
       ]
     });
   });
+
+  it("shouldn't load balance if the number of paths is lower than the desired batches", () => {
+    const result = generateMatrix({
+      paths: 'path/1,path/2,path/3,path/4',
+      load_balancing_sizes: '2,2,1,12',
+      batches: '8'
+    });
+    expect(result).toEqual({
+      include: [
+        {
+          path: 'path/1'
+        },
+        {
+          path: 'path/2'
+        },
+        {
+          path: 'path/3'
+        },
+        {
+          path: 'path/4'
+        }
+      ]
+    });
+  });
 });
