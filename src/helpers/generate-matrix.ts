@@ -15,7 +15,7 @@ limitations under the License.
 /* eslint-disable functional/no-let */
 
 import { HelperInputs } from '../types/generated';
-import { chunk } from 'lodash';
+import { chunk, sum } from 'lodash';
 
 export class GenerateMatrix extends HelperInputs {
   paths = '';
@@ -26,7 +26,7 @@ export class GenerateMatrix extends HelperInputs {
 export const generateMatrix = ({ paths, batches: _batches = '1', load_balancing_sizes }: GenerateMatrix) => {
   const matrixValues = paths.split(/[\n,]/);
   const batches = Number(_batches);
-  if (!load_balancing_sizes) {
+  if (!load_balancing_sizes || matrixValues.length <= batches) {
     return {
       include: chunk(matrixValues, Math.ceil(matrixValues.length / batches)).map(chunk => ({ path: chunk.join(',') }))
     };
@@ -34,7 +34,7 @@ export const generateMatrix = ({ paths, batches: _batches = '1', load_balancing_
   const loadBalancingSizes = load_balancing_sizes.split(/[\n,]/).map(size => Number(size));
   if (loadBalancingSizes.length !== matrixValues.length)
     throw new Error('load_balancing_sizes input must have the same length as paths input');
-  const targetLoadSize = loadBalancingSizes.reduce((acc, size) => acc + size, 0) / batches;
+  const targetLoadSize = sum(loadBalancingSizes) / batches;
   const loadBalancedPaths: string[] = [];
   let currentLoadSize = 0;
   let currentBatch: string[] = [];

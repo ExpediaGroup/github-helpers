@@ -39,7 +39,7 @@ class GenerateMatrix extends _types_generated__WEBPACK_IMPORTED_MODULE_1__/* .He
 const generateMatrix = ({ paths, batches: _batches = '1', load_balancing_sizes }) => {
     const matrixValues = paths.split(/[\n,]/);
     const batches = Number(_batches);
-    if (!load_balancing_sizes) {
+    if (!load_balancing_sizes || matrixValues.length <= batches) {
         return {
             include: (0,lodash__WEBPACK_IMPORTED_MODULE_0__.chunk)(matrixValues, Math.ceil(matrixValues.length / batches)).map(chunk => ({ path: chunk.join(',') }))
         };
@@ -47,7 +47,7 @@ const generateMatrix = ({ paths, batches: _batches = '1', load_balancing_sizes }
     const loadBalancingSizes = load_balancing_sizes.split(/[\n,]/).map(size => Number(size));
     if (loadBalancingSizes.length !== matrixValues.length)
         throw new Error('load_balancing_sizes input must have the same length as paths input');
-    const targetLoadSize = loadBalancingSizes.reduce((acc, size) => acc + size, 0) / batches;
+    const targetLoadSize = (0,lodash__WEBPACK_IMPORTED_MODULE_0__.sum)(loadBalancingSizes) / batches;
     const loadBalancedPaths = [];
     let currentLoadSize = 0;
     let currentBatch = [];
