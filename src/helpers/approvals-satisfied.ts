@@ -22,13 +22,20 @@ import * as core from '@actions/core';
 import { paginateAllReviews } from '../utils/paginate-all-reviews';
 
 export class ApprovalsSatisfied extends HelperInputs {
+  team?: string;
   teams?: string;
   users?: string;
   number_of_reviewers?: string;
   pull_number?: string;
 }
 
-export const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', pull_number }: ApprovalsSatisfied = {}) => {
+export const approvalsSatisfied = async ({
+  team: maintainerGroup,
+  teams,
+  users,
+  number_of_reviewers = '1',
+  pull_number
+}: ApprovalsSatisfied = {}) => {
   const prNumber = pull_number ? Number(pull_number) : context.issue.number;
 
   const teamsList = updateTeamsList(teams?.split('\n'));
@@ -44,6 +51,13 @@ export const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '
     .map(({ user }) => user?.login)
     .filter(Boolean);
   core.debug(`PR already approved by: ${approverLogins.toString()}`);
+
+  if (maintainerGroup) {
+    const teamLogins = await fetchTeamLogins(maintainerGroup);
+    if (approverLogins.some(login => teamLogins.includes(login))) {
+      return true;
+    }
+  }
 
   const requiredCodeOwnersEntries =
     teamsList || usersList

@@ -485,4 +485,32 @@ describe('approvalsSatisfied', () => {
     const result = await approvalsSatisfied({ number_of_reviewers: '2' });
     expect(result).toBe(false);
   });
+
+  it('should return false when the provided maintainer group has not approved', async () => {
+    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@ExpediaGroup/team5', '@ExpediaGroup/team6'] }]);
+    mockPagination({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user1' }
+        }
+      ]
+    });
+    const result = await approvalsSatisfied({ number_of_reviewers: '2', team: 'team5' });
+    expect(result).toBe(false);
+  });
+
+  it('should return true when the provided maintainer group has approved', async () => {
+    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@ExpediaGroup/team5', '@ExpediaGroup/team6'] }]);
+    mockPagination({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user4' }
+        }
+      ]
+    });
+    const result = await approvalsSatisfied({ number_of_reviewers: '2', team: 'team5' });
+    expect(result).toBe(true);
+  });
 });

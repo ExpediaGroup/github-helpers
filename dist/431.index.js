@@ -80,7 +80,7 @@ limitations under the License.
 
 class ApprovalsSatisfied extends generated/* HelperInputs */.s {
 }
-const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', pull_number } = {}) => {
+const approvalsSatisfied = async ({ team: maintainerGroup, teams, users, number_of_reviewers = '1', pull_number } = {}) => {
     const prNumber = pull_number ? Number(pull_number) : github.context.issue.number;
     const teamsList = updateTeamsList(teams?.split('\n'));
     if (!validateTeamsList(teamsList)) {
@@ -94,6 +94,12 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', pul
         .map(({ user }) => user?.login)
         .filter(Boolean);
     core.debug(`PR already approved by: ${approverLogins.toString()}`);
+    if (maintainerGroup) {
+        const teamLogins = await fetchTeamLogins(maintainerGroup);
+        if (approverLogins.some(login => teamLogins.includes(login))) {
+            return true;
+        }
+    }
     const requiredCodeOwnersEntries = teamsList || usersList
         ? createArtificialCodeOwnersEntry({ teams: teamsList, users: usersList })
         : await (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.q)(prNumber);
