@@ -6,7 +6,7 @@
     "@actions/core": "1.10.1",
     "@actions/github": "6.0.0",
     "@adobe/node-fetch-retry": "2.2.0",
-    "@octokit/request": "8.4.0",
+    "@octokit/request": "9.1.1",
     "@octokit/rest": "20.1.0",
     "axios": "1.6.8",
     "bluebird": "3.7.2",
@@ -20,7 +20,7 @@
     "micromatch": "4.0.5"
   },
   "devDependencies": {
-    "@octokit/plugin-rest-endpoint-methods": "11.0.1",
+    "@octokit/plugin-rest-endpoint-methods": "13.0.1",
     "@swc/jest": "0.2.36",
     "@total-typescript/ts-reset": "0.5.1",
     "@types/bluebird": "3.5.42",
