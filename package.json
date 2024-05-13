@@ -33,6 +33,7 @@
     "@types/lodash.union": "4.6.9",
     "@types/lodash.uniq": "4.5.9",
     "@types/micromatch": "4.0.7",
+    "@vercel/ncc": "0.38.1",
     "bun-types": "1.1.8",
     "eslint": "9.2.0",
     "husky": "9.0.11",
@@ -55,7 +56,7 @@
     "format-check": "prettier --check .",
     "generate": "bun scripts/generate-helper-inputs.ts",
     "lint": "eslint --quiet --fix ./**/*.ts src/**/*.ts test/**/*.ts",
-    "package": "tsc && bun build src/main.ts --outdir dist/ --target node --sourcemap=external && cp action.yml dist",
+    "package": "ncc build --source-map --license licenses.txt && cp action.yml dist",
     "prepare": "husky install",
     "setup": "./scripts/dev-setup.sh",
     "test": "bun jest"
