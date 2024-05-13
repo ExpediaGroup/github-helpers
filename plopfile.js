@@ -1,4 +1,3 @@
-// eslint-disable-next-line functional/immutable-data,import/no-commonjs
 module.exports = plop => {
   plop.setHelper('spaceSeparatedCase', helper => helper.split('-').join(' '));
 

@@ -1,12 +1,13 @@
 {
   "name": "github-helpers",
+  "packageManager": "bun@1.1.8",
   "main": "src/main.ts",
+  "type": "module",
   "private": true,
   "dependencies": {
     "@actions/core": "1.10.1",
     "@actions/github": "6.0.0",
     "@adobe/node-fetch-retry": "2.2.0",
-    "@octokit/request": "8.4.0",
     "@octokit/rest": "20.1.1",
     "axios": "1.6.8",
     "bluebird": "3.7.2",
@@ -20,7 +21,6 @@
     "micromatch": "4.0.5"
   },
   "devDependencies": {
-    "@octokit/plugin-rest-endpoint-methods": "11.0.1",
     "@swc/jest": "0.2.36",
     "@total-typescript/ts-reset": "0.5.1",
     "@types/bluebird": "3.5.42",
@@ -33,24 +33,14 @@
     "@types/lodash.union": "4.6.9",
     "@types/lodash.uniq": "4.5.9",
     "@types/micromatch": "4.0.7",
-    "@types/node": "20.12.8",
-    "@types/node-fetch": "2.6.11",
-    "@typescript-eslint/eslint-plugin": "7.8.0",
-    "@vercel/ncc": "0.38.1",
-    "bun-types": "1.1.7",
-    "eslint": "8.57.0",
-    "eslint-plugin-eslint-comments": "3.2.0",
-    "eslint-plugin-filenames": "1.3.2",
-    "eslint-plugin-functional": "6.5.1",
-    "eslint-plugin-import": "2.29.1",
-    "eslint-plugin-jest": "28.5.0",
-    "eslint-plugin-prettier": "5.1.3",
-    "eslint-plugin-promise": "6.1.1",
+    "bun-types": "1.1.8",
+    "eslint": "9.2.0",
     "husky": "9.0.11",
     "jest": "29.7.0",
     "plop": "4.0.1",
     "prettier": "3.2.5",
-    "typescript": "5.4.5"
+    "typescript": "5.4.5",
+    "typescript-eslint": "7.8.0"
   },
   "jest": {
     "transform": {
@@ -60,16 +50,14 @@
     "clearMocks": true
   },
   "scripts": {
-    "build": "tsc",
-    "clean": "rm -rf build dist",
     "create-helper": "plop helper --force",
     "format": "prettier --write ./**/**/*.ts",
     "format-check": "prettier --check ./**/**/*.ts",
     "generate": "bun scripts/generate-helper-inputs.ts",
     "lint": "eslint --quiet --fix ./**/*.ts src/**/*.ts test/**/*.ts",
-    "package": "npm run clean && ncc build --source-map --license licenses.txt && cp action.yml dist",
+    "package": "tsc && bun build src/main.ts --outdir dist/ --target node --sourcemap=external",
     "prepare": "husky install",
     "setup": "./scripts/dev-setup.sh",
-    "test": "jest"
+    "test": "bun jest"
   }
 }

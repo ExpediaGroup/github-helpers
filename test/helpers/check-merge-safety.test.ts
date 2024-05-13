@@ -270,8 +270,7 @@ describe('checkMergeSafety', () => {
     const filesOutOfDate = ['packages/package-2/src/file1.ts', 'packages/package-3/src/file2.ts'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
-    // eslint-disable-next-line functional/immutable-data,@typescript-eslint/no-explicit-any
-    context.issue.number = undefined as any; // couldn't figure out a way to mock out this issue number in a cleaner way ¯\_(ツ)_/¯
+    context.issue.number = undefined as unknown as number; // couldn't figure out a way to mock out this issue number in a cleaner way ¯\_(ツ)_/¯
     (paginateAllOpenPullRequests as jest.Mock).mockResolvedValue([
       {
         head: { sha: '123', ref: branchName, user: { login: username } },

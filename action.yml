@@ -147,7 +147,7 @@ outputs:
     description: 'The output of the helper'
 runs:
   using: 'node20'
-  main: 'dist/index.js'
+  main: 'dist/main.js'
 branding:
   icon: user-check
   color: purple

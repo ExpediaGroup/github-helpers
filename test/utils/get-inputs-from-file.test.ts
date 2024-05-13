@@ -24,9 +24,6 @@ inputs:
   input2:
     description: 'The comment body'
     required: false
-runs:
-  using: 'node12'
-  main: 'dist/index.js'
 `;
 
   it('should return expected inputs', () => {
