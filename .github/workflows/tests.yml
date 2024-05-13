@@ -2,7 +2,7 @@ name: PR Checks
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
@@ -27,11 +27,11 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
 
-      - name: Validate Copyright Headers
-        run: bun ./scripts/verify-file-headers.ts
-
       - name: Install Dependencies
         run: bun install
+
+      - name: Validate Copyright Headers
+        run: bun ./scripts/verify-file-headers.ts
 
       - name: Run Prettier
         run: bun format-check

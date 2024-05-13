@@ -35,7 +35,6 @@
     "@types/micromatch": "4.0.7",
     "bun-types": "1.1.8",
     "eslint": "9.2.0",
-    "glob": "10.3.15",
     "husky": "9.0.11",
     "jest": "29.7.0",
     "plop": "4.0.1",
@@ -52,11 +51,11 @@
   },
   "scripts": {
     "create-helper": "plop helper --force",
-    "format": "prettier --write ./**/**/*.ts",
-    "format-check": "prettier --check ./**/**/*.ts",
+    "format": "prettier --write .",
+    "format-check": "prettier --check .",
     "generate": "bun scripts/generate-helper-inputs.ts",
     "lint": "eslint --quiet --fix ./**/*.ts src/**/*.ts test/**/*.ts",
-    "package": "tsc && bun build src/main.ts --outdir dist/ --target node --sourcemap=external",
+    "package": "tsc && bun build src/main.ts --outdir dist/ --target node --sourcemap=external && cp action.yml dist",
     "prepare": "husky install",
     "setup": "./scripts/dev-setup.sh",
     "test": "bun jest"

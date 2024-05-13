@@ -2,7 +2,7 @@ name: Prepare Queued PR For Merge
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
       - 'src/helpers/prepare-queued-pr-for-merge.ts'
 

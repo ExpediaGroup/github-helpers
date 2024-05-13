@@ -2,7 +2,7 @@ name: Add Late Review Label
 
 on:
   pull_request_review:
-    types: [ submitted ]
+    types: [submitted]
     paths:
       - 'src/helpers/add-late-review-label.ts'
 

@@ -2,9 +2,9 @@ name: Check Merge Safety
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
       - 'src/helpers/check-merge-safety.ts'
 

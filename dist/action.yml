@@ -1,0 +1,153 @@
+name: Github Helpers
+description: 'A suite of Github helper actions'
+inputs:
+  helper:
+    description: 'The github helper to invoke'
+    required: true
+  github_token:
+    description: 'The github token'
+    required: false
+    default: ${{ github.token }}
+  body:
+    description: 'The comment body'
+    required: false
+  project_name:
+    description: 'The GitHub Project name'
+    required: false
+  project_destination_column_name:
+    description: 'The name of the column that the card should be created or moved to'
+    required: false
+  note:
+    description: 'The body text that should be added into a Project Card'
+    required: false
+  project_origin_column_name:
+    description: 'The name of the column from where the card should be taken'
+    required: false
+  sha:
+    description: 'The commit hash'
+    required: false
+  context:
+    description: 'The status context or contexts for updating commit status. Multiple contexts must be newline separated'
+    required: false
+  state:
+    description: 'The state for updating commit status. Typically will be "success" or "failure"'
+    required: false
+  description:
+    description: 'A description'
+    required: false
+  target_url:
+    description: 'The target url for updating commit status'
+    required: false
+  environment:
+    description: 'The environment for updating deployment status'
+    required: false
+  environment_url:
+    description: 'The environment url for updating deployment status'
+    required: false
+  label:
+    description: 'The singular label name used only for removing a label'
+    required: false
+  labels:
+    description: 'A list of labels used only for adding labels (new line separated)'
+    required: false
+  paths:
+    description: 'A list of file paths (newline/comma separated)'
+    required: false
+  ignore_globs:
+    description: 'A list of file path globs to ignore (newline/comma separated)'
+    required: false
+  extensions:
+    description: 'A list of file extensions (new line separated)'
+    required: false
+  override_filter_paths:
+    description: 'A list of file paths to trigger an override of the filter (newline/comma separated)'
+    required: false
+  batches:
+    description: 'A number of batches to split a matrix into'
+    required: false
+  pattern:
+    description: 'A regex pattern to match (must be wrapped in singlequotes)'
+    required: false
+  teams:
+    description: 'A list of github teams (newline separated)'
+    required: false
+  users:
+    description: 'A list of github users (newline separated)'
+    required: false
+  login:
+    description: 'A github user login'
+    required: false
+  paths_no_filter:
+    description: 'A list of file paths to be included regardless of the filter (newline/comma separated)'
+    required: false
+  slack_webhook_url:
+    description: 'A Slack webhook URL'
+    required: false
+  number_of_assignees:
+    description: 'Number of people to assign a PR to'
+    required: false
+  number_of_reviewers:
+    description: 'Number of reviewers of a PR'
+    required: false
+  globs:
+    description: 'A list of file paths (newline/comma separated) using glob syntax'
+    required: false
+  override_filter_globs:
+    description: 'A list of file paths in glob syntax (newline/comma separated) that is used to override the filter'
+    required: false
+  title:
+    description: 'An issue title'
+    required: false
+  seconds:
+    description: 'An amount of time in seconds'
+    required: false
+  pull_number:
+    description: 'Pull request/issue number'
+    required: false
+  base:
+    description: 'Base ref to initiate pull request onto'
+    required: false
+  head:
+    description: 'Head ref to initiate pull request from'
+    required: false
+  days:
+    description: 'Number of days'
+    required: false
+  no_evict_upon_conflict:
+    description: 'Skip the default behavior of evicting a PR from the merge queue when there is a merge conflict'
+    required: false
+  skip_if_already_set:
+    description: 'Skip setting a commit status if it has already been set to success or failure by a workflow'
+    required: false
+  delimiter:
+    description: 'A custom delimiter'
+    required: false
+  team:
+    description: 'A GitHub team'
+    required: false
+  ignore_deleted:
+    description: 'Set to true to ignore deleted files (for get-changed-files helper)'
+    required: false
+  return_full_payload:
+    description: 'Return full payload from GitHub rather than a trimmed-down version of the response'
+    required: false
+  skip_auto_merge:
+    description: 'Do not enable auto-merge automatically for the PRs from the merge queue'
+    required: false
+  repo_name:
+    description: 'Repository to interact with'
+    required: false
+  repo_owner_name:
+    description: 'Organization in which repository is stored'
+    required: false
+  load_balancing_sizes:
+    description: 'A list of sizes (integers) for load balancing (newline/comma separated). Should map directly to inputted paths list'
+outputs:
+  output:
+    description: 'The output of the helper'
+runs:
+  using: 'node20'
+  main: 'dist/main.js'
+branding:
+  icon: user-check
+  color: purple

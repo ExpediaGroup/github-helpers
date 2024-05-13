@@ -2,7 +2,7 @@ name: Assign PR Reviewer
 
 on:
   pull_request_review:
-    types: [ submitted ]
+    types: [submitted]
     paths:
       - 'src/helpers/assign-pr-reviewers.ts'
 
