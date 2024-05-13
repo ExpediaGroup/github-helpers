@@ -48328,6 +48328,8 @@ const getInputsFromFile = (yamlContents) => Object.keys(load(yamlContents).input
 
 // EXTERNAL MODULE: external "fs"
 var external_fs_ = __nccwpck_require__(7147);
+// EXTERNAL MODULE: external "path"
+var external_path_ = __nccwpck_require__(1017);
 ;// CONCATENATED MODULE: ./src/utils/get-action-inputs.ts
 /*
 Copyright 2021 Expedia, Inc.
@@ -48345,8 +48347,9 @@ limitations under the License.
 
 
 
+
 const getActionInputs = (requiredInputs = []) => {
-    const yamlContents = (0,external_fs_.readFileSync)(`${__dirname}/action.yml`).toString();
+    const yamlContents = (0,external_fs_.readFileSync)(__nccwpck_require__.ab + "action.yml").toString();
     const inputsFromFile = getInputsFromFile(yamlContents).reduce((acc, current) => {
         const trimWhitespaceOptions = current === 'delimiter' ? { trimWhitespace: false } : {};
         return {
