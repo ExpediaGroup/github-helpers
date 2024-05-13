@@ -11,41 +11,42 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import * as core from '@actions/core';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
-import { request } from '@octokit/request';
 import { rerunPrChecks } from '../../src/helpers/rerun-pr-checks';
 
 jest.mock('@actions/core');
-jest.mock('@octokit/request');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({ rest: { pulls: { get: jest.fn() }, actions: { listWorkflowRunsForRepo: jest.fn() }, request: jest.fn() } }))
+  getOctokit: jest.fn(() => ({
+    rest: {
+      pulls: { get: jest.fn() },
+      actions: {
+        listWorkflowRunsForRepo: jest.fn(),
+        reRunWorkflow: jest.fn()
+      },
+      request: jest.fn()
+    }
+  }))
 }));
-const gh_token = 'gh token';
-(core.getInput as jest.Mock).mockReturnValue(gh_token);
 const prWorkflowRuns = {
   total_count: 5,
   workflow_runs: [
     {
       id: 1001,
       name: 'danger',
-      head_sha: 'aef123',
-      rerun_url: 'https://api.github.com/repos/owner/repo/actions/runs/1001/rerun'
+      head_sha: 'aef123'
     },
     {
       id: 1002,
       name: 'build',
-      head_sha: 'aef123',
-      rerun_url: 'https://api.github.com/repos/owner/repo/actions/runs/1002/rerun'
+      head_sha: 'aef123'
     },
     {
       id: 1003,
       name: 'danger',
-      head_sha: 'efc459',
-      rerun_url: 'https://api.github.com/repos/owner/repo/actions/runs/1003/rerun'
+      head_sha: 'efc459'
     }
   ]
 };
@@ -55,20 +56,17 @@ const prTargetWorkflowRuns = {
     {
       id: 1004,
       name: 'danger',
-      head_sha: 'aef123',
-      rerun_url: 'https://api.github.com/repos/owner/repo/actions/runs/1004/rerun'
+      head_sha: 'aef123'
     },
     {
       id: 1005,
       name: 'build',
-      head_sha: 'aef123',
-      rerun_url: 'https://api.github.com/repos/owner/repo/actions/runs/1005/rerun'
+      head_sha: 'aef123'
     },
     {
       id: 1006,
       name: 'danger',
-      head_sha: 'efc459',
-      rerun_url: 'https://api.github.com/repos/owner/repo/actions/runs/1006/rerun'
+      head_sha: 'efc459'
     }
   ]
 };
@@ -88,7 +86,6 @@ const pullsMockData = {
   }
 };
 (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({ data: pullsMockData }));
-(request as unknown as jest.Mock).mockResolvedValue({ catch: jest.fn() });
 
 describe('rerunPrChecks', () => {
   beforeEach(async () => {
@@ -118,35 +115,11 @@ describe('rerunPrChecks', () => {
       status: 'completed'
     });
 
-    expect(request).toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1001/rerun', {
-      headers: {
-        authorization: `token ${gh_token}`
-      }
-    });
-    expect(request).toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1002/rerun', {
-      headers: {
-        authorization: `token ${gh_token}`
-      }
-    });
-    expect(request).not.toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1003/rerun', {
-      headers: {
-        authorization: `token ${gh_token}`
-      }
-    });
-    expect(request).toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1004/rerun', {
-      headers: {
-        authorization: `token ${gh_token}`
-      }
-    });
-    expect(request).toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1005/rerun', {
-      headers: {
-        authorization: `token ${gh_token}`
-      }
-    });
-    expect(request).not.toHaveBeenCalledWith('POST https://api.github.com/repos/owner/repo/actions/runs/1006/rerun', {
-      headers: {
-        authorization: `token ${gh_token}`
-      }
-    });
+    expect(octokit.actions.reRunWorkflow).toHaveBeenCalledWith({ run_id: 1001, ...context.repo });
+    expect(octokit.actions.reRunWorkflow).toHaveBeenCalledWith({ run_id: 1002, ...context.repo });
+    expect(octokit.actions.reRunWorkflow).not.toHaveBeenCalledWith({ run_id: 1003, ...context.repo });
+    expect(octokit.actions.reRunWorkflow).toHaveBeenCalledWith({ run_id: 1004, ...context.repo });
+    expect(octokit.actions.reRunWorkflow).toHaveBeenCalledWith({ run_id: 1005, ...context.repo });
+    expect(octokit.actions.reRunWorkflow).not.toHaveBeenCalledWith({ run_id: 1006, ...context.repo });
   });
 });

@@ -1,7 +1,6 @@
-"use strict";
-exports.id = 153;
-exports.ids = [153];
-exports.modules = {
+export const id = 153;
+export const ids = [153];
+export const modules = {
 
 /***/ 9042:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -417,5 +416,5 @@ const notifyUser = async ({ login, pull_number, slack_webhook_url }) => {
 /***/ })
 
 };
-;
+
 //# sourceMappingURL=153.index.js.map

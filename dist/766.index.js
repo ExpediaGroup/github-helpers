@@ -1,7 +1,6 @@
-"use strict";
-exports.id = 766;
-exports.ids = [766];
-exports.modules = {
+export const id = 766;
+export const ids = [766];
+export const modules = {
 
 /***/ 6766:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -17,8 +16,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8710);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6161);
-/* harmony import */ var _octokit_request__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6234);
-/* harmony import */ var _octokit_request__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_octokit_request__WEBPACK_IMPORTED_MODULE_4__);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,7 +28,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
 
 
 
@@ -57,15 +53,9 @@ const rerunPrChecks = async () => {
     }
     const latestWorkflowRuns = workflowRuns.filter(({ head_sha }) => head_sha === latestHash);
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`There are ${latestWorkflowRuns.length} checks associated with the latest commit, triggering reruns...`);
-    return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(latestWorkflowRuns, async ({ id, name, rerun_url }) => {
+    return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(latestWorkflowRuns, async ({ id, name }) => {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`- Rerunning ${name} (${id})`);
-        await (0,_octokit_request__WEBPACK_IMPORTED_MODULE_4__.request)(`POST ${rerun_url}`, {
-            headers: {
-                authorization: `token ${_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token')}`
-            }
-        }).catch(error => {
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
-        });
+        await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.actions.reRunWorkflow */ .K.actions.reRunWorkflow({ run_id: id, ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo });
     });
 };
 
@@ -107,5 +97,5 @@ const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_I
 /***/ })
 
 };
-;
+
 //# sourceMappingURL=766.index.js.map

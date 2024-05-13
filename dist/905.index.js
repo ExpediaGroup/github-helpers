@@ -1,7 +1,6 @@
-"use strict";
-exports.id = 905;
-exports.ids = [905];
-exports.modules = {
+export const id = 905;
+export const ids = [905];
+export const modules = {
 
 /***/ 9042:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -339,5 +338,5 @@ const getCodeOwnersFromEntries = (codeOwnersEntries) => {
 /***/ })
 
 };
-;
+
 //# sourceMappingURL=905.index.js.map

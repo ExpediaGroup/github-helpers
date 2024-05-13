@@ -15,9 +15,10 @@ import { getInput } from '@actions/core';
 import { getInputsFromFile } from './get-inputs-from-file';
 import { pickBy } from 'lodash';
 import { readFileSync } from 'fs';
+import { join } from 'path';
 
 export const getActionInputs = (requiredInputs: string[] = []) => {
-  const yamlContents = readFileSync(`${__dirname}/action.yml`).toString();
+  const yamlContents = readFileSync(join(process.cwd(), 'action.yml')).toString();
   const inputsFromFile = getInputsFromFile(yamlContents).reduce((acc, current) => {
     const trimWhitespaceOptions = current === 'delimiter' ? { trimWhitespace: false } : {};
     return {

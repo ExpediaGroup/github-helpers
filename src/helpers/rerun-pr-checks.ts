@@ -12,11 +12,9 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { GithubError } from '../types/github';
 import { context } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
-import { request } from '@octokit/request';
 
 export const rerunPrChecks = async () => {
   /** grab owner in case of fork branch */
@@ -50,14 +48,8 @@ export const rerunPrChecks = async () => {
   const latestWorkflowRuns = workflowRuns.filter(({ head_sha }) => head_sha === latestHash);
   core.info(`There are ${latestWorkflowRuns.length} checks associated with the latest commit, triggering reruns...`);
 
-  return map(latestWorkflowRuns, async ({ id, name, rerun_url }) => {
+  return map(latestWorkflowRuns, async ({ id, name }) => {
     core.info(`- Rerunning ${name} (${id})`);
-    await request(`POST ${rerun_url}`, {
-      headers: {
-        authorization: `token ${core.getInput('github_token')}`
-      }
-    }).catch(error => {
-      core.setFailed((error as GithubError).message);
-    });
+    await octokit.actions.reRunWorkflow({ run_id: id, ...context.repo });
   });
 };

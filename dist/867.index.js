@@ -1,7 +1,6 @@
-"use strict";
-exports.id = 867;
-exports.ids = [867];
-exports.modules = {
+export const id = 867;
+export const ids = [867];
+export const modules = {
 
 /***/ 9042:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -250,5 +249,5 @@ const paginateAllOpenPullRequests = async (page = 1) => {
 /***/ })
 
 };
-;
+
 //# sourceMappingURL=867.index.js.map

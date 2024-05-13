@@ -1,7 +1,6 @@
-"use strict";
-exports.id = 124;
-exports.ids = [124];
-exports.modules = {
+export const id = 124;
+export const ids = [124];
+export const modules = {
 
 /***/ 9042:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -266,5 +265,5 @@ const getDestinationColumn = (columns, project_destination_column_name) => colum
 /***/ })
 
 };
-;
+
 //# sourceMappingURL=124.index.js.map

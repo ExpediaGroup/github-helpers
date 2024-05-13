@@ -2,8 +2,8 @@ name: Check PR Title
 
 on:
   pull_request:
-    branches: [ main ]
-    types: [ edited, opened, reopened, synchronize ]
+    branches: [main]
+    types: [edited, opened, reopened, synchronize]
 
 jobs:
   test:
@@ -16,6 +16,9 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
 
+      - name: Install dependencies
+        run: bun install
+
       - name: Validate PR Title Contains Valid Descriptor
         run: bun ./scripts/verify-pr-title-has-valid-descriptor.ts
         env:
@@ -23,5 +26,6 @@ jobs:
 
       - uses: ./
         with:
-          helper: check-pr-title
-           # pattern: 'my-regex-pattern' (optional: pattern must be wrapped in single quotes)
+          helper:
+            check-pr-title
+            # pattern: 'my-regex-pattern' (optional: pattern must be wrapped in single quotes)

@@ -1,7 +1,6 @@
-"use strict";
-exports.id = 228;
-exports.ids = [228];
-exports.modules = {
+export const id = 228;
+export const ids = [228];
+export const modules = {
 
 /***/ 610:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
@@ -4089,5 +4088,5 @@ module.exports = toRegexRange;
 /***/ })
 
 };
-;
+
 //# sourceMappingURL=228.index.js.map

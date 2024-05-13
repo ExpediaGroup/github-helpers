@@ -1,7 +1,6 @@
-"use strict";
-exports.id = 522;
-exports.ids = [522];
-exports.modules = {
+export const id = 522;
+export const ids = [522];
+export const modules = {
 
 /***/ 6522:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -72,5 +71,5 @@ const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_I
 /***/ })
 
 };
-;
+
 //# sourceMappingURL=522.index.js.map

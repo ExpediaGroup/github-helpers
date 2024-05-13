@@ -11,9 +11,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-/* eslint-disable functional/immutable-data */
-/* eslint-disable functional/no-let */
-
 import { HelperInputs } from '../types/generated';
 import { chunk, sum } from 'lodash';
 

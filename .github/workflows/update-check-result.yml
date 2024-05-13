@@ -2,7 +2,7 @@ name: Update Check Result
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
       - 'src/helpers/update-check-result.ts'
 

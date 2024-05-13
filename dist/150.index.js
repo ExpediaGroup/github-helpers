@@ -1,7 +1,6 @@
-"use strict";
-exports.id = 150;
-exports.ids = [150];
-exports.modules = {
+export const id = 150;
+export const ids = [150];
+export const modules = {
 
 /***/ 9150:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -151,5 +150,5 @@ const getDefaultBranch = async () => {
 /***/ })
 
 };
-;
+
 //# sourceMappingURL=150.index.js.map

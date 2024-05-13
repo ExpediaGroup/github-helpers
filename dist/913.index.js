@@ -1,7 +1,6 @@
-"use strict";
-exports.id = 913;
-exports.ids = [913];
-exports.modules = {
+export const id = 913;
+export const ids = [913];
+export const modules = {
 
 /***/ 7913:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -144,5 +143,5 @@ const paginateAllChangedFilepaths = async (pull_number, page = 1) => {
 /***/ })
 
 };
-;
+
 //# sourceMappingURL=913.index.js.map

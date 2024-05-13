@@ -1,17 +1,16 @@
-exports.id = 445;
-exports.ids = [445];
-exports.modules = {
+export const id = 445;
+export const ids = [445];
+export const modules = {
 
 /***/ 4445:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-"use strict";
 
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const find_up_1 = __importDefault(__webpack_require__(9486));
+const find_up_1 = __importDefault(__webpack_require__(8632));
 const locate_path_1 = __importDefault(__webpack_require__(3447));
 const path_1 = __importDefault(__webpack_require__(1017));
 const fs_1 = __importDefault(__webpack_require__(7147));
@@ -162,10 +161,105 @@ exports.findUnmatchedFiles = findUnmatchedFiles;
 
 /***/ }),
 
+/***/ 8632:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+const path = __webpack_require__(1017);
+const locatePath = __webpack_require__(3447);
+const pathExists = __webpack_require__(6978);
+
+const stop = Symbol('findUp.stop');
+
+module.exports = async (name, options = {}) => {
+	let directory = path.resolve(options.cwd || '');
+	const {root} = path.parse(directory);
+	const paths = [].concat(name);
+
+	const runMatcher = async locateOptions => {
+		if (typeof name !== 'function') {
+			return locatePath(paths, locateOptions);
+		}
+
+		const foundPath = await name(locateOptions.cwd);
+		if (typeof foundPath === 'string') {
+			return locatePath([foundPath], locateOptions);
+		}
+
+		return foundPath;
+	};
+
+	// eslint-disable-next-line no-constant-condition
+	while (true) {
+		// eslint-disable-next-line no-await-in-loop
+		const foundPath = await runMatcher({...options, cwd: directory});
+
+		if (foundPath === stop) {
+			return;
+		}
+
+		if (foundPath) {
+			return path.resolve(directory, foundPath);
+		}
+
+		if (directory === root) {
+			return;
+		}
+
+		directory = path.dirname(directory);
+	}
+};
+
+module.exports.sync = (name, options = {}) => {
+	let directory = path.resolve(options.cwd || '');
+	const {root} = path.parse(directory);
+	const paths = [].concat(name);
+
+	const runMatcher = locateOptions => {
+		if (typeof name !== 'function') {
+			return locatePath.sync(paths, locateOptions);
+		}
+
+		const foundPath = name(locateOptions.cwd);
+		if (typeof foundPath === 'string') {
+			return locatePath.sync([foundPath], locateOptions);
+		}
+
+		return foundPath;
+	};
+
+	// eslint-disable-next-line no-constant-condition
+	while (true) {
+		const foundPath = runMatcher({...options, cwd: directory});
+
+		if (foundPath === stop) {
+			return;
+		}
+
+		if (foundPath) {
+			return path.resolve(directory, foundPath);
+		}
+
+		if (directory === root) {
+			return;
+		}
+
+		directory = path.dirname(directory);
+	}
+};
+
+module.exports.exists = pathExists;
+
+module.exports.sync.exists = pathExists.sync;
+
+module.exports.stop = stop;
+
+
+/***/ }),
+
 /***/ 7881:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
 const cp = __webpack_require__(2081);
@@ -212,7 +306,6 @@ module.exports._enoent = enoent;
 /***/ 4101:
 /***/ ((module) => {
 
-"use strict";
 
 
 const isWin = process.platform === 'win32';
@@ -279,7 +372,6 @@ module.exports = {
 /***/ 6855:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
 const path = __webpack_require__(1017);
@@ -378,7 +470,6 @@ module.exports = parse;
 /***/ 4274:
 /***/ ((module) => {
 
-"use strict";
 
 
 // See http://www.robvanderwoude.com/escapechars.php
@@ -431,7 +522,6 @@ module.exports.argument = escapeArgument;
 /***/ 1252:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
 const fs = __webpack_require__(7147);
@@ -462,7 +552,6 @@ module.exports = readShebang;
 /***/ 7274:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
 const path = __webpack_require__(1017);
@@ -515,103 +604,6 @@ function resolveCommand(parsed) {
 }
 
 module.exports = resolveCommand;
-
-
-/***/ }),
-
-/***/ 9486:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-
-const path = __webpack_require__(1017);
-const locatePath = __webpack_require__(3447);
-const pathExists = __webpack_require__(6978);
-
-const stop = Symbol('findUp.stop');
-
-module.exports = async (name, options = {}) => {
-	let directory = path.resolve(options.cwd || '');
-	const {root} = path.parse(directory);
-	const paths = [].concat(name);
-
-	const runMatcher = async locateOptions => {
-		if (typeof name !== 'function') {
-			return locatePath(paths, locateOptions);
-		}
-
-		const foundPath = await name(locateOptions.cwd);
-		if (typeof foundPath === 'string') {
-			return locatePath([foundPath], locateOptions);
-		}
-
-		return foundPath;
-	};
-
-	// eslint-disable-next-line no-constant-condition
-	while (true) {
-		// eslint-disable-next-line no-await-in-loop
-		const foundPath = await runMatcher({...options, cwd: directory});
-
-		if (foundPath === stop) {
-			return;
-		}
-
-		if (foundPath) {
-			return path.resolve(directory, foundPath);
-		}
-
-		if (directory === root) {
-			return;
-		}
-
-		directory = path.dirname(directory);
-	}
-};
-
-module.exports.sync = (name, options = {}) => {
-	let directory = path.resolve(options.cwd || '');
-	const {root} = path.parse(directory);
-	const paths = [].concat(name);
-
-	const runMatcher = locateOptions => {
-		if (typeof name !== 'function') {
-			return locatePath.sync(paths, locateOptions);
-		}
-
-		const foundPath = name(locateOptions.cwd);
-		if (typeof foundPath === 'string') {
-			return locatePath.sync([foundPath], locateOptions);
-		}
-
-		return foundPath;
-	};
-
-	// eslint-disable-next-line no-constant-condition
-	while (true) {
-		const foundPath = runMatcher({...options, cwd: directory});
-
-		if (foundPath === stop) {
-			return;
-		}
-
-		if (foundPath) {
-			return path.resolve(directory, foundPath);
-		}
-
-		if (directory === root) {
-			return;
-		}
-
-		directory = path.dirname(directory);
-	}
-};
-
-module.exports.exists = pathExists;
-
-module.exports.sync.exists = pathExists.sync;
-
-module.exports.stop = stop;
 
 
 /***/ }),
@@ -1413,7 +1405,6 @@ function sync (path, options) {
 /***/ 3447:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 const path = __webpack_require__(1017);
 const fs = __webpack_require__(7147);
@@ -1486,7 +1477,6 @@ module.exports.sync = (paths, options) => {
 /***/ 104:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 const pLimit = __webpack_require__(707);
 
@@ -1546,7 +1536,6 @@ module.exports["default"] = pLocate;
 /***/ 707:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 const pTry = __webpack_require__(746);
 
@@ -1611,7 +1600,6 @@ module.exports["default"] = pLimit;
 /***/ 746:
 /***/ ((module) => {
 
-"use strict";
 
 
 const pTry = (fn, ...arguments_) => new Promise(resolve => {
@@ -1628,7 +1616,6 @@ module.exports["default"] = pTry;
 /***/ 6978:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 const fs = __webpack_require__(7147);
 const {promisify} = __webpack_require__(3837);
@@ -1659,7 +1646,6 @@ module.exports.sync = path => {
 /***/ 539:
 /***/ ((module) => {
 
-"use strict";
 
 
 const pathKey = (options = {}) => {
@@ -1683,7 +1669,6 @@ module.exports["default"] = pathKey;
 /***/ 1347:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 const shebangRegex = __webpack_require__(2638);
 
@@ -1710,7 +1695,6 @@ module.exports = (string = '') => {
 /***/ 2638:
 /***/ ((module) => {
 
-"use strict";
 
 module.exports = /^#!(.*)/;
 
@@ -1850,5 +1834,5 @@ which.sync = whichSync
 /***/ })
 
 };
-;
+
 //# sourceMappingURL=445.index.js.map

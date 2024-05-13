@@ -1,7 +1,6 @@
-"use strict";
-exports.id = 950;
-exports.ids = [950,61];
-exports.modules = {
+export const id = 950;
+export const ids = [950,61];
+export const modules = {
 
 /***/ 9042:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -397,5 +396,5 @@ class HelperInputs {
 /***/ })
 
 };
-;
+
 //# sourceMappingURL=950.index.js.map

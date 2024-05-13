@@ -2,7 +2,7 @@ name: Add Labels
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
       - 'src/helpers/add-labels.ts'
 
