@@ -142,6 +142,8 @@ const paginateAllReviews = async (prNumber, page = 1) => {
     return response.data.concat(await paginateAllReviews(prNumber, page + 1));
 };
 
+// EXTERNAL MODULE: ./node_modules/lodash/lodash.js
+var lodash = __webpack_require__(250);
 ;// CONCATENATED MODULE: ./src/helpers/approvals-satisfied.ts
 /*
 Copyright 2021 Expedia, Inc.
@@ -155,6 +157,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 
 
 
@@ -182,7 +185,7 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', pul
     const requiredCodeOwnersEntries = teamsList || usersList
         ? createArtificialCodeOwnersEntry({ teams: teamsList, users: usersList })
         : await (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.q)(prNumber);
-    const requiredCodeOwnersEntriesWithOwners = requiredCodeOwnersEntries.filter(({ owners }) => owners.length);
+    const requiredCodeOwnersEntriesWithOwners = (0,lodash.uniqBy)(requiredCodeOwnersEntries.filter(({ owners }) => owners.length), 'owners');
     const codeOwnersEntrySatisfiesApprovals = async (entry) => {
         const loginsLists = await (0,bluebird.map)(entry.owners, async (teamOrUser) => {
             if (isTeam(teamOrUser)) {
@@ -192,7 +195,7 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', pul
                 return [teamOrUser];
             }
         });
-        const codeOwnerLogins = distinct(loginsLists.flat());
+        const codeOwnerLogins = (0,lodash.uniq)(loginsLists.flat());
         const numberOfApprovals = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
         core.debug(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
         return numberOfApprovals >= Number(number_of_reviewers);
@@ -204,7 +207,6 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', pul
 const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }) => [
     { owners: teams.concat(users) }
 ];
-const distinct = (arrayWithDuplicates) => arrayWithDuplicates.filter((n, i) => arrayWithDuplicates.indexOf(n) === i);
 const isTeam = (teamOrUser) => teamOrUser.includes('/');
 const fetchTeamLogins = async (team) => {
     const { data } = await octokit/* octokit.teams.listMembersInOrg */.K.teams.listMembersInOrg({

@@ -20,6 +20,7 @@ import { convertToTeamSlug } from '../utils/convert-to-team-slug';
 import { CodeOwnersEntry } from 'codeowners-utils';
 import * as core from '@actions/core';
 import { paginateAllReviews } from '../utils/paginate-all-reviews';
+import { uniq, uniqBy } from 'lodash';
 
 export class ApprovalsSatisfied extends HelperInputs {
   teams?: string;
@@ -49,7 +50,10 @@ export const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '
     teamsList || usersList
       ? createArtificialCodeOwnersEntry({ teams: teamsList, users: usersList })
       : await getRequiredCodeOwnersEntries(prNumber);
-  const requiredCodeOwnersEntriesWithOwners = requiredCodeOwnersEntries.filter(({ owners }) => owners.length);
+  const requiredCodeOwnersEntriesWithOwners = uniqBy(
+    requiredCodeOwnersEntries.filter(({ owners }) => owners.length),
+    'owners'
+  );
 
   const codeOwnersEntrySatisfiesApprovals = async (entry: Pick<CodeOwnersEntry, 'owners'>) => {
     const loginsLists = await map(entry.owners, async teamOrUser => {
@@ -59,7 +63,7 @@ export const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '
         return [teamOrUser];
       }
     });
-    const codeOwnerLogins = distinct(loginsLists.flat());
+    const codeOwnerLogins = uniq(loginsLists.flat());
 
     const numberOfApprovals = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
 
@@ -76,7 +80,6 @@ export const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '
 const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }: { teams?: string[]; users?: string[] }) => [
   { owners: teams.concat(users) }
 ];
-const distinct = (arrayWithDuplicates: string[]) => arrayWithDuplicates.filter((n, i) => arrayWithDuplicates.indexOf(n) === i);
 const isTeam = (teamOrUser: string) => teamOrUser.includes('/');
 const fetchTeamLogins = async (team: string) => {
   const { data } = await octokit.teams.listMembersInOrg({
