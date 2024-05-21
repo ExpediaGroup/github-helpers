@@ -485,4 +485,33 @@ describe('approvalsSatisfied', () => {
     const result = await approvalsSatisfied({ number_of_reviewers: '2' });
     expect(result).toBe(false);
   });
+
+  it('should return true when the overridden team config is satisfied', async () => {
+    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
+      { owners: ['@ExpediaGroup/team1'] },
+      { owners: ['@ExpediaGroup/team2'] },
+      { owners: ['@ExpediaGroup/team3'] }
+    ]);
+    mockPagination({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user1' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user2' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user3' }
+        }
+      ]
+    });
+    const result = await approvalsSatisfied({
+      number_of_reviewers: '2',
+      required_review_overrides: '@ExpediaGroup/team1:1,@ExpediaGroup/team3:1'
+    });
+    expect(result).toBe(true);
+  });
 });

@@ -20,17 +20,29 @@ import { convertToTeamSlug } from '../utils/convert-to-team-slug';
 import { CodeOwnersEntry } from 'codeowners-utils';
 import * as core from '@actions/core';
 import { paginateAllReviews } from '../utils/paginate-all-reviews';
+import { uniq, uniqBy } from 'lodash';
 
 export class ApprovalsSatisfied extends HelperInputs {
   teams?: string;
   users?: string;
   number_of_reviewers?: string;
+  required_review_overrides?: string;
   pull_number?: string;
 }
 
-export const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', pull_number }: ApprovalsSatisfied = {}) => {
+export const approvalsSatisfied = async ({
+  teams,
+  users,
+  number_of_reviewers = '1',
+  required_review_overrides,
+  pull_number
+}: ApprovalsSatisfied = {}) => {
   const prNumber = pull_number ? Number(pull_number) : context.issue.number;
 
+  const teamOverrides = required_review_overrides?.split(',').map(overrideString => {
+    const [team, numberOfRequiredReviews] = overrideString.split(':');
+    return { team, numberOfRequiredReviews };
+  });
   const teamsList = updateTeamsList(teams?.split('\n'));
   if (!validateTeamsList(teamsList)) {
     core.setFailed('If teams input is in the format "org/team", then the org must be the same as the repository org');
@@ -43,13 +55,16 @@ export const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '
     .filter(({ state }) => state === 'APPROVED')
     .map(({ user }) => user?.login)
     .filter(Boolean);
-  core.debug(`PR already approved by: ${approverLogins.toString()}`);
+  core.info(`PR already approved by: ${approverLogins.toString()}`);
 
   const requiredCodeOwnersEntries =
     teamsList || usersList
       ? createArtificialCodeOwnersEntry({ teams: teamsList, users: usersList })
       : await getRequiredCodeOwnersEntries(prNumber);
-  const requiredCodeOwnersEntriesWithOwners = requiredCodeOwnersEntries.filter(({ owners }) => owners.length);
+  const requiredCodeOwnersEntriesWithOwners = uniqBy(
+    requiredCodeOwnersEntries.filter(({ owners }) => owners.length),
+    'owners'
+  );
 
   const codeOwnersEntrySatisfiesApprovals = async (entry: Pick<CodeOwnersEntry, 'owners'>) => {
     const loginsLists = await map(entry.owners, async teamOrUser => {
@@ -59,16 +74,19 @@ export const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '
         return [teamOrUser];
       }
     });
-    const codeOwnerLogins = distinct(loginsLists.flat());
+    const codeOwnerLogins = uniq(loginsLists.flat());
 
     const numberOfApprovals = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
 
-    core.debug(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
+    const numberOfRequiredReviews =
+      teamOverrides?.find(({ team }) => entry.owners.includes(team))?.numberOfRequiredReviews ?? number_of_reviewers;
+    core.info(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
+    core.info(`Number of required reviews: ${numberOfRequiredReviews}`);
 
-    return numberOfApprovals >= Number(number_of_reviewers);
+    return numberOfApprovals >= Number(numberOfRequiredReviews);
   };
 
-  core.debug(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
+  core.info(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
   const booleans = await Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
   return booleans.every(Boolean);
 };
@@ -76,7 +94,6 @@ export const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '
 const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }: { teams?: string[]; users?: string[] }) => [
   { owners: teams.concat(users) }
 ];
-const distinct = (arrayWithDuplicates: string[]) => arrayWithDuplicates.filter((n, i) => arrayWithDuplicates.indexOf(n) === i);
 const isTeam = (teamOrUser: string) => teamOrUser.includes('/');
 const fetchTeamLogins = async (team: string) => {
   const { data } = await octokit.teams.listMembersInOrg({

@@ -142,6 +142,9 @@ inputs:
     required: false
   load_balancing_sizes:
     description: 'A list of sizes (integers) for load balancing (newline/comma separated). Should map directly to inputted paths list'
+  required_review_overrides:
+    description: 'A comma-separated list of team overrides which specify the number of required reviews per team (e.g. "@ExpediaGroup/team1:1,@ExpediaGroup/team2:2")'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'
