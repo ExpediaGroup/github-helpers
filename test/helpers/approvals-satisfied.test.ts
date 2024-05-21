@@ -510,7 +510,7 @@ describe('approvalsSatisfied', () => {
     });
     const result = await approvalsSatisfied({
       number_of_reviewers: '2',
-      team_review_overrides: '@ExpediaGroup/team1:1,@ExpediaGroup/team3:1'
+      required_review_overrides: '@ExpediaGroup/team1:1,@ExpediaGroup/team3:1'
     });
     expect(result).toBe(true);
   });

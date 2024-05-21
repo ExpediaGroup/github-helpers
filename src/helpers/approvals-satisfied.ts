@@ -26,7 +26,7 @@ export class ApprovalsSatisfied extends HelperInputs {
   teams?: string;
   users?: string;
   number_of_reviewers?: string;
-  team_review_overrides?: string;
+  required_review_overrides?: string;
   pull_number?: string;
 }
 
@@ -34,12 +34,12 @@ export const approvalsSatisfied = async ({
   teams,
   users,
   number_of_reviewers = '1',
-  team_review_overrides,
+  required_review_overrides,
   pull_number
 }: ApprovalsSatisfied = {}) => {
   const prNumber = pull_number ? Number(pull_number) : context.issue.number;
 
-  const teamOverrides = team_review_overrides?.split(',').map(overrideString => {
+  const teamOverrides = required_review_overrides?.split(',').map(overrideString => {
     const [team, numberOfRequiredReviews] = overrideString.split(':');
     return { team, numberOfRequiredReviews };
   });

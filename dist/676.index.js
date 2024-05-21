@@ -168,9 +168,9 @@ limitations under the License.
 
 class ApprovalsSatisfied extends generated/* HelperInputs */.s {
 }
-const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', team_review_overrides, pull_number } = {}) => {
+const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', required_review_overrides, pull_number } = {}) => {
     const prNumber = pull_number ? Number(pull_number) : github.context.issue.number;
-    const teamOverrides = team_review_overrides?.split(',').map(overrideString => {
+    const teamOverrides = required_review_overrides?.split(',').map(overrideString => {
         const [team, numberOfRequiredReviews] = overrideString.split(':');
         return { team, numberOfRequiredReviews };
     });
