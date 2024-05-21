@@ -82,8 +82,12 @@ limitations under the License.
 
 class ApprovalsSatisfied extends generated/* HelperInputs */.s {
 }
-const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', pull_number } = {}) => {
+const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', team_review_overrides, pull_number } = {}) => {
     const prNumber = pull_number ? Number(pull_number) : github.context.issue.number;
+    const teamOverrides = team_review_overrides?.split(',').map(overrideString => {
+        const [team, numberOfRequiredReviews] = overrideString.split(':');
+        return { team, numberOfRequiredReviews };
+    });
     const teamsList = updateTeamsList(teams?.split('\n'));
     if (!validateTeamsList(teamsList)) {
         core.setFailed('If teams input is in the format "org/team", then the org must be the same as the repository org');
@@ -95,7 +99,7 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', pul
         .filter(({ state }) => state === 'APPROVED')
         .map(({ user }) => user?.login)
         .filter(Boolean);
-    core.debug(`PR already approved by: ${approverLogins.toString()}`);
+    core.info(`PR already approved by: ${approverLogins.toString()}`);
     const requiredCodeOwnersEntries = teamsList || usersList
         ? createArtificialCodeOwnersEntry({ teams: teamsList, users: usersList })
         : await (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.q)(prNumber);
@@ -111,10 +115,12 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', pul
         });
         const codeOwnerLogins = (0,lodash.uniq)(loginsLists.flat());
         const numberOfApprovals = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
-        core.debug(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
-        return numberOfApprovals >= Number(number_of_reviewers);
+        const numberOfRequiredReviews = teamOverrides?.find(({ team }) => entry.owners.includes(team))?.numberOfRequiredReviews ?? number_of_reviewers;
+        core.info(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
+        core.info(`Number of required reviews: ${numberOfRequiredReviews}`);
+        return numberOfApprovals >= Number(numberOfRequiredReviews);
     };
-    core.debug(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
+    core.info(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
     const booleans = await Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
     return booleans.every(Boolean);
 };

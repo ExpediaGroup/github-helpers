@@ -59,4 +59,5 @@ export class HelperInputs {
   repo_name?: string;
   repo_owner_name?: string;
   load_balancing_sizes?: string;
+  team_review_overrides?: string;
 }
