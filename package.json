@@ -9,7 +9,7 @@
     "@actions/github": "6.0.0",
     "@adobe/node-fetch-retry": "2.2.0",
     "@octokit/rest": "20.1.1",
-    "axios": "1.6.8",
+    "axios": "1.7.2",
     "bluebird": "3.7.2",
     "codeowners-utils": "1.0.2",
     "js-yaml": "4.1.0",
@@ -18,7 +18,7 @@
     "lodash.samplesize": "4.2.0",
     "lodash.union": "4.6.0",
     "lodash.uniq": "4.5.0",
-    "micromatch": "4.0.5"
+    "micromatch": "4.0.7"
   },
   "devDependencies": {
     "@swc/jest": "0.2.36",
