@@ -33,11 +33,15 @@ export const removePrFromMergeQueue = async ({ seconds }: RemovePrFromMergeQueue
   if (!firstQueuedPr) {
     core.info('No PR is first in the merge queue.');
 
-    return map(pullRequests, pr => {
+    return map(pullRequests, async pr => {
+      const readyForMergeLabel = pr.labels.find(label => label.name.startsWith(READY_FOR_MERGE_PR_LABEL));
       const queueLabel = pr.labels.find(label => label.name.startsWith(QUEUED_FOR_MERGE_PREFIX));
-      if (queueLabel?.name) {
-        core.info(`Cleaning up PR with queue label ${queueLabel.name}...`);
-        return Promise.all([removeLabelIfExists(READY_FOR_MERGE_PR_LABEL, pr.number), removeLabelIfExists(queueLabel.name, pr.number)]);
+      if (readyForMergeLabel || queueLabel) {
+        core.info(`Cleaning up queued PR #${pr.number}...`);
+        await removeLabelIfExists(READY_FOR_MERGE_PR_LABEL, pr.number);
+        if (queueLabel) {
+          await removeLabelIfExists(queueLabel.name, pr.number);
+        }
       }
     });
   }
