@@ -195,6 +195,11 @@ describe('removePrFromMergeQueue', () => {
             number: 678,
             head: { sha: 'correct sha' },
             labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: `${QUEUED_FOR_MERGE_PREFIX} #3` }]
+          },
+          {
+            number: 999,
+            head: { sha: 'correct sha' },
+            labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
           }
         ]
       }));
@@ -218,6 +223,7 @@ describe('removePrFromMergeQueue', () => {
       expect(removeLabelIfExists).toHaveBeenCalledWith(`${QUEUED_FOR_MERGE_PREFIX} #2`, 12345);
       expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 678);
       expect(removeLabelIfExists).toHaveBeenCalledWith(`${QUEUED_FOR_MERGE_PREFIX} #3`, 678);
+      expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 999);
     });
   });
 });

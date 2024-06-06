@@ -196,11 +196,15 @@ const removePrFromMergeQueue = async ({ seconds }) => {
     const firstQueuedPr = pullRequests.find(pr => pr.labels.some(label => label.name === _constants__WEBPACK_IMPORTED_MODULE_1__/* .FIRST_QUEUED_PR_LABEL */ .IH));
     if (!firstQueuedPr) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('No PR is first in the merge queue.');
-        return (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(pullRequests, pr => {
+        return (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(pullRequests, async (pr) => {
+            const readyForMergeLabel = pr.labels.find(label => label.name.startsWith(_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak));
             const queueLabel = pr.labels.find(label => label.name.startsWith(_constants__WEBPACK_IMPORTED_MODULE_1__/* .QUEUED_FOR_MERGE_PREFIX */ .Ee));
-            if (queueLabel?.name) {
-                _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Cleaning up PR with queue label ${queueLabel.name}...`);
-                return Promise.all([(0,_remove_label__WEBPACK_IMPORTED_MODULE_4__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, pr.number), (0,_remove_label__WEBPACK_IMPORTED_MODULE_4__.removeLabelIfExists)(queueLabel.name, pr.number)]);
+            if (readyForMergeLabel || queueLabel) {
+                _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Cleaning up queued PR #${pr.number}...`);
+                await (0,_remove_label__WEBPACK_IMPORTED_MODULE_4__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, pr.number);
+                if (queueLabel) {
+                    await (0,_remove_label__WEBPACK_IMPORTED_MODULE_4__.removeLabelIfExists)(queueLabel.name, pr.number);
+                }
             }
         });
     }
