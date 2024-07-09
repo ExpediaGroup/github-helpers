@@ -128,6 +128,47 @@ describe('removePrFromMergeQueue', () => {
     });
   });
 
+  describe('should not remove pr case with pending status', () => {
+    beforeEach(async () => {
+      (octokit.repos.listCommitStatusesForRef as unknown as Mocktokit).mockImplementation(async () => ({
+        data: [
+          {
+            created_at: '2022-01-01T10:00:00Z',
+            state: 'failure'
+          },
+          {
+            created_at: '2022-01-01T09:01:00Z',
+            state: 'pending'
+          },
+          {
+            created_at: '2022-01-01T10:00:00Z',
+            state: 'success'
+          }
+        ]
+      }));
+      await removePrFromMergeQueue({ seconds });
+    });
+
+    it('should call pulls.list with correct params', () => {
+      expect(octokit.pulls.list).toHaveBeenCalledWith({
+        state: 'open',
+        per_page: 100,
+        ...context.repo
+      });
+    });
+
+    it('should call listCommitStatusesForRef with correct params', () => {
+      expect(octokit.repos.listCommitStatusesForRef).toHaveBeenCalledWith({
+        ref: 'correct sha',
+        ...context.repo
+      });
+    });
+
+    it('should not call removeLabelIfExists', () => {
+      expect(removeLabelIfExists).not.toHaveBeenCalled();
+    });
+  });
+  
   describe('should remove stray PRs in the queue', () => {
     beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
