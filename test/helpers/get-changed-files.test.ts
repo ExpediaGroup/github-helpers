@@ -95,13 +95,13 @@ describe('getChangedFiles', () => {
   it('case where one of the file paths match the file paths that octokit returns', async () => {
     const result = await getChangedFiles({});
 
-    expect(result).toEqual(`${mock_data1[0].filename},${mock_data1[1].filename},${mock_data2[0].filename}`);
+    expect(result).toEqual(`${mock_data1[0]!.filename},${mock_data1[1]!.filename},${mock_data2[0]!.filename}`);
   });
 
   it('case where files returned from getChangedFiles matches the provided regex pattern', async () => {
     const result = await getChangedFiles({ pattern: 'file/path/1/file[0-9].txt' });
 
-    expect(result).toEqual(`${mock_data1[0].filename}`);
+    expect(result).toEqual(`${mock_data1[0]!.filename}`);
   });
 
   it('case where files returned from getChangedFiles does not match the provided regex pattern', async () => {
@@ -116,6 +116,6 @@ describe('getChangedFiles', () => {
     }));
     const result = await getChangedFiles({ ignore_deleted: 'true' });
 
-    expect(result).toEqual(mock_data3[0].filename);
+    expect(result).toEqual(mock_data3[0]!.filename);
   });
 });

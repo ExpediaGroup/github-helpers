@@ -79,7 +79,7 @@ export const approvalsSatisfied = async ({
     const numberOfApprovals = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
 
     const numberOfRequiredReviews =
-      teamOverrides?.find(({ team }) => entry.owners.includes(team))?.numberOfRequiredReviews ?? number_of_reviewers;
+      teamOverrides?.find(({ team }) => team && entry.owners.includes(team))?.numberOfRequiredReviews ?? number_of_reviewers;
     core.info(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
     core.info(`Number of required reviews: ${numberOfRequiredReviews}`);
 
