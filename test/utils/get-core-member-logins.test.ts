@@ -109,6 +109,9 @@ describe('getCoreMemberLogins', () => {
                   },
                   {
                     filename: sharedFile
+                  },
+                  {
+                    filename: 'file/path/users/file.ts'
                   }
                 ]
               : []
@@ -126,6 +129,10 @@ describe('getCoreMemberLogins', () => {
           {
             pattern: '/file/path/shared',
             owners: ['@ExpediaGroup/test-shared-owners-1', '@ExpediaGroup/test-shared-owners-2']
+          },
+          {
+            pattern: '/file/path/users',
+            owners: ['@user1', '@user2']
           }
         ]);
       });

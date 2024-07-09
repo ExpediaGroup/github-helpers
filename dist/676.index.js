@@ -196,7 +196,7 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', req
                 return await fetchTeamLogins(teamOrUsers);
             }
             else {
-                return teamOrUsers.split(',');
+                return teamOrUsers.replaceAll('@', '').split(',');
             }
         });
         const codeOwnerLogins = (0,lodash.uniq)(loginsLists.flat());
