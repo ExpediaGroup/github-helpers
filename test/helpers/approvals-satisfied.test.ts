@@ -514,4 +514,40 @@ describe('approvalsSatisfied', () => {
     });
     expect(result).toBe(true);
   });
+  
+  it('should return true when passing comma-seperated list of users and approvals are met', async () => {
+    mockPagination({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user1' }
+        }
+      ]
+    });
+    const result = await approvalsSatisfied({
+      users: 'user1,user2',
+      pull_number: '12345'
+    });
+    expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
+    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(result).toBe(true);
+  });
+
+  it('should return false when passing comma-seperated list of users and approvals are not met', async () => {
+    mockPagination({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user3' }
+        }
+      ]
+    });
+    const result = await approvalsSatisfied({
+      users: 'user1,user2',
+      pull_number: '12345'
+    });
+    expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
+    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(result).toBe(false);
+  });
 });
