@@ -191,12 +191,12 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', req
         : await (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.q)(prNumber);
     const requiredCodeOwnersEntriesWithOwners = (0,lodash.uniqBy)(requiredCodeOwnersEntries.filter(({ owners }) => owners.length), 'owners');
     const codeOwnersEntrySatisfiesApprovals = async (entry) => {
-        const loginsLists = await (0,bluebird.map)(entry.owners, async (teamOrUser) => {
-            if (isTeam(teamOrUser)) {
-                return await fetchTeamLogins(teamOrUser);
+        const loginsLists = await (0,bluebird.map)(entry.owners, async (teamOrUsers) => {
+            if (isTeam(teamOrUsers)) {
+                return await fetchTeamLogins(teamOrUsers);
             }
             else {
-                return [teamOrUser];
+                return teamOrUsers.split(',');
             }
         });
         const codeOwnerLogins = (0,lodash.uniq)(loginsLists.flat());
@@ -213,7 +213,7 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', req
 const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }) => [
     { owners: teams.concat(users) }
 ];
-const isTeam = (teamOrUser) => teamOrUser.includes('/');
+const isTeam = (teamOrUsers) => teamOrUsers.includes('/');
 const fetchTeamLogins = async (team) => {
     const { data } = await octokit/* octokit.teams.listMembersInOrg */.K.teams.listMembersInOrg({
         org: github.context.repo.owner,
