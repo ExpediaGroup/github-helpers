@@ -5,6 +5,7 @@
     "noEmit": true,
     "strict": true,
     "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "sourceMap": true,
