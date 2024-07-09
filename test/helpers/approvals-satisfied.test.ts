@@ -514,7 +514,7 @@ describe('approvalsSatisfied', () => {
     });
     expect(result).toBe(true);
   });
-  
+
   it('should return true when passing comma-seperated list of users and approvals are met', async () => {
     mockPagination({
       data: [

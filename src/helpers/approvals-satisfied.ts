@@ -69,7 +69,7 @@ export const approvalsSatisfied = async ({
   const codeOwnersEntrySatisfiesApprovals = async (entry: Pick<CodeOwnersEntry, 'owners'>) => {
     const loginsLists = await map(entry.owners, async teamOrUsers => {
       if (isTeam(teamOrUsers)) {
-        return await fetchTeamLogins(teamOrUser);
+        return await fetchTeamLogins(teamOrUsers);
       } else {
         return teamOrUsers.split(',');
       }
