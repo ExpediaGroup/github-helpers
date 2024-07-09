@@ -154,7 +154,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(250);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9361);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9042);
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(3476);
@@ -217,7 +217,8 @@ const removePrFromMergeQueue = async ({ seconds }) => {
         ..._actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo
     });
     const mostRecentStatus = (0,lodash__WEBPACK_IMPORTED_MODULE_1__.orderBy)(data, 'created_at', 'desc')[0];
-    if (mostRecentStatus && timestampIsStale(mostRecentStatus.created_at, seconds)) {
+    const noPendingStatus = data.find(status => status.state !== 'pending');
+    if (noPendingStatus && mostRecentStatus && timestampIsStale(mostRecentStatus.created_at, seconds)) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Removing stale PR from first queued position...');
         return Promise.all([(0,_remove_label__WEBPACK_IMPORTED_MODULE_5__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_2__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, number), (0,_remove_label__WEBPACK_IMPORTED_MODULE_5__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_2__/* .FIRST_QUEUED_PR_LABEL */ .IH, number)]);
     }

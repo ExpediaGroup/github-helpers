@@ -142,8 +142,8 @@ const paginateAllReviews = async (prNumber, page = 1) => {
     return response.data.concat(await paginateAllReviews(prNumber, page + 1));
 };
 
-// EXTERNAL MODULE: ./node_modules/lodash/lodash.js
-var lodash = __webpack_require__(250);
+// EXTERNAL MODULE: ./node_modules/@vercel/ncc/dist/ncc/@@notfound.js?lodash
+var _notfoundlodash = __webpack_require__(9361);
 ;// CONCATENATED MODULE: ./src/helpers/approvals-satisfied.ts
 /*
 Copyright 2021 Expedia, Inc.
@@ -189,7 +189,7 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', req
     const requiredCodeOwnersEntries = teamsList || usersList
         ? createArtificialCodeOwnersEntry({ teams: teamsList, users: usersList })
         : await (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.q)(prNumber);
-    const requiredCodeOwnersEntriesWithOwners = (0,lodash.uniqBy)(requiredCodeOwnersEntries.filter(({ owners }) => owners.length), 'owners');
+    const requiredCodeOwnersEntriesWithOwners = (0,_notfoundlodash.uniqBy)(requiredCodeOwnersEntries.filter(({ owners }) => owners.length), 'owners');
     const codeOwnersEntrySatisfiesApprovals = async (entry) => {
         const loginsLists = await (0,bluebird.map)(entry.owners, async (teamOrUsers) => {
             if (isTeam(teamOrUsers)) {
@@ -199,7 +199,7 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', req
                 return teamOrUsers.replaceAll('@', '').split(',');
             }
         });
-        const codeOwnerLogins = (0,lodash.uniq)(loginsLists.flat());
+        const codeOwnerLogins = (0,_notfoundlodash.uniq)(loginsLists.flat());
         const numberOfApprovals = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
         const numberOfRequiredReviews = teamOverrides?.find(({ team }) => entry.owners.includes(team))?.numberOfRequiredReviews ?? number_of_reviewers;
         core.info(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
@@ -912,7 +912,7 @@ const paginateAllChangedFilepaths = async (pull_number, page = 1) => {
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var codeowners_utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4445);
 /* harmony import */ var codeowners_utils__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(codeowners_utils__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(250);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9361);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_3__);
