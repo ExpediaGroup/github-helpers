@@ -154,14 +154,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9042);
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(3476);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6161);
-/* harmony import */ var _remove_label__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(61);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(8710);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(250);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9042);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(3476);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6161);
+/* harmony import */ var _remove_label__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(61);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(8710);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_6__);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -181,42 +183,44 @@ limitations under the License.
 
 
 
-class RemovePrFromMergeQueue extends _types_generated__WEBPACK_IMPORTED_MODULE_6__/* .HelperInputs */ .s {
+
+class RemovePrFromMergeQueue extends _types_generated__WEBPACK_IMPORTED_MODULE_7__/* .HelperInputs */ .s {
     constructor() {
         super(...arguments);
         this.seconds = '';
     }
 }
 const removePrFromMergeQueue = async ({ seconds }) => {
-    const { data: pullRequests } = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.pulls.list */ .K.pulls.list({
+    const { data: pullRequests } = await _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.pulls.list */ .K.pulls.list({
         state: 'open',
         per_page: 100,
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo
     });
-    const firstQueuedPr = pullRequests.find(pr => pr.labels.some(label => label.name === _constants__WEBPACK_IMPORTED_MODULE_1__/* .FIRST_QUEUED_PR_LABEL */ .IH));
+    const firstQueuedPr = pullRequests.find(pr => pr.labels.some(label => label.name === _constants__WEBPACK_IMPORTED_MODULE_2__/* .FIRST_QUEUED_PR_LABEL */ .IH));
     if (!firstQueuedPr) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('No PR is first in the merge queue.');
-        return (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(pullRequests, async (pr) => {
-            const readyForMergeLabel = pr.labels.find(label => label.name.startsWith(_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak));
-            const queueLabel = pr.labels.find(label => label.name.startsWith(_constants__WEBPACK_IMPORTED_MODULE_1__/* .QUEUED_FOR_MERGE_PREFIX */ .Ee));
+        return (0,bluebird__WEBPACK_IMPORTED_MODULE_6__.map)(pullRequests, async (pr) => {
+            const readyForMergeLabel = pr.labels.find(label => label.name.startsWith(_constants__WEBPACK_IMPORTED_MODULE_2__/* .READY_FOR_MERGE_PR_LABEL */ .Ak));
+            const queueLabel = pr.labels.find(label => label.name.startsWith(_constants__WEBPACK_IMPORTED_MODULE_2__/* .QUEUED_FOR_MERGE_PREFIX */ .Ee));
             if (readyForMergeLabel || queueLabel) {
                 _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Cleaning up queued PR #${pr.number}...`);
-                await (0,_remove_label__WEBPACK_IMPORTED_MODULE_4__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, pr.number);
+                await (0,_remove_label__WEBPACK_IMPORTED_MODULE_5__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_2__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, pr.number);
                 if (queueLabel) {
-                    await (0,_remove_label__WEBPACK_IMPORTED_MODULE_4__.removeLabelIfExists)(queueLabel.name, pr.number);
+                    await (0,_remove_label__WEBPACK_IMPORTED_MODULE_5__.removeLabelIfExists)(queueLabel.name, pr.number);
                 }
             }
         });
     }
     const { number, head: { sha } } = firstQueuedPr;
-    const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit.repos.listCommitStatusesForRef */ .K.repos.listCommitStatusesForRef({
+    const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit.repos.listCommitStatusesForRef */ .K.repos.listCommitStatusesForRef({
         ref: sha,
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo
     });
-    const failingStatus = data.find(status => status.state === 'failure');
-    if (failingStatus && timestampIsStale(failingStatus.created_at, seconds)) {
+    const mostRecentStatus = (0,lodash__WEBPACK_IMPORTED_MODULE_1__.orderBy)(data, 'created_at', 'desc')[0];
+    const noPendingStatus = data.find(status => status.state !== 'pending');
+    if (noPendingStatus && mostRecentStatus && timestampIsStale(mostRecentStatus.created_at, seconds)) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Removing stale PR from first queued position...');
-        return Promise.all([(0,_remove_label__WEBPACK_IMPORTED_MODULE_4__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_1__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, number), (0,_remove_label__WEBPACK_IMPORTED_MODULE_4__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_1__/* .FIRST_QUEUED_PR_LABEL */ .IH, number)]);
+        return Promise.all([(0,_remove_label__WEBPACK_IMPORTED_MODULE_5__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_2__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, number), (0,_remove_label__WEBPACK_IMPORTED_MODULE_5__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_2__/* .FIRST_QUEUED_PR_LABEL */ .IH, number)]);
     }
 };
 const timestampIsStale = (timestamp, seconds) => {
