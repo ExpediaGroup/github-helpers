@@ -525,7 +525,7 @@ describe('approvalsSatisfied', () => {
       ]
     });
     const result = await approvalsSatisfied({
-      users: 'user1,user2',
+      users: '@user1,@user2',
       pull_number: '12345'
     });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
@@ -543,7 +543,7 @@ describe('approvalsSatisfied', () => {
       ]
     });
     const result = await approvalsSatisfied({
-      users: 'user1,user2',
+      users: '@user1,@user2',
       pull_number: '12345'
     });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
