@@ -142,7 +142,7 @@ describe('manageMergeQueue', () => {
     });
   });
 
-  describe('pr ready for merge case queued #2', () => {
+  describe('pr ready for merge with one PR in the queue', () => {
     const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }, { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
     beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
@@ -185,7 +185,7 @@ describe('manageMergeQueue', () => {
     });
   });
 
-  describe('pr ready for merge case queued #1', () => {
+  describe('pr ready for merge with empty queue', () => {
     const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
     const pullRequest = {
       merged: false,
@@ -497,6 +497,69 @@ describe('manageMergeQueue', () => {
 
     it('should call updateMergeQueue with correct params', () => {
       expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
+    });
+  });
+
+  describe('more than max prs in the queue', () => {
+    const queuedPrs = [
+      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }
+    ];
+    beforeEach(async () => {
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+        data: page === 1 ? queuedPrs : []
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          merged: false,
+          head: { sha: 'sha' },
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+        }
+      }));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      await manageMergeQueue({
+        max_queue_size: '3'
+      });
+    });
+
+    it('should not add pr to the queue when it is full', () => {
+      expect(octokit.issues.addLabels).not.toHaveBeenCalled();
+      expect(octokitGraphql).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('fewer than max prs in the queue', () => {
+    const queuedPrs = [
+      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
+      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }
+    ];
+    beforeEach(async () => {
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+        data: page === 1 ? queuedPrs : []
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          merged: false,
+          head: { sha: 'sha' },
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+        }
+      }));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      await manageMergeQueue({
+        max_queue_size: '3'
+      });
+    });
+
+    it('should add pr to the queue when it is not yet full', () => {
+      expect(octokit.issues.addLabels).toHaveBeenCalledWith({
+        labels: ['QUEUED FOR MERGE #3'],
+        issue_number: 123,
+        ...context.repo
+      });
+      expect(octokitGraphql).toHaveBeenCalled();
     });
   });
 });
