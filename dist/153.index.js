@@ -335,14 +335,8 @@ const getCoreMemberLogins = async (pull_number, teams) => {
 };
 const getRequiredCodeOwnersEntries = async (pull_number) => {
     const codeOwners = (await (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd())) ?? [];
-    const sanitizedCodeOnwers = codeOwners.map(entry => {
-        return {
-            ...entry,
-            owners: entry.owners.flatMap(owner => owner.split(','))
-        };
-    });
     const changedFilePaths = await (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__/* .getChangedFilepaths */ .s)(pull_number);
-    return changedFilePaths.map(filePath => (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.matchFile)(filePath, sanitizedCodeOnwers)).filter(Boolean);
+    return changedFilePaths.map(filePath => (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.matchFile)(filePath, codeOwners)).filter(Boolean);
 };
 const getCoreTeamsAndLogins = async (codeOwners) => {
     if (!codeOwners?.length) {

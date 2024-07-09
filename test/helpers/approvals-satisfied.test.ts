@@ -550,4 +550,28 @@ describe('approvalsSatisfied', () => {
     expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(false);
   });
+
+  it('should return true when approvals are satisfied and users are explicitly defined in CODEOWNERS', async () => {
+    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@user1', '@user2'] }]);
+    mockPagination({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user1' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user2' }
+        },
+        {
+          state: 'APPROVED',
+          user: { login: 'user3' }
+        }
+      ]
+    });
+    const result = await approvalsSatisfied({
+      number_of_reviewers: '2'
+    });
+    expect(result).toBe(true);
+  });
 });
