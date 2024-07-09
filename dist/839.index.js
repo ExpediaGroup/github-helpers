@@ -49,6 +49,8 @@ const generateMatrix = ({ paths, batches: _batches = '1', load_balancing_sizes }
     let currentLoadSize = 0;
     let currentBatch = [];
     matrixValues.forEach((path, index) => {
+        if (!loadBalancingSizes[index])
+            throw new Error('load_balancing_sizes input must contain values');
         const possibleLoadSize = currentLoadSize + loadBalancingSizes[index];
         if (Math.abs(possibleLoadSize - targetLoadSize) <= Math.abs(loadBalancingSizes[index] - targetLoadSize)) {
             currentLoadSize += loadBalancingSizes[index];
