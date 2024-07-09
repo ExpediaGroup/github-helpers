@@ -480,7 +480,7 @@ limitations under the License.
 
 class ManageMergeQueue extends generated/* HelperInputs */.s {
 }
-const manageMergeQueue = async ({ login, slack_webhook_url, skip_auto_merge } = {}) => {
+const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip_auto_merge } = {}) => {
     const { data: pullRequest } = await octokit/* octokit.pulls.get */.K.pulls.get({ pull_number: github.context.issue.number, ...github.context.repo });
     if (pullRequest.merged || !pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak)) {
         core.info('This PR is not in the merge queue.');
@@ -493,6 +493,12 @@ const manageMergeQueue = async ({ login, slack_webhook_url, skip_auto_merge } = 
     }
     const queuedPrs = await getQueuedPullRequests();
     const queuePosition = queuedPrs.length;
+    if (queuePosition > Number(max_queue_size)) {
+        await (0,create_pr_comment.createPrComment)({
+            body: `The merge queue is full! Only ${max_queue_size} PRs are allowed in the queue at a time.\n\nIf you would like to merge your PR, please do what you can to ensure the PRs in the queue get merged.`
+        });
+        return removePrFromQueue(pullRequest);
+    }
     if (pullRequest.labels.find(label => label.name === constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ)) {
         return updateMergeQueue(queuedPrs);
     }

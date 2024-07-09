@@ -527,6 +527,7 @@ describe('manageMergeQueue', () => {
     it('should not add pr to the queue when it is full', () => {
       expect(octokit.issues.addLabels).not.toHaveBeenCalled();
       expect(octokitGraphql).not.toHaveBeenCalled();
+      expect(createPrComment).toHaveBeenCalled();
     });
   });
 
@@ -560,6 +561,7 @@ describe('manageMergeQueue', () => {
         ...context.repo
       });
       expect(octokitGraphql).toHaveBeenCalled();
+      expect(createPrComment).not.toHaveBeenCalled();
     });
   });
 });
