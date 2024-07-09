@@ -71,7 +71,7 @@ export const approvalsSatisfied = async ({
       if (isTeam(teamOrUsers)) {
         return await fetchTeamLogins(teamOrUsers);
       } else {
-        return teamOrUsers.split(',');
+        return teamOrUsers.replaceAll('@', '').split(',');
       }
     });
     const codeOwnerLogins = uniq(loginsLists.flat());
