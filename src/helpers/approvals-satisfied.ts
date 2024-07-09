@@ -21,6 +21,7 @@ import { CodeOwnersEntry } from 'codeowners-utils';
 import * as core from '@actions/core';
 import { paginateAllReviews } from '../utils/paginate-all-reviews';
 import { uniq, uniqBy } from 'lodash';
+import { createPrComment } from './create-pr-comment';
 
 export class ApprovalsSatisfied extends HelperInputs {
   teams?: string;
@@ -66,6 +67,8 @@ export const approvalsSatisfied = async ({
     'owners'
   );
 
+  const logs = [];
+
   const codeOwnersEntrySatisfiesApprovals = async (entry: Pick<CodeOwnersEntry, 'owners'>) => {
     const loginsLists = await map(entry.owners, async teamOrUsers => {
       if (isTeam(teamOrUsers)) {
@@ -80,15 +83,27 @@ export const approvalsSatisfied = async ({
 
     const numberOfRequiredReviews =
       teamOverrides?.find(({ team }) => team && entry.owners.includes(team))?.numberOfRequiredReviews ?? number_of_reviewers;
-    core.info(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
-    core.info(`Number of required reviews: ${numberOfRequiredReviews}`);
+    logs.push(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
+    logs.push(`Number of required reviews: ${numberOfRequiredReviews}`);
 
     return numberOfApprovals >= Number(numberOfRequiredReviews);
   };
 
-  core.info(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
+  logs.push(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
+  const logsJoined = logs.join('\n');
+
   const booleans = await Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
-  return booleans.every(Boolean);
+  const approvalsSatisfied = booleans.every(Boolean);
+
+  core.info(logsJoined);
+
+  if (!approvalsSatisfied) {
+    await createPrComment({
+      body: 'PRs must meet all required approvals before entering the merge queue.\n\n' + logsJoined
+    });
+  }
+
+  return approvalsSatisfied;
 };
 
 const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }: { teams?: string[]; users?: string[] }) => [

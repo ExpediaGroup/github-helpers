@@ -144,6 +144,8 @@ const paginateAllReviews = async (prNumber, page = 1) => {
 
 // EXTERNAL MODULE: ./node_modules/lodash/lodash.js
 var lodash = __webpack_require__(250);
+// EXTERNAL MODULE: ./src/helpers/create-pr-comment.ts
+var create_pr_comment = __webpack_require__(3461);
 ;// CONCATENATED MODULE: ./src/helpers/approvals-satisfied.ts
 /*
 Copyright 2021 Expedia, Inc.
@@ -157,6 +159,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 
 
 
@@ -190,6 +193,7 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', req
         ? createArtificialCodeOwnersEntry({ teams: teamsList, users: usersList })
         : await (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.q)(prNumber);
     const requiredCodeOwnersEntriesWithOwners = (0,lodash.uniqBy)(requiredCodeOwnersEntries.filter(({ owners }) => owners.length), 'owners');
+    const logs = [];
     const codeOwnersEntrySatisfiesApprovals = async (entry) => {
         const loginsLists = await (0,bluebird.map)(entry.owners, async (teamOrUsers) => {
             if (isTeam(teamOrUsers)) {
@@ -202,13 +206,21 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', req
         const codeOwnerLogins = (0,lodash.uniq)(loginsLists.flat());
         const numberOfApprovals = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
         const numberOfRequiredReviews = teamOverrides?.find(({ team }) => team && entry.owners.includes(team))?.numberOfRequiredReviews ?? number_of_reviewers;
-        core.info(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
-        core.info(`Number of required reviews: ${numberOfRequiredReviews}`);
+        logs.push(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
+        logs.push(`Number of required reviews: ${numberOfRequiredReviews}`);
         return numberOfApprovals >= Number(numberOfRequiredReviews);
     };
-    core.info(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
+    logs.push(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
+    const logsJoined = logs.join('\n');
     const booleans = await Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
-    return booleans.every(Boolean);
+    const approvalsSatisfied = booleans.every(Boolean);
+    core.info(logsJoined);
+    if (!approvalsSatisfied) {
+        await (0,create_pr_comment.createPrComment)({
+            body: 'PRs must meet all required approvals before entering the merge queue.\n\n' + logsJoined
+        });
+    }
+    return approvalsSatisfied;
 };
 const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }) => [
     { owners: teams.concat(users) }
@@ -449,8 +461,6 @@ const updateQueuePosition = async (pr, index) => {
 var paginate_open_pull_requests = __webpack_require__(5757);
 // EXTERNAL MODULE: ./src/helpers/approvals-satisfied.ts + 1 modules
 var approvals_satisfied = __webpack_require__(9431);
-// EXTERNAL MODULE: ./src/helpers/create-pr-comment.ts
-var create_pr_comment = __webpack_require__(3461);
 ;// CONCATENATED MODULE: ./src/helpers/manage-merge-queue.ts
 /*
 Copyright 2021 Expedia, Inc.
@@ -477,7 +487,6 @@ limitations under the License.
 
 
 
-
 class ManageMergeQueue extends generated/* HelperInputs */.s {
 }
 const manageMergeQueue = async ({ login, slack_webhook_url, skip_auto_merge } = {}) => {
@@ -488,7 +497,6 @@ const manageMergeQueue = async ({ login, slack_webhook_url, skip_auto_merge } = 
     }
     const prMeetsRequiredApprovals = await (0,approvals_satisfied.approvalsSatisfied)();
     if (!prMeetsRequiredApprovals) {
-        await (0,create_pr_comment.createPrComment)({ body: 'PRs must meet all required approvals before entering the merge queue.' });
         return removePrFromQueue(pullRequest);
     }
     const queuedPrs = await getQueuedPullRequests();
