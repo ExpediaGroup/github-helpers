@@ -520,7 +520,7 @@ const manageMergeQueue = async ({ login, slack_webhook_url, skip_auto_merge } = 
 const removePrFromQueue = async (pullRequest) => {
     const queueLabel = pullRequest.labels.find(label => label.name?.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee))?.name;
     if (queueLabel) {
-        await (0,bluebird.map)([constants/* READY_FOR_MERGE_PR_LABEL */.Ak, queueLabel], async (label) => (0,remove_label.removeLabelIfExists)(label, pullRequest.number));
+        await (0,bluebird.map)([constants/* READY_FOR_MERGE_PR_LABEL */.Ak, queueLabel], async (label) => await (0,remove_label.removeLabelIfExists)(label, pullRequest.number));
         await (0,set_commit_status.setCommitStatus)({
             sha: pullRequest.head.sha,
             context: constants/* MERGE_QUEUE_STATUS */.Cb,
