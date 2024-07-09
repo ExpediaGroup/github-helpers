@@ -168,7 +168,7 @@ describe('removePrFromMergeQueue', () => {
       expect(removeLabelIfExists).not.toHaveBeenCalled();
     });
   });
-  
+
   describe('should remove stray PRs in the queue', () => {
     beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
