@@ -54,8 +54,8 @@ export const removePrFromMergeQueue = async ({ seconds }: RemovePrFromMergeQueue
     ref: sha,
     ...context.repo
   });
-  const failingStatus = data.find(status => status.state === 'failure');
-  if (failingStatus && timestampIsStale(failingStatus.created_at, seconds)) {
+  const status = data.find(status => status.state === 'failure' || status.state === 'success');
+  if (status && timestampIsStale(status.created_at, seconds)) {
     core.info('Removing stale PR from first queued position...');
     return Promise.all([removeLabelIfExists(READY_FOR_MERGE_PR_LABEL, number), removeLabelIfExists(FIRST_QUEUED_PR_LABEL, number)]);
   }
