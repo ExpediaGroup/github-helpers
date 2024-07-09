@@ -7,3 +7,4 @@
 /file/path/1         @ExpediaGroup/test-owners-1
 /file/path/2         @ExpediaGroup/test-owners-2
 /file/path/shared    @ExpediaGroup/test-shared-owners-1 @ExpediaGroup/test-shared-owners-2
+/file/path/users     @user1 @user2
