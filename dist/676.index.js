@@ -495,7 +495,7 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
     const queuePosition = queuedPrs.length;
     if (queuePosition > Number(max_queue_size)) {
         await (0,create_pr_comment.createPrComment)({
-            body: `The merge queue is full! Only ${max_queue_size} PRs are allowed in the queue at a time.\n\nIf you would like to merge your PR, please do what you can to ensure the PRs in the queue get merged.`
+            body: `The merge queue is full! Only ${max_queue_size} PRs are allowed in the queue at a time.\n\nIf you would like to merge your PR, please monitor the PRs in the queue and make sure the authors are around to merge them.`
         });
         return removePrFromQueue(pullRequest);
     }
