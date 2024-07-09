@@ -67,11 +67,11 @@ export const approvalsSatisfied = async ({
   );
 
   const codeOwnersEntrySatisfiesApprovals = async (entry: Pick<CodeOwnersEntry, 'owners'>) => {
-    const loginsLists = await map(entry.owners, async teamOrUser => {
-      if (isTeam(teamOrUser)) {
+    const loginsLists = await map(entry.owners, async teamOrUsers => {
+      if (isTeam(teamOrUsers)) {
         return await fetchTeamLogins(teamOrUser);
       } else {
-        return [teamOrUser];
+        return teamOrUsers.split(',');
       }
     });
     const codeOwnerLogins = uniq(loginsLists.flat());
@@ -94,7 +94,7 @@ export const approvalsSatisfied = async ({
 const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }: { teams?: string[]; users?: string[] }) => [
   { owners: teams.concat(users) }
 ];
-const isTeam = (teamOrUser: string) => teamOrUser.includes('/');
+const isTeam = (teamOrUsers: string) => teamOrUsers.includes('/');
 const fetchTeamLogins = async (team: string) => {
   const { data } = await octokit.teams.listMembersInOrg({
     org: context.repo.owner,
