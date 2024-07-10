@@ -99,10 +99,6 @@ describe('manageMergeQueue', () => {
         description: 'This PR is in line to merge.'
       });
     });
-
-    it('should add pr comment', () => {
-      expect(createPrComment).toHaveBeenCalled();
-    });
   });
 
   describe('pr not ready for merge case', () => {

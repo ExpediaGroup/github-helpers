@@ -21,6 +21,7 @@ import { CodeOwnersEntry } from 'codeowners-utils';
 import * as core from '@actions/core';
 import { paginateAllReviews } from '../utils/paginate-all-reviews';
 import { uniq, uniqBy } from 'lodash';
+import { createPrComment } from './create-pr-comment';
 
 export class ApprovalsSatisfied extends HelperInputs {
   teams?: string;
@@ -28,6 +29,7 @@ export class ApprovalsSatisfied extends HelperInputs {
   number_of_reviewers?: string;
   required_review_overrides?: string;
   pull_number?: string;
+  body?: string;
 }
 
 export const approvalsSatisfied = async ({
@@ -35,7 +37,8 @@ export const approvalsSatisfied = async ({
   users,
   number_of_reviewers = '1',
   required_review_overrides,
-  pull_number
+  pull_number,
+  body
 }: ApprovalsSatisfied = {}) => {
   const prNumber = pull_number ? Number(pull_number) : context.issue.number;
 
@@ -50,12 +53,14 @@ export const approvalsSatisfied = async ({
   }
   const usersList = users?.split('\n');
 
+  const logs = [];
+
   const reviews = await paginateAllReviews(prNumber);
   const approverLogins = reviews
     .filter(({ state }) => state === 'APPROVED')
     .map(({ user }) => user?.login)
     .filter(Boolean);
-  core.info(`PR already approved by: ${approverLogins.toString()}`);
+  logs.push(`PR already approved by: ${approverLogins.toString()}`);
 
   const requiredCodeOwnersEntries =
     teamsList || usersList
@@ -80,15 +85,32 @@ export const approvalsSatisfied = async ({
 
     const numberOfRequiredReviews =
       teamOverrides?.find(({ team }) => team && entry.owners.includes(team))?.numberOfRequiredReviews ?? number_of_reviewers;
-    core.info(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
-    core.info(`Number of required reviews: ${numberOfRequiredReviews}`);
+    logs.push(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
+    logs.push(`Number of required reviews: ${numberOfRequiredReviews}`);
 
     return numberOfApprovals >= Number(numberOfRequiredReviews);
   };
 
-  core.info(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
+  logs.push(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
+
   const booleans = await Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
-  return booleans.every(Boolean);
+  const approvalsSatisfied = booleans.every(Boolean);
+
+  if (!approvalsSatisfied) {
+    logs.unshift('Required approvals not satisfied:\n');
+
+    if (body) {
+      logs.unshift(body + '\n');
+    }
+
+    await createPrComment({
+      body: logs.join('\n')
+    });
+  }
+
+  core.info(logs.join('\n'));
+
+  return approvalsSatisfied;
 };
 
 const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }: { teams?: string[]; users?: string[] }) => [

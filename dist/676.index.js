@@ -144,6 +144,8 @@ const paginateAllReviews = async (prNumber, page = 1) => {
 
 // EXTERNAL MODULE: ./node_modules/lodash/lodash.js
 var lodash = __webpack_require__(250);
+// EXTERNAL MODULE: ./src/helpers/create-pr-comment.ts
+var create_pr_comment = __webpack_require__(3461);
 ;// CONCATENATED MODULE: ./src/helpers/approvals-satisfied.ts
 /*
 Copyright 2021 Expedia, Inc.
@@ -166,9 +168,10 @@ limitations under the License.
 
 
 
+
 class ApprovalsSatisfied extends generated/* HelperInputs */.s {
 }
-const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', required_review_overrides, pull_number } = {}) => {
+const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', required_review_overrides, pull_number, body } = {}) => {
     const prNumber = pull_number ? Number(pull_number) : github.context.issue.number;
     const teamOverrides = required_review_overrides?.split(',').map(overrideString => {
         const [team, numberOfRequiredReviews] = overrideString.split(':');
@@ -180,12 +183,13 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', req
         return false;
     }
     const usersList = users?.split('\n');
+    const logs = [];
     const reviews = await paginateAllReviews(prNumber);
     const approverLogins = reviews
         .filter(({ state }) => state === 'APPROVED')
         .map(({ user }) => user?.login)
         .filter(Boolean);
-    core.info(`PR already approved by: ${approverLogins.toString()}`);
+    logs.push(`PR already approved by: ${approverLogins.toString()}`);
     const requiredCodeOwnersEntries = teamsList || usersList
         ? createArtificialCodeOwnersEntry({ teams: teamsList, users: usersList })
         : await (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.q)(prNumber);
@@ -202,13 +206,24 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', req
         const codeOwnerLogins = (0,lodash.uniq)(loginsLists.flat());
         const numberOfApprovals = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
         const numberOfRequiredReviews = teamOverrides?.find(({ team }) => team && entry.owners.includes(team))?.numberOfRequiredReviews ?? number_of_reviewers;
-        core.info(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
-        core.info(`Number of required reviews: ${numberOfRequiredReviews}`);
+        logs.push(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
+        logs.push(`Number of required reviews: ${numberOfRequiredReviews}`);
         return numberOfApprovals >= Number(numberOfRequiredReviews);
     };
-    core.info(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
+    logs.push(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
     const booleans = await Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
-    return booleans.every(Boolean);
+    const approvalsSatisfied = booleans.every(Boolean);
+    if (!approvalsSatisfied) {
+        logs.unshift('Required approvals not satisfied:\n');
+        if (body) {
+            logs.unshift(body + '\n');
+        }
+        await (0,create_pr_comment.createPrComment)({
+            body: logs.join('\n')
+        });
+    }
+    core.info(logs.join('\n'));
+    return approvalsSatisfied;
 };
 const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }) => [
     { owners: teams.concat(users) }
@@ -485,9 +500,10 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
         core.info('This PR is not in the merge queue.');
         return removePrFromQueue(pullRequest);
     }
-    const prMeetsRequiredApprovals = await (0,approvals_satisfied.approvalsSatisfied)();
+    const prMeetsRequiredApprovals = await (0,approvals_satisfied.approvalsSatisfied)({
+        body: 'PRs must meet all required approvals before entering the merge queue.'
+    });
     if (!prMeetsRequiredApprovals) {
-        await (0,create_pr_comment.createPrComment)({ body: 'PRs must meet all required approvals before entering the merge queue.' });
         return removePrFromQueue(pullRequest);
     }
     const queuedPrs = await getQueuedPullRequests();
