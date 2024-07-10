@@ -171,7 +171,7 @@ limitations under the License.
 
 class ApprovalsSatisfied extends generated/* HelperInputs */.s {
 }
-const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', required_review_overrides, pull_number } = {}, approvalsNotMetMessage = undefined) => {
+const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', required_review_overrides, pull_number, approvals_not_met_message } = {}) => {
     const prNumber = pull_number ? Number(pull_number) : github.context.issue.number;
     const teamOverrides = required_review_overrides?.split(',').map(overrideString => {
         const [team, numberOfRequiredReviews] = overrideString.split(':');
@@ -215,8 +215,8 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', req
     const approvalsSatisfied = booleans.every(Boolean);
     if (!approvalsSatisfied) {
         logs.unshift('Required approvals not satisfied:\n');
-        if (approvalsNotMetMessage) {
-            logs.unshift(approvalsNotMetMessage + '\n');
+        if (approvals_not_met_message) {
+            logs.unshift(approvals_not_met_message + '\n');
         }
         await (0,create_pr_comment.createPrComment)({
             body: logs.join('\n')

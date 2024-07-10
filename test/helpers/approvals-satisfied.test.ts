@@ -613,13 +613,11 @@ Number of required reviews: 1`
           }
         ]
       });
-      await approvalsSatisfied(
-        {
-          users: '@user1,@user2',
-          pull_number: '12345'
-        },
-        'PRs must meet all required approvals before entering the merge queue.'
-      );
+      await approvalsSatisfied({
+        users: '@user1,@user2',
+        pull_number: '12345',
+        approvals_not_met_message: 'PRs must meet all required approvals before entering the merge queue.'
+      });
       expect(octokit.issues.createComment).toHaveBeenCalledWith(
         expect.objectContaining({
           body: `PRs must meet all required approvals before entering the merge queue.

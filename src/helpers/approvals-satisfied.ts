@@ -29,12 +29,17 @@ export class ApprovalsSatisfied extends HelperInputs {
   number_of_reviewers?: string;
   required_review_overrides?: string;
   pull_number?: string;
+  approvals_not_met_message?: string;
 }
 
-export const approvalsSatisfied = async (
-  { teams, users, number_of_reviewers = '1', required_review_overrides, pull_number }: ApprovalsSatisfied = {},
-  approvalsNotMetMessage: string | undefined = undefined
-) => {
+export const approvalsSatisfied = async ({
+  teams,
+  users,
+  number_of_reviewers = '1',
+  required_review_overrides,
+  pull_number,
+  approvals_not_met_message
+}: ApprovalsSatisfied = {}) => {
   const prNumber = pull_number ? Number(pull_number) : context.issue.number;
 
   const teamOverrides = required_review_overrides?.split(',').map(overrideString => {
@@ -94,8 +99,8 @@ export const approvalsSatisfied = async (
   if (!approvalsSatisfied) {
     logs.unshift('Required approvals not satisfied:\n');
 
-    if (approvalsNotMetMessage) {
-      logs.unshift(approvalsNotMetMessage + '\n');
+    if (approvals_not_met_message) {
+      logs.unshift(approvals_not_met_message + '\n');
     }
 
     await createPrComment({
