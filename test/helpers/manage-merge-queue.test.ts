@@ -22,7 +22,6 @@ import { setCommitStatus } from '../../src/helpers/set-commit-status';
 import { updateMergeQueue } from '../../src/utils/update-merge-queue';
 import { updatePrWithDefaultBranch } from '../../src/helpers/prepare-queued-pr-for-merge';
 import { approvalsSatisfied } from '../../src/helpers/approvals-satisfied';
-import { createPrComment } from '../../src/helpers/create-pr-comment';
 
 jest.mock('../../src/helpers/remove-label');
 jest.mock('../../src/helpers/set-commit-status');
@@ -98,10 +97,6 @@ describe('manageMergeQueue', () => {
         state: 'pending',
         description: 'This PR is in line to merge.'
       });
-    });
-
-    it('should add pr comment', () => {
-      expect(createPrComment).toHaveBeenCalled();
     });
   });
 

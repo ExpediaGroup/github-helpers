@@ -171,7 +171,7 @@ limitations under the License.
 
 class ApprovalsSatisfied extends generated/* HelperInputs */.s {
 }
-const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', required_review_overrides, pull_number } = {}) => {
+const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', required_review_overrides, pull_number } = {}, approvalsNotMetMessage = undefined) => {
     const prNumber = pull_number ? Number(pull_number) : github.context.issue.number;
     const teamOverrides = required_review_overrides?.split(',').map(overrideString => {
         const [team, numberOfRequiredReviews] = overrideString.split(':');
@@ -183,17 +183,17 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', req
         return false;
     }
     const usersList = users?.split('\n');
+    const logs = [];
     const reviews = await paginateAllReviews(prNumber);
     const approverLogins = reviews
         .filter(({ state }) => state === 'APPROVED')
         .map(({ user }) => user?.login)
         .filter(Boolean);
-    core.info(`PR already approved by: ${approverLogins.toString()}`);
+    logs.push(`PR already approved by: ${approverLogins.toString()}`);
     const requiredCodeOwnersEntries = teamsList || usersList
         ? createArtificialCodeOwnersEntry({ teams: teamsList, users: usersList })
         : await (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.q)(prNumber);
     const requiredCodeOwnersEntriesWithOwners = (0,lodash.uniqBy)(requiredCodeOwnersEntries.filter(({ owners }) => owners.length), 'owners');
-    const logs = [];
     const codeOwnersEntrySatisfiesApprovals = async (entry) => {
         const loginsLists = await (0,bluebird.map)(entry.owners, async (teamOrUsers) => {
             if (isTeam(teamOrUsers)) {
@@ -211,13 +211,16 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', req
         return numberOfApprovals >= Number(numberOfRequiredReviews);
     };
     logs.push(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
-    const logsJoined = logs.join('\n');
     const booleans = await Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
     const approvalsSatisfied = booleans.every(Boolean);
-    core.info(logsJoined);
+    core.info(logs.join('\n'));
     if (!approvalsSatisfied) {
+        logs.unshift('Required approvals not satisfied:\n');
+        if (approvalsNotMetMessage) {
+            logs.unshift(approvalsNotMetMessage + '\n');
+        }
         await (0,create_pr_comment.createPrComment)({
-            body: 'PRs must meet all required approvals before entering the merge queue.\n\n' + logsJoined
+            body: logs.join('\n')
         });
     }
     return approvalsSatisfied;
@@ -495,7 +498,7 @@ const manageMergeQueue = async ({ login, slack_webhook_url, skip_auto_merge } = 
         core.info('This PR is not in the merge queue.');
         return removePrFromQueue(pullRequest);
     }
-    const prMeetsRequiredApprovals = await (0,approvals_satisfied.approvalsSatisfied)();
+    const prMeetsRequiredApprovals = await (0,approvals_satisfied.approvalsSatisfied)({}, 'PRs must meet all required approvals before entering the merge queue.');
     if (!prMeetsRequiredApprovals) {
         return removePrFromQueue(pullRequest);
     }

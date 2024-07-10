@@ -35,6 +35,9 @@ jest.mock('@actions/github', () => ({
       },
       teams: {
         listMembersInOrg: jest.fn(async input => ownerMap[input.team_slug])
+      },
+      issues: {
+        createComment: jest.fn()
       }
     }
   }))
@@ -573,5 +576,62 @@ describe('approvalsSatisfied', () => {
       number_of_reviewers: '2'
     });
     expect(result).toBe(true);
+  });
+
+  describe('pr comments', () => {
+    it('should make pr comment when approvals not satisfied', async () => {
+      mockPagination({
+        data: [
+          {
+            state: 'APPROVED',
+            user: { login: 'user3' }
+          }
+        ]
+      });
+      await approvalsSatisfied({
+        users: '@user1,@user2',
+        pull_number: '12345'
+      });
+      expect(octokit.issues.createComment).toHaveBeenCalledWith(
+        expect.objectContaining({
+          body: `Required approvals not satisfied:
+
+PR already approved by: user3
+Required code owners: @user1,@user2
+Current number of approvals satisfied for @user1,@user2: 0
+Number of required reviews: 1`
+        })
+      );
+    });
+
+    it('should make pr comment including approvalsNotMetMessage when it is passed and approvals not satisfied', async () => {
+      mockPagination({
+        data: [
+          {
+            state: 'APPROVED',
+            user: { login: 'user3' }
+          }
+        ]
+      });
+      await approvalsSatisfied(
+        {
+          users: '@user1,@user2',
+          pull_number: '12345'
+        },
+        'PRs must meet all required approvals before entering the merge queue.'
+      );
+      expect(octokit.issues.createComment).toHaveBeenCalledWith(
+        expect.objectContaining({
+          body: `PRs must meet all required approvals before entering the merge queue.
+
+Required approvals not satisfied:
+
+PR already approved by: user3
+Required code owners: @user1,@user2
+Current number of approvals satisfied for @user1,@user2: 0
+Number of required reviews: 1`
+        })
+      );
+    });
   });
 });

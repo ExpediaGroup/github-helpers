@@ -31,13 +31,10 @@ export class ApprovalsSatisfied extends HelperInputs {
   pull_number?: string;
 }
 
-export const approvalsSatisfied = async ({
-  teams,
-  users,
-  number_of_reviewers = '1',
-  required_review_overrides,
-  pull_number
-}: ApprovalsSatisfied = {}) => {
+export const approvalsSatisfied = async (
+  { teams, users, number_of_reviewers = '1', required_review_overrides, pull_number }: ApprovalsSatisfied = {},
+  approvalsNotMetMessage: string | undefined = undefined
+) => {
   const prNumber = pull_number ? Number(pull_number) : context.issue.number;
 
   const teamOverrides = required_review_overrides?.split(',').map(overrideString => {
@@ -51,12 +48,14 @@ export const approvalsSatisfied = async ({
   }
   const usersList = users?.split('\n');
 
+  const logs = [];
+
   const reviews = await paginateAllReviews(prNumber);
   const approverLogins = reviews
     .filter(({ state }) => state === 'APPROVED')
     .map(({ user }) => user?.login)
     .filter(Boolean);
-  core.info(`PR already approved by: ${approverLogins.toString()}`);
+  logs.push(`PR already approved by: ${approverLogins.toString()}`);
 
   const requiredCodeOwnersEntries =
     teamsList || usersList
@@ -66,8 +65,6 @@ export const approvalsSatisfied = async ({
     requiredCodeOwnersEntries.filter(({ owners }) => owners.length),
     'owners'
   );
-
-  const logs = [];
 
   const codeOwnersEntrySatisfiesApprovals = async (entry: Pick<CodeOwnersEntry, 'owners'>) => {
     const loginsLists = await map(entry.owners, async teamOrUsers => {
@@ -90,16 +87,21 @@ export const approvalsSatisfied = async ({
   };
 
   logs.push(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
-  const logsJoined = logs.join('\n');
 
   const booleans = await Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
   const approvalsSatisfied = booleans.every(Boolean);
 
-  core.info(logsJoined);
+  core.info(logs.join('\n'));
 
   if (!approvalsSatisfied) {
+    logs.unshift('Required approvals not satisfied:\n');
+
+    if (approvalsNotMetMessage) {
+      logs.unshift(approvalsNotMetMessage + '\n');
+    }
+
     await createPrComment({
-      body: 'PRs must meet all required approvals before entering the merge queue.\n\n' + logsJoined
+      body: logs.join('\n')
     });
   }
 
