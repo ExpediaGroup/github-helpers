@@ -579,7 +579,7 @@ describe('approvalsSatisfied', () => {
   });
 
   describe('pr comments', () => {
-    it('should not make pr comment when approvals not satisfied', async () => {
+    it('should not make pr comment when approvals not satisfied and no body', async () => {
       mockPagination({
         data: [
           {
