@@ -213,17 +213,16 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', req
     logs.push(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
     const booleans = await Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
     const approvalsSatisfied = booleans.every(Boolean);
-    const logsJoined = logs.join('\n');
     if (!approvalsSatisfied) {
         logs.unshift('Required approvals not satisfied:\n');
         if (approvalsNotMetMessage) {
             logs.unshift(approvalsNotMetMessage + '\n');
         }
         await (0,create_pr_comment.createPrComment)({
-            body: logsJoined
+            body: logs.join('\n')
         });
     }
-    core.info(logsJoined);
+    core.info(logs.join('\n'));
     return approvalsSatisfied;
 };
 const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }) => [
