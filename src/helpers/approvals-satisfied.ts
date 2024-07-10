@@ -99,13 +99,13 @@ export const approvalsSatisfied = async ({
   if (!approvalsSatisfied) {
     logs.unshift('Required approvals not satisfied:\n');
 
-    if (body) {
-      logs.unshift(body + '\n');
-    }
+    logs.unshift(body + '\n');
 
-    await createPrComment({
-      body: logs.join('\n')
-    });
+    if (body) {
+      await createPrComment({
+        body: logs.join('\n')
+      });
+    }
   }
 
   core.info(logs.join('\n'));
