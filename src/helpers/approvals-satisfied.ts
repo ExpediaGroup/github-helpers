@@ -91,7 +91,7 @@ export const approvalsSatisfied = async (
   const booleans = await Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
   const approvalsSatisfied = booleans.every(Boolean);
 
-  core.info(logs.join('\n'));
+  const logsJoined = logs.join('\n');
 
   if (!approvalsSatisfied) {
     logs.unshift('Required approvals not satisfied:\n');
@@ -101,9 +101,11 @@ export const approvalsSatisfied = async (
     }
 
     await createPrComment({
-      body: logs.join('\n')
+      body: logsJoined
     });
   }
+
+  core.info(logsJoined);
 
   return approvalsSatisfied;
 };
