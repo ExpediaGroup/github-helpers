@@ -40,9 +40,6 @@ export const removePrFromMergeQueue = async ({ seconds }: RemovePrFromMergeQueue
       if (readyForMergeLabel || queueLabel) {
         core.info(`Cleaning up queued PR #${pr.number}...`);
         await removeLabelIfExists(READY_FOR_MERGE_PR_LABEL, pr.number);
-        if (queueLabel) {
-          await removeLabelIfExists(queueLabel.name, pr.number);
-        }
       }
     });
   }
@@ -59,7 +56,7 @@ export const removePrFromMergeQueue = async ({ seconds }: RemovePrFromMergeQueue
   const noPendingStatus = data.find(status => status.state !== 'pending');
   if (noPendingStatus && mostRecentStatus && timestampIsStale(mostRecentStatus.created_at, seconds)) {
     core.info('Removing stale PR from first queued position...');
-    return Promise.all([removeLabelIfExists(READY_FOR_MERGE_PR_LABEL, number), removeLabelIfExists(FIRST_QUEUED_PR_LABEL, number)]);
+    return Promise.all([removeLabelIfExists(READY_FOR_MERGE_PR_LABEL, number)]);
   }
 };
 
