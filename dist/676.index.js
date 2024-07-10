@@ -215,8 +215,8 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', req
     const approvalsSatisfied = booleans.every(Boolean);
     if (!approvalsSatisfied) {
         logs.unshift('Required approvals not satisfied:\n');
-        logs.unshift(body + '\n');
         if (body) {
+            logs.unshift(body + '\n');
             await (0,create_pr_comment.createPrComment)({
                 body: logs.join('\n')
             });
