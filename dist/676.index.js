@@ -369,8 +369,6 @@ var constants = __webpack_require__(9042);
 var generated = __webpack_require__(3476);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __webpack_require__(5438);
-// EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
-var bluebird = __webpack_require__(8710);
 // EXTERNAL MODULE: ./src/utils/notify-user.ts
 var notify_user = __webpack_require__(9938);
 // EXTERNAL MODULE: ./src/octokit.ts
@@ -379,6 +377,8 @@ var octokit = __webpack_require__(6161);
 var remove_label = __webpack_require__(61);
 // EXTERNAL MODULE: ./src/helpers/set-commit-status.ts
 var set_commit_status = __webpack_require__(2209);
+// EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
+var bluebird = __webpack_require__(8710);
 // EXTERNAL MODULE: ./src/helpers/prepare-queued-pr-for-merge.ts
 var prepare_queued_pr_for_merge = __webpack_require__(1004);
 ;// CONCATENATED MODULE: ./src/utils/update-merge-queue.ts
@@ -464,6 +464,8 @@ const updateQueuePosition = async (pr, index) => {
 var paginate_open_pull_requests = __webpack_require__(5757);
 // EXTERNAL MODULE: ./src/helpers/approvals-satisfied.ts + 1 modules
 var approvals_satisfied = __webpack_require__(9431);
+// EXTERNAL MODULE: ./src/helpers/create-pr-comment.ts
+var create_pr_comment = __webpack_require__(3461);
 ;// CONCATENATED MODULE: ./src/helpers/manage-merge-queue.ts
 /*
 Copyright 2021 Expedia, Inc.
@@ -492,7 +494,7 @@ limitations under the License.
 
 class ManageMergeQueue extends generated/* HelperInputs */.s {
 }
-const manageMergeQueue = async ({ login, slack_webhook_url, skip_auto_merge } = {}) => {
+const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip_auto_merge } = {}) => {
     const { data: pullRequest } = await octokit/* octokit.pulls.get */.K.pulls.get({ pull_number: github.context.issue.number, ...github.context.repo });
     if (pullRequest.merged || !pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak)) {
         core.info('This PR is not in the merge queue.');
@@ -504,6 +506,12 @@ const manageMergeQueue = async ({ login, slack_webhook_url, skip_auto_merge } = 
     }
     const queuedPrs = await getQueuedPullRequests();
     const queuePosition = queuedPrs.length;
+    if (queuePosition > Number(max_queue_size)) {
+        await (0,create_pr_comment.createPrComment)({
+            body: `The merge queue is full! Only ${max_queue_size} PRs are allowed in the queue at a time.\n\nIf you would like to merge your PR, please monitor the PRs in the queue and make sure the authors are around to merge them.`
+        });
+        return removePrFromQueue(pullRequest);
+    }
     if (pullRequest.labels.find(label => label.name === constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ)) {
         return updateMergeQueue(queuedPrs);
     }
@@ -529,18 +537,19 @@ const manageMergeQueue = async ({ login, slack_webhook_url, skip_auto_merge } = 
     }
 };
 const removePrFromQueue = async (pullRequest) => {
+    await (0,remove_label.removeLabelIfExists)(constants/* READY_FOR_MERGE_PR_LABEL */.Ak, pullRequest.number);
     const queueLabel = pullRequest.labels.find(label => label.name?.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee))?.name;
     if (queueLabel) {
-        await (0,bluebird.map)([constants/* READY_FOR_MERGE_PR_LABEL */.Ak, queueLabel], async (label) => await (0,remove_label.removeLabelIfExists)(label, pullRequest.number));
-        await (0,set_commit_status.setCommitStatus)({
-            sha: pullRequest.head.sha,
-            context: constants/* MERGE_QUEUE_STATUS */.Cb,
-            state: 'pending',
-            description: 'This PR is not in the merge queue.'
-        });
-        const queuedPrs = await getQueuedPullRequests();
-        return updateMergeQueue(queuedPrs);
+        await (0,remove_label.removeLabelIfExists)(queueLabel, pullRequest.number);
     }
+    await (0,set_commit_status.setCommitStatus)({
+        sha: pullRequest.head.sha,
+        context: constants/* MERGE_QUEUE_STATUS */.Cb,
+        state: 'pending',
+        description: 'This PR is not in the merge queue.'
+    });
+    const queuedPrs = await getQueuedPullRequests();
+    return updateMergeQueue(queuedPrs);
 };
 const addPrToQueue = async (pullRequest, queuePosition, skip_auto_merge) => {
     await octokit/* octokit.issues.addLabels */.K.issues.addLabels({
