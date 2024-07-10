@@ -22,7 +22,6 @@ import {
 import { HelperInputs } from '../types/generated';
 import { PullRequest, PullRequestList } from '../types/github';
 import { context } from '@actions/github';
-import { map } from 'bluebird';
 import { notifyUser } from '../utils/notify-user';
 import { octokit, octokitGraphql } from '../octokit';
 import { removeLabelIfExists } from './remove-label';
@@ -90,18 +89,19 @@ export const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_ur
 };
 
 export const removePrFromQueue = async (pullRequest: PullRequest) => {
+  await removeLabelIfExists(READY_FOR_MERGE_PR_LABEL, pullRequest.number);
   const queueLabel = pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
   if (queueLabel) {
-    await map([READY_FOR_MERGE_PR_LABEL, queueLabel], async label => await removeLabelIfExists(label, pullRequest.number));
-    await setCommitStatus({
-      sha: pullRequest.head.sha,
-      context: MERGE_QUEUE_STATUS,
-      state: 'pending',
-      description: 'This PR is not in the merge queue.'
-    });
-    const queuedPrs = await getQueuedPullRequests();
-    return updateMergeQueue(queuedPrs);
+    await removeLabelIfExists(queueLabel, pullRequest.number);
   }
+  await setCommitStatus({
+    sha: pullRequest.head.sha,
+    context: MERGE_QUEUE_STATUS,
+    state: 'pending',
+    description: 'This PR is not in the merge queue.'
+  });
+  const queuedPrs = await getQueuedPullRequests();
+  return updateMergeQueue(queuedPrs);
 };
 
 const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number, skip_auto_merge?: string) => {
