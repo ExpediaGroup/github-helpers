@@ -36,15 +36,17 @@ export const generateMatrix = ({ paths, batches: _batches = '1', load_balancing_
   let currentLoadSize = 0;
   let currentBatch: string[] = [];
   matrixValues.forEach((path, index) => {
-    if (!loadBalancingSizes[index]) throw new Error('load_balancing_sizes input must contain values');
-    const possibleLoadSize = currentLoadSize + loadBalancingSizes[index];
-    if (Math.abs(possibleLoadSize - targetLoadSize) <= Math.abs(loadBalancingSizes[index] - targetLoadSize)) {
-      currentLoadSize += loadBalancingSizes[index];
+    if (Number.isNaN(loadBalancingSizes[index])) throw new Error('load_balancing_sizes input must contain values');
+    // we've already validated that a value exists at this index above, but TS really _needs_ to see us validate it againgit
+    const loadAtIndex = (loadBalancingSizes[index] !== undefined ? loadBalancingSizes[index] : 0) as number;
+    const possibleLoadSize = currentLoadSize + loadAtIndex;
+    if (Math.abs(possibleLoadSize - targetLoadSize) <= Math.abs(loadAtIndex - targetLoadSize)) {
+      currentLoadSize += loadAtIndex;
       currentBatch.push(path);
     } else {
       loadBalancedPaths.push(currentBatch.join(','));
       currentBatch = [path];
-      currentLoadSize = loadBalancingSizes[index];
+      currentLoadSize = loadAtIndex;
     }
     if (currentLoadSize >= targetLoadSize) {
       loadBalancedPaths.push(currentBatch.join(','));
