@@ -205,9 +205,6 @@ const removePrFromMergeQueue = async ({ seconds }) => {
             if (readyForMergeLabel || queueLabel) {
                 _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Cleaning up queued PR #${pr.number}...`);
                 await (0,_remove_label__WEBPACK_IMPORTED_MODULE_5__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_2__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, pr.number);
-                if (queueLabel) {
-                    await (0,_remove_label__WEBPACK_IMPORTED_MODULE_5__.removeLabelIfExists)(queueLabel.name, pr.number);
-                }
             }
         });
     }
@@ -220,7 +217,7 @@ const removePrFromMergeQueue = async ({ seconds }) => {
     const noPendingStatus = data.find(status => status.state !== 'pending');
     if (noPendingStatus && mostRecentStatus && timestampIsStale(mostRecentStatus.created_at, seconds)) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Removing stale PR from first queued position...');
-        return Promise.all([(0,_remove_label__WEBPACK_IMPORTED_MODULE_5__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_2__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, number), (0,_remove_label__WEBPACK_IMPORTED_MODULE_5__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_2__/* .FIRST_QUEUED_PR_LABEL */ .IH, number)]);
+        return Promise.all([(0,_remove_label__WEBPACK_IMPORTED_MODULE_5__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_2__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, number)]);
     }
 };
 const timestampIsStale = (timestamp, seconds) => {

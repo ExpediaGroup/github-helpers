@@ -1,4 +1,4 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-npm run generate && npm run lint && npm run format && npm run package && git add .
+bun generate && bun format && bun package && git add .
