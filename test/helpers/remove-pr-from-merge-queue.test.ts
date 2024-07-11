@@ -58,11 +58,11 @@ describe('removePrFromMergeQueue', () => {
       (octokit.repos.listCommitStatusesForRef as unknown as Mocktokit).mockImplementation(async () => ({
         data: [
           {
-            created_at: '2022-01-01T08:59:00Z',
+            updated_at: '2022-01-01T08:59:00Z',
             state: 'failure'
           },
           {
-            created_at: '2022-01-01T08:00:00Z',
+            updated_at: '2022-01-01T08:00:00Z',
             state: 'success'
           }
         ]
@@ -96,11 +96,11 @@ describe('removePrFromMergeQueue', () => {
       (octokit.repos.listCommitStatusesForRef as unknown as Mocktokit).mockImplementation(async () => ({
         data: [
           {
-            created_at: '2022-01-01T09:01:00Z',
+            updated_at: '2022-01-01T09:01:00Z',
             state: 'failure'
           },
           {
-            created_at: '2022-01-01T10:00:00Z',
+            updated_at: '2022-01-01T10:00:00Z',
             state: 'success'
           }
         ]
@@ -133,15 +133,15 @@ describe('removePrFromMergeQueue', () => {
       (octokit.repos.listCommitStatusesForRef as unknown as Mocktokit).mockImplementation(async () => ({
         data: [
           {
-            created_at: '2022-01-01T10:00:00Z',
+            updated_at: '2022-01-01T10:00:00Z',
             state: 'failure'
           },
           {
-            created_at: '2022-01-01T09:01:00Z',
+            updated_at: '2022-01-01T09:01:00Z',
             state: 'pending'
           },
           {
-            created_at: '2022-01-01T10:00:00Z',
+            updated_at: '2022-01-01T10:00:00Z',
             state: 'success'
           }
         ]

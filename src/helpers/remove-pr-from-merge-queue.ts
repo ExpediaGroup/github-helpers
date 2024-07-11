@@ -55,9 +55,9 @@ export const removePrFromMergeQueue = async ({ seconds }: RemovePrFromMergeQueue
     ref: sha,
     ...context.repo
   });
-  const mostRecentStatus = orderBy(data, 'created_at', 'desc')[0];
+  const mostRecentStatus = orderBy(data, 'updated_at', 'desc')[0];
   const noPendingStatus = data.find(status => status.state !== 'pending');
-  if (noPendingStatus && mostRecentStatus && timestampIsStale(mostRecentStatus.created_at, seconds)) {
+  if (noPendingStatus && mostRecentStatus && timestampIsStale(mostRecentStatus.updated_at, seconds)) {
     core.info('Removing stale PR from first queued position...');
     return Promise.all([removeLabelIfExists(READY_FOR_MERGE_PR_LABEL, number), removeLabelIfExists(FIRST_QUEUED_PR_LABEL, number)]);
   }
