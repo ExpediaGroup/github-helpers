@@ -216,9 +216,9 @@ const removePrFromMergeQueue = async ({ seconds }) => {
         ref: sha,
         ..._actions_github__WEBPACK_IMPORTED_MODULE_3__.context.repo
     });
-    const mostRecentStatus = (0,lodash__WEBPACK_IMPORTED_MODULE_1__.orderBy)(data, 'created_at', 'desc')[0];
+    const mostRecentStatus = (0,lodash__WEBPACK_IMPORTED_MODULE_1__.orderBy)(data, 'updated_at', 'desc')[0];
     const noPendingStatus = data.find(status => status.state !== 'pending');
-    if (noPendingStatus && mostRecentStatus && timestampIsStale(mostRecentStatus.created_at, seconds)) {
+    if (noPendingStatus && mostRecentStatus && timestampIsStale(mostRecentStatus.updated_at, seconds)) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Removing stale PR from first queued position...');
         return Promise.all([(0,_remove_label__WEBPACK_IMPORTED_MODULE_5__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_2__/* .READY_FOR_MERGE_PR_LABEL */ .Ak, number), (0,_remove_label__WEBPACK_IMPORTED_MODULE_5__.removeLabelIfExists)(_constants__WEBPACK_IMPORTED_MODULE_2__/* .FIRST_QUEUED_PR_LABEL */ .IH, number)]);
     }
