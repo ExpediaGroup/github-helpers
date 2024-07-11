@@ -579,7 +579,7 @@ describe('approvalsSatisfied', () => {
   });
 
   describe('pr comments', () => {
-    it('should make pr comment when approvals not satisfied', async () => {
+    it('should not make pr comment when approvals not satisfied and no body', async () => {
       mockPagination({
         data: [
           {
@@ -592,16 +592,7 @@ describe('approvalsSatisfied', () => {
         users: '@user1,@user2',
         pull_number: '12345'
       });
-      expect(octokit.issues.createComment).toHaveBeenCalledWith(
-        expect.objectContaining({
-          body: `Required approvals not satisfied:
-
-PR already approved by: user3
-Required code owners: @user1,@user2
-Current number of approvals satisfied for @user1,@user2: 0
-Number of required reviews: 1`
-        })
-      );
+      expect(octokit.issues.createComment).not.toHaveBeenCalled();
     });
 
     it('should make pr comment including approvalsNotMetMessage when it is passed and approvals not satisfied', async () => {

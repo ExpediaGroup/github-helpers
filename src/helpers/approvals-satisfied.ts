@@ -101,11 +101,11 @@ export const approvalsSatisfied = async ({
 
     if (body) {
       logs.unshift(body + '\n');
-    }
 
-    await createPrComment({
-      body: logs.join('\n')
-    });
+      await createPrComment({
+        body: logs.join('\n')
+      });
+    }
   }
 
   core.info(logs.join('\n'));

@@ -217,10 +217,10 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', req
         logs.unshift('Required approvals not satisfied:\n');
         if (body) {
             logs.unshift(body + '\n');
+            await (0,create_pr_comment.createPrComment)({
+                body: logs.join('\n')
+            });
         }
-        await (0,create_pr_comment.createPrComment)({
-            body: logs.join('\n')
-        });
     }
     core.info(logs.join('\n'));
     return approvalsSatisfied;
