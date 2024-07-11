@@ -59,7 +59,7 @@ describe('removePrFromMergeQueue', () => {
         data: [
           {
             created_at: '2022-01-01T08:59:00Z',
-            state: 'failure'
+            state: 'success'
           },
           {
             created_at: '2022-01-01T08:00:00Z',
@@ -91,7 +91,7 @@ describe('removePrFromMergeQueue', () => {
     });
   });
 
-  describe('should not remove pr case', () => {
+  describe('should not remove pr case if latest status is not stale', () => {
     beforeEach(() => {
       (octokit.repos.listCommitStatusesForRef as unknown as Mocktokit).mockImplementation(async () => ({
         data: [
@@ -100,7 +100,7 @@ describe('removePrFromMergeQueue', () => {
             state: 'failure'
           },
           {
-            created_at: '2022-01-01T10:00:00Z',
+            created_at: '2022-01-01T09:00:00Z',
             state: 'success'
           }
         ]
@@ -128,20 +128,23 @@ describe('removePrFromMergeQueue', () => {
     });
   });
 
-  describe('should not remove pr case with pending status', () => {
+  describe('should not remove pr when latest status for a context is pending, even if it is stale', () => {
     beforeEach(async () => {
       (octokit.repos.listCommitStatusesForRef as unknown as Mocktokit).mockImplementation(async () => ({
         data: [
           {
-            created_at: '2022-01-01T10:00:00Z',
-            state: 'failure'
+            created_at: '2022-01-01T08:00:00Z',
+            context: 'Unit Tests',
+            state: 'success'
           },
           {
-            created_at: '2022-01-01T09:01:00Z',
+            created_at: '2022-01-01T08:01:00Z',
+            context: 'Pipeline Status',
             state: 'pending'
           },
           {
-            created_at: '2022-01-01T10:00:00Z',
+            created_at: '2022-01-01T08:00:00Z',
+            context: 'Smoke Tests',
             state: 'success'
           }
         ]

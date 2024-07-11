@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { orderBy } from 'lodash';
+import { orderBy, groupBy } from 'lodash';
 import { FIRST_QUEUED_PR_LABEL, QUEUED_FOR_MERGE_PREFIX, READY_FOR_MERGE_PR_LABEL } from '../constants';
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
@@ -55,9 +55,16 @@ export const removePrFromMergeQueue = async ({ seconds }: RemovePrFromMergeQueue
     ref: sha,
     ...context.repo
   });
+  const statusesPerContext = groupBy(data, 'context');
+  const someContextHasLatestStatusPending = Object.keys(statusesPerContext).some(context => {
+    const mostRecentStatus = orderBy(statusesPerContext[context], 'created_at', 'desc')[0];
+    return mostRecentStatus?.state === 'pending';
+  });
+  if (someContextHasLatestStatusPending) {
+    return;
+  }
   const mostRecentStatus = orderBy(data, 'created_at', 'desc')[0];
-  const noPendingStatus = data.find(status => status.state !== 'pending');
-  if (noPendingStatus && mostRecentStatus && timestampIsStale(mostRecentStatus.created_at, seconds)) {
+  if (mostRecentStatus && timestampIsStale(mostRecentStatus.created_at, seconds)) {
     core.info('Removing stale PR from first queued position...');
     return Promise.all([removeLabelIfExists(READY_FOR_MERGE_PR_LABEL, number), removeLabelIfExists(FIRST_QUEUED_PR_LABEL, number)]);
   }
