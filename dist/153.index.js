@@ -394,7 +394,7 @@ const notifyUser = async ({ login, pull_number, slack_webhook_url }) => {
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Notifying user ${login}...`);
     const { data: { email } } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.users.getByUsername */ .K.users.getByUsername({ username: login });
     if (!email) {
-        throw new Error(`No github email found for user ${login}. Ensure you have set your email to be publicly visible on your Github profile.`);
+        throw new Error(`No github email found for user ${login}. Ensure you have set your email on your Github account.\nhttps://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/adding-an-email-address-to-your-github-account`);
     }
     const { data: { title, html_url } } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get({ pull_number, ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo });
     try {

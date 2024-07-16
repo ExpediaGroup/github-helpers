@@ -29,7 +29,7 @@ export const notifyUser = async ({ login, pull_number, slack_webhook_url }: Noti
   } = await octokit.users.getByUsername({ username: login });
   if (!email) {
     throw new Error(
-      `No github email found for user ${login}. Ensure you have set your email to be publicly visible on your Github profile.`
+      `No github email found for user ${login}. Ensure you have set your email on your Github account.\nhttps://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/adding-an-email-address-to-your-github-account`
     );
   }
   const {
