@@ -370,10 +370,12 @@ const getCodeOwnersFromEntries = (codeOwnersEntries) => {
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(1079);
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(1079);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(1017);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_3__);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -390,15 +392,16 @@ limitations under the License.
 
 
 
+
 const notifyUser = async ({ login, pull_number, slack_webhook_url }) => {
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Notifying user ${login}...`);
     const { data: { email } } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.users.getByUsername */ .K.users.getByUsername({ username: login });
     if (!email) {
-        throw new Error(`Email not found for user ${login}. Please add an email to your Github account!\nhttps://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/adding-an-email-address-to-your-github-account`);
+        throw new Error(`Email not found for user ${login}. Please add an email to your Github profile!\n\n1. Go to ${(0,path__WEBPACK_IMPORTED_MODULE_3__.join)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.serverUrl, login)}\n2. Click "Edit profile"\n3. Update your email address\n4. Click "Save"`);
     }
     const { data: { title, html_url } } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get({ pull_number, ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo });
     try {
-        await axios__WEBPACK_IMPORTED_MODULE_3__/* ["default"].post */ .Z.post(slack_webhook_url, {
+        await axios__WEBPACK_IMPORTED_MODULE_4__/* ["default"].post */ .Z.post(slack_webhook_url, {
             assignee: email,
             title,
             html_url,
