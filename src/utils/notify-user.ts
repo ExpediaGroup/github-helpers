@@ -15,6 +15,7 @@ import * as core from '@actions/core';
 import axios from 'axios';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
+import { join } from 'path';
 
 interface NotifyUser {
   login: string;
@@ -29,7 +30,7 @@ export const notifyUser = async ({ login, pull_number, slack_webhook_url }: Noti
   } = await octokit.users.getByUsername({ username: login });
   if (!email) {
     throw new Error(
-      `Email not found for user ${login}. Please add an email to your Github account!\nhttps://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/adding-an-email-address-to-your-github-account`
+      `Email not found for user ${login}. Please add an email to your Github profile!\n\n1. Go to ${join(context.serverUrl, login)}\n2. Click "Edit profile"\n3. Update your email address\n4. Click "Save"`
     );
   }
   const {
