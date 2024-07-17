@@ -1,4 +1,4 @@
-module.exports = plop => {
+export default plop => {
   plop.setHelper('spaceSeparatedCase', helper => helper.split('-').join(' '));
 
   plop.setGenerator('helper', {
