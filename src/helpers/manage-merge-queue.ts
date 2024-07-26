@@ -31,6 +31,7 @@ import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-request
 import { updatePrWithDefaultBranch } from './prepare-queued-pr-for-merge';
 import { approvalsSatisfied } from './approvals-satisfied';
 import { createPrComment } from './create-pr-comment';
+import { join } from 'path';
 
 export class ManageMergeQueue extends HelperInputs {
   max_queue_size?: string;
@@ -84,7 +85,9 @@ export const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_ur
     await notifyUser({
       login,
       pull_number: context.issue.number,
-      slack_webhook_url
+      slack_webhook_url,
+      comment_body: `@${login} Your PR is first in the queue!
+      Email not found for user ${login}. Please add an email to your Github profile!\n\n1. Go to ${join(context.serverUrl, login)}\n2. Click "Edit profile"\n3. Update your email address\n4. Click "Save"`
     });
   }
 };

@@ -15,23 +15,24 @@ import * as core from '@actions/core';
 import axios from 'axios';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
-import { join } from 'path';
+import {createPrComment} from "../helpers/create-pr-comment";
 
 interface NotifyUser {
   login: string;
   pull_number: number;
   slack_webhook_url: string;
+  comment_body?: string;
 }
 
-export const notifyUser = async ({ login, pull_number, slack_webhook_url }: NotifyUser) => {
+export const notifyUser = async ({ login, pull_number, slack_webhook_url, comment_body }: NotifyUser) => {
   core.info(`Notifying user ${login}...`);
   const {
     data: { email }
   } = await octokit.users.getByUsername({ username: login });
-  if (!email) {
-    throw new Error(
-      `Email not found for user ${login}. Please add an email to your Github profile!\n\n1. Go to ${join(context.serverUrl, login)}\n2. Click "Edit profile"\n3. Update your email address\n4. Click "Save"`
-    );
+  if (!email && comment_body) {
+    return await createPrComment({
+      body: comment_body
+    });
   }
   const {
     data: { title, html_url }
