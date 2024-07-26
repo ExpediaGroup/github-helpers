@@ -15,7 +15,7 @@ import * as core from '@actions/core';
 import axios from 'axios';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
-import {createPrComment} from "../helpers/create-pr-comment";
+import { createPrComment } from '../helpers/create-pr-comment';
 
 interface NotifyUser {
   login: string;
