@@ -466,6 +466,8 @@ var paginate_open_pull_requests = __webpack_require__(5757);
 var approvals_satisfied = __webpack_require__(9431);
 // EXTERNAL MODULE: ./src/helpers/create-pr-comment.ts
 var create_pr_comment = __webpack_require__(3461);
+// EXTERNAL MODULE: external "path"
+var external_path_ = __webpack_require__(1017);
 ;// CONCATENATED MODULE: ./src/helpers/manage-merge-queue.ts
 /*
 Copyright 2021 Expedia, Inc.
@@ -479,6 +481,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 
 
 
@@ -534,7 +537,9 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
         await (0,notify_user/* notifyUser */.b)({
             login,
             pull_number: github.context.issue.number,
-            slack_webhook_url
+            slack_webhook_url,
+            comment_body: `@${login} Your PR is first in the queue!
+      Email not found for user ${login}. Please add an email to your Github profile!\n\n1. Go to ${(0,external_path_.join)(github.context.serverUrl, login)}\n2. Click "Edit profile"\n3. Update your email address\n4. Click "Save"`
         });
     }
 };
@@ -1009,8 +1014,7 @@ const getCodeOwnersFromEntries = (codeOwnersEntries) => {
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6161);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(1017);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _helpers_create_pr_comment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3461);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -1028,11 +1032,13 @@ limitations under the License.
 
 
 
-const notifyUser = async ({ login, pull_number, slack_webhook_url }) => {
+const notifyUser = async ({ login, pull_number, slack_webhook_url, comment_body }) => {
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Notifying user ${login}...`);
     const { data: { email } } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.users.getByUsername */ .K.users.getByUsername({ username: login });
-    if (!email) {
-        throw new Error(`Email not found for user ${login}. Please add an email to your Github profile!\n\n1. Go to ${(0,path__WEBPACK_IMPORTED_MODULE_3__.join)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.serverUrl, login)}\n2. Click "Edit profile"\n3. Update your email address\n4. Click "Save"`);
+    if (!email && comment_body) {
+        return await (0,_helpers_create_pr_comment__WEBPACK_IMPORTED_MODULE_3__.createPrComment)({
+            body: comment_body
+        });
     }
     const { data: { title, html_url } } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit.pulls.get */ .K.pulls.get({ pull_number, ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo });
     try {
