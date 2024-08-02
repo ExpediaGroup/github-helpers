@@ -45,9 +45,6 @@ with:
 ## Available Helpers
 
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
-### [reopen-pr](.github/workflows/reopen-pr.yml)
-* Reopens a pull request in your current repo or in another repo.
-
 
 ### [are-reviewers-required](.github/workflows/are-reviewers-required.yml)
 
@@ -233,6 +230,10 @@ Additionally, the following parameters can be used for additional control over t
 ### [remove-pr-from-merge-queue](.github/workflows/remove-pr-from-merge-queue.yml)
 
 -   Removes a PR from the merge queue if it has a stale failing status check. A PR check is considered stale if it is older than the provided number of `seconds`.
+
+### [reopen-pr](.github/workflows/reopen-pr.yml)
+
+-   Reopens a pull request in your current repo or in another repo.
 
 ### [rerun-pr-checks](.github/workflows/rerun-pr-checks.yml)
 

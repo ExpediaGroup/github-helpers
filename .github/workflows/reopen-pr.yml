@@ -2,7 +2,7 @@ name: Reopen Pr
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
       - 'src/helpers/reopen-pr.ts'
 

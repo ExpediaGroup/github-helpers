@@ -19,9 +19,7 @@ jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({
-  rest: {
-
-  }
+    rest: {}
   }))
 }));
 

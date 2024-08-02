@@ -16,20 +16,20 @@ import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
 export class ReopenPr extends HelperInputs {
-    pull_number?: string;
-    repo_name?: string;
-    repo_owner_name?: string;
+  pull_number?: string;
+  repo_name?: string;
+  repo_owner_name?: string;
 }
 
 export const reopenPr = async ({ pull_number, repo_name, repo_owner_name }: ReopenPr = {}) => {
-    if ((repo_name || repo_owner_name) && !pull_number) {
-        throw new Error('pull_number is required when repo_name or repo_owner_name is provided');
-    }
+  if ((repo_name || repo_owner_name) && !pull_number) {
+    throw new Error('pull_number is required when repo_name or repo_owner_name is provided');
+  }
 
-    return octokit.pulls.update({
-        pull_number: pull_number ? Number(pull_number) : context.issue.number,
-        repo: repo_name ?? context.repo.repo,
-        owner: repo_owner_name ?? context.repo.owner,
-        state: 'open'
-      });
+  return octokit.pulls.update({
+    pull_number: pull_number ? Number(pull_number) : context.issue.number,
+    repo: repo_name ?? context.repo.repo,
+    owner: repo_owner_name ?? context.repo.owner,
+    state: 'open'
+  });
 };
