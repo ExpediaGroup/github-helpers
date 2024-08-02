@@ -231,6 +231,10 @@ Additionally, the following parameters can be used for additional control over t
 
 -   Removes a PR from the merge queue if it has a stale failing status check. A PR check is considered stale if it is older than the provided number of `seconds`.
 
+### [reopen-pr](.github/workflows/reopen-pr.yml)
+
+-   Reopens a pull request in your current repo or in another repo.
+
 ### [rerun-pr-checks](.github/workflows/rerun-pr-checks.yml)
 
 -   Reruns all of the latest workflow checks on a pull request (helpful if they were cancelled for some reason, either manually or due to rate limiting, for example).
