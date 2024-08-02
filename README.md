@@ -45,6 +45,9 @@ with:
 ## Available Helpers
 
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
+### [reopen-pr](.github/workflows/reopen-pr.yml)
+* Reopens a pull request in your current repo or in another repo.
+
 
 ### [are-reviewers-required](.github/workflows/are-reviewers-required.yml)
 
