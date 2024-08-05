@@ -6,7 +6,7 @@
   "packageRules": [
     {
       "matchDepTypes": ["dependencies", "devDependencies"],
-      "groupName": "devDependencies",
+      "groupName": "dependencies",
       "automerge": true
     }
   ]
