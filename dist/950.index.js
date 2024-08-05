@@ -265,9 +265,11 @@ const manageIssueDueDates = async ({ days = '7' }) => {
         await addDueDateComment(deadline, createdDate, issue_number);
         const labelToAdd = daysSinceCreation > deadline ? constants/* OVERDUE_ISSUE */.wH : daysSinceCreation > deadline - warningThreshold ? constants/* ALMOST_OVERDUE_ISSUE */.aT : undefined;
         if (labelToAdd) {
-            assignees && (await pingAssigneesForDueDate(assignees, labelToAdd, issue_number));
+            if (assignees) {
+                await pingAssigneesForDueDate(assignees, labelToAdd, issue_number);
+            }
             if (labelToAdd === constants/* OVERDUE_ISSUE */.wH) {
-                (0,remove_label.removeLabelIfExists)(constants/* ALMOST_OVERDUE_ISSUE */.aT, issue_number);
+                await (0,remove_label.removeLabelIfExists)(constants/* ALMOST_OVERDUE_ISSUE */.aT, issue_number);
             }
             await octokit/* octokit.issues.addLabels */.K.issues.addLabels({
                 labels: [labelToAdd],
