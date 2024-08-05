@@ -264,8 +264,10 @@ const manageIssueDueDates = async ({ days = '7' }) => {
         const deadline = constants/* PRIORITY_TO_DAYS_MAP */.gd[priority];
         await addDueDateComment(deadline, createdDate, issue_number);
         const labelToAdd = daysSinceCreation > deadline ? constants/* OVERDUE_ISSUE */.wH : daysSinceCreation > deadline - warningThreshold ? constants/* ALMOST_OVERDUE_ISSUE */.aT : undefined;
-        if (labelToAdd && assignees) {
-            await pingAssigneesForDueDate(assignees, labelToAdd, issue_number);
+        if (labelToAdd) {
+            if (assignees) {
+                await pingAssigneesForDueDate(assignees, labelToAdd, issue_number);
+            }
             if (labelToAdd === constants/* OVERDUE_ISSUE */.wH) {
                 await (0,remove_label.removeLabelIfExists)(constants/* ALMOST_OVERDUE_ISSUE */.aT, issue_number);
             }
