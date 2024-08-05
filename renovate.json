@@ -5,15 +5,8 @@
   "assigneesFromCodeOwners": true,
   "packageRules": [
     {
-      "matchDepTypes": ["devDependencies"],
-      "matchUpdateTypes": ["patch", "minor"],
+      "matchDepTypes": ["dependencies", "devDependencies"],
       "groupName": "devDependencies",
-      "automerge": true
-    },
-    {
-      "matchDepTypes": ["dependencies"],
-      "matchUpdateTypes": ["patch", "minor"],
-      "groupName": "dependencies",
       "automerge": true
     }
   ]
