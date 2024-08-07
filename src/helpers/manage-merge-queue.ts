@@ -75,7 +75,7 @@ export const manageMergeQueue = async ({
     if (only_maintainers_can_jump) {
       const isMaintainer = await isUserInTeam({ team: maintainers_team });
       if (isMaintainer != true) {
-        await removeLabelIfExists( JUMP_THE_QUEUE_PR_LABEL, pullRequest.number );
+        await removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, pullRequest.number);
         return await createPrComment({
           body: `Only core maintainers can jump the queue. Please have a core maintainer jump the queue for you`
         });
