@@ -31,6 +31,7 @@ import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-request
 import { updatePrWithDefaultBranch } from './prepare-queued-pr-for-merge';
 import { approvalsSatisfied } from './approvals-satisfied';
 import { createPrComment } from './create-pr-comment';
+import { isUserInTeam } from './is-user-in-team';
 import { join } from 'path';
 
 export class ManageMergeQueue extends HelperInputs {
@@ -38,9 +39,18 @@ export class ManageMergeQueue extends HelperInputs {
   login?: string;
   slack_webhook_url?: string;
   skip_auto_merge?: string;
+  team?: string;
+  allow_only_for_maintainers?: string;
 }
 
-export const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip_auto_merge }: ManageMergeQueue = {}) => {
+export const manageMergeQueue = async ({
+  max_queue_size,
+  login,
+  slack_webhook_url,
+  skip_auto_merge,
+  team = '',
+  allow_only_for_maintainers
+}: ManageMergeQueue = {}) => {
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
   if (pullRequest.merged || !pullRequest.labels.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
     core.info('This PR is not in the merge queue.');
@@ -62,6 +72,16 @@ export const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_ur
     return removePrFromQueue(pullRequest);
   }
   if (pullRequest.labels.find(label => label.name === JUMP_THE_QUEUE_PR_LABEL)) {
+    if (allow_only_for_maintainers === 'true') {
+      const isMaintainer = await isUserInTeam({ team: team });
+      if (isMaintainer != true) {
+        await removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, pullRequest.number);
+        return await createPrComment({
+          body: `Only core maintainers can jump the queue. Please have a core maintainer jump the queue for you`
+        });
+      }
+    }
+
     return updateMergeQueue(queuedPrs);
   }
   if (!pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))) {

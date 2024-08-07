@@ -1,5 +1,5 @@
 export const id = 676;
-export const ids = [676,431,461,61,209];
+export const ids = [676,431,461,374,61,209];
 export const modules = {
 
 /***/ 9042:
@@ -347,6 +347,51 @@ const createPrComment = async ({ body, sha, login, pull_number, repo_name, repo_
 
 /***/ }),
 
+/***/ 5374:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "IsUserInTeam": () => (/* binding */ IsUserInTeam),
+/* harmony export */   "isUserInTeam": () => (/* binding */ isUserInTeam)
+/* harmony export */ });
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3476);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6161);
+/*
+Copyright 2023 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+
+
+class IsUserInTeam extends _types_generated__WEBPACK_IMPORTED_MODULE_2__/* .HelperInputs */ .s {
+    constructor() {
+        super(...arguments);
+        this.login = '';
+        this.team = '';
+    }
+}
+const isUserInTeam = async ({ login = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.actor, team }) => {
+    const response = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
+        org: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner,
+        team_slug: team
+    });
+    return response.data.some(({ login: memberLogin }) => memberLogin === login);
+};
+
+
+/***/ }),
+
 /***/ 7473:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
@@ -478,6 +523,8 @@ var paginate_open_pull_requests = __webpack_require__(5757);
 var approvals_satisfied = __webpack_require__(9431);
 // EXTERNAL MODULE: ./src/helpers/create-pr-comment.ts
 var create_pr_comment = __webpack_require__(3461);
+// EXTERNAL MODULE: ./src/helpers/is-user-in-team.ts
+var is_user_in_team = __webpack_require__(5374);
 // EXTERNAL MODULE: external "path"
 var external_path_ = __webpack_require__(1017);
 ;// CONCATENATED MODULE: ./src/helpers/manage-merge-queue.ts
@@ -507,9 +554,10 @@ limitations under the License.
 
 
 
+
 class ManageMergeQueue extends generated/* HelperInputs */.s {
 }
-const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip_auto_merge } = {}) => {
+const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip_auto_merge, team = '', allow_only_for_maintainers } = {}) => {
     const { data: pullRequest } = await octokit/* octokit.pulls.get */.K.pulls.get({ pull_number: github.context.issue.number, ...github.context.repo });
     if (pullRequest.merged || !pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak)) {
         core.info('This PR is not in the merge queue.');
@@ -530,6 +578,15 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
         return removePrFromQueue(pullRequest);
     }
     if (pullRequest.labels.find(label => label.name === constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ)) {
+        if (allow_only_for_maintainers === 'true') {
+            const isMaintainer = await (0,is_user_in_team.isUserInTeam)({ team: team });
+            if (isMaintainer != true) {
+                await (0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, pullRequest.number);
+                return await (0,create_pr_comment.createPrComment)({
+                    body: `Only core maintainers can jump the queue. Please have a core maintainer jump the queue for you`
+                });
+            }
+        }
         return updateMergeQueue(queuedPrs);
     }
     if (!pullRequest.labels.find(label => label.name?.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee))) {

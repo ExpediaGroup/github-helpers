@@ -61,4 +61,5 @@ export class HelperInputs {
   load_balancing_sizes?: string;
   required_review_overrides?: string;
   max_queue_size?: string;
+  allow_only_for_maintainers?: string;
 }
