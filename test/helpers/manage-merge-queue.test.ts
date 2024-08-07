@@ -387,9 +387,9 @@ describe('manageMergeQueue', () => {
       await manageMergeQueue({ maintainers_team: 'not_team', only_maintainers_can_jump: true });
 
       expect(isUserInTeam).toHaveBeenCalled();
-      expect(removeLabel).toHaveBeenCalled();
+      expect(removeLabelIfExists).toHaveBeenCalled();
       expect(createPrComment).toHaveBeenCalled();
-      expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
+      expect(updateMergeQueue).toHaveBeenCalledTimes(0);
     });
   });
 

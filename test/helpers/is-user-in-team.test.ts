@@ -41,7 +41,7 @@ describe('isUserInTeam', () => {
   it('should call isUserInTeam with correct params and find user in team for context actor', async () => {
     const response = await isUserInTeam({ team: 'users' });
     expect(octokit.teams.listMembersInOrg).toHaveBeenCalledWith({
-      org: context.actor,
+      org: context.repo.owner,
       team_slug: 'users'
     });
     expect(response).toBe(true);
