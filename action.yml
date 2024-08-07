@@ -148,6 +148,9 @@ inputs:
   max_queue_size:
     description: 'The maximum number of PRs that can be in the merge queue at any given time'
     required: false
+  allow_only_for_maintainers:
+    description: 'Boolean to indicate if only maintainers of the repo are allowed to invoke this action'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'

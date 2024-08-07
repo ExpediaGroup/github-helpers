@@ -39,8 +39,8 @@ export class ManageMergeQueue extends HelperInputs {
   login?: string;
   slack_webhook_url?: string;
   skip_auto_merge?: string;
-  maintainers_team?: string;
-  only_maintainers_can_jump?: boolean;
+  team?: string;
+  allow_only_for_maintainers?: string;
 }
 
 export const manageMergeQueue = async ({
@@ -48,8 +48,8 @@ export const manageMergeQueue = async ({
   login,
   slack_webhook_url,
   skip_auto_merge,
-  maintainers_team = '',
-  only_maintainers_can_jump = false
+  team = '',
+  allow_only_for_maintainers
 }: ManageMergeQueue = {}) => {
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
   if (pullRequest.merged || !pullRequest.labels.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
@@ -72,8 +72,8 @@ export const manageMergeQueue = async ({
     return removePrFromQueue(pullRequest);
   }
   if (pullRequest.labels.find(label => label.name === JUMP_THE_QUEUE_PR_LABEL)) {
-    if (only_maintainers_can_jump) {
-      const isMaintainer = await isUserInTeam({ team: maintainers_team });
+    if (allow_only_for_maintainers === 'true') {
+      const isMaintainer = await isUserInTeam({ team: team });
       if (isMaintainer != true) {
         await removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, pullRequest.number);
         return await createPrComment({

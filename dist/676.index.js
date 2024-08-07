@@ -557,7 +557,7 @@ limitations under the License.
 
 class ManageMergeQueue extends generated/* HelperInputs */.s {
 }
-const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip_auto_merge, maintainers_team = '', only_maintainers_can_jump = false } = {}) => {
+const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip_auto_merge, team = '', allow_only_for_maintainers } = {}) => {
     const { data: pullRequest } = await octokit/* octokit.pulls.get */.K.pulls.get({ pull_number: github.context.issue.number, ...github.context.repo });
     if (pullRequest.merged || !pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak)) {
         core.info('This PR is not in the merge queue.');
@@ -578,8 +578,8 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
         return removePrFromQueue(pullRequest);
     }
     if (pullRequest.labels.find(label => label.name === constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ)) {
-        if (only_maintainers_can_jump) {
-            const isMaintainer = await (0,is_user_in_team.isUserInTeam)({ team: maintainers_team });
+        if (allow_only_for_maintainers === 'true') {
+            const isMaintainer = await (0,is_user_in_team.isUserInTeam)({ team: team });
             if (isMaintainer != true) {
                 await (0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, pullRequest.number);
                 return await (0,create_pr_comment.createPrComment)({

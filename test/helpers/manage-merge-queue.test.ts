@@ -366,7 +366,7 @@ describe('manageMergeQueue', () => {
     });
 
     it('should call updateMergeQueue with correct params when not checking maintainers group', async () => {
-      await manageMergeQueue({ only_maintainers_can_jump: false });
+      await manageMergeQueue({ allow_only_for_maintainers: 'false' });
 
       expect(isUserInTeam).toHaveBeenCalledTimes(0);
       expect(removeLabel).toHaveBeenCalledTimes(0);
@@ -375,7 +375,7 @@ describe('manageMergeQueue', () => {
     });
 
     it('should call updateMergeQueue when user in maintainers group', async () => {
-      await manageMergeQueue({ maintainers_team: 'team', only_maintainers_can_jump: true });
+      await manageMergeQueue({ team: 'team', allow_only_for_maintainers: 'true' });
 
       expect(isUserInTeam).toHaveBeenCalled();
       expect(removeLabel).toHaveBeenCalledTimes(0);
@@ -384,7 +384,7 @@ describe('manageMergeQueue', () => {
     });
 
     it('should not call updateMergeQueue when user not in maintainers group', async () => {
-      await manageMergeQueue({ maintainers_team: 'not_team', only_maintainers_can_jump: true });
+      await manageMergeQueue({ team: 'not_team', allow_only_for_maintainers: 'true' });
 
       expect(isUserInTeam).toHaveBeenCalled();
       expect(removeLabelIfExists).toHaveBeenCalled();
