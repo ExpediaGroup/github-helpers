@@ -16,7 +16,7 @@ import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
 export class IsUserInTeam extends HelperInputs {
-  login = '';
+  login? = '';
   team = '';
 }
 

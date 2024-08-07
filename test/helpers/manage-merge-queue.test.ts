@@ -17,17 +17,19 @@ import { context } from '@actions/github';
 import { manageMergeQueue } from '../../src/helpers/manage-merge-queue';
 import { notifyUser } from '../../src/utils/notify-user';
 import { octokit, octokitGraphql } from '../../src/octokit';
-import { removeLabelIfExists } from '../../src/helpers/remove-label';
+import {removeLabel, removeLabelIfExists} from '../../src/helpers/remove-label';
 import { setCommitStatus } from '../../src/helpers/set-commit-status';
 import { updateMergeQueue } from '../../src/utils/update-merge-queue';
 import { updatePrWithDefaultBranch } from '../../src/helpers/prepare-queued-pr-for-merge';
 import { approvalsSatisfied } from '../../src/helpers/approvals-satisfied';
 import { createPrComment } from '../../src/helpers/create-pr-comment';
+import {isUserInTeam} from "../../src/helpers/is-user-in-team";
 
 jest.mock('../../src/helpers/remove-label');
 jest.mock('../../src/helpers/set-commit-status');
 jest.mock('../../src/utils/notify-user');
 jest.mock('../../src/utils/update-merge-queue');
+jest.mock('../../src/helpers/is-user-in-team');
 jest.mock('../../src/helpers/approvals-satisfied');
 jest.mock('../../src/helpers/create-pr-comment');
 jest.mock('../../src/utils/../../src/helpers/prepare-queued-pr-for-merge');
@@ -44,6 +46,10 @@ jest.mock('@actions/github', () => ({
     graphql: jest.fn(() => ({ catch: jest.fn() }))
   }))
 }));
+
+(isUserInTeam as jest.Mock).mockImplementation(({ team }) => {
+  return team === 'team'
+})
 
 describe('manageMergeQueue', () => {
   describe('pr merged case', () => {
@@ -336,7 +342,7 @@ describe('manageMergeQueue', () => {
       { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
       { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }
     ];
-    beforeEach(async () => {
+    beforeEach(() => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
         data: page === 1 ? queuedPrs : []
       }));
@@ -348,10 +354,43 @@ describe('manageMergeQueue', () => {
         }
       }));
       (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
-      await manageMergeQueue();
     });
 
-    it('should call updateMergeQueue with correct params', () => {
+    it('should call updateMergeQueue with correct params', async() => {
+      await manageMergeQueue();
+
+      expect(isUserInTeam).toHaveBeenCalledTimes(0)
+      expect(removeLabel).toHaveBeenCalledTimes(0)
+      expect(createPrComment).toHaveBeenCalledTimes(0)
+      expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
+    });
+
+    it('should call updateMergeQueue with correct params when not checking maintainers group', async() => {
+      await manageMergeQueue({ only_maintainers_can_jump: false });
+
+      expect(isUserInTeam).toHaveBeenCalledTimes(0)
+      expect(removeLabel).toHaveBeenCalledTimes(0)
+      expect(createPrComment).toHaveBeenCalledTimes(0)
+      expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
+    });
+
+    it('should call updateMergeQueue when user in maintainers group', async() => {
+
+
+      await manageMergeQueue({ maintainers_team: 'team', only_maintainers_can_jump: true });
+
+      expect(isUserInTeam).toHaveBeenCalled()
+      expect(removeLabel).toHaveBeenCalledTimes(0)
+      expect(createPrComment).toHaveBeenCalledTimes(0)
+      expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
+    });
+
+    it('should not call updateMergeQueue when user not in maintainers group', async() => {
+      await manageMergeQueue({ maintainers_team: 'not_team', only_maintainers_can_jump: true });
+
+      expect(isUserInTeam).toHaveBeenCalled()
+      expect(removeLabel).toHaveBeenCalled()
+      expect(createPrComment).toHaveBeenCalled()
       expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
     });
   });

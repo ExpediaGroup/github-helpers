@@ -18,7 +18,7 @@ import { Mocktokit } from '../types';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
+  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 }, actor: 'admin' },
   getOctokit: jest.fn(() => ({ rest: { teams: { listMembersInOrg: jest.fn() } } }))
 }));
 
@@ -33,6 +33,15 @@ describe('isUserInTeam', () => {
     const response = await isUserInTeam({ login, team: 'users' });
     expect(octokit.teams.listMembersInOrg).toHaveBeenCalledWith({
       org: context.repo.owner,
+      team_slug: 'users'
+    });
+    expect(response).toBe(true);
+  });
+
+  it('should call isUserInTeam with correct params and find user in team for context actor', async () => {
+    const response = await isUserInTeam({ team: 'users' });
+    expect(octokit.teams.listMembersInOrg).toHaveBeenCalledWith({
+      org: context.actor,
       team_slug: 'users'
     });
     expect(response).toBe(true);
