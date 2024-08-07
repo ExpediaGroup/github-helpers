@@ -408,26 +408,38 @@ const updateMergeQueue = (queuedPrs) => {
 const sortPrsByQueuePosition = (queuedPrs) => queuedPrs
     .map(pr => {
     const label = pr.labels.find(label => label.name?.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee))?.name;
-    const isJumpingTheQueue = Boolean(pr.labels.find(label => label.name === constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ));
-    const queuePosition = isJumpingTheQueue ? 0 : Number(label?.split('#')?.[1]);
+    const hasJumpTheQueueLabel = Boolean(pr.labels.find(label => label.name === constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ));
+    const queuePosition = Number(label?.split('#')?.[1]);
     return {
         number: pr.number,
         label,
+        hasJumpTheQueueLabel,
         queuePosition,
         sha: pr.head.sha
     };
 })
-    .sort((pr1, pr2) => pr1.queuePosition - pr2.queuePosition);
+    .sort((pr1, pr2) => {
+    if (pr1.hasJumpTheQueueLabel) {
+        return -1;
+    }
+    if (pr2.hasJumpTheQueueLabel) {
+        return 1;
+    }
+    return pr1.queuePosition - pr2.queuePosition;
+});
 const updateQueuePosition = async (pr, index) => {
-    const { number, label, queuePosition, sha } = pr;
+    const { number, label, queuePosition, sha, hasJumpTheQueueLabel } = pr;
     const newQueuePosition = index + 1;
     if (!label || isNaN(queuePosition) || queuePosition === newQueuePosition) {
         return;
     }
+    if (hasJumpTheQueueLabel) {
+        await (0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, number);
+    }
     const prIsNowFirstInQueue = newQueuePosition === 1;
     if (prIsNowFirstInQueue) {
         const { data: firstPrInQueue } = await octokit/* octokit.pulls.get */.K.pulls.get({ pull_number: number, ...github.context.repo });
-        await Promise.all([(0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, number), (0,prepare_queued_pr_for_merge.updatePrWithDefaultBranch)(firstPrInQueue)]);
+        await (0,prepare_queued_pr_for_merge.updatePrWithDefaultBranch)(firstPrInQueue);
         const { data: { head: { sha: updatedHeadSha } } } = await octokit/* octokit.pulls.get */.K.pulls.get({ pull_number: number, ...github.context.repo });
         return Promise.all([
             octokit/* octokit.issues.addLabels */.K.issues.addLabels({

@@ -29,27 +29,40 @@ const sortPrsByQueuePosition = (queuedPrs: PullRequestList) =>
   queuedPrs
     .map(pr => {
       const label = pr.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))?.name;
-      const isJumpingTheQueue = Boolean(pr.labels.find(label => label.name === JUMP_THE_QUEUE_PR_LABEL));
-      const queuePosition = isJumpingTheQueue ? 0 : Number(label?.split('#')?.[1]);
+      const hasJumpTheQueueLabel = Boolean(pr.labels.find(label => label.name === JUMP_THE_QUEUE_PR_LABEL));
+      const queuePosition = Number(label?.split('#')?.[1]);
       return {
         number: pr.number,
         label,
+        hasJumpTheQueueLabel,
         queuePosition,
         sha: pr.head.sha
       };
     })
-    .sort((pr1, pr2) => pr1.queuePosition - pr2.queuePosition);
+    .sort((pr1, pr2) => {
+      if (pr1.hasJumpTheQueueLabel) {
+        return -1;
+      }
+      if (pr2.hasJumpTheQueueLabel) {
+        return 1;
+      }
+      return pr1.queuePosition - pr2.queuePosition;
+    });
 
 const updateQueuePosition = async (pr: ReturnType<typeof sortPrsByQueuePosition>[number], index: number) => {
-  const { number, label, queuePosition, sha } = pr;
+  const { number, label, queuePosition, sha, hasJumpTheQueueLabel } = pr;
   const newQueuePosition = index + 1;
   if (!label || isNaN(queuePosition) || queuePosition === newQueuePosition) {
     return;
   }
+  if (hasJumpTheQueueLabel) {
+    await removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, number);
+  }
+
   const prIsNowFirstInQueue = newQueuePosition === 1;
   if (prIsNowFirstInQueue) {
     const { data: firstPrInQueue } = await octokit.pulls.get({ pull_number: number, ...context.repo });
-    await Promise.all([removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, number), updatePrWithDefaultBranch(firstPrInQueue)]);
+    await updatePrWithDefaultBranch(firstPrInQueue);
     const {
       data: {
         head: { sha: updatedHeadSha }
