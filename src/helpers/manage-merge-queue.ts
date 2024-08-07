@@ -24,7 +24,7 @@ import { PullRequest, PullRequestList } from '../types/github';
 import { context } from '@actions/github';
 import { notifyUser } from '../utils/notify-user';
 import { octokit, octokitGraphql } from '../octokit';
-import {removeLabel, removeLabelIfExists} from './remove-label';
+import { removeLabelIfExists } from './remove-label';
 import { setCommitStatus } from './set-commit-status';
 import { updateMergeQueue } from '../utils/update-merge-queue';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
@@ -43,7 +43,14 @@ export class ManageMergeQueue extends HelperInputs {
   only_maintainers_can_jump?: boolean;
 }
 
-export const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip_auto_merge, maintainers_team = '', only_maintainers_can_jump = false }: ManageMergeQueue = {}) => {
+export const manageMergeQueue = async ({
+  max_queue_size,
+  login,
+  slack_webhook_url,
+  skip_auto_merge,
+  maintainers_team = '',
+  only_maintainers_can_jump = false
+}: ManageMergeQueue = {}) => {
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
   if (pullRequest.merged || !pullRequest.labels.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
     core.info('This PR is not in the merge queue.');
@@ -66,9 +73,9 @@ export const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_ur
   }
   if (pullRequest.labels.find(label => label.name === JUMP_THE_QUEUE_PR_LABEL)) {
     if (only_maintainers_can_jump) {
-      const isMaintainer = await isUserInTeam({team: maintainers_team})
+      const isMaintainer = await isUserInTeam({ team: maintainers_team });
       if (isMaintainer != true) {
-        await removeLabel({label: JUMP_THE_QUEUE_PR_LABEL})
+        await removeLabelIfExists( JUMP_THE_QUEUE_PR_LABEL, pullRequest.number );
         return await createPrComment({
           body: `Only core maintainers can jump the queue. Please have a core maintainer jump the queue for you`
         });
