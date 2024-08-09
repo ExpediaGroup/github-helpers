@@ -63,7 +63,7 @@ export const manageMergeQueue = async ({
     return removePrFromQueue(pullRequest);
   }
   const queuedPrs = await getQueuedPullRequests();
-  const queuePosition = queuedPrs.length;
+  const queuePosition = queuedPrs.length + 1;
 
   if (queuePosition > Number(max_queue_size)) {
     await createPrComment({
@@ -74,7 +74,7 @@ export const manageMergeQueue = async ({
   if (pullRequest.labels.find(label => label.name === JUMP_THE_QUEUE_PR_LABEL)) {
     if (allow_only_for_maintainers === 'true') {
       const isMaintainer = await isUserInTeam({ team: team });
-      if (isMaintainer != true) {
+      if (!isMaintainer) {
         await removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, pullRequest.number);
         return await createPrComment({
           body: `Only core maintainers can jump the queue. Please have a core maintainer jump the queue for you`
@@ -84,7 +84,9 @@ export const manageMergeQueue = async ({
 
     return updateMergeQueue(queuedPrs);
   }
-  if (!pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX))) {
+
+  const prIsAlreadyInTheQueue = pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX));
+  if (!prIsAlreadyInTheQueue) {
     await addPrToQueue(pullRequest, queuePosition, skip_auto_merge);
   }
 
@@ -143,7 +145,11 @@ const addPrToQueue = async (pullRequest: PullRequest, queuePosition: number, ski
 
 const getQueuedPullRequests = async (): Promise<PullRequestList> => {
   const openPullRequests = await paginateAllOpenPullRequests();
-  return openPullRequests.filter(pr => pr.labels.some(label => label.name === READY_FOR_MERGE_PR_LABEL));
+  return openPullRequests.filter(
+    pr =>
+      pr.labels.some(label => label.name === READY_FOR_MERGE_PR_LABEL) &&
+      pr.labels.some(label => label.name.startsWith(QUEUED_FOR_MERGE_PREFIX))
+  );
 };
 
 export const enableAutoMerge = async (pullRequestId: string, mergeMethod = 'SQUASH') => {

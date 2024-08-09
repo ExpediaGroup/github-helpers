@@ -570,7 +570,7 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
         return removePrFromQueue(pullRequest);
     }
     const queuedPrs = await getQueuedPullRequests();
-    const queuePosition = queuedPrs.length;
+    const queuePosition = queuedPrs.length + 1;
     if (queuePosition > Number(max_queue_size)) {
         await (0,create_pr_comment.createPrComment)({
             body: `The merge queue is full! Only ${max_queue_size} PRs are allowed in the queue at a time.\n\nIf you would like to merge your PR, please monitor the PRs in the queue and make sure the authors are around to merge them.`
@@ -580,7 +580,7 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
     if (pullRequest.labels.find(label => label.name === constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ)) {
         if (allow_only_for_maintainers === 'true') {
             const isMaintainer = await (0,is_user_in_team.isUserInTeam)({ team: team });
-            if (isMaintainer != true) {
+            if (!isMaintainer) {
                 await (0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, pullRequest.number);
                 return await (0,create_pr_comment.createPrComment)({
                     body: `Only core maintainers can jump the queue. Please have a core maintainer jump the queue for you`
@@ -589,7 +589,8 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
         }
         return updateMergeQueue(queuedPrs);
     }
-    if (!pullRequest.labels.find(label => label.name?.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee))) {
+    const prIsAlreadyInTheQueue = pullRequest.labels.find(label => label.name?.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee));
+    if (!prIsAlreadyInTheQueue) {
         await addPrToQueue(pullRequest, queuePosition, skip_auto_merge);
     }
     const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.IH);
@@ -641,7 +642,8 @@ const addPrToQueue = async (pullRequest, queuePosition, skip_auto_merge) => {
 };
 const getQueuedPullRequests = async () => {
     const openPullRequests = await (0,paginate_open_pull_requests/* paginateAllOpenPullRequests */.P)();
-    return openPullRequests.filter(pr => pr.labels.some(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak));
+    return openPullRequests.filter(pr => pr.labels.some(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.Ak) &&
+        pr.labels.some(label => label.name.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.Ee)));
 };
 const enableAutoMerge = async (pullRequestId, mergeMethod = 'SQUASH') => {
     try {

@@ -53,18 +53,23 @@ jest.mock('@actions/github', () => ({
 
 describe('manageMergeQueue', () => {
   describe('pr merged case', () => {
-    const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }, { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
+    const prUnderTest = {
+      number: 123,
+      merged: true,
+      head: { sha: 'sha' },
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
+    };
+    const openPr = {
+      number: 456,
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #2' }]
+    };
+    const openPrs = [prUnderTest, openPr];
     beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrs : []
+        data: page === 1 ? openPrs : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          merged: true,
-          head: { sha: 'sha' },
-          number: 123,
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
-        }
+        data: prUnderTest
       }));
       await manageMergeQueue();
     });
@@ -75,51 +80,69 @@ describe('manageMergeQueue', () => {
     });
 
     it('should call updateMergeQueue with correct params', () => {
-      expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
+      expect(updateMergeQueue).toHaveBeenCalledWith(openPrs);
     });
   });
 
   describe('pr not core approved case', () => {
-    const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }, { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
+    const prUnderTest = {
+      merged: false,
+      head: { sha: 'sha' },
+      number: 123,
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+    };
+    const openPr = {
+      number: 456,
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
+    };
+    const openPrs = [prUnderTest, openPr];
     beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrs : []
+        data: page === 1 ? openPrs : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          merged: false,
-          head: { sha: 'sha' },
-          number: 123,
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #2' }]
-        }
+        data: prUnderTest
       }));
       (approvalsSatisfied as jest.Mock).mockResolvedValue(false);
       await manageMergeQueue();
     });
 
-    it('should check for no commit status being published', () => {
-      expect(setCommitStatus).not.toHaveBeenCalledWith({
+    it('should call remove label with correct params', () => {
+      expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 123);
+    });
+
+    it('should set commit status with correct params', () => {
+      expect(setCommitStatus).toHaveBeenCalledWith({
         sha: 'sha',
         context: MERGE_QUEUE_STATUS,
         state: 'pending',
-        description: 'This PR is in line to merge.'
+        description: 'This PR is not in the merge queue.'
       });
+    });
+
+    it('should call updateMergeQueue with correct params', () => {
+      expect(updateMergeQueue).toHaveBeenCalledWith([openPr]);
     });
   });
 
-  describe('pr not ready for merge case', () => {
-    const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }, { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
+  describe('pr without ready for merge label case', () => {
+    const prUnderTest = {
+      merged: false,
+      head: { sha: 'sha' },
+      number: 123,
+      labels: [{ name: 'QUEUED FOR MERGE #2' }]
+    };
+    const openPr = {
+      number: 456,
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
+    };
+    const openPrs = [prUnderTest, openPr];
     beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrs : []
+        data: page === 1 ? openPrs : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          merged: false,
-          head: { sha: 'sha' },
-          number: 123,
-          labels: [{ name: 'QUEUED FOR MERGE #2' }]
-        }
+        data: prUnderTest
       }));
       (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue();
@@ -140,22 +163,81 @@ describe('manageMergeQueue', () => {
     });
 
     it('should call updateMergeQueue with correct params', () => {
-      expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
+      expect(updateMergeQueue).toHaveBeenCalledWith([openPr]);
     });
   });
 
   describe('pr ready for merge with one PR in the queue', () => {
-    const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }, { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
+    const prUnderTest = {
+      number: 123,
+      merged: false,
+      head: { sha: 'sha' },
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+    };
+    const openPr = {
+      number: 456,
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
+    };
+    const openPrs = [openPr];
     beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrs : []
+        data: page === 1 ? openPrs : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          merged: false,
-          head: { sha: 'sha' },
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
-        }
+        data: prUnderTest
+      }));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      await manageMergeQueue();
+    });
+
+    it('should call setCommitStatus with correct params', () => {
+      expect(setCommitStatus).toHaveBeenCalledWith({
+        sha: 'sha',
+        context: MERGE_QUEUE_STATUS,
+        state: 'pending',
+        description: 'This PR is in line to merge.'
+      });
+    });
+
+    it('should call addLabels with correct params', () => {
+      expect(octokit.issues.addLabels).toHaveBeenCalledWith({
+        labels: ['QUEUED FOR MERGE #2'],
+        issue_number: 123,
+        ...context.repo
+      });
+    });
+
+    it('should not update PR with default branch', () => {
+      expect(updatePrWithDefaultBranch).not.toHaveBeenCalled();
+    });
+
+    it('should enable auto-merge', () => {
+      expect(octokitGraphql).toHaveBeenCalled();
+    });
+  });
+
+  describe('pr ready for merge with a PR that has ready for merge label only', () => {
+    const prUnderTest = {
+      number: 123,
+      merged: false,
+      head: { sha: 'sha' },
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+    };
+    const openPr1 = {
+      number: 456,
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+    };
+    const openPr2 = {
+      number: 789,
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
+    };
+    const openPrs = [prUnderTest, openPr1, openPr2];
+    beforeEach(async () => {
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+        data: page === 1 ? openPrs : []
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: prUnderTest
       }));
       (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue();
@@ -188,18 +270,19 @@ describe('manageMergeQueue', () => {
   });
 
   describe('pr ready for merge with empty queue', () => {
-    const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
-    const pullRequest = {
+    const prUnderTest = {
+      number: 123,
       merged: false,
       head: { sha: 'sha' },
       labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
     };
+    const openPrs = [prUnderTest, { labels: [{ name: 'some random label' }] }];
     beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrs : []
+        data: page === 1 ? openPrs : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-        data: pullRequest
+        data: prUnderTest
       }));
       (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue();
@@ -223,7 +306,7 @@ describe('manageMergeQueue', () => {
     });
 
     it('should update PR with default branch', () => {
-      expect(updatePrWithDefaultBranch).toHaveBeenCalledWith(pullRequest);
+      expect(updatePrWithDefaultBranch).toHaveBeenCalledWith(prUnderTest);
     });
 
     it('should enable auto-merge', () => {
@@ -232,17 +315,19 @@ describe('manageMergeQueue', () => {
   });
 
   describe('pr ready for merge case where repo has disabled auto merge', () => {
-    const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
+    const prUnderTest = {
+      number: 123,
+      merged: false,
+      head: { sha: 'sha' },
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+    };
+    const openPrs = [prUnderTest];
     beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrs : []
+        data: page === 1 ? openPrs : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          merged: false,
-          head: { sha: 'sha' },
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
-        }
+        data: prUnderTest
       }));
       (octokitGraphql as unknown as jest.Mock).mockRejectedValue(new Error('Auto merge is not allowed for this repo'));
       (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
@@ -272,23 +357,25 @@ describe('manageMergeQueue', () => {
   });
 
   describe('pr already in the queue case', () => {
-    const queuedPrs = [
-      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }
+    const prUnderTest = {
+      number: 123,
+      merged: false,
+      head: { sha: 'sha' },
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
+    };
+    const openPrs = [
+      prUnderTest,
+      { number: 1, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }] },
+      { number: 2, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #2' }] },
+      { number: 3, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #3' }] },
+      { number: 4, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #4' }] }
     ];
     beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrs : []
+        data: page === 1 ? openPrs : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          merged: false,
-          head: { sha: 'sha' },
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
-        }
+        data: prUnderTest
       }));
       (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue();
@@ -302,19 +389,20 @@ describe('manageMergeQueue', () => {
   });
 
   describe('skip_auto_merge is used', () => {
-    const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
-    const pullRequest = {
+    const prUnderTest = {
+      number: 123,
       merged: false,
       head: { sha: 'sha' },
       labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
     };
+    const openPrs = [prUnderTest];
 
     it('should not enable auto-merge on PR if skip_auto_merge is true', async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrs : []
+        data: page === 1 ? openPrs : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-        data: pullRequest
+        data: prUnderTest
       }));
       (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue({ skip_auto_merge: 'true' });
@@ -323,10 +411,10 @@ describe('manageMergeQueue', () => {
 
     it('should enable auto-merge on PR if skip_auto_merge is false', async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrs : []
+        data: page === 1 ? openPrs : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-        data: pullRequest
+        data: prUnderTest
       }));
       (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue({ skip_auto_merge: 'false' });
@@ -335,23 +423,25 @@ describe('manageMergeQueue', () => {
   });
 
   describe('jump the queue case', () => {
-    const queuedPrs = [
-      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }
+    const prUnderTest = {
+      number: 123,
+      merged: false,
+      head: { sha: 'sha' },
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: JUMP_THE_QUEUE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
+    };
+    const openPrs = [
+      prUnderTest,
+      { number: 1, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }] },
+      { number: 2, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #2' }] },
+      { number: 3, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #3' }] },
+      { number: 4, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #4' }] }
     ];
     beforeEach(() => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrs : []
+        data: page === 1 ? openPrs : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          merged: false,
-          head: { sha: 'sha' },
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: JUMP_THE_QUEUE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
-        }
+        data: prUnderTest
       }));
       (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
     });
@@ -362,7 +452,7 @@ describe('manageMergeQueue', () => {
       expect(isUserInTeam).toHaveBeenCalledTimes(0);
       expect(removeLabel).toHaveBeenCalledTimes(0);
       expect(createPrComment).toHaveBeenCalledTimes(0);
-      expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
+      expect(updateMergeQueue).toHaveBeenCalledWith(openPrs);
     });
 
     it('should call updateMergeQueue with correct params when not checking maintainers group', async () => {
@@ -371,7 +461,7 @@ describe('manageMergeQueue', () => {
       expect(isUserInTeam).toHaveBeenCalledTimes(0);
       expect(removeLabel).toHaveBeenCalledTimes(0);
       expect(createPrComment).toHaveBeenCalledTimes(0);
-      expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
+      expect(updateMergeQueue).toHaveBeenCalledWith(openPrs);
     });
 
     it('should call updateMergeQueue when user in maintainers group', async () => {
@@ -380,7 +470,7 @@ describe('manageMergeQueue', () => {
       expect(isUserInTeam).toHaveBeenCalled();
       expect(removeLabel).toHaveBeenCalledTimes(0);
       expect(createPrComment).toHaveBeenCalledTimes(0);
-      expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
+      expect(updateMergeQueue).toHaveBeenCalledWith(openPrs);
     });
 
     it('should not call updateMergeQueue when user not in maintainers group', async () => {
@@ -396,18 +486,40 @@ describe('manageMergeQueue', () => {
   describe('slack reminder integration', () => {
     const login = 'test';
     const slack_webhook_url = 'https://hooks.slack.com/workflows/1234567890';
-    const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
 
-    it('should notify user if queue position 1', async () => {
+    it('should notify user if pr is becoming queue position 1', async () => {
+      const prUnderTest = {
+        number: 123,
+        merged: false,
+        head: { sha: 'sha' },
+        labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+      };
+      const openPrs = [prUnderTest];
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrs : []
+        data: page === 1 ? openPrs : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          merged: false,
-          head: { sha: 'sha' },
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
-        }
+        data: prUnderTest
+      }));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      await manageMergeQueue({ login, slack_webhook_url });
+
+      expect(notifyUser).toHaveBeenCalled();
+    });
+
+    it('should notify user if pr is already queue position 1', async () => {
+      const prUnderTest = {
+        number: 123,
+        merged: false,
+        head: { sha: 'sha' },
+        labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
+      };
+      const openPrs = [prUnderTest, { labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #2' }] }];
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+        data: page === 1 ? openPrs : []
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: prUnderTest
       }));
       (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue({ login, slack_webhook_url });
@@ -416,22 +528,23 @@ describe('manageMergeQueue', () => {
     });
 
     it('should not notify user if queue position greater than 2', async () => {
-      const queuedPrs = [
-        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-        { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }
+      const prUnderTest = {
+        number: 123,
+        merged: false,
+        head: { sha: 'sha' },
+        labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
+      };
+      const openPrs = [
+        { number: 1, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }] },
+        { number: 2, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #2' }] },
+        { number: 3, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #3' }] },
+        { number: 4, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #4' }] }
       ];
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrs : []
+        data: page === 1 ? openPrs : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          merged: false,
-          head: { sha: 'sha' },
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #5' }]
-        }
+        data: prUnderTest
       }));
       (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue({ login, slack_webhook_url });
@@ -440,9 +553,9 @@ describe('manageMergeQueue', () => {
     });
 
     it('should not notify user if slack_webhook_url not provided', async () => {
-      const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
+      const openPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrs : []
+        data: page === 1 ? openPrs : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: {
@@ -458,9 +571,9 @@ describe('manageMergeQueue', () => {
     });
 
     it('should not notify user if login not provided', async () => {
-      const queuedPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
+      const openPrs = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrs : []
+        data: page === 1 ? openPrs : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: {
@@ -476,21 +589,22 @@ describe('manageMergeQueue', () => {
     });
   });
 
-  describe('multiple pages of prs', () => {
-    const queuedPrsPage1 = [{ labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }, { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
-    const queuedPrsPage2 = [{ labels: [] }, { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
-    const queuedPrs = queuedPrsPage1.concat(queuedPrsPage2).filter(pr => pr.labels.some(label => label.name === READY_FOR_MERGE_PR_LABEL));
+  describe('filters queued prs when there are multiple pages', () => {
+    const prUnderTest = {
+      number: 123,
+      merged: true,
+      head: { sha: 'sha' },
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
+    };
+    const queuedPr = { number: 999, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #2' }] };
+    const openPrsPage1 = [prUnderTest, { number: 456, labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }];
+    const openPrsPage2 = [{ number: 789, labels: [] }, queuedPr];
     beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrsPage1 : page === 2 ? queuedPrsPage2 : []
+        data: page === 1 ? openPrsPage1 : page === 2 ? openPrsPage2 : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          merged: true,
-          head: { sha: 'sha' },
-          number: 123,
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }]
-        }
+        data: prUnderTest
       }));
       (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue();
@@ -529,27 +643,29 @@ describe('manageMergeQueue', () => {
     });
 
     it('should call updateMergeQueue with correct params', () => {
-      expect(updateMergeQueue).toHaveBeenCalledWith(queuedPrs);
+      expect(updateMergeQueue).toHaveBeenCalledWith([prUnderTest, queuedPr]);
     });
   });
 
   describe('more than max prs in the queue', () => {
-    const queuedPrs = [
-      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }
+    const prUnderTest = {
+      number: 123,
+      merged: false,
+      head: { sha: 'sha' },
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+    };
+    const openPrs = [
+      prUnderTest,
+      { number: 1, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }] },
+      { number: 2, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #2' }] },
+      { number: 3, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #3' }] }
     ];
     beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrs : []
+        data: page === 1 ? openPrs : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          merged: false,
-          head: { sha: 'sha' },
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
-        }
+        data: prUnderTest
       }));
       (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue({
@@ -565,21 +681,23 @@ describe('manageMergeQueue', () => {
   });
 
   describe('fewer than max prs in the queue', () => {
-    const queuedPrs = [
-      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] },
-      { labels: [{ name: READY_FOR_MERGE_PR_LABEL }] }
+    const prUnderTest = {
+      number: 1,
+      merged: false,
+      head: { sha: 'sha' },
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+    };
+    const openPrs = [
+      prUnderTest,
+      { number: 1, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }] },
+      { number: 2, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #2' }] }
     ];
     beforeEach(async () => {
       (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
-        data: page === 1 ? queuedPrs : []
+        data: page === 1 ? openPrs : []
       }));
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-        data: {
-          merged: false,
-          head: { sha: 'sha' },
-          labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
-        }
+        data: prUnderTest
       }));
       (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
       await manageMergeQueue({
