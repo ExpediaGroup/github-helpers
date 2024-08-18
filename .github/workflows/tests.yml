@@ -54,7 +54,7 @@ jobs:
             git status
             git config user.name "${{ github.actor }}"
             git config user.email "${{ github.actor }}@users.noreply.github.com"
-            git add dist/
+            git add .
             git commit -m "chore: committing generated dist" --no-verify
             git push
             exit 1
