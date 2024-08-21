@@ -73,11 +73,11 @@ export const manageMergeQueue = async ({
   }
   if (pullRequest.labels.find(label => label.name === JUMP_THE_QUEUE_PR_LABEL)) {
     if (allow_only_for_maintainers === 'true') {
-      const isMaintainer = await isUserInTeam({ team: team });
+      const isMaintainer = await isUserInTeam({ login, team: team });
       if (!isMaintainer) {
         await removeLabelIfExists(JUMP_THE_QUEUE_PR_LABEL, pullRequest.number);
         return await createPrComment({
-          body: `Only core maintainers can jump the queue. Please have a core maintainer jump the queue for you`
+          body: `@${login} Only core maintainers can jump the queue. Please have a core maintainer jump the queue for you.`
         });
       }
     }

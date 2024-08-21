@@ -14,6 +14,7 @@ limitations under the License.
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
+import * as core from '@actions/core';
 
 export class IsUserInTeam extends HelperInputs {
   login? = '';
@@ -25,5 +26,7 @@ export const isUserInTeam = async ({ login = context.actor, team }: IsUserInTeam
     org: context.repo.owner,
     team_slug: team
   });
+  core.debug(`Checking if ${login} is in team ${team}`);
+  core.debug(`Team members: ${response.data.map(({ login }) => login).join(', ')}`);
   return response.data.some(({ login: memberLogin }) => memberLogin === login);
 };
