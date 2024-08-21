@@ -91,7 +91,9 @@ export const approvalsSatisfied = async ({
     return numberOfApprovals >= Number(numberOfRequiredReviews);
   };
 
-  logs.push(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
+  if (requiredCodeOwnersEntriesWithOwners.length) {
+    logs.push(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
+  }
 
   const booleans = await Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
   const approvalsSatisfied = booleans.every(Boolean);
