@@ -15,6 +15,7 @@ import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import * as core from '@actions/core';
+import { MembersInOrg } from '../types/github';
 
 export class IsUserInTeam extends HelperInputs {
   login? = '';
@@ -22,11 +23,21 @@ export class IsUserInTeam extends HelperInputs {
 }
 
 export const isUserInTeam = async ({ login = context.actor, team }: IsUserInTeam) => {
+  const members = await paginateAllMembersInOrg(team);
+  core.info(`Checking if ${login} is in team ${team}`);
+  core.info(`Team members: ${members.map(({ login }) => login).join(', ')}`);
+  return members.some(({ login: memberLogin }) => memberLogin === login);
+};
+
+async function paginateAllMembersInOrg(team: string, page = 1): Promise<MembersInOrg> {
   const response = await octokit.teams.listMembersInOrg({
     org: context.repo.owner,
-    team_slug: team
+    team_slug: team,
+    page,
+    per_page: 100
   });
-  core.info(`Checking if ${login} is in team ${team}`);
-  core.info(`Team members: ${response.data.map(({ login }) => login).join(', ')}`);
-  return response.data.some(({ login: memberLogin }) => memberLogin === login);
-};
+  if (!response.data.length) {
+    return [];
+  }
+  return response.data.concat(await paginateAllMembersInOrg(team, page + 1));
+}
