@@ -391,8 +391,8 @@ const isUserInTeam = async ({ login = _actions_github__WEBPACK_IMPORTED_MODULE_0
         org: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner,
         team_slug: team
     });
-    _actions_core__WEBPACK_IMPORTED_MODULE_2__.debug(`Checking if ${login} is in team ${team}`);
-    _actions_core__WEBPACK_IMPORTED_MODULE_2__.debug(`Team members: ${response.data.map(({ login }) => login).join(', ')}`);
+    _actions_core__WEBPACK_IMPORTED_MODULE_2__.info(`Checking if ${login} is in team ${team}`);
+    _actions_core__WEBPACK_IMPORTED_MODULE_2__.info(`Team members: ${response.data.map(({ login }) => login).join(', ')}`);
     return response.data.some(({ login: memberLogin }) => memberLogin === login);
 };
 
@@ -586,7 +586,8 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
     }
     if (pullRequest.labels.find(label => label.name === constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ)) {
         if (allow_only_for_maintainers === 'true') {
-            const isMaintainer = await (0,is_user_in_team.isUserInTeam)({ login, team: team });
+            core.info(`Checking if user ${login} is a maintainer...`);
+            const isMaintainer = await (0,is_user_in_team.isUserInTeam)({ team: team });
             if (!isMaintainer) {
                 await (0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, pullRequest.number);
                 return await (0,create_pr_comment.createPrComment)({
