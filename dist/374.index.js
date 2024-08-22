@@ -44,8 +44,8 @@ const isUserInTeam = async ({ login = _actions_github__WEBPACK_IMPORTED_MODULE_0
         org: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner,
         team_slug: team
     });
-    _actions_core__WEBPACK_IMPORTED_MODULE_2__.debug(`Checking if ${login} is in team ${team}`);
-    _actions_core__WEBPACK_IMPORTED_MODULE_2__.debug(`Team members: ${response.data.map(({ login }) => login).join(', ')}`);
+    _actions_core__WEBPACK_IMPORTED_MODULE_2__.info(`Checking if ${login} is in team ${team}`);
+    _actions_core__WEBPACK_IMPORTED_MODULE_2__.info(`Team members: ${response.data.map(({ login }) => login).join(', ')}`);
     return response.data.some(({ login: memberLogin }) => memberLogin === login);
 };
 

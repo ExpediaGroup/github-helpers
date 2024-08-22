@@ -26,7 +26,7 @@ export const isUserInTeam = async ({ login = context.actor, team }: IsUserInTeam
     org: context.repo.owner,
     team_slug: team
   });
-  core.debug(`Checking if ${login} is in team ${team}`);
-  core.debug(`Team members: ${response.data.map(({ login }) => login).join(', ')}`);
+  core.info(`Checking if ${login} is in team ${team}`);
+  core.info(`Team members: ${response.data.map(({ login }) => login).join(', ')}`);
   return response.data.some(({ login: memberLogin }) => memberLogin === login);
 };
