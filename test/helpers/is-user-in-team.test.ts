@@ -22,9 +22,14 @@ jest.mock('@actions/github', () => ({
   getOctokit: jest.fn(() => ({ rest: { teams: { listMembersInOrg: jest.fn() } } }))
 }));
 
-(octokit.teams.listMembersInOrg as unknown as Mocktokit).mockImplementation(async ({ team_slug }) => ({
-  data: team_slug === 'users' ? [{ login: 'octocat' }, { login: 'admin' }] : [{ login: 'admin' }]
-}));
+(octokit.teams.listMembersInOrg as unknown as Mocktokit).mockImplementation(async ({ page, team_slug }) => {
+  if (page === 1) {
+    return {
+      data: team_slug === 'users' ? [{ login: 'octocat' }, { login: 'admin' }] : [{ login: 'admin' }]
+    };
+  }
+  return { data: [] };
+});
 
 describe('isUserInTeam', () => {
   const login = 'octocat';
@@ -33,6 +38,8 @@ describe('isUserInTeam', () => {
     const response = await isUserInTeam({ login, team: 'users' });
     expect(octokit.teams.listMembersInOrg).toHaveBeenCalledWith({
       org: context.repo.owner,
+      page: 1,
+      per_page: 100,
       team_slug: 'users'
     });
     expect(response).toBe(true);
@@ -42,6 +49,8 @@ describe('isUserInTeam', () => {
     const response = await isUserInTeam({ team: 'users' });
     expect(octokit.teams.listMembersInOrg).toHaveBeenCalledWith({
       org: context.repo.owner,
+      page: 1,
+      per_page: 100,
       team_slug: 'users'
     });
     expect(response).toBe(true);
@@ -51,6 +60,8 @@ describe('isUserInTeam', () => {
     const response = await isUserInTeam({ login, team: 'core' });
     expect(octokit.teams.listMembersInOrg).toHaveBeenCalledWith({
       org: context.repo.owner,
+      page: 1,
+      per_page: 100,
       team_slug: 'core'
     });
     expect(response).toBe(false);
