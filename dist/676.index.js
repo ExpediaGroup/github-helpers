@@ -387,14 +387,23 @@ class IsUserInTeam extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .Help
     }
 }
 const isUserInTeam = async ({ login = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.actor, team }) => {
+    const members = await paginateAllMembersInOrg(team);
+    _actions_core__WEBPACK_IMPORTED_MODULE_2__.info(`Checking if ${login} is in team ${team}`);
+    _actions_core__WEBPACK_IMPORTED_MODULE_2__.info(`Team members: ${members.map(({ login }) => login).join(', ')}`);
+    return members.some(({ login: memberLogin }) => memberLogin === login);
+};
+async function paginateAllMembersInOrg(team, page = 1) {
     const response = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit.teams.listMembersInOrg */ .K.teams.listMembersInOrg({
         org: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner,
-        team_slug: team
+        team_slug: team,
+        page,
+        per_page: 100
     });
-    _actions_core__WEBPACK_IMPORTED_MODULE_2__.info(`Checking if ${login} is in team ${team}`);
-    _actions_core__WEBPACK_IMPORTED_MODULE_2__.info(`Team members: ${response.data.map(({ login }) => login).join(', ')}`);
-    return response.data.some(({ login: memberLogin }) => memberLogin === login);
-};
+    if (!response.data.length) {
+        return [];
+    }
+    return response.data.concat(await paginateAllMembersInOrg(team, page + 1));
+}
 
 
 /***/ }),
@@ -587,11 +596,11 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
     if (pullRequest.labels.find(label => label.name === constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ)) {
         if (allow_only_for_maintainers === 'true') {
             core.info(`Checking if user ${login} is a maintainer...`);
-            const isMaintainer = await (0,is_user_in_team.isUserInTeam)({ team: team });
+            const isMaintainer = await (0,is_user_in_team.isUserInTeam)({ login: github.context.actor, team: team });
             if (!isMaintainer) {
                 await (0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.nJ, pullRequest.number);
                 return await (0,create_pr_comment.createPrComment)({
-                    body: `@${login} Only core maintainers can jump the queue. Please have a core maintainer jump the queue for you.`
+                    body: `@${github.context.actor} Only core maintainers can jump the queue. Please have a core maintainer jump the queue for you.`
                 });
             }
         }

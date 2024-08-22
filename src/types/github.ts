@@ -29,6 +29,7 @@ export type ChangedFilesList = RestEndpointMethodTypes['pulls']['listFiles']['re
 export type ProjectListResponse = RestEndpointMethodTypes['projects']['listForRepo']['response'];
 export type ColumnListResponse = RestEndpointMethodTypes['projects']['listColumns']['response'];
 export type ChecksUpdateConclusion = RestEndpointMethodTypes['checks']['update']['parameters']['conclusion'];
+export type MembersInOrg = RestEndpointMethodTypes['teams']['listMembersInOrg']['response']['data'];
 
 export type GithubError = {
   status: number;
