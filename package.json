@@ -9,7 +9,7 @@
     "@actions/github": "6.0.0",
     "@adobe/node-fetch-retry": "2.2.0",
     "@octokit/rest": "21.0.2",
-    "axios": "1.7.5",
+    "axios": "1.7.7",
     "bluebird": "3.7.2",
     "codeowners-utils": "1.0.2",
     "js-yaml": "4.1.0",
@@ -41,7 +41,7 @@
     "plop": "4.0.1",
     "prettier": "3.3.3",
     "typescript": "5.5.4",
-    "typescript-eslint": "8.2.0"
+    "typescript-eslint": "8.3.0"
   },
   "jest": {
     "clearMocks": true,
