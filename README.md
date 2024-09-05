@@ -189,6 +189,10 @@ Additionally, the following parameters can be used for additional control over t
 
 -   Creates a new in-progress Github "deployment" for a commit. More information on Github deployment events can be found [here](https://docs.github.com/en/rest/reference/repos#deployments)
 
+### [is-user-core-member](.github/workflows/is-user-core-member.yml)
+
+-   Checks if a specified GitHub user is a core member for a given pull request.
+
 ### [is-user-in-team](.github/workflows/is-user-in-team.yml)
 
 -   Checks if the specifed GitHub user exists within an organization team

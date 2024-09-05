@@ -1,27 +1,27 @@
-export const id = 465;
-export const ids = [465];
+export const id = 943;
+export const ids = [943];
 export const modules = {
 
-/***/ 6465:
+/***/ 5943:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "AreReviewersRequired": () => (/* binding */ AreReviewersRequired),
-/* harmony export */   "areReviewersRequired": () => (/* binding */ areReviewersRequired)
+/* harmony export */   "IsUserCoreMember": () => (/* binding */ IsUserCoreMember),
+/* harmony export */   "isUserCoreMember": () => (/* binding */ isUserCoreMember)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3476);
-/* harmony import */ var _utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(7290);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2186);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(7290);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-    https://www.apache.org/licenses/LICENSE-2.0
+https://www.apache.org/licenses/LICENSE-2.0
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,22 +32,14 @@ limitations under the License.
 
 
 
-class AreReviewersRequired extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .s {
-    constructor() {
-        super(...arguments);
-        this.teams = '';
-    }
+class IsUserCoreMember extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .s {
 }
-const areReviewersRequired = async ({ teams }) => {
-    const prNumber = _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.issue.number;
-    const teamsList = teams?.split('\n');
-    const requiredCodeOwnersEntries = (await (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_1__/* .getRequiredCodeOwnersEntries */ .q)(prNumber)).map(({ owners }) => owners).flat();
-    const notRequiredTeams = teamsList.filter(team => !requiredCodeOwnersEntries.includes(team));
-    if (notRequiredTeams.length) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`${notRequiredTeams.join(', ')} not in list of required reviewers (${requiredCodeOwnersEntries.join(', ')})`);
-        return false;
-    }
-    return true;
+const isUserCoreMember = async ({ pull_number, login = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.actor }) => {
+    const pullNumber = Number(pull_number);
+    const coreMembers = await (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .c)(pullNumber);
+    _actions_core__WEBPACK_IMPORTED_MODULE_1__.info(`Checking if ${login} is a core member for pull request ${pullNumber}`);
+    _actions_core__WEBPACK_IMPORTED_MODULE_1__.info(`Core members: ${coreMembers.join(', ')}`);
+    return coreMembers.includes(login);
 };
 
 
@@ -254,4 +246,4 @@ const getCodeOwnersFromEntries = (codeOwnersEntries) => {
 
 };
 
-//# sourceMappingURL=465.index.js.map
+//# sourceMappingURL=943.index.js.map
