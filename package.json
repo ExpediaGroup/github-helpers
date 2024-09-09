@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@swc/jest": "0.2.36",
-    "@total-typescript/ts-reset": "0.6.0",
+    "@total-typescript/ts-reset": "0.6.1",
     "@types/bluebird": "3.5.42",
     "@types/glob": "8.1.0",
     "@types/jest": "29.5.12",
@@ -34,14 +34,14 @@
     "@types/lodash.uniq": "4.5.9",
     "@types/micromatch": "4.0.9",
     "@vercel/ncc": "0.38.1",
-    "bun-types": "1.1.26",
-    "eslint": "9.9.1",
+    "bun-types": "1.1.27",
+    "eslint": "9.10.0",
     "husky": "9.1.5",
     "jest": "29.7.0",
     "plop": "4.0.1",
     "prettier": "3.3.3",
     "typescript": "5.5.4",
-    "typescript-eslint": "8.3.0"
+    "typescript-eslint": "8.4.0"
   },
   "jest": {
     "clearMocks": true,
