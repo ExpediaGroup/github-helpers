@@ -752,14 +752,18 @@ const updatePrWithDefaultBranch = async (pullRequest) => {
         });
     }
     catch (error) {
-        const noEvictUponConflict = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getBooleanInput('no_evict_upon_conflict');
-        if (error.status === 409) {
-            if (!noEvictUponConflict)
-                await (0,_manage_merge_queue__WEBPACK_IMPORTED_MODULE_4__.removePrFromQueue)(pullRequest);
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('The first PR in the queue has a merge conflict.');
+        const noEvictUponConflict = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('no_evict_upon_conflict');
+        const githubError = error;
+        if (githubError.status !== 409) {
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(githubError.message);
+            return;
         }
-        else
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
+        if (noEvictUponConflict === 'true') {
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('The first PR in the queue has a merge conflict. PR was not removed from the queue due to no_evict_upon_conflict input.');
+            return;
+        }
+        await (0,_manage_merge_queue__WEBPACK_IMPORTED_MODULE_4__.removePrFromQueue)(pullRequest);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('The first PR in the queue has a merge conflict, and it was removed from the queue.');
     }
 };
 
