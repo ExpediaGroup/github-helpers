@@ -350,9 +350,9 @@ describe('prepareQueuedPrForMerge', () => {
       await prepareQueuedPrForMerge();
     });
 
-    it('should NOT remove PR from queue and call core.error', () => {
+    it('should NOT remove PR from queue and call core.info', () => {
       expect(removePrFromQueue).not.toHaveBeenCalled();
-      expect(core.setFailed).toHaveBeenCalled();
+      expect(core.info).toHaveBeenCalled();
     });
   });
 

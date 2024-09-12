@@ -59,9 +59,17 @@ export const updatePrWithDefaultBranch = async (pullRequest: PullRequest) => {
     });
   } catch (error) {
     const noEvictUponConflict = core.getInput('no_evict_upon_conflict');
-    if ((error as GithubError).status === 409) {
-      if (noEvictUponConflict !== 'true') await removePrFromQueue(pullRequest);
-      core.setFailed('The first PR in the queue has a merge conflict.');
-    } else core.setFailed((error as GithubError).message);
+    const githubError = error as GithubError;
+    if (githubError.status !== 409) {
+      core.setFailed(githubError.message);
+      return;
+    }
+    if (noEvictUponConflict === 'true') {
+      core.info('The first PR in the queue has a merge conflict. PR was not removed from the queue due to no_evict_upon_conflict input.');
+      return;
+    }
+
+    await removePrFromQueue(pullRequest);
+    core.setFailed('The first PR in the queue has a merge conflict, and it was removed from the queue.');
   }
 };
