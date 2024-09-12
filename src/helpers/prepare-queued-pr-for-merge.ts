@@ -58,9 +58,9 @@ export const updatePrWithDefaultBranch = async (pullRequest: PullRequest) => {
       ...context.repo
     });
   } catch (error) {
-    const noEvictUponConflict = core.getBooleanInput('no_evict_upon_conflict');
+    const noEvictUponConflict = core.getInput('no_evict_upon_conflict');
     if ((error as GithubError).status === 409) {
-      if (!noEvictUponConflict) await removePrFromQueue(pullRequest);
+      if (noEvictUponConflict !== 'true') await removePrFromQueue(pullRequest);
       core.setFailed('The first PR in the queue has a merge conflict.');
     } else core.setFailed((error as GithubError).message);
   }

@@ -752,9 +752,9 @@ const updatePrWithDefaultBranch = async (pullRequest) => {
         });
     }
     catch (error) {
-        const noEvictUponConflict = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getBooleanInput('no_evict_upon_conflict');
+        const noEvictUponConflict = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('no_evict_upon_conflict');
         if (error.status === 409) {
-            if (!noEvictUponConflict)
+            if (noEvictUponConflict !== 'true')
                 await (0,_manage_merge_queue__WEBPACK_IMPORTED_MODULE_4__.removePrFromQueue)(pullRequest);
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('The first PR in the queue has a merge conflict.');
         }

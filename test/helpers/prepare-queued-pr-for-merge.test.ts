@@ -16,10 +16,8 @@ import { FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABE
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
-import { updateMergeQueue } from '../../src/utils/update-merge-queue';
 import { prepareQueuedPrForMerge } from '../../src/helpers/prepare-queued-pr-for-merge';
 import { removePrFromQueue } from '../../src/helpers/manage-merge-queue';
-import { removeLabelIfExists } from '../../src/helpers/remove-label';
 
 jest.mock('@actions/core');
 jest.mock('../../src/utils/update-merge-queue');
@@ -348,14 +346,60 @@ describe('prepareQueuedPrForMerge', () => {
           : { data: [] }
       );
       (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
-      (core.getBooleanInput as jest.Mock).mockReturnValue(true);
+      (core.getInput as jest.Mock).mockReturnValue('true');
       await prepareQueuedPrForMerge();
     });
 
     it('should NOT remove PR from queue and call core.error', () => {
       expect(removePrFromQueue).not.toHaveBeenCalled();
-      expect(removeLabelIfExists).not.toHaveBeenCalled();
-      expect(updateMergeQueue).not.toHaveBeenCalled();
+      expect(core.setFailed).toHaveBeenCalled();
+    });
+  });
+
+  describe('merge conflict without no_evict_upon_conflict', () => {
+    const firstInQueue = {
+      number: 123,
+      head: {
+        ref
+      },
+      state: 'open',
+      labels: [
+        {
+          name: READY_FOR_MERGE_PR_LABEL
+        },
+        {
+          name: FIRST_QUEUED_PR_LABEL
+        }
+      ]
+    };
+    beforeEach(async () => {
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) =>
+        page === 1 || !page
+          ? {
+              data: [
+                {
+                  head: {
+                    ref: 'other branch name'
+                  },
+                  state: 'open',
+                  labels: [
+                    {
+                      name: 'CORE APPROVED'
+                    }
+                  ]
+                },
+                firstInQueue
+              ]
+            }
+          : { data: [] }
+      );
+      (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
+      (core.getInput as jest.Mock).mockReturnValue('');
+      await prepareQueuedPrForMerge();
+    });
+
+    it('should remove PR from queue and call core.error', () => {
+      expect(removePrFromQueue).toHaveBeenCalled();
       expect(core.setFailed).toHaveBeenCalled();
     });
   });
