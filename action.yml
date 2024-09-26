@@ -151,6 +151,9 @@ inputs:
   allow_only_for_maintainers:
     description: 'Boolean to indicate if only maintainers of the repo are allowed to invoke this action'
     required: false
+  use_basic_matrix_configuration:
+    description: 'Boolean to indicate if the action should use a basic matrix configuration (i.e. just a flat list of paths, instead of a list of objects nested under the "include" key)'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'

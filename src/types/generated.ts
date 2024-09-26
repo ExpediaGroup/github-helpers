@@ -62,4 +62,5 @@ export class HelperInputs {
   required_review_overrides?: string;
   max_queue_size?: string;
   allow_only_for_maintainers?: string;
+  use_basic_matrix_configuration?: string;
 }
