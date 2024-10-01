@@ -37,6 +37,13 @@ describe('generateMatrix', () => {
     });
   });
 
+  it('should handle use_basic_matrix_configuration flag when generating matrix json', () => {
+    const result = generateMatrix({ paths: 'path/1,path/2,path/3,path/4,path/5', batches: '3', use_basic_matrix_configuration: 'true' });
+    expect(result).toEqual({
+      path: ['path/1,path/2', 'path/3,path/4', 'path/5']
+    });
+  });
+
   it('should generate matrix json with appropriate load balancing in small case', () => {
     const result = generateMatrix({
       paths: 'path/1,path/2,path/3,path/4',
