@@ -16,7 +16,9 @@ import { getInput } from '@actions/core';
 import { getInputsFromFile } from '../../src/utils/get-inputs-from-file';
 
 jest.mock('../../src/utils/get-inputs-from-file');
-jest.mock('@actions/core');
+jest.mock('@actions/core', () => ({
+  getInput: jest.fn(input => (input === 'input2' ? '' : input))
+}));
 jest.mock('fs', () => ({
   promises: {
     access: jest.fn()
@@ -25,8 +27,6 @@ jest.mock('fs', () => ({
     toString: jest.fn()
   }))
 }));
-
-(getInput as jest.Mock).mockImplementation(input => (input === 'input2' ? '' : input));
 
 describe('getActionInputs', () => {
   const requiredInputs = ['input1'];
