@@ -594,7 +594,7 @@ describe('manageMergeQueue', () => {
       expect(notifyUser).not.toHaveBeenCalled();
     });
 
-    it('should require email to be set on user profile if slack_webhook_url and login are provided', async () => {
+    it('should remove user from the queue if email not set on user profile and slack_webhook_url/login are provided', async () => {
       const prUnderTest = {
         number: 123,
         merged: false,
