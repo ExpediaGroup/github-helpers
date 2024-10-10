@@ -587,6 +587,29 @@ describe('manageMergeQueue', () => {
 
       expect(notifyUser).not.toHaveBeenCalled();
     });
+
+    it('should require email to be set on user profile if slack_webhook_url and login are provided', async () => {
+      const prUnderTest = {
+        number: 123,
+        merged: false,
+        head: { sha: 'sha' },
+        labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+      };
+      const openPrs = [prUnderTest];
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+        data: page === 1 ? openPrs : []
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: prUnderTest
+      }));
+      (octokit.users.getByUsername as unknown as Mocktokit).mockImplementation(async () => ({
+        data: { email: null }
+      }));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      await manageMergeQueue({ login, slack_webhook_url });
+
+      expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 123);
+    });
   });
 
   describe('filters queued prs when there are multiple pages', () => {
