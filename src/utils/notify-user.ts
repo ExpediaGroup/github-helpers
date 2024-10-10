@@ -16,6 +16,7 @@ import axios from 'axios';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import { createPrComment } from '../helpers/create-pr-comment';
+import { getEmailOnUserProfile } from './get-email-on-user-profile';
 
 interface NotifyUser {
   login: string;
@@ -26,9 +27,7 @@ interface NotifyUser {
 
 export const notifyUser = async ({ login, pull_number, slack_webhook_url, comment_body }: NotifyUser) => {
   core.info(`Notifying user ${login}...`);
-  const {
-    data: { email }
-  } = await octokit.users.getByUsername({ username: login });
+  const email = await getEmailOnUserProfile(login);
   if (!email && comment_body) {
     return await createPrComment({
       body: comment_body

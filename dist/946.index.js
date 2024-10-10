@@ -453,6 +453,22 @@ const getCodeOwnersFromEntries = (codeOwnersEntries) => {
 
 /***/ }),
 
+/***/ 5502:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   C: () => (/* binding */ getEmailOnUserProfile)
+/* harmony export */ });
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6590);
+
+async function getEmailOnUserProfile(login) {
+    const { data: { email } } = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit */ .A.users.getByUsername({ username: login });
+    return email;
+}
+
+
+/***/ }),
+
 /***/ 9190:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
@@ -461,11 +477,12 @@ const getCodeOwnersFromEntries = (codeOwnersEntries) => {
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7484);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(7573);
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(7573);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6590);
 /* harmony import */ var _helpers_create_pr_comment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(9280);
+/* harmony import */ var _get_email_on_user_profile__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(5502);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -483,9 +500,10 @@ limitations under the License.
 
 
 
+
 const notifyUser = async ({ login, pull_number, slack_webhook_url, comment_body }) => {
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Notifying user ${login}...`);
-    const { data: { email } } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.users.getByUsername({ username: login });
+    const email = await (0,_get_email_on_user_profile__WEBPACK_IMPORTED_MODULE_4__/* .getEmailOnUserProfile */ .C)(login);
     if (!email && comment_body) {
         return await (0,_helpers_create_pr_comment__WEBPACK_IMPORTED_MODULE_3__.createPrComment)({
             body: comment_body
@@ -493,7 +511,7 @@ const notifyUser = async ({ login, pull_number, slack_webhook_url, comment_body 
     }
     const { data: { title, html_url } } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.pulls.get({ pull_number, ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo });
     try {
-        await axios__WEBPACK_IMPORTED_MODULE_4__/* ["default"] */ .A.post(slack_webhook_url, {
+        await axios__WEBPACK_IMPORTED_MODULE_5__/* ["default"] */ .A.post(slack_webhook_url, {
             assignee: email,
             title,
             html_url,

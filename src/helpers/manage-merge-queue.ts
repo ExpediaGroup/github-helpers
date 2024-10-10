@@ -33,6 +33,7 @@ import { approvalsSatisfied } from './approvals-satisfied';
 import { createPrComment } from './create-pr-comment';
 import { isUserInTeam } from './is-user-in-team';
 import { join } from 'path';
+import { getEmailOnUserProfile } from '../utils/get-email-on-user-profile';
 
 export class ManageMergeQueue extends HelperInputs {
   max_queue_size?: string;
@@ -63,13 +64,12 @@ export const manageMergeQueue = async ({
     return removePrFromQueue(pullRequest);
   }
   if (slack_webhook_url && login) {
-    const {
-      data: { email }
-    } = await octokit.users.getByUsername({ username: login });
+    const email = await getEmailOnUserProfile(login);
     if (!email) {
       return removePrFromQueue(pullRequest);
     }
   }
+
   const queuedPrs = await getQueuedPullRequests();
   const queuePosition = queuedPrs.length + 1;
 
