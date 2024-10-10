@@ -41,6 +41,9 @@ jest.mock('@actions/github', () => ({
       pulls: { get: jest.fn(), list: jest.fn() },
       issues: {
         addLabels: jest.fn()
+      },
+      users: {
+        getByUsername: jest.fn()
       }
     },
     graphql: jest.fn(() => ({ catch: jest.fn() }))
@@ -50,6 +53,9 @@ jest.mock('@actions/github', () => ({
 (isUserInTeam as jest.Mock).mockImplementation(({ team }) => {
   return team === 'team';
 });
+(octokit.users.getByUsername as unknown as Mocktokit).mockImplementation(async () => ({
+  data: { email: 'user@github.com' }
+}));
 
 describe('manageMergeQueue', () => {
   describe('pr merged case', () => {

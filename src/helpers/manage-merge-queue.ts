@@ -62,6 +62,14 @@ export const manageMergeQueue = async ({
   if (!prMeetsRequiredApprovals) {
     return removePrFromQueue(pullRequest);
   }
+  if (slack_webhook_url && login) {
+    const {
+      data: { email }
+    } = await octokit.users.getByUsername({ username: login });
+    if (!email) {
+      return removePrFromQueue(pullRequest);
+    }
+  }
   const queuedPrs = await getQueuedPullRequests();
   const queuePosition = queuedPrs.length + 1;
 
