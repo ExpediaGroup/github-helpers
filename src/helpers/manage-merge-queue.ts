@@ -66,6 +66,9 @@ export const manageMergeQueue = async ({
   if (slack_webhook_url && login) {
     const email = await getEmailOnUserProfile(login);
     if (!email) {
+      await createPrComment({
+        body: `@${login} Your PR cannot be added to the queue because your email must be set on your GitHub profile. Here are the steps to take:\n\n1. Go to ${join(context.serverUrl, login)}\n2. Click "Edit profile"\n3. Update your email address\n4. Click "Save"`
+      });
       return removePrFromQueue(pullRequest);
     }
   }
@@ -116,9 +119,7 @@ export const manageMergeQueue = async ({
     await notifyUser({
       login,
       pull_number: context.issue.number,
-      slack_webhook_url,
-      comment_body: `@${login} Your PR is first in the queue!
-      Email not found for user ${login}. Please add an email to your Github profile!\n\n1. Go to ${join(context.serverUrl, login)}\n2. Click "Edit profile"\n3. Update your email address\n4. Click "Save"`
+      slack_webhook_url
     });
   }
 };

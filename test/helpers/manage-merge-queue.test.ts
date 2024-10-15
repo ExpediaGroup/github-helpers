@@ -615,6 +615,7 @@ describe('manageMergeQueue', () => {
       await manageMergeQueue({ login, slack_webhook_url });
 
       expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 123);
+      expect(createPrComment).toHaveBeenCalled();
     });
   });
 

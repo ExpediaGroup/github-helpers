@@ -15,24 +15,20 @@ import * as core from '@actions/core';
 import axios from 'axios';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
-import { createPrComment } from '../helpers/create-pr-comment';
 import { getEmailOnUserProfile } from './get-email-on-user-profile';
 
 interface NotifyUser {
   login: string;
   pull_number: number;
   slack_webhook_url: string;
-  comment_body?: string;
 }
 
-export const notifyUser = async ({ login, pull_number, slack_webhook_url, comment_body }: NotifyUser) => {
-  core.info(`Notifying user ${login}...`);
+export const notifyUser = async ({ login, pull_number, slack_webhook_url }: NotifyUser) => {
   const email = await getEmailOnUserProfile(login);
-  if (!email && comment_body) {
-    return await createPrComment({
-      body: comment_body
-    });
+  if (!email) {
+    return;
   }
+  core.info(`Notifying user ${login}...`);
   const {
     data: { title, html_url }
   } = await octokit.pulls.get({ pull_number, ...context.repo });
