@@ -41,6 +41,9 @@ jest.mock('@actions/github', () => ({
       pulls: { get: jest.fn(), list: jest.fn() },
       issues: {
         addLabels: jest.fn()
+      },
+      users: {
+        getByUsername: jest.fn()
       }
     },
     graphql: jest.fn(() => ({ catch: jest.fn() }))
@@ -50,6 +53,9 @@ jest.mock('@actions/github', () => ({
 (isUserInTeam as jest.Mock).mockImplementation(({ team }) => {
   return team === 'team';
 });
+(octokit.users.getByUsername as unknown as Mocktokit).mockImplementation(async () => ({
+  data: { email: 'user@github.com' }
+}));
 
 describe('manageMergeQueue', () => {
   describe('pr merged case', () => {
@@ -586,6 +592,30 @@ describe('manageMergeQueue', () => {
       await manageMergeQueue({ slack_webhook_url });
 
       expect(notifyUser).not.toHaveBeenCalled();
+    });
+
+    it('should remove user from the queue if email not set on user profile and slack_webhook_url/login are provided', async () => {
+      const prUnderTest = {
+        number: 123,
+        merged: false,
+        head: { sha: 'sha' },
+        labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
+      };
+      const openPrs = [prUnderTest];
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+        data: page === 1 ? openPrs : []
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: prUnderTest
+      }));
+      (octokit.users.getByUsername as unknown as Mocktokit).mockImplementation(async () => ({
+        data: { email: null }
+      }));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      await manageMergeQueue({ login, slack_webhook_url });
+
+      expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 123);
+      expect(createPrComment).toHaveBeenCalled();
     });
   });
 

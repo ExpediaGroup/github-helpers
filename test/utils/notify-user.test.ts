@@ -16,7 +16,6 @@ import axios from 'axios';
 import { context } from '@actions/github';
 import { notifyUser } from '../../src/utils/notify-user';
 import { octokit } from '../../src/octokit';
-import { createPrComment } from '../../src/helpers/create-pr-comment';
 
 jest.mock('../../src/helpers/create-pr-comment');
 jest.mock('@actions/core');
@@ -73,7 +72,6 @@ describe('notifyUser', () => {
 describe('notifyUser with a PR comment', () => {
   const pull_number = 123;
   const slack_webhook_url = 'https://hooks.slack.com/workflows/1234567890';
-  const comment_body = 'Your PR is first in the queue';
 
   beforeEach(async () => {
     (octokit.users.getByUsername as unknown as Mocktokit).mockImplementation(async () => ({
@@ -82,12 +80,11 @@ describe('notifyUser with a PR comment', () => {
       }
     }));
 
-    await notifyUser({ login, pull_number, slack_webhook_url, comment_body });
+    await notifyUser({ login, pull_number, slack_webhook_url });
   });
 
-  it('should add a PR comment when email is not found', () => {
+  it('should do nothing when email is not found', () => {
     expect(octokit.users.getByUsername).toHaveBeenCalledWith({ username: login });
-    expect(createPrComment).toHaveBeenCalledWith({ body: comment_body });
     expect(axios.post).not.toHaveBeenCalled();
   });
 });
