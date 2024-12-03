@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { DEFAULT_PIPELINE_DESCRIPTION, DEFAULT_PIPELINE_STATUS } from '../constants';
+import { DEFAULT_PIPELINE_DESCRIPTION, DEFAULT_PIPELINE_STATUS, GITHUB_OPTIONS, PRODUCTION_ENVIRONMENT } from '../constants';
 import { HelperInputs } from '../types/generated';
 import { context as githubContext } from '@actions/github';
 import { map } from 'bluebird';
@@ -20,12 +20,14 @@ import { octokit } from '../octokit';
 export class NotifyPipelineComplete extends HelperInputs {
   context?: string;
   description?: string;
+  environment?: string;
   target_url?: string;
 }
 
 export const notifyPipelineComplete = async ({
   context = DEFAULT_PIPELINE_STATUS,
   description = DEFAULT_PIPELINE_DESCRIPTION,
+  environment = PRODUCTION_ENVIRONMENT,
   target_url
 }: NotifyPipelineComplete) => {
   const { data } = await octokit.pulls.list({
@@ -34,7 +36,7 @@ export const notifyPipelineComplete = async ({
     ...githubContext.repo
   });
   const commitHashes = data.map(pullRequest => pullRequest.head.sha);
-  return map(commitHashes, async sha =>
+  await map(commitHashes, async sha =>
     octokit.repos.createCommitStatus({
       sha,
       context,
@@ -44,4 +46,21 @@ export const notifyPipelineComplete = async ({
       ...githubContext.repo
     })
   );
+  const { data: deployments } = await octokit.repos.listDeployments({
+    environment,
+    ...githubContext.repo,
+    ...GITHUB_OPTIONS
+  });
+  const deployment_id = deployments.find(Boolean)?.id;
+  if (deployment_id) {
+    return octokit.repos.createDeploymentStatus({
+      environment,
+      deployment_id,
+      state: 'success',
+      description,
+      target_url,
+      ...githubContext.repo,
+      ...GITHUB_OPTIONS
+    });
+  }
 };

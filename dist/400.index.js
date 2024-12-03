@@ -25,7 +25,7 @@ export const modules = {
 /* harmony export */   uJ: () => (/* binding */ CORE_APPROVED_PR_LABEL),
 /* harmony export */   zh: () => (/* binding */ PRIORITY_LABELS)
 /* harmony export */ });
-/* unused harmony exports DEFAULT_EXEMPT_DESCRIPTION, PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4, COPYRIGHT_HEADER */
+/* unused harmony exports PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4, COPYRIGHT_HEADER */
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,7 +46,6 @@ const GITHUB_OPTIONS = {
     }
 };
 const SECONDS_IN_A_DAY = 86400000;
-const DEFAULT_EXEMPT_DESCRIPTION = 'Passed in case the check is exempt.';
 const DEFAULT_PIPELINE_STATUS = 'Pipeline Status';
 const DEFAULT_PIPELINE_DESCRIPTION = 'Pipeline clear.';
 const PRODUCTION_ENVIRONMENT = 'production';

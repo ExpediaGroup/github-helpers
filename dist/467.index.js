@@ -25,7 +25,7 @@ export const modules = {
 /* harmony export */   uJ: () => (/* binding */ CORE_APPROVED_PR_LABEL),
 /* harmony export */   zh: () => (/* binding */ PRIORITY_LABELS)
 /* harmony export */ });
-/* unused harmony exports DEFAULT_EXEMPT_DESCRIPTION, PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4, COPYRIGHT_HEADER */
+/* unused harmony exports PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4, COPYRIGHT_HEADER */
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,7 +46,6 @@ const GITHUB_OPTIONS = {
     }
 };
 const SECONDS_IN_A_DAY = 86400000;
-const DEFAULT_EXEMPT_DESCRIPTION = 'Passed in case the check is exempt.';
 const DEFAULT_PIPELINE_STATUS = 'Pipeline Status';
 const DEFAULT_PIPELINE_DESCRIPTION = 'Pipeline clear.';
 const PRODUCTION_ENVIRONMENT = 'production';
@@ -122,14 +121,14 @@ limitations under the License.
 
 class NotifyPipelineComplete extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .m {
 }
-const notifyPipelineComplete = async ({ context = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PIPELINE_STATUS */ .Md, description = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PIPELINE_DESCRIPTION */ .E3, target_url }) => {
+const notifyPipelineComplete = async ({ context = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PIPELINE_STATUS */ .Md, description = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PIPELINE_DESCRIPTION */ .E3, environment = _constants__WEBPACK_IMPORTED_MODULE_0__/* .PRODUCTION_ENVIRONMENT */ .E$, target_url }) => {
     const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.pulls.list({
         state: 'open',
         per_page: 100,
         ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
     });
     const commitHashes = data.map(pullRequest => pullRequest.head.sha);
-    return (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(commitHashes, async (sha) => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.createCommitStatus({
+    await (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(commitHashes, async (sha) => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.createCommitStatus({
         sha,
         context,
         state: 'success',
@@ -137,6 +136,23 @@ const notifyPipelineComplete = async ({ context = _constants__WEBPACK_IMPORTED_M
         target_url,
         ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
     }));
+    const { data: deployments } = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.listDeployments({
+        environment,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+        ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
+    });
+    const deployment_id = deployments.find(Boolean)?.id;
+    if (deployment_id) {
+        return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.createDeploymentStatus({
+            environment,
+            deployment_id,
+            state: 'success',
+            description,
+            target_url,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+            ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
+        });
+    }
 };
 
 
