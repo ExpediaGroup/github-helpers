@@ -17,17 +17,14 @@ import { octokit } from '../octokit';
 
 export const getChangedFilepaths = async (pull_number: number, ignore_deleted?: boolean) => {
   const changedFiles = await paginateAllChangedFilepaths(pull_number);
-  const files = Array.from(
-    changedFiles.reduce((acc, file) => {
-      if (ignore_deleted && file.status === 'removed') return acc;
-      acc.add(file.filename);
-      if (file.status === 'renamed' && file.previous_filename) {
-        acc.add(file.previous_filename);
-      }
-      return acc;
-    }, new Set<string>())
+  const renamedPreviousFilenames = changedFiles
+    .filter(({ status }) => status === 'renamed')
+    .map(({ previous_filename }) => previous_filename)
+    .filter(Boolean); // GitHub should always include previous_filename for renamed files, but just in case
+  const processedFilenames = (ignore_deleted ? changedFiles.filter(({ status }) => status !== 'removed') : changedFiles).map(
+    ({ filename }) => filename
   );
-  return files;
+  return processedFilenames.concat(renamedPreviousFilenames);
 };
 
 const paginateAllChangedFilepaths = async (pull_number: number, page = 1): Promise<ChangedFilesList> => {
