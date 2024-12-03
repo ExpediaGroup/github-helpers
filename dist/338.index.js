@@ -123,8 +123,12 @@ limitations under the License.
 
 const getChangedFilepaths = async (pull_number, ignore_deleted) => {
     const changedFiles = await paginateAllChangedFilepaths(pull_number);
-    const filesToMap = ignore_deleted ? changedFiles.filter(file => file.status !== 'removed') : changedFiles;
-    return filesToMap.map(file => file.filename);
+    const renamedPreviousFilenames = changedFiles
+        .filter(({ status }) => status === 'renamed')
+        .map(({ previous_filename }) => previous_filename)
+        .filter(Boolean); // GitHub should always include previous_filename for renamed files, but just in case
+    const processedFilenames = (ignore_deleted ? changedFiles.filter(({ status }) => status !== 'removed') : changedFiles).map(({ filename }) => filename);
+    return processedFilenames.concat(renamedPreviousFilenames);
 };
 const paginateAllChangedFilepaths = async (pull_number, page = 1) => {
     const response = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.pulls.listFiles({
