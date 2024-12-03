@@ -13,7 +13,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7484);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(8428);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2356);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(8770);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3228);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
@@ -160,8 +160,16 @@ limitations under the License.
 
 const getChangedFilepaths = async (pull_number, ignore_deleted) => {
     const changedFiles = await paginateAllChangedFilepaths(pull_number);
-    const filesToMap = ignore_deleted ? changedFiles.filter(file => file.status !== 'removed') : changedFiles;
-    return filesToMap.map(file => file.filename);
+    const files = Array.from(changedFiles.reduce((acc, file) => {
+        if (ignore_deleted && file.status === 'removed')
+            return acc;
+        acc.add(file.filename);
+        if (file.status === 'renamed' && file.previous_filename) {
+            acc.add(file.previous_filename);
+        }
+        return acc;
+    }, new Set()));
+    return files;
 };
 const paginateAllChangedFilepaths = async (pull_number, page = 1) => {
     const response = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.pulls.listFiles({

@@ -10,13 +10,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const find_up_1 = __importDefault(__webpack_require__(340));
+const find_up_1 = __importDefault(__webpack_require__(1983));
 const locate_path_1 = __importDefault(__webpack_require__(1393));
 const path_1 = __importDefault(__webpack_require__(6928));
 const fs_1 = __importDefault(__webpack_require__(9896));
 const util_1 = __importDefault(__webpack_require__(9023));
 const ignore_1 = __importDefault(__webpack_require__(298));
-const cross_spawn_1 = __importDefault(__webpack_require__(6077));
+const cross_spawn_1 = __importDefault(__webpack_require__(546));
 let readFile = util_1.default.promisify(fs_1.default.readFile);
 /**
  * Parse a CODEOWNERS file into an array of entries (will be in reverse order
@@ -161,14 +161,14 @@ exports.findUnmatchedFiles = findUnmatchedFiles;
 
 /***/ }),
 
-/***/ 6077:
+/***/ 546:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 
 
 const cp = __webpack_require__(5317);
-const parse = __webpack_require__(6010);
-const enoent = __webpack_require__(3624);
+const parse = __webpack_require__(7877);
+const enoent = __webpack_require__(6469);
 
 function spawn(command, args, options) {
     // Parse the arguments
@@ -207,7 +207,7 @@ module.exports._enoent = enoent;
 
 /***/ }),
 
-/***/ 3624:
+/***/ 6469:
 /***/ ((module) => {
 
 
@@ -236,7 +236,7 @@ function hookChildProcess(cp, parsed) {
         // the command exists and emit an "error" instead
         // See https://github.com/IndigoUnited/node-cross-spawn/issues/16
         if (name === 'exit') {
-            const err = verifyENOENT(arg1, parsed, 'spawn');
+            const err = verifyENOENT(arg1, parsed);
 
             if (err) {
                 return originalEmit.call(cp, 'error', err);
@@ -273,15 +273,15 @@ module.exports = {
 
 /***/ }),
 
-/***/ 6010:
+/***/ 7877:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 
 
 const path = __webpack_require__(6928);
-const resolveCommand = __webpack_require__(3465);
-const escape = __webpack_require__(7943);
-const readShebang = __webpack_require__(5666);
+const resolveCommand = __webpack_require__(4866);
+const escape = __webpack_require__(2164);
+const readShebang = __webpack_require__(599);
 
 const isWin = process.platform === 'win32';
 const isExecutableRegExp = /\.(?:com|exe)$/i;
@@ -371,7 +371,7 @@ module.exports = parse;
 
 /***/ }),
 
-/***/ 7943:
+/***/ 2164:
 /***/ ((module) => {
 
 
@@ -391,15 +391,17 @@ function escapeArgument(arg, doubleEscapeMetaChars) {
     arg = `${arg}`;
 
     // Algorithm below is based on https://qntm.org/cmd
+    // It's slightly altered to disable JS backtracking to avoid hanging on specially crafted input
+    // Please see https://github.com/moxystudio/node-cross-spawn/pull/160 for more information
 
     // Sequence of backslashes followed by a double quote:
     // double up all the backslashes and escape the double quote
-    arg = arg.replace(/(\\*)"/g, '$1$1\\"');
+    arg = arg.replace(/(?=(\\+?)?)\1"/g, '$1$1\\"');
 
     // Sequence of backslashes followed by the end of the string
     // (which will become a double quote later):
     // double up all the backslashes
-    arg = arg.replace(/(\\*)$/, '$1$1');
+    arg = arg.replace(/(?=(\\+?)?)\1$/, '$1$1');
 
     // All other backslashes occur literally
 
@@ -423,7 +425,7 @@ module.exports.argument = escapeArgument;
 
 /***/ }),
 
-/***/ 5666:
+/***/ 599:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 
@@ -453,7 +455,7 @@ module.exports = readShebang;
 
 /***/ }),
 
-/***/ 3465:
+/***/ 4866:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 
@@ -512,7 +514,7 @@ module.exports = resolveCommand;
 
 /***/ }),
 
-/***/ 340:
+/***/ 1983:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 

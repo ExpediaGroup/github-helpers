@@ -17,8 +17,17 @@ import { octokit } from '../octokit';
 
 export const getChangedFilepaths = async (pull_number: number, ignore_deleted?: boolean) => {
   const changedFiles = await paginateAllChangedFilepaths(pull_number);
-  const filesToMap = ignore_deleted ? changedFiles.filter(file => file.status !== 'removed') : changedFiles;
-  return filesToMap.map(file => file.filename);
+  const files = Array.from(
+    changedFiles.reduce((acc, file) => {
+      if (ignore_deleted && file.status === 'removed') return acc;
+      acc.add(file.filename);
+      if (file.status === 'renamed' && file.previous_filename) {
+        acc.add(file.previous_filename);
+      }
+      return acc;
+    }, new Set<string>())
+  );
+  return files;
 };
 
 const paginateAllChangedFilepaths = async (pull_number: number, page = 1): Promise<ChangedFilesList> => {

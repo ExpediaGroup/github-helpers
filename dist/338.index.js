@@ -123,8 +123,16 @@ limitations under the License.
 
 const getChangedFilepaths = async (pull_number, ignore_deleted) => {
     const changedFiles = await paginateAllChangedFilepaths(pull_number);
-    const filesToMap = ignore_deleted ? changedFiles.filter(file => file.status !== 'removed') : changedFiles;
-    return filesToMap.map(file => file.filename);
+    const files = Array.from(changedFiles.reduce((acc, file) => {
+        if (ignore_deleted && file.status === 'removed')
+            return acc;
+        acc.add(file.filename);
+        if (file.status === 'renamed' && file.previous_filename) {
+            acc.add(file.previous_filename);
+        }
+        return acc;
+    }, new Set()));
+    return files;
 };
 const paginateAllChangedFilepaths = async (pull_number, page = 1) => {
     const response = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.pulls.listFiles({
