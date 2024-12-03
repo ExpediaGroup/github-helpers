@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { DEFAULT_PIPELINE_STATUS } from '../../src/constants';
+import { DEFAULT_PIPELINE_STATUS, GITHUB_OPTIONS, PRODUCTION_ENVIRONMENT } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { notifyPipelineComplete } from '../../src/helpers/notify-pipeline-complete';
@@ -23,7 +23,11 @@ jest.mock('@actions/github', () => ({
   getOctokit: jest.fn(() => ({
     rest: {
       pulls: { list: jest.fn() },
-      repos: { createCommitStatus: jest.fn() }
+      repos: {
+        createCommitStatus: jest.fn(),
+        createDeploymentStatus: jest.fn(),
+        listDeployments: jest.fn(() => ({ data: [{ id: 123 }] }))
+      }
     }
   }))
 }));
@@ -69,6 +73,17 @@ describe('setOpenPullRequestStatus', () => {
       state: 'success',
       description,
       ...context.repo
+    });
+  });
+
+  it('should call createDeploymentStatus with correct params', () => {
+    expect(octokit.repos.createDeploymentStatus).toHaveBeenCalledWith({
+      state: 'success',
+      environment: PRODUCTION_ENVIRONMENT,
+      deployment_id: 123,
+      description,
+      ...context.repo,
+      ...GITHUB_OPTIONS
     });
   });
 });
