@@ -31,7 +31,7 @@ jest.mock('@actions/github', () => ({
           data: [
             {
               name: 'some-branch',
-              commit: { sha: 'sha 1' }
+              commit: { sha: 'normal sha 1' }
             },
             {
               name: 'gh-readonly-queue/merge-queue/pr-123-79a5ad2b1a46f6b5d77e02573937667979635f27',
@@ -85,6 +85,13 @@ describe('setOpenPullRequestStatus', () => {
     });
     expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha: 'sha 3',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'success',
+      description,
+      ...context.repo
+    });
+    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
+      sha: 'normal sha 1',
       context: DEFAULT_PIPELINE_STATUS,
       state: 'success',
       description,
