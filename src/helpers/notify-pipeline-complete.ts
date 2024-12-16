@@ -30,12 +30,18 @@ export const notifyPipelineComplete = async ({
   environment = PRODUCTION_ENVIRONMENT,
   target_url
 }: NotifyPipelineComplete) => {
-  const { data } = await octokit.pulls.list({
+  const { data: pullRequests } = await octokit.pulls.list({
     state: 'open',
     per_page: 100,
     ...githubContext.repo
   });
-  const commitHashes = data.map(pullRequest => pullRequest.head.sha);
+  const { data: branches } = await octokit.repos.listBranches({
+    ...githubContext.repo
+  });
+  const commitHashesForOpenPullRequests = pullRequests.map(pullRequest => pullRequest.head.sha);
+  const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/merge-queue/'));
+  const commitHashesForMergeQueueBranches = mergeQueueBranches.map(branch => branch.commit.sha);
+  const commitHashes = commitHashesForOpenPullRequests.concat(commitHashesForMergeQueueBranches);
   await map(commitHashes, async sha =>
     octokit.repos.createCommitStatus({
       sha,

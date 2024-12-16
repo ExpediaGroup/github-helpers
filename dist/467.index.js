@@ -122,12 +122,18 @@ limitations under the License.
 class NotifyPipelineComplete extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .m {
 }
 const notifyPipelineComplete = async ({ context = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PIPELINE_STATUS */ .Md, description = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PIPELINE_DESCRIPTION */ .E3, environment = _constants__WEBPACK_IMPORTED_MODULE_0__/* .PRODUCTION_ENVIRONMENT */ .E$, target_url }) => {
-    const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.pulls.list({
+    const { data: pullRequests } = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.pulls.list({
         state: 'open',
         per_page: 100,
         ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
     });
-    const commitHashes = data.map(pullRequest => pullRequest.head.sha);
+    const { data: branches } = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.listBranches({
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+    });
+    const commitHashesForOpenPullRequests = pullRequests.map(pullRequest => pullRequest.head.sha);
+    const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/merge-queue/'));
+    const commitHashesForMergeQueueBranches = mergeQueueBranches.map(branch => branch.commit.sha);
+    const commitHashes = commitHashesForOpenPullRequests.concat(commitHashesForMergeQueueBranches);
     await (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(commitHashes, async (sha) => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.createCommitStatus({
         sha,
         context,
