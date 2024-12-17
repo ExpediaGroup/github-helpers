@@ -16,3 +16,4 @@ jobs:
       - uses: ./
         with:
           helper: get-merge-queue-position
+          pull_number: ${{ github.event.pull_request.number }}
