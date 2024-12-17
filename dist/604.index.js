@@ -30,6 +30,10 @@ limitations under the License.
 
 
 class GetMergeQueuePosition extends _types_generated__WEBPACK_IMPORTED_MODULE_2__/* .HelperInputs */ .m {
+    constructor() {
+        super(...arguments);
+        this.pull_number = '';
+    }
 }
 const getMergeQueuePosition = async ({ pull_number, max_queue_size = '10' }) => {
     const data = await (0,_octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokitGraphql */ .n)(`

@@ -17,7 +17,7 @@ import { octokitGraphql } from '../octokit';
 import { Repository } from '@octokit/graphql-schema';
 
 export class GetMergeQueuePosition extends HelperInputs {
-  pull_number?: string;
+  pull_number = '';
   max_queue_size?: string;
 }
 
