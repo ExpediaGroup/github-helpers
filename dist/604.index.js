@@ -48,7 +48,8 @@ query {
   }
 }
 `);
-    return data.repository.mergeQueue?.entries?.nodes?.find(entry => entry?.pullRequest?.number === Number(pull_number))?.position;
+    const mergeQueueEntries = data.repository.mergeQueue?.entries?.nodes;
+    return mergeQueueEntries?.find(entry => entry?.pullRequest?.number === Number(pull_number))?.position;
 };
 
 
