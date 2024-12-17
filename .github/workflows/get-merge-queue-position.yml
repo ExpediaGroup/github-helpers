@@ -1,10 +1,10 @@
-name: {{ spaceSeparatedCase ( titleCase helper ) }}
+name: Get Merge Queue Position
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'src/helpers/{{ dashCase helper }}.ts'
+      - 'src/helpers/get-merge-queue-position.ts'
 
 jobs:
   test:
@@ -15,4 +15,4 @@ jobs:
 
       - uses: ./
         with:
-          helper: {{ dashCase helper }}
+          helper: get-merge-queue-position

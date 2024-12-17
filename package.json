@@ -8,6 +8,7 @@
     "@actions/core": "1.11.1",
     "@actions/github": "6.0.0",
     "@adobe/node-fetch-retry": "2.2.0",
+    "@octokit/graphql-schema": "15.25.0",
     "@octokit/rest": "21.0.2",
     "axios": "1.7.9",
     "bluebird": "3.7.2",
