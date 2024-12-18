@@ -46,6 +46,10 @@ with:
 
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
 
+### [get-merge-queue-position](.github/workflows/get-merge-queue-position.yml)
+
+- Returns the current position of a given PR in the GitHub merge queue
+
 ### [are-reviewers-required](.github/workflows/are-reviewers-required.yml)
 
 - Returns true if all teams specified are requested for review on a pull request
