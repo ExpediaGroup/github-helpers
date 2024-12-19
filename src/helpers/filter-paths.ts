@@ -20,12 +20,23 @@ import { octokit } from '../octokit';
 export class FilterPaths extends HelperInputs {
   paths?: string;
   globs?: string;
+  sha?: string;
 }
 
-export const filterPaths = async ({ paths, globs }: FilterPaths) => {
+export const filterPaths = async ({ paths, globs, sha }: FilterPaths) => {
+  const prNumberFromSha = sha
+    ? (
+        await octokit.repos.listPullRequestsAssociatedWithCommit({
+          commit_sha: sha,
+          ...context.repo
+        })
+      ).data.find(Boolean)?.number
+    : undefined;
+  const pull_number = prNumberFromSha ?? context.issue.number;
+
   const { data } = await octokit.pulls.listFiles({
     per_page: 100,
-    pull_number: context.issue.number,
+    pull_number,
     ...context.repo
   });
 
