@@ -12,10 +12,11 @@ limitations under the License.
 */
 
 import { DeploymentState } from '../types/github';
-import { GITHUB_OPTIONS } from '../constants';
+import { DEFAULT_PIPELINE_STATUS, GITHUB_OPTIONS } from '../constants';
 import { HelperInputs } from '../types/generated';
-import { context } from '@actions/github';
+import { context as githubContext } from '@actions/github';
 import { octokit } from '../octokit';
+import { map } from 'bluebird';
 
 export class InitiateDeployment extends HelperInputs {
   sha = '';
@@ -29,6 +30,7 @@ export class InitiateDeployment extends HelperInputs {
 export const initiateDeployment = async ({
   sha,
   state = 'in_progress',
+  context = DEFAULT_PIPELINE_STATUS,
   environment,
   environment_url,
   description,
@@ -39,21 +41,37 @@ export const initiateDeployment = async ({
     environment,
     auto_merge: false,
     required_contexts: [],
-    ...context.repo,
+    ...githubContext.repo,
     ...GITHUB_OPTIONS
   });
   const deployment_id = 'ref' in data ? data.id : undefined;
-  if (deployment_id) {
-    await octokit.repos.createDeploymentStatus({
-      state,
-      deployment_id,
+  if (!deployment_id) return;
+
+  await octokit.repos.createDeploymentStatus({
+    state,
+    deployment_id,
+    description,
+    environment_url,
+    target_url,
+    ...githubContext.repo,
+    ...GITHUB_OPTIONS
+  });
+
+  const { data: branches } = await octokit.repos.listBranches({
+    ...githubContext.repo
+  });
+  const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/merge-queue/'));
+  const commitHashesForMergeQueueBranches = mergeQueueBranches.map(branch => branch.commit.sha);
+  await map(commitHashesForMergeQueueBranches, async sha =>
+    octokit.repos.createCommitStatus({
+      sha,
+      context,
+      state: 'pending',
       description,
-      environment_url,
       target_url,
-      ...context.repo,
-      ...GITHUB_OPTIONS
-    });
-  }
+      ...githubContext.repo
+    })
+  );
 
   return deployment_id;
 };

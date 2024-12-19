@@ -96,10 +96,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   initiateDeployment: () => (/* binding */ initiateDeployment)
 /* harmony export */ });
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7242);
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8428);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(8428);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6590);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4366);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_3__);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -116,14 +118,15 @@ limitations under the License.
 
 
 
-class InitiateDeployment extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .m {
+
+class InitiateDeployment extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .m {
     constructor() {
         super(...arguments);
         this.sha = '';
         this.environment = '';
     }
 }
-const initiateDeployment = async ({ sha, state = 'in_progress', environment, environment_url, description, target_url }) => {
+const initiateDeployment = async ({ sha, state = 'in_progress', context = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PIPELINE_STATUS */ .Md, environment, environment_url, description, target_url }) => {
     const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.createDeployment({
         ref: sha,
         environment,
@@ -133,17 +136,30 @@ const initiateDeployment = async ({ sha, state = 'in_progress', environment, env
         ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
     });
     const deployment_id = 'ref' in data ? data.id : undefined;
-    if (deployment_id) {
-        await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.createDeploymentStatus({
-            state,
-            deployment_id,
-            description,
-            environment_url,
-            target_url,
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
-            ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
-        });
-    }
+    if (!deployment_id)
+        return;
+    await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.createDeploymentStatus({
+        state,
+        deployment_id,
+        description,
+        environment_url,
+        target_url,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+        ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
+    });
+    const { data: branches } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.listBranches({
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+    });
+    const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/merge-queue/'));
+    const commitHashesForMergeQueueBranches = mergeQueueBranches.map(branch => branch.commit.sha);
+    await (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(commitHashesForMergeQueueBranches, async (sha) => _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.createCommitStatus({
+        sha,
+        context,
+        state: 'pending',
+        description,
+        target_url,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+    }));
     return deployment_id;
 };
 

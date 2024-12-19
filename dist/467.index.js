@@ -127,10 +127,10 @@ const notifyPipelineComplete = async ({ context = _constants__WEBPACK_IMPORTED_M
         per_page: 100,
         ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
     });
+    const commitHashesForOpenPullRequests = pullRequests.map(pullRequest => pullRequest.head.sha);
     const { data: branches } = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.listBranches({
         ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
     });
-    const commitHashesForOpenPullRequests = pullRequests.map(pullRequest => pullRequest.head.sha);
     const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/merge-queue/'));
     const commitHashesForMergeQueueBranches = mergeQueueBranches.map(branch => branch.commit.sha);
     const commitHashes = commitHashesForOpenPullRequests.concat(commitHashesForMergeQueueBranches);

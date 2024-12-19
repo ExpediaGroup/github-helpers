@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { GITHUB_OPTIONS } from '../../src/constants';
+import { DEFAULT_PIPELINE_STATUS, GITHUB_OPTIONS } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { initiateDeployment } from '../../src/helpers/initiate-deployment';
@@ -23,8 +23,25 @@ jest.mock('@actions/github', () => ({
   getOctokit: jest.fn(() => ({
     rest: {
       repos: {
+        createCommitStatus: jest.fn(),
         createDeployment: jest.fn(),
-        createDeploymentStatus: jest.fn()
+        createDeploymentStatus: jest.fn(),
+        listBranches: jest.fn(() => ({
+          data: [
+            {
+              name: 'some-branch',
+              commit: { sha: 'normal sha 1' }
+            },
+            {
+              name: 'gh-readonly-queue/merge-queue/pr-123-79a5ad2b1a46f6b5d77e02573937667979635f27',
+              commit: { sha: 'merge queue sha 1' }
+            },
+            {
+              name: 'gh-readonly-queue/merge-queue/pr-456-79a5ad2b1a46f6b5d77e02573937667979635f27',
+              commit: { sha: 'merge queue sha 2' }
+            }
+          ]
+        }))
       }
     }
   }))
@@ -76,6 +93,39 @@ describe('initiateDeployment', () => {
       target_url,
       ...context.repo,
       ...GITHUB_OPTIONS
+    });
+  });
+
+  it('should call createCommitStatus with correct params', async () => {
+    await initiateDeployment({
+      sha,
+      environment,
+      description,
+      target_url
+    });
+    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
+      sha: 'normal sha 1',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'pending',
+      description,
+      target_url,
+      ...context.repo
+    });
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+      sha: 'merge queue sha 1',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'pending',
+      description,
+      target_url,
+      ...context.repo
+    });
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+      sha: 'merge queue sha 2',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'pending',
+      description,
+      target_url,
+      ...context.repo
     });
   });
 
