@@ -96,10 +96,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   initiateDeployment: () => (/* binding */ initiateDeployment)
 /* harmony export */ });
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7242);
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8428);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(8428);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6590);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4366);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _utils_get_merge_queue_commit_hashes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(7987);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -116,14 +119,16 @@ limitations under the License.
 
 
 
-class InitiateDeployment extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .m {
+
+
+class InitiateDeployment extends _types_generated__WEBPACK_IMPORTED_MODULE_5__/* .HelperInputs */ .m {
     constructor() {
         super(...arguments);
         this.sha = '';
         this.environment = '';
     }
 }
-const initiateDeployment = async ({ sha, state = 'in_progress', environment, environment_url, description, target_url }) => {
+const initiateDeployment = async ({ sha, state = 'in_progress', context = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DEFAULT_PIPELINE_STATUS */ .Md, environment, environment_url, description, target_url }) => {
     const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.createDeployment({
         ref: sha,
         environment,
@@ -133,17 +138,26 @@ const initiateDeployment = async ({ sha, state = 'in_progress', environment, env
         ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
     });
     const deployment_id = 'ref' in data ? data.id : undefined;
-    if (deployment_id) {
-        await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.createDeploymentStatus({
-            state,
-            deployment_id,
-            description,
-            environment_url,
-            target_url,
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
-            ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
-        });
-    }
+    if (!deployment_id)
+        return;
+    await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.createDeploymentStatus({
+        state,
+        deployment_id,
+        description,
+        environment_url,
+        target_url,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+        ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
+    });
+    const commitHashesForMergeQueueBranches = await (0,_utils_get_merge_queue_commit_hashes__WEBPACK_IMPORTED_MODULE_4__/* .getMergeQueueCommitHashes */ .T)();
+    await (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(commitHashesForMergeQueueBranches, async (sha) => _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.createCommitStatus({
+        sha,
+        context,
+        state: 'pending',
+        description,
+        target_url,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+    }));
     return deployment_id;
 };
 
@@ -204,6 +218,74 @@ limitations under the License.
 */
 class HelperInputs {
 }
+
+
+/***/ }),
+
+/***/ 7987:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   T: () => (/* binding */ getMergeQueueCommitHashes)
+/* harmony export */ });
+/* harmony import */ var _paginate_all_branches__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9615);
+/*
+Copyright 2022 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+const getMergeQueueCommitHashes = async () => {
+    const branches = await (0,_paginate_all_branches__WEBPACK_IMPORTED_MODULE_0__/* .paginateAllBranches */ .h)();
+    const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/merge-queue/'));
+    return mergeQueueBranches.map(branch => branch.commit.sha);
+};
+
+
+/***/ }),
+
+/***/ 9615:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   h: () => (/* binding */ paginateAllBranches)
+/* harmony export */ });
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6590);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/*
+Copyright 2022 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+
+const paginateAllBranches = async ({ protectedBranches, page = 1 } = {}) => {
+    const response = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit */ .A.repos.listBranches({
+        protected: protectedBranches,
+        per_page: 100,
+        page,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+    });
+    if (!response.data.length) {
+        return [];
+    }
+    return [...response.data, ...(await paginateAllBranches({ protectedBranches, page: page + 1 }))];
+};
 
 
 /***/ })

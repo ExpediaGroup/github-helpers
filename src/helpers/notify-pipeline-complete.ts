@@ -16,6 +16,7 @@ import { HelperInputs } from '../types/generated';
 import { context as githubContext } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
+import { getMergeQueueCommitHashes } from '../utils/get-merge-queue-commit-hashes';
 
 export class NotifyPipelineComplete extends HelperInputs {
   context?: string;
@@ -35,12 +36,8 @@ export const notifyPipelineComplete = async ({
     per_page: 100,
     ...githubContext.repo
   });
-  const { data: branches } = await octokit.repos.listBranches({
-    ...githubContext.repo
-  });
   const commitHashesForOpenPullRequests = pullRequests.map(pullRequest => pullRequest.head.sha);
-  const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/merge-queue/'));
-  const commitHashesForMergeQueueBranches = mergeQueueBranches.map(branch => branch.commit.sha);
+  const commitHashesForMergeQueueBranches = await getMergeQueueCommitHashes();
   const commitHashes = commitHashesForOpenPullRequests.concat(commitHashesForMergeQueueBranches);
   await map(commitHashes, async sha =>
     octokit.repos.createCommitStatus({

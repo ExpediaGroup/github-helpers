@@ -17,9 +17,9 @@ import * as core from '@actions/core';
 import { octokit } from '../octokit';
 import { map } from 'bluebird';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
-import { PullRequestBranchesList } from '../types/github';
 import { getDefaultBranch } from '../utils/get-default-branch';
 import { SECONDS_IN_A_DAY } from '../constants';
+import { paginateAllBranches } from '../utils/paginate-all-branches';
 
 export class DeleteStaleBranches extends HelperInputs {
   days?: string;
@@ -28,9 +28,9 @@ export class DeleteStaleBranches extends HelperInputs {
 export const deleteStaleBranches = async ({ days = '30' }: DeleteStaleBranches = {}) => {
   const openPullRequests = await paginateAllOpenPullRequests();
   const openPullRequestBranches = new Set(openPullRequests.map(pr => pr.head.ref));
-  const allBranches = await paginateAllUnprotectedBranches();
+  const unprotectedBranches = await paginateAllBranches({ protectedBranches: false });
   const defaultBranch = await getDefaultBranch();
-  const featureBranchesWithNoOpenPullRequest = allBranches.filter(
+  const featureBranchesWithNoOpenPullRequest = unprotectedBranches.filter(
     ({ name }) => !openPullRequestBranches.has(name) && name !== defaultBranch
   );
   const branchesWithUpdatedDates = await map(featureBranchesWithNoOpenPullRequest, async ({ name, commit: { sha } }) => {
@@ -65,17 +65,4 @@ const branchIsTooOld = (dateLastUpdated: string, daysThreshold: string) => {
   const threshold = Number(daysThreshold) * SECONDS_IN_A_DAY;
 
   return timeSinceLastUpdated > threshold;
-};
-
-const paginateAllUnprotectedBranches = async (page = 1): Promise<PullRequestBranchesList> => {
-  const response = await octokit.repos.listBranches({
-    protected: false,
-    per_page: 100,
-    page,
-    ...context.repo
-  });
-  if (!response.data.length) {
-    return [];
-  }
-  return [...response.data, ...(await paginateAllUnprotectedBranches(page + 1))];
 };
