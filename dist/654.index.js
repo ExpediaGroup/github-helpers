@@ -37,10 +37,17 @@ limitations under the License.
 
 class FilterPaths extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .m {
 }
-const filterPaths = async ({ paths, globs }) => {
+const filterPaths = async ({ paths, globs, sha }) => {
+    const prNumberFromSha = sha
+        ? (await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.listPullRequestsAssociatedWithCommit({
+            commit_sha: sha,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        })).data.find(Boolean)?.number
+        : undefined;
+    const pull_number = prNumberFromSha ?? _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number;
     const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.pulls.listFiles({
         per_page: 100,
-        pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number,
+        pull_number,
         ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
     });
     const fileNames = data.map(file => file.filename);

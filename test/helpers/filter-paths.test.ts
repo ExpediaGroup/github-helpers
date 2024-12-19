@@ -14,11 +14,17 @@ limitations under the License.
 import { Mocktokit } from '../types';
 import { filterPaths } from '../../src/helpers/filter-paths';
 import { octokit } from '../../src/octokit';
+import { context } from '@actions/github';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({ rest: { pulls: { listFiles: jest.fn() } } }))
+  getOctokit: jest.fn(() => ({
+    rest: {
+      pulls: { listFiles: jest.fn() },
+      repos: { listPullRequestsAssociatedWithCommit: jest.fn(() => ({ data: [{ number: 789 }] })) }
+    }
+  }))
 }));
 
 describe('filterPaths', () => {
@@ -180,5 +186,26 @@ describe('filterPaths', () => {
     });
 
     expect(result).toBe(true);
+  });
+
+  it('should call listFiles with correct pull number if sha is provided', async () => {
+    await filterPaths({
+      paths,
+      sha: 'sha'
+    });
+
+    expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
+      per_page: 100,
+      pull_number: 789,
+      ...context.repo
+    });
+  });
+
+  it('should not call listPullRequestsAssociatedWithCommit if sha is omitted', async () => {
+    await filterPaths({
+      paths
+    });
+
+    expect(octokit.repos.listPullRequestsAssociatedWithCommit).not.toHaveBeenCalled();
   });
 });
