@@ -20,6 +20,11 @@ jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
   getOctokit: jest.fn(() => ({
+    rest: {
+      repos: {
+        listPullRequestsAssociatedWithCommit: jest.fn(({ commit_sha }) => ({ data: [{ number: Number(commit_sha.split('sha')[1]) }] }))
+      }
+    },
     graphql: jest.fn()
   }))
 }));
@@ -45,7 +50,7 @@ describe('getMergeQueuePosition', () => {
       { position: 1, pullRequest: { number: 123 } },
       { position: 2, pullRequest: { number: 456 } }
     ]);
-    const result = await getMergeQueuePosition({ pull_number: '123' });
+    const result = await getMergeQueuePosition({ sha: 'sha123' });
     expect(result).toBe(1);
   });
 
@@ -55,7 +60,7 @@ describe('getMergeQueuePosition', () => {
       { position: 2, pullRequest: { number: 456 } },
       { position: 3, pullRequest: { number: 789 } }
     ]);
-    const result = await getMergeQueuePosition({ pull_number: '789' });
+    const result = await getMergeQueuePosition({ sha: 'sha789' });
     expect(result).toBe(3);
   });
 });
