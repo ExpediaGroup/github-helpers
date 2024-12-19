@@ -102,7 +102,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(4366);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6590);
-/* harmony import */ var _utils_paginate_all_branches__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(9615);
+/* harmony import */ var _utils_get_merge_queue_commit_hashes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(7987);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -130,9 +130,7 @@ const notifyPipelineComplete = async ({ context = _constants__WEBPACK_IMPORTED_M
         ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
     });
     const commitHashesForOpenPullRequests = pullRequests.map(pullRequest => pullRequest.head.sha);
-    const branches = await (0,_utils_paginate_all_branches__WEBPACK_IMPORTED_MODULE_4__/* .paginateAllBranches */ .h)();
-    const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/merge-queue/'));
-    const commitHashesForMergeQueueBranches = mergeQueueBranches.map(branch => branch.commit.sha);
+    const commitHashesForMergeQueueBranches = await (0,_utils_get_merge_queue_commit_hashes__WEBPACK_IMPORTED_MODULE_4__/* .getMergeQueueCommitHashes */ .T)();
     const commitHashes = commitHashesForOpenPullRequests.concat(commitHashesForMergeQueueBranches);
     await (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(commitHashes, async (sha) => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.createCommitStatus({
         sha,
@@ -218,6 +216,35 @@ limitations under the License.
 */
 class HelperInputs {
 }
+
+
+/***/ }),
+
+/***/ 7987:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   T: () => (/* binding */ getMergeQueueCommitHashes)
+/* harmony export */ });
+/* harmony import */ var _paginate_all_branches__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9615);
+/*
+Copyright 2022 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+const getMergeQueueCommitHashes = async () => {
+    const branches = await (0,_paginate_all_branches__WEBPACK_IMPORTED_MODULE_0__/* .paginateAllBranches */ .h)();
+    const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/merge-queue/'));
+    return mergeQueueBranches.map(branch => branch.commit.sha);
+};
 
 
 /***/ }),
