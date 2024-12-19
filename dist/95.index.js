@@ -95,7 +95,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   DeleteStaleBranches: () => (/* binding */ DeleteStaleBranches),
 /* harmony export */   deleteStaleBranches: () => (/* binding */ deleteStaleBranches)
 /* harmony export */ });
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(8428);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(8428);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3228);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(7484);
@@ -106,6 +106,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(3332);
 /* harmony import */ var _utils_get_default_branch__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(4682);
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(7242);
+/* harmony import */ var _utils_paginate_all_branches__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(9615);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -126,14 +127,15 @@ limitations under the License.
 
 
 
-class DeleteStaleBranches extends _types_generated__WEBPACK_IMPORTED_MODULE_7__/* .HelperInputs */ .m {
+
+class DeleteStaleBranches extends _types_generated__WEBPACK_IMPORTED_MODULE_8__/* .HelperInputs */ .m {
 }
 const deleteStaleBranches = async ({ days = '30' } = {}) => {
     const openPullRequests = await (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__/* .paginateAllOpenPullRequests */ .U)();
     const openPullRequestBranches = new Set(openPullRequests.map(pr => pr.head.ref));
-    const allBranches = await paginateAllUnprotectedBranches();
+    const unprotectedBranches = await (0,_utils_paginate_all_branches__WEBPACK_IMPORTED_MODULE_7__/* .paginateAllBranches */ .h)({ protectedBranches: false });
     const defaultBranch = await (0,_utils_get_default_branch__WEBPACK_IMPORTED_MODULE_5__/* .getDefaultBranch */ .Q)();
-    const featureBranchesWithNoOpenPullRequest = allBranches.filter(({ name }) => !openPullRequestBranches.has(name) && name !== defaultBranch);
+    const featureBranchesWithNoOpenPullRequest = unprotectedBranches.filter(({ name }) => !openPullRequestBranches.has(name) && name !== defaultBranch);
     const branchesWithUpdatedDates = await (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(featureBranchesWithNoOpenPullRequest, async ({ name, commit: { sha } }) => {
         const { data: { committer: { date } } } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.git.getCommit({
             commit_sha: sha,
@@ -159,18 +161,6 @@ const branchIsTooOld = (dateLastUpdated, daysThreshold) => {
     const timeSinceLastUpdated = now - lastUpdated.getTime();
     const threshold = Number(daysThreshold) * _constants__WEBPACK_IMPORTED_MODULE_6__/* .SECONDS_IN_A_DAY */ .PX;
     return timeSinceLastUpdated > threshold;
-};
-const paginateAllUnprotectedBranches = async (page = 1) => {
-    const response = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.listBranches({
-        protected: false,
-        per_page: 100,
-        page,
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo
-    });
-    if (!response.data.length) {
-        return [];
-    }
-    return [...response.data, ...(await paginateAllUnprotectedBranches(page + 1))];
 };
 
 
@@ -260,6 +250,45 @@ limitations under the License.
 const getDefaultBranch = async () => {
     const { data: { default_branch } } = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit */ .A.repos.get({ ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo });
     return default_branch;
+};
+
+
+/***/ }),
+
+/***/ 9615:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   h: () => (/* binding */ paginateAllBranches)
+/* harmony export */ });
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6590);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/*
+Copyright 2022 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+
+const paginateAllBranches = async ({ protectedBranches, page = 1 } = {}) => {
+    const response = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit */ .A.repos.listBranches({
+        protected: protectedBranches,
+        per_page: 100,
+        page,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+    });
+    if (!response.data.length) {
+        return [];
+    }
+    return [...response.data, ...(await paginateAllBranches({ protectedBranches, page: page + 1 }))];
 };
 
 

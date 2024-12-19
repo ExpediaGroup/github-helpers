@@ -16,6 +16,7 @@ import { HelperInputs } from '../types/generated';
 import { context as githubContext } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
+import { paginateAllBranches } from '../utils/paginate-all-branches';
 
 export class NotifyPipelineComplete extends HelperInputs {
   context?: string;
@@ -36,9 +37,7 @@ export const notifyPipelineComplete = async ({
     ...githubContext.repo
   });
   const commitHashesForOpenPullRequests = pullRequests.map(pullRequest => pullRequest.head.sha);
-  const { data: branches } = await octokit.repos.listBranches({
-    ...githubContext.repo
-  });
+  const branches = await paginateAllBranches();
   const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/merge-queue/'));
   const commitHashesForMergeQueueBranches = mergeQueueBranches.map(branch => branch.commit.sha);
   const commitHashes = commitHashesForOpenPullRequests.concat(commitHashesForMergeQueueBranches);

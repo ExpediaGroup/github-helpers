@@ -27,22 +27,26 @@ jest.mock('@actions/github', () => ({
         createCommitStatus: jest.fn(),
         createDeploymentStatus: jest.fn(),
         listDeployments: jest.fn(() => ({ data: [{ id: 123 }] })),
-        listBranches: jest.fn(() => ({
-          data: [
-            {
-              name: 'some-branch',
-              commit: { sha: 'normal sha 1' }
-            },
-            {
-              name: 'gh-readonly-queue/merge-queue/pr-123-79a5ad2b1a46f6b5d77e02573937667979635f27',
-              commit: { sha: 'merge queue sha 1' }
-            },
-            {
-              name: 'gh-readonly-queue/merge-queue/pr-456-79a5ad2b1a46f6b5d77e02573937667979635f27',
-              commit: { sha: 'merge queue sha 2' }
-            }
-          ]
-        }))
+        listBranches: jest.fn(({ page }) =>
+          page > 1
+            ? { data: [] }
+            : {
+                data: [
+                  {
+                    name: 'some-branch',
+                    commit: { sha: 'normal sha 1' }
+                  },
+                  {
+                    name: 'gh-readonly-queue/merge-queue/pr-123-79a5ad2b1a46f6b5d77e02573937667979635f27',
+                    commit: { sha: 'merge queue sha 1' }
+                  },
+                  {
+                    name: 'gh-readonly-queue/merge-queue/pr-456-79a5ad2b1a46f6b5d77e02573937667979635f27',
+                    commit: { sha: 'merge queue sha 2' }
+                  }
+                ]
+              }
+        )
       }
     }
   }))

@@ -17,6 +17,7 @@ import { HelperInputs } from '../types/generated';
 import { context as githubContext } from '@actions/github';
 import { octokit } from '../octokit';
 import { map } from 'bluebird';
+import { paginateAllBranches } from '../utils/paginate-all-branches';
 
 export class InitiateDeployment extends HelperInputs {
   sha = '';
@@ -57,9 +58,7 @@ export const initiateDeployment = async ({
     ...GITHUB_OPTIONS
   });
 
-  const { data: branches } = await octokit.repos.listBranches({
-    ...githubContext.repo
-  });
+  const branches = await paginateAllBranches();
   const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/merge-queue/'));
   const commitHashesForMergeQueueBranches = mergeQueueBranches.map(branch => branch.commit.sha);
   await map(commitHashesForMergeQueueBranches, async sha =>
