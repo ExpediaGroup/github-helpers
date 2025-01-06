@@ -58,17 +58,19 @@ export const initiateDeployment = async ({
     ...GITHUB_OPTIONS
   });
 
-  const commitHashesForMergeQueueBranches = await getMergeQueueCommitHashes();
-  await map(commitHashesForMergeQueueBranches, async sha =>
-    octokit.repos.createCommitStatus({
-      sha,
-      context,
-      state: 'pending',
-      description,
-      target_url,
-      ...githubContext.repo
-    })
-  );
+  if (githubContext.eventName === 'merge_group') {
+    const commitHashesForMergeQueueBranches = await getMergeQueueCommitHashes();
+    await map(commitHashesForMergeQueueBranches, async sha =>
+      octokit.repos.createCommitStatus({
+        sha,
+        context,
+        state: 'pending',
+        description,
+        target_url,
+        ...githubContext.repo
+      })
+    );
+  }
 
   return deployment_id;
 };
