@@ -57,22 +57,19 @@ jest.mock('../../src/helpers/set-deployment-status');
   data: [{ head: { sha: 'sha 1' } }, { head: { sha: 'sha 2' } }, { head: { sha: 'sha 3' } }]
 }));
 
-describe('setOpenPullRequestStatus', () => {
+describe('notify-pipeline-complete', () => {
   const description = 'Pipeline clear.';
 
-  beforeEach(async () => {
+  it('should notify that the pipeline is clear on pull_request event', async () => {
+    context.eventName = 'pull_request';
     await notifyPipelineComplete({});
-  });
 
-  it('should call list with correct params', () => {
     expect(octokit.pulls.list).toHaveBeenCalledWith({
       state: 'open',
       per_page: 100,
       ...context.repo
     });
-  });
 
-  it('should call createCommitStatus with correct params', () => {
     expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha: 'sha 1',
       context: DEFAULT_PIPELINE_STATUS,
@@ -101,6 +98,69 @@ describe('setOpenPullRequestStatus', () => {
       description,
       ...context.repo
     });
+    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
+      sha: 'merge queue sha 1',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'success',
+      description,
+      ...context.repo
+    });
+    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
+      sha: 'merge queue sha 2',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'success',
+      description,
+      ...context.repo
+    });
+
+    expect(octokit.repos.createDeploymentStatus).toHaveBeenCalledWith({
+      state: 'success',
+      environment: PRODUCTION_ENVIRONMENT,
+      deployment_id: 123,
+      description,
+      ...context.repo,
+      ...GITHUB_OPTIONS
+    });
+  });
+
+  it('should notify that the pipeline is clear on merge_group event', async () => {
+    context.eventName = 'merge_group';
+    await notifyPipelineComplete({});
+
+    expect(octokit.pulls.list).toHaveBeenCalledWith({
+      state: 'open',
+      per_page: 100,
+      ...context.repo
+    });
+
+    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
+      sha: 'sha 1',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'success',
+      description,
+      ...context.repo
+    });
+    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
+      sha: 'sha 2',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'success',
+      description,
+      ...context.repo
+    });
+    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
+      sha: 'sha 3',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'success',
+      description,
+      ...context.repo
+    });
+    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
+      sha: 'normal sha 1',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'success',
+      description,
+      ...context.repo
+    });
     expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha: 'merge queue sha 1',
       context: DEFAULT_PIPELINE_STATUS,
@@ -115,9 +175,7 @@ describe('setOpenPullRequestStatus', () => {
       description,
       ...context.repo
     });
-  });
 
-  it('should call createDeploymentStatus with correct params', () => {
     expect(octokit.repos.createDeploymentStatus).toHaveBeenCalledWith({
       state: 'success',
       environment: PRODUCTION_ENVIRONMENT,

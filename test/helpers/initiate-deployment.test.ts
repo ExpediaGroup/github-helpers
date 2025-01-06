@@ -100,7 +100,42 @@ describe('initiateDeployment', () => {
     });
   });
 
-  it('should call createCommitStatus with correct params', async () => {
+  it('should call createCommitStatus with correct params on pull_request event', async () => {
+    context.eventName = 'pull_request';
+    await initiateDeployment({
+      sha,
+      environment,
+      description,
+      target_url
+    });
+    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
+      sha: 'normal sha 1',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'pending',
+      description,
+      target_url,
+      ...context.repo
+    });
+    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
+      sha: 'merge queue sha 1',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'pending',
+      description,
+      target_url,
+      ...context.repo
+    });
+    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
+      sha: 'merge queue sha 2',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'pending',
+      description,
+      target_url,
+      ...context.repo
+    });
+  });
+
+  it('should call createCommitStatus with correct params on merge_group event', async () => {
+    context.eventName = 'merge_group';
     await initiateDeployment({
       sha,
       environment,

@@ -130,8 +130,7 @@ const notifyPipelineComplete = async ({ context = _constants__WEBPACK_IMPORTED_M
         ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
     });
     const commitHashesForOpenPullRequests = pullRequests.map(pullRequest => pullRequest.head.sha);
-    const commitHashesForMergeQueueBranches = await (0,_utils_get_merge_queue_commit_hashes__WEBPACK_IMPORTED_MODULE_4__/* .getMergeQueueCommitHashes */ .T)();
-    const commitHashes = commitHashesForOpenPullRequests.concat(commitHashesForMergeQueueBranches);
+    const commitHashes = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.eventName === 'merge_group' ? await (0,_utils_get_merge_queue_commit_hashes__WEBPACK_IMPORTED_MODULE_4__/* .getMergeQueueCommitHashes */ .T)() : commitHashesForOpenPullRequests;
     await (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(commitHashes, async (sha) => _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.createCommitStatus({
         sha,
         context,
