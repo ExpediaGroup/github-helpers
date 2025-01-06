@@ -60,8 +60,8 @@ jest.mock('../../src/helpers/set-deployment-status');
 describe('notify-pipeline-complete', () => {
   const description = 'Pipeline clear.';
 
-  it('should notify that the pipeline is clear on pull_request event', async () => {
-    context.eventName = 'pull_request';
+  it('should notify that the pipeline is clear on non merge_group event', async () => {
+    context.eventName = 'some_event';
     await notifyPipelineComplete({});
 
     expect(octokit.pulls.list).toHaveBeenCalledWith({

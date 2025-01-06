@@ -100,8 +100,8 @@ describe('initiateDeployment', () => {
     });
   });
 
-  it('should call createCommitStatus with correct params on pull_request event', async () => {
-    context.eventName = 'pull_request';
+  it('should call createCommitStatus with correct params on non merge_group event', async () => {
+    context.eventName = 'some_event';
     await initiateDeployment({
       sha,
       environment,
