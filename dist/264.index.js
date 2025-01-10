@@ -149,17 +149,15 @@ const initiateDeployment = async ({ sha, state = 'in_progress', context = _const
         ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
         ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
     });
-    if (_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.eventName === 'merge_group') {
-        const commitHashesForMergeQueueBranches = await (0,_utils_get_merge_queue_commit_hashes__WEBPACK_IMPORTED_MODULE_4__/* .getMergeQueueCommitHashes */ .T)();
-        await (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(commitHashesForMergeQueueBranches, async (sha) => _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.createCommitStatus({
-            sha,
-            context,
-            state: 'pending',
-            description,
-            target_url,
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
-        }));
-    }
+    const commitHashesForMergeQueueBranches = await (0,_utils_get_merge_queue_commit_hashes__WEBPACK_IMPORTED_MODULE_4__/* .getMergeQueueCommitHashes */ .T)();
+    await (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(commitHashesForMergeQueueBranches, async (sha) => _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.createCommitStatus({
+        sha,
+        context,
+        state: 'pending',
+        description,
+        target_url,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+    }));
     return deployment_id;
 };
 
