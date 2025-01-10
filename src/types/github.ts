@@ -12,10 +12,11 @@ limitations under the License.
 */
 
 import { RestEndpointMethodTypes } from '@octokit/rest';
+import { octokit } from '../octokit';
 
 export type PipelineState = RestEndpointMethodTypes['repos']['createCommitStatus']['parameters']['state'];
 export type DeploymentState = RestEndpointMethodTypes['repos']['createDeploymentStatus']['parameters']['state'];
-export type PullRequest = RestEndpointMethodTypes['pulls']['get']['response']['data'];
+export type PullRequest = Awaited<ReturnType<typeof octokit.pulls.get>>['data'];
 export type PullRequestList = RestEndpointMethodTypes['pulls']['list']['response']['data'];
 export type IssueList = RestEndpointMethodTypes['issues']['listForRepo']['response']['data'];
 export type CommentList = RestEndpointMethodTypes['issues']['listComments']['response']['data'];
