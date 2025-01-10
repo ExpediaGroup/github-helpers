@@ -37,10 +37,12 @@ class GetEmailOnUserProfile extends _types_generated__WEBPACK_IMPORTED_MODULE_2_
 }
 const getEmailOnUserProfile = async ({ login, pattern }) => {
     const { data: { email } } = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit */ .A.users.getByUsername({ username: login });
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_1__.info)(`Retrieved email ${email} for user ${login}`);
     if (!email) {
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_1__.warning)(`User ${login} does not have an email address on their GitHub profile!`);
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_1__.setFailed)(`User ${login} does not have an email address on their GitHub profile!`);
+        return;
     }
-    if (pattern && email && !new RegExp(pattern).test(email)) {
+    if (pattern && !new RegExp(pattern).test(email)) {
         (0,_actions_core__WEBPACK_IMPORTED_MODULE_1__.setFailed)(`Email ${email} does not match regex pattern ${pattern}. Please update the email on your GitHub profile to match this pattern!`);
         return;
     }

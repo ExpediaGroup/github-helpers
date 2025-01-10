@@ -13,6 +13,8 @@ limitations under the License.
 
 import { getEmailOnUserProfile } from '../../src/helpers/get-email-on-user-profile';
 import * as core from '@actions/core';
+import { octokit } from '../../src/octokit';
+import { Mocktokit } from '../types';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
@@ -32,7 +34,14 @@ describe('getEmailOnUserProfile', () => {
     expect(result).toBe('example@github.com');
   });
 
-  it('should retrieve user email matches regex pattern', async () => {
+  it('should fail if user has no email on their profile', async () => {
+    (octokit.users.getByUsername as unknown as Mocktokit).mockImplementationOnce(() => ({ data: { email: null } }));
+    const result = await getEmailOnUserProfile({ login: 'example' });
+    expect(core.setFailed).toHaveBeenCalled();
+    expect(result).toBeUndefined();
+  });
+
+  it('should retrieve user email that matches regex pattern', async () => {
     const result = await getEmailOnUserProfile({ login: 'example', pattern: '@github.com' });
     expect(core.setFailed).not.toHaveBeenCalled();
     expect(result).toBe('example@github.com');
