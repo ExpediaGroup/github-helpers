@@ -42973,6 +42973,16 @@ var map = {
 		461,
 		338
 	],
+	"./get-email-on-user-profile": [
+		4862,
+		461,
+		862
+	],
+	"./get-email-on-user-profile.ts": [
+		4862,
+		461,
+		862
+	],
 	"./get-merge-queue-position": [
 		3604,
 		461,

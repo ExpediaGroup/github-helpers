@@ -1,5 +1,5 @@
 export const id = 946;
-export const ids = [946];
+export const ids = [946,862];
 export const modules = {
 
 /***/ 7242:
@@ -157,6 +157,55 @@ const assignPrReviewers = async ({ teams, login, number_of_assignees = '1', slac
             slack_webhook_url
         }), { concurrency: 1 });
     }
+};
+
+
+/***/ }),
+
+/***/ 4862:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   GetEmailOnUserProfile: () => (/* binding */ GetEmailOnUserProfile),
+/* harmony export */   getEmailOnUserProfile: () => (/* binding */ getEmailOnUserProfile)
+/* harmony export */ });
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8428);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6590);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(7484);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_1__);
+/*
+Copyright 2021 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+
+
+class GetEmailOnUserProfile extends _types_generated__WEBPACK_IMPORTED_MODULE_2__/* .HelperInputs */ .m {
+    constructor() {
+        super(...arguments);
+        this.login = '';
+    }
+}
+const getEmailOnUserProfile = async ({ login, pattern }) => {
+    const { data: { email } } = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit */ .A.users.getByUsername({ username: login });
+    if (!email) {
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_1__.setFailed)(`User ${login} does not have an email address on their GitHub profile!`);
+        return;
+    }
+    if (pattern && !new RegExp(pattern).test(email)) {
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_1__.setFailed)(`Email ${email} does not match regex pattern ${pattern}. Please update the email on your GitHub profile to match this pattern!`);
+        return;
+    }
+    return email;
 };
 
 
@@ -366,34 +415,6 @@ const getCodeOwnersFromEntries = (codeOwnersEntries) => {
 
 /***/ }),
 
-/***/ 5502:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   C: () => (/* binding */ getEmailOnUserProfile)
-/* harmony export */ });
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6590);
-/*
-Copyright 2021 Expedia, Inc.
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-    https://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-async function getEmailOnUserProfile(login) {
-    const { data: { email } } = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit */ .A.users.getByUsername({ username: login });
-    return email;
-}
-
-
-/***/ }),
-
 /***/ 9190:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
@@ -406,7 +427,7 @@ async function getEmailOnUserProfile(login) {
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6590);
-/* harmony import */ var _get_email_on_user_profile__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5502);
+/* harmony import */ var _helpers_get_email_on_user_profile__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4862);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -425,7 +446,7 @@ limitations under the License.
 
 
 const notifyUser = async ({ login, pull_number, slack_webhook_url }) => {
-    const email = await (0,_get_email_on_user_profile__WEBPACK_IMPORTED_MODULE_3__/* .getEmailOnUserProfile */ .C)(login);
+    const email = await (0,_helpers_get_email_on_user_profile__WEBPACK_IMPORTED_MODULE_3__.getEmailOnUserProfile)({ login });
     if (!email) {
         return;
     }

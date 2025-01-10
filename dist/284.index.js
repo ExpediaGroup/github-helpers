@@ -1,5 +1,5 @@
 export const id = 284;
-export const ids = [284,59,280,783,598,250];
+export const ids = [284,59,280,862,783,598,250];
 export const modules = {
 
 /***/ 7242:
@@ -348,6 +348,55 @@ const createPrComment = async ({ body, sha, login, pull_number, repo_name, repo_
 
 /***/ }),
 
+/***/ 4862:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   GetEmailOnUserProfile: () => (/* binding */ GetEmailOnUserProfile),
+/* harmony export */   getEmailOnUserProfile: () => (/* binding */ getEmailOnUserProfile)
+/* harmony export */ });
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8428);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6590);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(7484);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_1__);
+/*
+Copyright 2021 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+
+
+class GetEmailOnUserProfile extends _types_generated__WEBPACK_IMPORTED_MODULE_2__/* .HelperInputs */ .m {
+    constructor() {
+        super(...arguments);
+        this.login = '';
+    }
+}
+const getEmailOnUserProfile = async ({ login, pattern }) => {
+    const { data: { email } } = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit */ .A.users.getByUsername({ username: login });
+    if (!email) {
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_1__.setFailed)(`User ${login} does not have an email address on their GitHub profile!`);
+        return;
+    }
+    if (pattern && !new RegExp(pattern).test(email)) {
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_1__.setFailed)(`Email ${email} does not match regex pattern ${pattern}. Please update the email on your GitHub profile to match this pattern!`);
+        return;
+    }
+    return email;
+};
+
+
+/***/ }),
+
 /***/ 8783:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
@@ -542,8 +591,8 @@ var create_pr_comment = __webpack_require__(9280);
 var is_user_in_team = __webpack_require__(8783);
 // EXTERNAL MODULE: external "path"
 var external_path_ = __webpack_require__(6928);
-// EXTERNAL MODULE: ./src/utils/get-email-on-user-profile.ts
-var get_email_on_user_profile = __webpack_require__(5502);
+// EXTERNAL MODULE: ./src/helpers/get-email-on-user-profile.ts
+var get_email_on_user_profile = __webpack_require__(4862);
 ;// CONCATENATED MODULE: ./src/helpers/manage-merge-queue.ts
 /*
 Copyright 2021 Expedia, Inc.
@@ -575,7 +624,7 @@ limitations under the License.
 
 class ManageMergeQueue extends generated/* HelperInputs */.m {
 }
-const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip_auto_merge, team = '', allow_only_for_maintainers } = {}) => {
+const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip_auto_merge, team = '', allow_only_for_maintainers, pattern } = {}) => {
     const { data: pullRequest } = await octokit/* octokit */.A.pulls.get({ pull_number: github.context.issue.number, ...github.context.repo });
     if (pullRequest.merged || !pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.ZV)) {
         core.info('This PR is not in the merge queue.');
@@ -588,7 +637,7 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
         return removePrFromQueue(pullRequest);
     }
     if (slack_webhook_url && login) {
-        const email = await (0,get_email_on_user_profile/* getEmailOnUserProfile */.C)(login);
+        const email = await (0,get_email_on_user_profile.getEmailOnUserProfile)({ login, pattern });
         if (!email) {
             await (0,create_pr_comment.createPrComment)({
                 body: `@${login} Your PR cannot be added to the queue because your email must be set on your GitHub profile. Here are the steps to take:\n\n1. Go to ${(0,external_path_.join)(github.context.serverUrl, login)}\n2. Click "Edit profile"\n3. Update your email address\n4. Click "Save"`
@@ -1108,34 +1157,6 @@ const getCodeOwnersFromEntries = (codeOwnersEntries) => {
 
 /***/ }),
 
-/***/ 5502:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   C: () => (/* binding */ getEmailOnUserProfile)
-/* harmony export */ });
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6590);
-/*
-Copyright 2021 Expedia, Inc.
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-    https://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-async function getEmailOnUserProfile(login) {
-    const { data: { email } } = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit */ .A.users.getByUsername({ username: login });
-    return email;
-}
-
-
-/***/ }),
-
 /***/ 9190:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
@@ -1148,7 +1169,7 @@ async function getEmailOnUserProfile(login) {
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6590);
-/* harmony import */ var _get_email_on_user_profile__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5502);
+/* harmony import */ var _helpers_get_email_on_user_profile__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4862);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -1167,7 +1188,7 @@ limitations under the License.
 
 
 const notifyUser = async ({ login, pull_number, slack_webhook_url }) => {
-    const email = await (0,_get_email_on_user_profile__WEBPACK_IMPORTED_MODULE_3__/* .getEmailOnUserProfile */ .C)(login);
+    const email = await (0,_helpers_get_email_on_user_profile__WEBPACK_IMPORTED_MODULE_3__.getEmailOnUserProfile)({ login });
     if (!email) {
         return;
     }

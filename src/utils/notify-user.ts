@@ -15,7 +15,7 @@ import * as core from '@actions/core';
 import axios from 'axios';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
-import { getEmailOnUserProfile } from './get-email-on-user-profile';
+import { getEmailOnUserProfile } from '../helpers/get-email-on-user-profile';
 
 interface NotifyUser {
   login: string;
@@ -24,7 +24,7 @@ interface NotifyUser {
 }
 
 export const notifyUser = async ({ login, pull_number, slack_webhook_url }: NotifyUser) => {
-  const email = await getEmailOnUserProfile(login);
+  const email = await getEmailOnUserProfile({ login });
   if (!email) {
     return;
   }
