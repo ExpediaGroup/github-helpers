@@ -28,4 +28,4 @@ export const run = async () => {
   }
 };
 
-await run();
+run();
