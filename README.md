@@ -46,6 +46,10 @@ with:
 
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
 
+### [get-email-on-user-profile](.github/workflows/get-email-on-user-profile.yml)
+
+- Retrieves a user&#x27;s github email with optional regex verification
+
 ### [get-merge-queue-position](.github/workflows/get-merge-queue-position.yml)
 
 - Returns the current position of a given PR in the GitHub merge queue

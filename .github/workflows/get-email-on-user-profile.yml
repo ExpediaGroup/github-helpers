@@ -1,0 +1,21 @@
+name: Get Email on User Profile
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/helpers/get-email-on-user-profile.ts'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: ./
+        with:
+          helper: get-email-on-user-profile
+          login: ${{ github.actor }}
+
+      - run: echo "Email is ${{ steps.get-email-on-user-profile.outputs.output }}"

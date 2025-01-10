@@ -33,7 +33,7 @@ import { approvalsSatisfied } from './approvals-satisfied';
 import { createPrComment } from './create-pr-comment';
 import { isUserInTeam } from './is-user-in-team';
 import { join } from 'path';
-import { getEmailOnUserProfile } from '../utils/get-email-on-user-profile';
+import { getEmailOnUserProfile } from './get-email-on-user-profile';
 
 export class ManageMergeQueue extends HelperInputs {
   max_queue_size?: string;
@@ -42,6 +42,7 @@ export class ManageMergeQueue extends HelperInputs {
   skip_auto_merge?: string;
   team?: string;
   allow_only_for_maintainers?: string;
+  pattern?: string;
 }
 
 export const manageMergeQueue = async ({
@@ -50,7 +51,8 @@ export const manageMergeQueue = async ({
   slack_webhook_url,
   skip_auto_merge,
   team = '',
-  allow_only_for_maintainers
+  allow_only_for_maintainers,
+  pattern
 }: ManageMergeQueue = {}) => {
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
   if (pullRequest.merged || !pullRequest.labels.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
@@ -64,7 +66,7 @@ export const manageMergeQueue = async ({
     return removePrFromQueue(pullRequest);
   }
   if (slack_webhook_url && login) {
-    const email = await getEmailOnUserProfile(login);
+    const email = await getEmailOnUserProfile({ login, pattern });
     if (!email) {
       await createPrComment({
         body: `@${login} Your PR cannot be added to the queue because your email must be set on your GitHub profile. Here are the steps to take:\n\n1. Go to ${join(context.serverUrl, login)}\n2. Click "Edit profile"\n3. Update your email address\n4. Click "Save"`
