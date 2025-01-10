@@ -27,26 +27,7 @@ jest.mock('@actions/github', () => ({
         createCommitStatus: jest.fn(),
         createDeploymentStatus: jest.fn(),
         listDeployments: jest.fn(() => ({ data: [{ id: 123 }] })),
-        listBranches: jest.fn(({ page }) =>
-          page > 1
-            ? { data: [] }
-            : {
-                data: [
-                  {
-                    name: 'some-branch',
-                    commit: { sha: 'normal sha 1' }
-                  },
-                  {
-                    name: 'gh-readonly-queue/merge-queue/pr-123-79a5ad2b1a46f6b5d77e02573937667979635f27',
-                    commit: { sha: 'merge queue sha 1' }
-                  },
-                  {
-                    name: 'gh-readonly-queue/merge-queue/pr-456-79a5ad2b1a46f6b5d77e02573937667979635f27',
-                    commit: { sha: 'merge queue sha 2' }
-                  }
-                ]
-              }
-        )
+        listBranches: jest.fn(() => ({ data: [] }))
       }
     }
   }))
@@ -60,8 +41,7 @@ jest.mock('../../src/helpers/set-deployment-status');
 describe('notify-pipeline-complete', () => {
   const description = 'Pipeline clear.';
 
-  it('should notify that the pipeline is clear on non merge_group event', async () => {
-    context.eventName = 'some_event';
+  it('should notify that the pipeline is clear', async () => {
     await notifyPipelineComplete({});
 
     expect(octokit.pulls.list).toHaveBeenCalledWith({
@@ -123,8 +103,27 @@ describe('notify-pipeline-complete', () => {
     });
   });
 
-  it('should notify that the pipeline is clear on merge_group event', async () => {
-    context.eventName = 'merge_group';
+  it('should notify that the pipeline is clear when merge queue branches are present', async () => {
+    (octokit.repos.listBranches as unknown as Mocktokit).mockImplementation(async ({ page }) =>
+      page > 1
+        ? { data: [] }
+        : {
+            data: [
+              {
+                name: 'some-branch',
+                commit: { sha: 'normal sha 1' }
+              },
+              {
+                name: 'gh-readonly-queue/merge-queue/pr-123-79a5ad2b1a46f6b5d77e02573937667979635f27',
+                commit: { sha: 'merge queue sha 1' }
+              },
+              {
+                name: 'gh-readonly-queue/merge-queue/pr-456-79a5ad2b1a46f6b5d77e02573937667979635f27',
+                commit: { sha: 'merge queue sha 2' }
+              }
+            ]
+          }
+    );
     await notifyPipelineComplete({});
 
     expect(octokit.pulls.list).toHaveBeenCalledWith({

@@ -26,26 +26,7 @@ jest.mock('@actions/github', () => ({
         createCommitStatus: jest.fn(),
         createDeployment: jest.fn(),
         createDeploymentStatus: jest.fn(),
-        listBranches: jest.fn(({ page }) =>
-          page > 1
-            ? { data: [] }
-            : {
-                data: [
-                  {
-                    name: 'some-branch',
-                    commit: { sha: 'normal sha 1' }
-                  },
-                  {
-                    name: 'gh-readonly-queue/merge-queue/pr-123-79a5ad2b1a46f6b5d77e02573937667979635f27',
-                    commit: { sha: 'merge queue sha 1' }
-                  },
-                  {
-                    name: 'gh-readonly-queue/merge-queue/pr-456-79a5ad2b1a46f6b5d77e02573937667979635f27',
-                    commit: { sha: 'merge queue sha 2' }
-                  }
-                ]
-              }
-        )
+        listBranches: jest.fn(() => ({ data: [] }))
       }
     }
   }))
@@ -100,8 +81,7 @@ describe('initiateDeployment', () => {
     });
   });
 
-  it('should call createCommitStatus with correct params on non merge_group event', async () => {
-    context.eventName = 'some_event';
+  it('should call createCommitStatus with correct params', async () => {
     await initiateDeployment({
       sha,
       environment,
@@ -134,8 +114,27 @@ describe('initiateDeployment', () => {
     });
   });
 
-  it('should call createCommitStatus with correct params on merge_group event', async () => {
-    context.eventName = 'merge_group';
+  it('should call createCommitStatus with correct params when merge queue branches are present', async () => {
+    (octokit.repos.listBranches as unknown as Mocktokit).mockImplementation(async ({ page }) =>
+      page > 1
+        ? { data: [] }
+        : {
+            data: [
+              {
+                name: 'some-branch',
+                commit: { sha: 'normal sha 1' }
+              },
+              {
+                name: 'gh-readonly-queue/merge-queue/pr-123-79a5ad2b1a46f6b5d77e02573937667979635f27',
+                commit: { sha: 'merge queue sha 1' }
+              },
+              {
+                name: 'gh-readonly-queue/merge-queue/pr-456-79a5ad2b1a46f6b5d77e02573937667979635f27',
+                commit: { sha: 'merge queue sha 2' }
+              }
+            ]
+          }
+    );
     await initiateDeployment({
       sha,
       environment,

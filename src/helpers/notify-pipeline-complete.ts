@@ -37,7 +37,8 @@ export const notifyPipelineComplete = async ({
     ...githubContext.repo
   });
   const commitHashesForOpenPullRequests = pullRequests.map(pullRequest => pullRequest.head.sha);
-  const commitHashes = githubContext.eventName === 'merge_group' ? await getMergeQueueCommitHashes() : commitHashesForOpenPullRequests;
+  const mergeQueueCommitHashes = await getMergeQueueCommitHashes();
+  const commitHashes = mergeQueueCommitHashes.length ? mergeQueueCommitHashes : commitHashesForOpenPullRequests;
   await map(commitHashes, async sha =>
     octokit.repos.createCommitStatus({
       sha,
