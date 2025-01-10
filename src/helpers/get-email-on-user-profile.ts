@@ -13,7 +13,7 @@ limitations under the License.
 
 import { HelperInputs } from '../types/generated';
 import { octokit } from '../octokit';
-import { setFailed } from '@actions/core';
+import { setFailed, warning } from '@actions/core';
 
 export class GetEmailOnUserProfile extends HelperInputs {
   login = '';
@@ -24,6 +24,10 @@ export const getEmailOnUserProfile = async ({ login, pattern }: GetEmailOnUserPr
   const {
     data: { email }
   } = await octokit.users.getByUsername({ username: login });
+
+  if (!email) {
+    warning(`User ${login} does not have an email address on their GitHub profile!`);
+  }
 
   if (pattern && email && !new RegExp(pattern).test(email)) {
     setFailed(
