@@ -208,4 +208,18 @@ describe('filterPaths', () => {
 
     expect(octokit.repos.listPullRequestsAssociatedWithCommit).not.toHaveBeenCalled();
   });
+
+  it('should not call listPullRequestsAssociatedWithCommit if sha is omitted', async () => {
+    context.eventName = 'merge_group';
+    context.ref = 'refs/heads/gh-readonly-queue/branch-name/pr-12345-f0d9a4cb862b13cdaab6522f72d6dc17e4336b7f';
+    await filterPaths({
+      paths
+    });
+
+    expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
+      per_page: 100,
+      pull_number: 12345,
+      ...context.repo
+    });
+  });
 });
