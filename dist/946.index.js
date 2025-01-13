@@ -461,7 +461,7 @@ const notifyUser = async ({ login, pull_number, slack_webhook_url, queuePosition
     });
     if (result.status !== 200) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(result.statusText);
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(`User notification failed for login: ${login} and email: ${email}`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(`User notification failed for login: ${login} and email: ${email}`);
     }
     return result;
 };

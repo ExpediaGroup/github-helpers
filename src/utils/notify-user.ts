@@ -43,7 +43,7 @@ export const notifyUser = async ({ login, pull_number, slack_webhook_url, queueP
   });
   if (result.status !== 200) {
     core.error(result.statusText);
-    core.error(`User notification failed for login: ${login} and email: ${email}`);
+    core.setFailed(`User notification failed for login: ${login} and email: ${email}`);
   }
   return result;
 };

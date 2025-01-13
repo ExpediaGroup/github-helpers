@@ -591,6 +591,8 @@ var create_pr_comment = __webpack_require__(9280);
 var is_user_in_team = __webpack_require__(8783);
 // EXTERNAL MODULE: external "path"
 var external_path_ = __webpack_require__(6928);
+// EXTERNAL MODULE: ./src/helpers/get-email-on-user-profile.ts
+var get_email_on_user_profile = __webpack_require__(4862);
 ;// CONCATENATED MODULE: ./src/helpers/manage-merge-queue.ts
 /*
 Copyright 2021 Expedia, Inc.
@@ -619,9 +621,10 @@ limitations under the License.
 
 
 
+
 class ManageMergeQueue extends generated/* HelperInputs */.m {
 }
-const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip_auto_merge, team = '', allow_only_for_maintainers } = {}) => {
+const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip_auto_merge, team = '', allow_only_for_maintainers, pattern } = {}) => {
     const { data: pullRequest } = await octokit/* octokit */.A.pulls.get({ pull_number: github.context.issue.number, ...github.context.repo });
     if (pullRequest.merged || !pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.ZV)) {
         core.info('This PR is not in the merge queue.');
@@ -632,6 +635,15 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
     });
     if (!prMeetsRequiredApprovals) {
         return removePrFromQueue(pullRequest);
+    }
+    if (slack_webhook_url && login) {
+        const email = await (0,get_email_on_user_profile.getEmailOnUserProfile)({ login, pattern });
+        if (!email) {
+            await (0,create_pr_comment.createPrComment)({
+                body: `@${login} Your PR cannot be added to the queue because your email must be set correctly on your GitHub profile. Here are the steps to take:\n\n1. Go to ${(0,external_path_.join)(github.context.serverUrl, login)}\n2. Click "Edit profile"\n3. Update your email address\n4. Click "Save"`
+            });
+            return removePrFromQueue(pullRequest);
+        }
     }
     const queuedPrs = await getQueuedPullRequests();
     const queuePosition = queuedPrs.length + 1;
@@ -655,24 +667,10 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
         return updateMergeQueue(queuedPrs);
     }
     const prIsAlreadyInTheQueue = pullRequest.labels.find(label => label.name?.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.KE));
-    const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.RB);
-    if (slack_webhook_url && login && (!prIsAlreadyInTheQueue || isFirstQueuePosition)) {
-        const slackResponse = await (0,notify_user/* notifyUser */.l)({
-            login,
-            pull_number: github.context.issue.number,
-            slack_webhook_url,
-            queuePosition
-        });
-        if (!slackResponse || slackResponse.status !== 200) {
-            await (0,create_pr_comment.createPrComment)({
-                body: `@${login} Your PR cannot be added to the queue because your email must be set correctly on your GitHub profile. Here are the steps to take:\n\n1. Go to ${(0,external_path_.join)(github.context.serverUrl, login)}\n2. Click "Edit profile"\n3. Update your email address\n4. Click "Save"`
-            });
-            return removePrFromQueue(pullRequest);
-        }
-    }
     if (!prIsAlreadyInTheQueue) {
         await addPrToQueue(pullRequest, queuePosition, skip_auto_merge);
     }
+    const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.RB);
     if (isFirstQueuePosition) {
         await (0,prepare_queued_pr_for_merge.updatePrWithDefaultBranch)(pullRequest);
     }
@@ -682,6 +680,13 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
         state: isFirstQueuePosition ? 'success' : 'pending',
         description: isFirstQueuePosition ? 'This PR is next to merge.' : 'This PR is in line to merge.'
     });
+    if (isFirstQueuePosition && slack_webhook_url && login) {
+        await (0,notify_user/* notifyUser */.l)({
+            login,
+            pull_number: github.context.issue.number,
+            slack_webhook_url
+        });
+    }
 };
 const removePrFromQueue = async (pullRequest) => {
     await (0,remove_label.removeLabelIfExists)(constants/* READY_FOR_MERGE_PR_LABEL */.ZV, pullRequest.number);
@@ -1198,7 +1203,7 @@ const notifyUser = async ({ login, pull_number, slack_webhook_url, queuePosition
     });
     if (result.status !== 200) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(result.statusText);
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(`User notification failed for login: ${login} and email: ${email}`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(`User notification failed for login: ${login} and email: ${email}`);
     }
     return result;
 };
