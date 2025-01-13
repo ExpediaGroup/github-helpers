@@ -21,9 +21,10 @@ interface NotifyUser {
   login: string;
   pull_number: number;
   slack_webhook_url: string;
+  queuePosition?: number;
 }
 
-export const notifyUser = async ({ login, pull_number, slack_webhook_url }: NotifyUser) => {
+export const notifyUser = async ({ login, pull_number, slack_webhook_url, queuePosition }: NotifyUser) => {
   const email = await getEmailOnUserProfile({ login });
   if (!email) {
     return;
@@ -33,15 +34,16 @@ export const notifyUser = async ({ login, pull_number, slack_webhook_url }: Noti
     data: { title, html_url }
   } = await octokit.pulls.get({ pull_number, ...context.repo });
 
-  try {
-    await axios.post(slack_webhook_url, {
-      assignee: email,
-      title,
-      html_url,
-      repo: context.repo.repo
-    });
-  } catch (error) {
-    core.warning('User notification failed');
-    core.warning(error as Error);
+  const result = await axios.post(slack_webhook_url, {
+    assignee: email,
+    title,
+    html_url,
+    repo: context.repo.repo,
+    queuePosition
+  });
+  if (result.status !== 200) {
+    core.error(result.statusText);
+    core.setFailed(`User notification failed for login: ${login} and email: ${email}`);
   }
+  return result;
 };
