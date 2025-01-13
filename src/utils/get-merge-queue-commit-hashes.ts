@@ -15,6 +15,6 @@ import { paginateAllBranches } from './paginate-all-branches';
 
 export const getMergeQueueCommitHashes = async () => {
   const branches = await paginateAllBranches();
-  const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/merge-queue/'));
+  const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/'));
   return mergeQueueBranches.map(branch => branch.commit.sha);
 };

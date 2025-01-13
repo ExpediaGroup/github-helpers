@@ -242,7 +242,7 @@ limitations under the License.
 
 const getMergeQueueCommitHashes = async () => {
     const branches = await (0,_paginate_all_branches__WEBPACK_IMPORTED_MODULE_0__/* .paginateAllBranches */ .h)();
-    const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/merge-queue/'));
+    const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/'));
     return mergeQueueBranches.map(branch => branch.commit.sha);
 };
 
