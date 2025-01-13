@@ -24,14 +24,22 @@ export class FilterPaths extends HelperInputs {
 }
 
 export const filterPaths = async ({ paths, globs, sha }: FilterPaths) => {
-  const prNumberFromSha = sha
-    ? (
-        await octokit.repos.listPullRequestsAssociatedWithCommit({
-          commit_sha: sha,
-          ...context.repo
-        })
-      ).data.find(Boolean)?.number
-    : undefined;
+  const prNumberFromSha =
+    context.eventName === 'merge_group'
+      ? Number(
+          context.ref
+            .split('/')
+            .find(part => part.includes('pr-'))
+            ?.match(/\d+/)?.[0]
+        )
+      : sha
+        ? (
+            await octokit.repos.listPullRequestsAssociatedWithCommit({
+              commit_sha: sha,
+              ...context.repo
+            })
+          ).data.find(Boolean)?.number
+        : undefined;
   const pull_number = prNumberFromSha ?? context.issue.number;
 
   const { data } = await octokit.pulls.listFiles({
