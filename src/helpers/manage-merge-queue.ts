@@ -33,6 +33,7 @@ import { approvalsSatisfied } from './approvals-satisfied';
 import { createPrComment } from './create-pr-comment';
 import { isUserInTeam } from './is-user-in-team';
 import { join } from 'path';
+import { getEmailOnUserProfile } from './get-email-on-user-profile';
 
 export class ManageMergeQueue extends HelperInputs {
   max_queue_size?: string;
@@ -41,6 +42,7 @@ export class ManageMergeQueue extends HelperInputs {
   skip_auto_merge?: string;
   team?: string;
   allow_only_for_maintainers?: string;
+  pattern?: string;
 }
 
 export const manageMergeQueue = async ({
@@ -49,7 +51,8 @@ export const manageMergeQueue = async ({
   slack_webhook_url,
   skip_auto_merge,
   team = '',
-  allow_only_for_maintainers
+  allow_only_for_maintainers,
+  pattern
 }: ManageMergeQueue = {}) => {
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
   if (pullRequest.merged || !pullRequest.labels.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
@@ -61,6 +64,15 @@ export const manageMergeQueue = async ({
   });
   if (!prMeetsRequiredApprovals) {
     return removePrFromQueue(pullRequest);
+  }
+  if (slack_webhook_url && login) {
+    const email = await getEmailOnUserProfile({ login, pattern });
+    if (!email) {
+      await createPrComment({
+        body: `@${login} Your PR cannot be added to the queue because your email must be set on your GitHub profile. Here are the steps to take:\n\n1. Go to ${join(context.serverUrl, login)}\n2. Click "Edit profile"\n3. Update your email address\n4. Click "Save"`
+      });
+      return removePrFromQueue(pullRequest);
+    }
   }
 
   const queuedPrs = await getQueuedPullRequests();
@@ -88,26 +100,11 @@ export const manageMergeQueue = async ({
   }
 
   const prIsAlreadyInTheQueue = pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX));
-  const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === FIRST_QUEUED_PR_LABEL);
-
-  if (slack_webhook_url && login && (!prIsAlreadyInTheQueue || isFirstQueuePosition)) {
-    const slackResponse = await notifyUser({
-      login,
-      pull_number: context.issue.number,
-      slack_webhook_url,
-      queuePosition
-    });
-    if (!slackResponse || slackResponse.status !== 200) {
-      await createPrComment({
-        body: `@${login} Your PR cannot be added to the queue because your email must be set correctly on your GitHub profile. Here are the steps to take:\n\n1. Go to ${join(context.serverUrl, login)}\n2. Click "Edit profile"\n3. Update your email address\n4. Click "Save"`
-      });
-      return removePrFromQueue(pullRequest);
-    }
-  }
-
   if (!prIsAlreadyInTheQueue) {
     await addPrToQueue(pullRequest, queuePosition, skip_auto_merge);
   }
+
+  const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === FIRST_QUEUED_PR_LABEL);
 
   if (isFirstQueuePosition) {
     await updatePrWithDefaultBranch(pullRequest);
@@ -119,6 +116,14 @@ export const manageMergeQueue = async ({
     state: isFirstQueuePosition ? 'success' : 'pending',
     description: isFirstQueuePosition ? 'This PR is next to merge.' : 'This PR is in line to merge.'
   });
+
+  if (isFirstQueuePosition && slack_webhook_url && login) {
+    await notifyUser({
+      login,
+      pull_number: context.issue.number,
+      slack_webhook_url
+    });
+  }
 };
 
 export const removePrFromQueue = async (pullRequest: PullRequest) => {

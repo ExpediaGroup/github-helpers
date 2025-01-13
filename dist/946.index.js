@@ -445,25 +445,25 @@ limitations under the License.
 
 
 
-const notifyUser = async ({ login, pull_number, slack_webhook_url, queuePosition }) => {
+const notifyUser = async ({ login, pull_number, slack_webhook_url }) => {
     const email = await (0,_helpers_get_email_on_user_profile__WEBPACK_IMPORTED_MODULE_3__.getEmailOnUserProfile)({ login });
     if (!email) {
         return;
     }
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Notifying user ${login}...`);
     const { data: { title, html_url } } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.pulls.get({ pull_number, ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo });
-    const result = await axios__WEBPACK_IMPORTED_MODULE_4__/* ["default"] */ .A.post(slack_webhook_url, {
-        assignee: email,
-        title,
-        html_url,
-        repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
-        queuePosition
-    });
-    if (result.status !== 200) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(result.statusText);
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(`User notification failed for login: ${login} and email: ${email}`);
+    try {
+        await axios__WEBPACK_IMPORTED_MODULE_4__/* ["default"] */ .A.post(slack_webhook_url, {
+            assignee: email,
+            title,
+            html_url,
+            repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo
+        });
     }
-    return result;
+    catch (error) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.warning('User notification failed');
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.warning(error);
+    }
 };
 
 
