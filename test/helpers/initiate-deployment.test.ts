@@ -125,11 +125,11 @@ describe('initiateDeployment', () => {
                 commit: { sha: 'normal sha 1' }
               },
               {
-                name: 'gh-readonly-queue/merge-queue/pr-123-79a5ad2b1a46f6b5d77e02573937667979635f27',
+                name: 'gh-readonly-queue/default-branch/pr-123-79a5ad2b1a46f6b5d77e02573937667979635f27',
                 commit: { sha: 'merge queue sha 1' }
               },
               {
-                name: 'gh-readonly-queue/merge-queue/pr-456-79a5ad2b1a46f6b5d77e02573937667979635f27',
+                name: 'gh-readonly-queue/default-branch/pr-456-79a5ad2b1a46f6b5d77e02573937667979635f27',
                 commit: { sha: 'merge queue sha 2' }
               }
             ]

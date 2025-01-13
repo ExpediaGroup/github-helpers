@@ -42,7 +42,7 @@ function mockGraphQLResponse(mergeQueueEntries: RecursivePartial<MergeQueueEntry
 
 describe('getMergeQueuePosition', () => {
   it('should return 1 for PR 1st in the queue', async () => {
-    context.ref = 'refs/heads/gh-readonly-queue/branch-name/pr-123-f0d9a4cb862b13cdaab6522f72d6dc17e4336b7f';
+    context.ref = 'refs/heads/gh-readonly-queue/default-branch/pr-123-f0d9a4cb862b13cdaab6522f72d6dc17e4336b7f';
     mockGraphQLResponse([
       { position: 1, pullRequest: { number: 123 } },
       { position: 2, pullRequest: { number: 456 } }
@@ -52,7 +52,7 @@ describe('getMergeQueuePosition', () => {
   });
 
   it('should return 3 for PR 3rd in the queue', async () => {
-    context.ref = 'refs/heads/gh-readonly-queue/branch-name/pr-789-f0d9a4cb862b13cdaab6522f72d6dc17e4336b7f';
+    context.ref = 'refs/heads/gh-readonly-queue/default-branch/pr-789-f0d9a4cb862b13cdaab6522f72d6dc17e4336b7f';
     mockGraphQLResponse([
       { position: 1, pullRequest: { number: 123 } },
       { position: 2, pullRequest: { number: 456 } },
