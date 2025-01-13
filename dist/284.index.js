@@ -684,7 +684,8 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
         await (0,notify_user/* notifyUser */.l)({
             login,
             pull_number: github.context.issue.number,
-            slack_webhook_url
+            slack_webhook_url,
+            queuePosition
         });
     }
 };

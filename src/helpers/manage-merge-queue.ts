@@ -121,7 +121,8 @@ export const manageMergeQueue = async ({
     await notifyUser({
       login,
       pull_number: context.issue.number,
-      slack_webhook_url
+      slack_webhook_url,
+      queuePosition
     });
   }
 };
