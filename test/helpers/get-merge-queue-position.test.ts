@@ -15,16 +15,12 @@ import { Mocktokit } from '../types';
 import { getMergeQueuePosition } from '../../src/helpers/get-merge-queue-position';
 import { octokitGraphql } from '../../src/octokit';
 import { MergeQueueEntry } from '@octokit/graphql-schema';
+import { context } from '@actions/github';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
+  context: { repo: { repo: 'repo', owner: 'owner' } },
   getOctokit: jest.fn(() => ({
-    rest: {
-      repos: {
-        listPullRequestsAssociatedWithCommit: jest.fn(({ commit_sha }) => ({ data: [{ number: Number(commit_sha.split('sha')[1]) }] }))
-      }
-    },
     graphql: jest.fn()
   }))
 }));
@@ -46,21 +42,23 @@ function mockGraphQLResponse(mergeQueueEntries: RecursivePartial<MergeQueueEntry
 
 describe('getMergeQueuePosition', () => {
   it('should return 1 for PR 1st in the queue', async () => {
+    context.ref = 'refs/heads/gh-readonly-queue/branch-name/pr-123-f0d9a4cb862b13cdaab6522f72d6dc17e4336b7f';
     mockGraphQLResponse([
       { position: 1, pullRequest: { number: 123 } },
       { position: 2, pullRequest: { number: 456 } }
     ]);
-    const result = await getMergeQueuePosition({ sha: 'sha123' });
+    const result = await getMergeQueuePosition({});
     expect(result).toBe(1);
   });
 
   it('should return 3 for PR 3rd in the queue', async () => {
+    context.ref = 'refs/heads/gh-readonly-queue/branch-name/pr-789-f0d9a4cb862b13cdaab6522f72d6dc17e4336b7f';
     mockGraphQLResponse([
       { position: 1, pullRequest: { number: 123 } },
       { position: 2, pullRequest: { number: 456 } },
       { position: 3, pullRequest: { number: 789 } }
     ]);
-    const result = await getMergeQueuePosition({ sha: 'sha789' });
+    const result = await getMergeQueuePosition({});
     expect(result).toBe(3);
   });
 });

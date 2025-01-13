@@ -13,15 +13,14 @@ limitations under the License.
 
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
-import { octokit, octokitGraphql } from '../octokit';
+import { octokitGraphql } from '../octokit';
 import { Repository } from '@octokit/graphql-schema';
 
 export class GetMergeQueuePosition extends HelperInputs {
-  sha = '';
   max_queue_size?: string;
 }
 
-export const getMergeQueuePosition = async ({ sha, max_queue_size = '10' }: GetMergeQueuePosition) => {
+export const getMergeQueuePosition = async ({ max_queue_size = '10' }: GetMergeQueuePosition) => {
   const { repository } = await octokitGraphql<{ repository: Repository }>(`
 query {
   repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
@@ -38,11 +37,12 @@ query {
   }
 }
 `);
-  const { data: pullRequests } = await octokit.repos.listPullRequestsAssociatedWithCommit({
-    commit_sha: sha,
-    ...context.repo
-  });
-  const pullRequestNumber = pullRequests.find(Boolean)?.number;
+  const prNumberFromMergeQueueRef = Number(
+    context.ref
+      .split('/')
+      .find(part => part.includes('pr-'))
+      ?.match(/\d+/)?.[0]
+  );
   const mergeQueueEntries = repository.mergeQueue?.entries?.nodes;
-  return mergeQueueEntries?.find(entry => entry?.pullRequest?.number === Number(pullRequestNumber))?.position;
+  return mergeQueueEntries?.find(entry => entry?.pullRequest?.number === prNumberFromMergeQueueRef)?.position;
 };

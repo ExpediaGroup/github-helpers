@@ -30,12 +30,8 @@ limitations under the License.
 
 
 class GetMergeQueuePosition extends _types_generated__WEBPACK_IMPORTED_MODULE_2__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.sha = '';
-    }
 }
-const getMergeQueuePosition = async ({ sha, max_queue_size = '10' }) => {
+const getMergeQueuePosition = async ({ max_queue_size = '10' }) => {
     const { repository } = await (0,_octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokitGraphql */ .n)(`
 query {
   repository(owner: "${_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner}", name: "${_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo}") {
@@ -52,13 +48,12 @@ query {
   }
 }
 `);
-    const { data: pullRequests } = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.repos.listPullRequestsAssociatedWithCommit({
-        commit_sha: sha,
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo
-    });
-    const pullRequestNumber = pullRequests.find(Boolean)?.number;
+    const prNumberFromMergeQueueRef = Number(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.ref
+        .split('/')
+        .find(part => part.includes('pr-'))
+        ?.match(/\d+/)?.[0]);
     const mergeQueueEntries = repository.mergeQueue?.entries?.nodes;
-    return mergeQueueEntries?.find(entry => entry?.pullRequest?.number === Number(pullRequestNumber))?.position;
+    return mergeQueueEntries?.find(entry => entry?.pullRequest?.number === prNumberFromMergeQueueRef)?.position;
 };
 
 
