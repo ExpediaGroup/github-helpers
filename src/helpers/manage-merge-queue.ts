@@ -69,7 +69,7 @@ export const manageMergeQueue = async ({
     const email = await getEmailOnUserProfile({ login, pattern });
     if (!email) {
       await createPrComment({
-        body: `@${login} Your PR cannot be added to the queue because your email must be set on your GitHub profile. Here are the steps to take:\n\n1. Go to ${join(context.serverUrl, login)}\n2. Click "Edit profile"\n3. Update your email address\n4. Click "Save"`
+        body: `@${login} Your PR cannot be added to the queue because your email must be set correctly on your GitHub profile. Here are the steps to take:\n\n1. Go to ${join(context.serverUrl, login)}\n2. Click "Edit profile"\n3. Update your email address\n4. Click "Save"`
       });
       return removePrFromQueue(pullRequest);
     }
