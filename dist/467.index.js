@@ -249,10 +249,16 @@ const getMergeQueueCommitHashes = async () => {
     const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/'));
     return mergeQueueBranches.map(branch => branch.commit.sha);
 };
-const getPrNumberFromMergeQueueRef = () => Number(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref
-    .split('/')
-    .find(part => part.includes('pr-'))
-    ?.match(/\d+/)?.[0]);
+const getPrNumberFromMergeQueueRef = () => {
+    const prNumber = Number(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref
+        .split('/')
+        .find(part => part.includes('pr-'))
+        ?.match(/\d+/)?.[0]);
+    if (isNaN(prNumber)) {
+        throw new Error('Could not find PR number in merge queue ref.');
+    }
+    return prNumber;
+};
 
 
 /***/ }),
