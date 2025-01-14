@@ -188,28 +188,7 @@ describe('filterPaths', () => {
     expect(result).toBe(true);
   });
 
-  it('should call listFiles with correct pull number if sha is provided', async () => {
-    await filterPaths({
-      paths,
-      sha: 'sha'
-    });
-
-    expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
-      per_page: 100,
-      pull_number: 789,
-      ...context.repo
-    });
-  });
-
-  it('should not call listPullRequestsAssociatedWithCommit if sha is omitted', async () => {
-    await filterPaths({
-      paths
-    });
-
-    expect(octokit.repos.listPullRequestsAssociatedWithCommit).not.toHaveBeenCalled();
-  });
-
-  it('should not call listPullRequestsAssociatedWithCommit if sha is omitted', async () => {
+  it('should call listFiles with correct pr number in merge queue case', async () => {
     context.eventName = 'merge_group';
     context.ref = 'refs/heads/gh-readonly-queue/default-branch/pr-12345-f0d9a4cb862b13cdaab6522f72d6dc17e4336b7f';
     await filterPaths({

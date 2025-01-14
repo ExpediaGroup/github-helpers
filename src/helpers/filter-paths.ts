@@ -16,31 +16,15 @@ import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import micromatch from 'micromatch';
 import { octokit } from '../octokit';
+import { getPrNumberFromMergeQueueRef } from '../utils/merge-queue';
 
 export class FilterPaths extends HelperInputs {
   paths?: string;
   globs?: string;
-  sha?: string;
 }
 
-export const filterPaths = async ({ paths, globs, sha }: FilterPaths) => {
-  const prNumberFromSha =
-    context.eventName === 'merge_group'
-      ? Number(
-          context.ref
-            .split('/')
-            .find(part => part.includes('pr-'))
-            ?.match(/\d+/)?.[0]
-        )
-      : sha
-        ? (
-            await octokit.repos.listPullRequestsAssociatedWithCommit({
-              commit_sha: sha,
-              ...context.repo
-            })
-          ).data.find(Boolean)?.number
-        : undefined;
-  const pull_number = prNumberFromSha ?? context.issue.number;
+export const filterPaths = async ({ paths, globs }: FilterPaths) => {
+  const pull_number = context.eventName === 'merge_group' ? getPrNumberFromMergeQueueRef() : context.issue.number;
 
   const { data } = await octokit.pulls.listFiles({
     per_page: 100,

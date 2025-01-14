@@ -12,9 +12,23 @@ limitations under the License.
 */
 
 import { paginateAllBranches } from './paginate-all-branches';
+import { context } from '@actions/github';
 
 export const getMergeQueueCommitHashes = async () => {
   const branches = await paginateAllBranches();
   const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/'));
   return mergeQueueBranches.map(branch => branch.commit.sha);
+};
+
+export const getPrNumberFromMergeQueueRef = () => {
+  const prNumber = Number(
+    context.ref
+      .split('/')
+      .find(part => part.includes('pr-'))
+      ?.match(/\d+/)?.[0]
+  );
+  if (isNaN(prNumber)) {
+    throw new Error('Could not find PR number in merge queue ref.');
+  }
+  return prNumber;
 };

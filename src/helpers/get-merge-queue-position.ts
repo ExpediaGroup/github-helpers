@@ -15,6 +15,7 @@ import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokitGraphql } from '../octokit';
 import { Repository } from '@octokit/graphql-schema';
+import { getPrNumberFromMergeQueueRef } from '../utils/merge-queue';
 
 export class GetMergeQueuePosition extends HelperInputs {
   max_queue_size?: string;
@@ -37,12 +38,7 @@ query {
   }
 }
 `);
-  const prNumberFromMergeQueueRef = Number(
-    context.ref
-      .split('/')
-      .find(part => part.includes('pr-'))
-      ?.match(/\d+/)?.[0]
-  );
+  const prNumberFromMergeQueueRef = getPrNumberFromMergeQueueRef();
   const mergeQueueEntries = repository.mergeQueue?.entries?.nodes;
   return mergeQueueEntries?.find(entry => entry?.pullRequest?.number === prNumberFromMergeQueueRef)?.position;
 };
