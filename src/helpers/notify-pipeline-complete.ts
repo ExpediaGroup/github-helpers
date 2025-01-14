@@ -16,7 +16,7 @@ import { HelperInputs } from '../types/generated';
 import { context as githubContext } from '@actions/github';
 import { map } from 'bluebird';
 import { octokit } from '../octokit';
-import { getMergeQueueCommitHashes } from '../utils/get-merge-queue-commit-hashes';
+import { getMergeQueueCommitHashes } from '../utils/merge-queue';
 
 export class NotifyPipelineComplete extends HelperInputs {
   context?: string;

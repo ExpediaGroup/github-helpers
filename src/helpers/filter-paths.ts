@@ -16,6 +16,7 @@ import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import micromatch from 'micromatch';
 import { octokit } from '../octokit';
+import { getPrNumberFromMergeQueueRef } from '../utils/merge-queue';
 
 export class FilterPaths extends HelperInputs {
   paths?: string;
@@ -26,12 +27,7 @@ export class FilterPaths extends HelperInputs {
 export const filterPaths = async ({ paths, globs, sha }: FilterPaths) => {
   const prNumberFromSha =
     context.eventName === 'merge_group'
-      ? Number(
-          context.ref
-            .split('/')
-            .find(part => part.includes('pr-'))
-            ?.match(/\d+/)?.[0]
-        )
+      ? getPrNumberFromMergeQueueRef()
       : sha
         ? (
             await octokit.repos.listPullRequestsAssociatedWithCommit({

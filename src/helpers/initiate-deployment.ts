@@ -17,7 +17,7 @@ import { HelperInputs } from '../types/generated';
 import { context as githubContext } from '@actions/github';
 import { octokit } from '../octokit';
 import { map } from 'bluebird';
-import { getMergeQueueCommitHashes } from '../utils/get-merge-queue-commit-hashes';
+import { getMergeQueueCommitHashes } from '../utils/merge-queue';
 
 export class InitiateDeployment extends HelperInputs {
   sha = '';
