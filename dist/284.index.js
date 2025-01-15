@@ -636,7 +636,7 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
     if (slack_webhook_url && login) {
         const email = await (0,get_email_on_user_profile.getEmailOnUserProfile)({ login, pattern });
         if (!email) {
-            const patternText = pattern ? ` and match the regex pattern \`${pattern}\`` : '';
+            const patternText = pattern ? ` and must match the regex pattern \`${pattern}\`` : '';
             await (0,create_pr_comment.createPrComment)({
                 body: `@${login} Your PR cannot be added to the queue because your email must be set on your GitHub profile${patternText}. Follow the instructions [here](${githubEmailDocsLink}) to add or fix your email.`
             });
