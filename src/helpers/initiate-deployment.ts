@@ -12,12 +12,10 @@ limitations under the License.
 */
 
 import { DeploymentState } from '../types/github';
-import { DEFAULT_PIPELINE_STATUS, GITHUB_OPTIONS } from '../constants';
+import { GITHUB_OPTIONS } from '../constants';
 import { HelperInputs } from '../types/generated';
 import { context as githubContext } from '@actions/github';
 import { octokit } from '../octokit';
-import { map } from 'bluebird';
-import { getMergeQueueCommitHashes } from '../utils/merge-queue';
 
 export class InitiateDeployment extends HelperInputs {
   sha = '';
@@ -31,7 +29,6 @@ export class InitiateDeployment extends HelperInputs {
 export const initiateDeployment = async ({
   sha,
   state = 'in_progress',
-  context = DEFAULT_PIPELINE_STATUS,
   environment,
   environment_url,
   description,
@@ -57,18 +54,6 @@ export const initiateDeployment = async ({
     ...githubContext.repo,
     ...GITHUB_OPTIONS
   });
-
-  const commitHashesForMergeQueueBranches = await getMergeQueueCommitHashes();
-  await map(commitHashesForMergeQueueBranches, async sha =>
-    octokit.repos.createCommitStatus({
-      sha,
-      context,
-      state: 'pending',
-      description,
-      target_url,
-      ...githubContext.repo
-    })
-  );
 
   return deployment_id;
 };
