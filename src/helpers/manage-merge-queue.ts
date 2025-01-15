@@ -32,7 +32,6 @@ import { updatePrWithDefaultBranch } from './prepare-queued-pr-for-merge';
 import { approvalsSatisfied } from './approvals-satisfied';
 import { createPrComment } from './create-pr-comment';
 import { isUserInTeam } from './is-user-in-team';
-import { join } from 'path';
 import { getEmailOnUserProfile } from './get-email-on-user-profile';
 
 export class ManageMergeQueue extends HelperInputs {
@@ -68,8 +67,9 @@ export const manageMergeQueue = async ({
   if (slack_webhook_url && login) {
     const email = await getEmailOnUserProfile({ login, pattern });
     if (!email) {
+      const patternText = pattern ? ` and must match the regex pattern \`${pattern}\`` : '';
       await createPrComment({
-        body: `@${login} Your PR cannot be added to the queue because your email must be set correctly on your GitHub profile. Here are the steps to take:\n\n1. Go to ${join(context.serverUrl, login)}\n2. Click "Edit profile"\n3. Update your email address\n4. Click "Save"`
+        body: `@${login} Your PR cannot be added to the queue because your email must be set on your GitHub profile${patternText}. Follow the instructions [here](${githubEmailDocsLink}) to add or fix your email.`
       });
       return removePrFromQueue(pullRequest);
     }
@@ -179,3 +179,6 @@ export const enableAutoMerge = async (pullRequestId: string, mergeMethod = 'SQUA
     core.warning(error as Error);
   }
 };
+
+const githubEmailDocsLink =
+  'https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/changing-your-primary-email-address';

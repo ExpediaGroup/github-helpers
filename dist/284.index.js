@@ -589,8 +589,6 @@ var approvals_satisfied = __webpack_require__(8059);
 var create_pr_comment = __webpack_require__(9280);
 // EXTERNAL MODULE: ./src/helpers/is-user-in-team.ts
 var is_user_in_team = __webpack_require__(8783);
-// EXTERNAL MODULE: external "path"
-var external_path_ = __webpack_require__(6928);
 // EXTERNAL MODULE: ./src/helpers/get-email-on-user-profile.ts
 var get_email_on_user_profile = __webpack_require__(4862);
 ;// CONCATENATED MODULE: ./src/helpers/manage-merge-queue.ts
@@ -606,7 +604,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
 
 
 
@@ -639,8 +636,9 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
     if (slack_webhook_url && login) {
         const email = await (0,get_email_on_user_profile.getEmailOnUserProfile)({ login, pattern });
         if (!email) {
+            const patternText = pattern ? ` and must match the regex pattern \`${pattern}\`` : '';
             await (0,create_pr_comment.createPrComment)({
-                body: `@${login} Your PR cannot be added to the queue because your email must be set correctly on your GitHub profile. Here are the steps to take:\n\n1. Go to ${(0,external_path_.join)(github.context.serverUrl, login)}\n2. Click "Edit profile"\n3. Update your email address\n4. Click "Save"`
+                body: `@${login} Your PR cannot be added to the queue because your email must be set on your GitHub profile${patternText}. Follow the instructions [here](${githubEmailDocsLink}) to add or fix your email.`
             });
             return removePrFromQueue(pullRequest);
         }
@@ -736,6 +734,7 @@ const enableAutoMerge = async (pullRequestId, mergeMethod = 'SQUASH') => {
         core.warning(error);
     }
 };
+const githubEmailDocsLink = 'https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/changing-your-primary-email-address';
 
 
 /***/ }),
