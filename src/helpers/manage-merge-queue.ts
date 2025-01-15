@@ -70,7 +70,7 @@ export const manageMergeQueue = async ({
     if (!email) {
       const patternText = pattern ? ` and must match the regex pattern \`${pattern}\`` : '';
       await createPrComment({
-        body: `@${login} Your PR cannot be added to the queue because your email must be set on your [GitHub profile](${join(context.serverUrl, login)})${patternText}. Follow the instructions [here](${githubEmailDocsLink}) to add or fix your email!`
+        body: `@${login} Your PR cannot be added to the queue because your email must be set on your [GitHub profile](${join(context.serverUrl, context.actor)})${patternText}. Follow the instructions [here](${githubEmailDocsLink}) to add or fix your email!`
       });
       return removePrFromQueue(pullRequest);
     }

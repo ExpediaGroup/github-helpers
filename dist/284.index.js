@@ -641,7 +641,7 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
         if (!email) {
             const patternText = pattern ? ` and must match the regex pattern \`${pattern}\`` : '';
             await (0,create_pr_comment.createPrComment)({
-                body: `@${login} Your PR cannot be added to the queue because your email must be set on your [GitHub profile](${(0,external_path_.join)(github.context.serverUrl, login)})${patternText}. Follow the instructions [here](${githubEmailDocsLink}) to add or fix your email!`
+                body: `@${login} Your PR cannot be added to the queue because your email must be set on your [GitHub profile](${(0,external_path_.join)(github.context.serverUrl, github.context.actor)})${patternText}. Follow the instructions [here](${githubEmailDocsLink}) to add or fix your email!`
             });
             return removePrFromQueue(pullRequest);
         }
