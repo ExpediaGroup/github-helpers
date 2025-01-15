@@ -53,3 +53,4 @@ jobs:
           helper: delete-deployment
           sha: ${{ github.event.pull_request.head.sha }}
           environment: test
+          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
