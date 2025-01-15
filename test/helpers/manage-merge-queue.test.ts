@@ -33,6 +33,7 @@ jest.mock('../../src/helpers/is-user-in-team');
 jest.mock('../../src/helpers/approvals-satisfied');
 jest.mock('../../src/helpers/create-pr-comment');
 jest.mock('../../src/utils/../../src/helpers/prepare-queued-pr-for-merge');
+jest.mock('path');
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 }, serverUrl: 'sampleUrl' },
