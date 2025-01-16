@@ -103,7 +103,7 @@ describe('notify-pipeline-complete', () => {
     });
   });
 
-  it('should notify that the pipeline is clear when merge queue branches are present', async () => {
+  it('should notify that the pipeline is clear when merge queue is enabled', async () => {
     (octokit.repos.listBranches as unknown as Mocktokit).mockImplementation(async ({ page }) =>
       page > 1
         ? { data: [] }
@@ -124,35 +124,10 @@ describe('notify-pipeline-complete', () => {
             ]
           }
     );
-    await notifyPipelineComplete({});
+    await notifyPipelineComplete({ merge_queue_enabled: 'true' });
 
-    expect(octokit.pulls.list).toHaveBeenCalledWith({
-      state: 'open',
-      per_page: 100,
-      ...context.repo
-    });
+    expect(octokit.pulls.list).not.toHaveBeenCalled();
 
-    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
-      sha: 'sha 1',
-      context: DEFAULT_PIPELINE_STATUS,
-      state: 'success',
-      description,
-      ...context.repo
-    });
-    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
-      sha: 'sha 2',
-      context: DEFAULT_PIPELINE_STATUS,
-      state: 'success',
-      description,
-      ...context.repo
-    });
-    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
-      sha: 'sha 3',
-      context: DEFAULT_PIPELINE_STATUS,
-      state: 'success',
-      description,
-      ...context.repo
-    });
     expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
       sha: 'normal sha 1',
       context: DEFAULT_PIPELINE_STATUS,

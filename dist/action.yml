@@ -154,6 +154,9 @@ inputs:
   use_basic_matrix_configuration:
     description: 'Boolean to indicate if the action should use a basic matrix configuration (i.e. just a flat list of paths, instead of a list of objects nested under the "include" key)'
     required: false
+  merge_queue_enabled:
+    description: 'Boolean to indicate if the repo is using the merge queue feature'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'

@@ -23,23 +23,54 @@ export class NotifyPipelineComplete extends HelperInputs {
   description?: string;
   environment?: string;
   target_url?: string;
+  merge_queue_enabled?: string;
 }
 
 export const notifyPipelineComplete = async ({
   context = DEFAULT_PIPELINE_STATUS,
   description = DEFAULT_PIPELINE_DESCRIPTION,
   environment = PRODUCTION_ENVIRONMENT,
-  target_url
+  target_url,
+  merge_queue_enabled
 }: NotifyPipelineComplete) => {
+  const { data: deployments } = await octokit.repos.listDeployments({
+    environment,
+    ...githubContext.repo,
+    ...GITHUB_OPTIONS
+  });
+  const deployment_id = deployments.find(Boolean)?.id;
+  if (!deployment_id) return;
+  await octokit.repos.createDeploymentStatus({
+    environment,
+    deployment_id,
+    state: 'success',
+    description,
+    target_url,
+    ...githubContext.repo,
+    ...GITHUB_OPTIONS
+  });
+
+  if (merge_queue_enabled === 'true') {
+    const mergeQueueCommitHashes = await getMergeQueueCommitHashes();
+    return map(mergeQueueCommitHashes, async sha =>
+      octokit.repos.createCommitStatus({
+        sha,
+        context,
+        state: 'success',
+        description,
+        target_url,
+        ...githubContext.repo
+      })
+    );
+  }
+
   const { data: pullRequests } = await octokit.pulls.list({
     state: 'open',
     per_page: 100,
     ...githubContext.repo
   });
   const commitHashesForOpenPullRequests = pullRequests.map(pullRequest => pullRequest.head.sha);
-  const mergeQueueCommitHashes = await getMergeQueueCommitHashes();
-  const commitHashes = mergeQueueCommitHashes.length ? mergeQueueCommitHashes : commitHashesForOpenPullRequests;
-  await map(commitHashes, async sha =>
+  return map(commitHashesForOpenPullRequests, async sha =>
     octokit.repos.createCommitStatus({
       sha,
       context,
@@ -49,21 +80,4 @@ export const notifyPipelineComplete = async ({
       ...githubContext.repo
     })
   );
-  const { data: deployments } = await octokit.repos.listDeployments({
-    environment,
-    ...githubContext.repo,
-    ...GITHUB_OPTIONS
-  });
-  const deployment_id = deployments.find(Boolean)?.id;
-  if (deployment_id) {
-    return octokit.repos.createDeploymentStatus({
-      environment,
-      deployment_id,
-      state: 'success',
-      description,
-      target_url,
-      ...githubContext.repo,
-      ...GITHUB_OPTIONS
-    });
-  }
 };

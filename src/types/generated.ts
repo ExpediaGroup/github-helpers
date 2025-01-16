@@ -63,4 +63,5 @@ export class HelperInputs {
   max_queue_size?: string;
   allow_only_for_maintainers?: string;
   use_basic_matrix_configuration?: string;
+  merge_queue_enabled?: string;
 }
