@@ -77,13 +77,15 @@ export const manageMergeQueue = async ({
 
   const queuedPrs = await getQueuedPullRequests();
   const queuePosition = queuedPrs.length + 1;
+  const prAttemptingToJoinQueue = pullRequest.labels.every(label => !label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX));
 
-  if (queuePosition > Number(max_queue_size)) {
+  if (prAttemptingToJoinQueue && queuePosition > Number(max_queue_size)) {
     await createPrComment({
       body: `The merge queue is full! Only ${max_queue_size} PRs are allowed in the queue at a time.\n\nIf you would like to merge your PR, please monitor the PRs in the queue and make sure the authors are around to merge them.`
     });
     return removePrFromQueue(pullRequest);
   }
+
   if (pullRequest.labels.find(label => label.name === JUMP_THE_QUEUE_PR_LABEL)) {
     if (allow_only_for_maintainers === 'true') {
       core.info(`Checking if user ${login} is a maintainer...`);
@@ -99,8 +101,7 @@ export const manageMergeQueue = async ({
     return updateMergeQueue(queuedPrs);
   }
 
-  const prIsAlreadyInTheQueue = pullRequest.labels.find(label => label.name?.startsWith(QUEUED_FOR_MERGE_PREFIX));
-  if (!prIsAlreadyInTheQueue) {
+  if (prAttemptingToJoinQueue) {
     await addPrToQueue(pullRequest, queuePosition, skip_auto_merge);
   }
 

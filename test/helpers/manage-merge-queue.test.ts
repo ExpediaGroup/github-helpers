@@ -710,6 +710,43 @@ describe('manageMergeQueue', () => {
     });
   });
 
+  describe('should not remove queued pr when queue is maxed out', () => {
+    const prUnderTest = {
+      number: 2,
+      merged: false,
+      head: { sha: 'sha' },
+      labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #2' }]
+    };
+    const openPrs = [
+      prUnderTest,
+      { number: 1, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #1' }] },
+      { number: 2, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #2' }] },
+      { number: 3, labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: 'QUEUED FOR MERGE #3' }] }
+    ];
+    beforeEach(async () => {
+      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+        data: page === 1 ? openPrs : []
+      }));
+      (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        data: prUnderTest
+      }));
+      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      await manageMergeQueue({
+        max_queue_size: '3'
+      });
+    });
+
+    it('should not remove queued pr when queue is full', () => {
+      expect(createPrComment).not.toHaveBeenCalled();
+      expect(setCommitStatus).toHaveBeenCalledWith({
+        sha: 'sha',
+        context: MERGE_QUEUE_STATUS,
+        state: 'pending',
+        description: 'This PR is in line to merge.'
+      });
+    });
+  });
+
   describe('fewer than max prs in the queue', () => {
     const prUnderTest = {
       number: 1,
