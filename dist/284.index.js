@@ -645,7 +645,8 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
     }
     const queuedPrs = await getQueuedPullRequests();
     const queuePosition = queuedPrs.length + 1;
-    if (queuePosition > Number(max_queue_size)) {
+    const prAttemptingToJoinQueue = pullRequest.labels.every(label => !label.name?.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.KE));
+    if (prAttemptingToJoinQueue && queuePosition > Number(max_queue_size)) {
         await (0,create_pr_comment.createPrComment)({
             body: `The merge queue is full! Only ${max_queue_size} PRs are allowed in the queue at a time.\n\nIf you would like to merge your PR, please monitor the PRs in the queue and make sure the authors are around to merge them.`
         });
@@ -664,8 +665,7 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
         }
         return updateMergeQueue(queuedPrs);
     }
-    const prIsAlreadyInTheQueue = pullRequest.labels.find(label => label.name?.startsWith(constants/* QUEUED_FOR_MERGE_PREFIX */.KE));
-    if (!prIsAlreadyInTheQueue) {
+    if (prAttemptingToJoinQueue) {
         await addPrToQueue(pullRequest, queuePosition, skip_auto_merge);
     }
     const isFirstQueuePosition = queuePosition === 1 || pullRequest.labels.find(label => label.name === constants/* FIRST_QUEUED_PR_LABEL */.RB);
