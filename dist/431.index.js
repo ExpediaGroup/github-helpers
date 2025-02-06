@@ -10,18 +10,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   CheckMergeSafety: () => (/* binding */ CheckMergeSafety),
 /* harmony export */   checkMergeSafety: () => (/* binding */ checkMergeSafety)
 /* harmony export */ });
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(8428);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(8428);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3228);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6590);
-/* harmony import */ var micromatch__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8785);
-/* harmony import */ var micromatch__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(micromatch__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3332);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(4366);
-/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _set_commit_status__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(9250);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var simple_git__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9070);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6590);
+/* harmony import */ var micromatch__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8785);
+/* harmony import */ var micromatch__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(micromatch__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(3332);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(4366);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _set_commit_status__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(9250);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(7484);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_7__);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,18 +43,20 @@ limitations under the License.
 
 
 
+
+const git = (0,simple_git__WEBPACK_IMPORTED_MODULE_1__/* .simpleGit */ .Lp)();
 const maxBranchNameLength = 50;
-class CheckMergeSafety extends _types_generated__WEBPACK_IMPORTED_MODULE_7__/* .HelperInputs */ .m {
+class CheckMergeSafety extends _types_generated__WEBPACK_IMPORTED_MODULE_8__/* .HelperInputs */ .m {
 }
 const checkMergeSafety = async (inputs) => {
     const isPrWorkflow = Boolean(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number);
     if (!isPrWorkflow) {
         return handlePushWorkflow(inputs);
     }
-    const { data: pullRequest } = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.pulls.get({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number, ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo });
+    const { data: pullRequest } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.pulls.get({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number, ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo });
     const { state, message } = await setMergeSafetyStatus(pullRequest, inputs);
     if (state === 'failure') {
-        _actions_core__WEBPACK_IMPORTED_MODULE_6__.setFailed(message);
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__.setFailed(message);
     }
 };
 const setMergeSafetyStatus = async (pullRequest, { context = 'Merge Safety', ...inputs }) => {
@@ -63,10 +66,10 @@ const setMergeSafetyStatus = async (pullRequest, { context = 'Merge Safety', ...
         const { head: { ref, user: { login: username } } } = pullRequest;
         const truncatedRef = ref.length > maxBranchNameLength ? `${ref.substring(0, maxBranchNameLength)}...` : ref;
         const truncatedBranchName = `${username}:${truncatedRef}`;
-        _actions_core__WEBPACK_IMPORTED_MODULE_6__.info(`Found existing failure status for ${truncatedBranchName}, skipping setting new status`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__.info(`Found existing failure status for ${truncatedBranchName}, skipping setting new status`);
     }
     else {
-        await (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_5__.setCommitStatus)({
+        await (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_6__.setCommitStatus)({
             sha: pullRequest.head.sha,
             state,
             context,
@@ -77,12 +80,12 @@ const setMergeSafetyStatus = async (pullRequest, { context = 'Merge Safety', ...
     return { state, message };
 };
 const handlePushWorkflow = async (inputs) => {
-    const pullRequests = await (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_3__/* .paginateAllOpenPullRequests */ .U)();
+    const pullRequests = await (0,_utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__/* .paginateAllOpenPullRequests */ .U)();
     const filteredPullRequests = pullRequests.filter(({ base, draft }) => !draft && base.ref === base.repo.default_branch);
-    await (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(filteredPullRequests, pullRequest => setMergeSafetyStatus(pullRequest, inputs));
+    await (0,bluebird__WEBPACK_IMPORTED_MODULE_5__.map)(filteredPullRequests, pullRequest => setMergeSafetyStatus(pullRequest, inputs));
 };
 const checkForExistingFailureStatus = async (pullRequest, context) => {
-    const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.repos.getCombinedStatusForRef({
+    const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.getCombinedStatusForRef({
         ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo,
         ref: pullRequest.head.sha
     });
@@ -92,46 +95,113 @@ const checkForExistingFailureStatus = async (pullRequest, context) => {
     }
     return false;
 };
+const fetchSha = async (repoUrl, sha) => {
+    let success = false;
+    try {
+        await git.fetch(repoUrl, sha, { '--depth': 1 });
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__.info(`Fetched ${sha} from ${repoUrl}`);
+        success = true;
+    }
+    catch (err) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__.info(`Failed to fetch ${sha} from ${repoUrl}: ${err.message}`);
+        throw new Error(`Failed to fetch ${sha} from ${repoUrl}: ${err.message}`);
+    }
+    return success;
+};
+const getDiffUsingGitCommand = async (repoUrl, baseSha, headSha) => {
+    // update local repo copy
+    await fetchSha(repoUrl, baseSha);
+    await fetchSha(repoUrl, headSha);
+    try {
+        const diff = await git.diff(['--name-only', baseSha, headSha]);
+        return (diff ?? '').split('\n').filter(Boolean);
+    }
+    catch (err) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__.error(`Failed to run local git diff for ${repoUrl}: ${err.message}`);
+        throw new Error(`Failed to run local git diff for ${repoUrl}: ${err.message}`);
+    }
+};
+const getDiff = async (compareBase, compareHead, basehead) => {
+    let changedFileNames = [];
+    try {
+        const { data: { files: changedFiles } = {}, status } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.compareCommitsWithBasehead({
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo,
+            basehead
+        });
+        if (status > 400) {
+            throw { status };
+        }
+        changedFileNames = changedFiles?.map(file => file.filename) ?? [];
+    }
+    catch (err) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__.info(`Failed to fetch diff: ${err.message} Status: ${err.status}`);
+        // diff too large error
+        if (err?.status === 406) {
+            _actions_core__WEBPACK_IMPORTED_MODULE_7__.info(`Attempting to generate diff using local git command`);
+            if (compareBase.repo?.html_url) {
+                changedFileNames = await getDiffUsingGitCommand(compareBase.repo?.html_url, compareBase.sha, compareHead.sha);
+            }
+            else {
+                _actions_core__WEBPACK_IMPORTED_MODULE_7__.error(`Could not fetch repo url to run local git diff`);
+                throw err;
+            }
+        }
+        else {
+            throw err;
+        }
+    }
+    return changedFileNames;
+};
 const getMergeSafetyStateAndMessage = async (pullRequest, { paths, ignore_globs, override_filter_paths, override_filter_globs }) => {
     const { base: { repo: { default_branch, owner: { login: baseOwner } } }, head: { ref, user: { login: username } } } = pullRequest;
     const branchName = `${username}:${ref}`;
+    const diffAgainstUserBranch = `${branchName}...${baseOwner}:${default_branch}`;
+    let fileNamesWhichBranchIsBehindOn;
+    try {
+        fileNamesWhichBranchIsBehindOn = await getDiff(pullRequest.head, pullRequest.base, diffAgainstUserBranch);
+    }
+    catch (err) {
+        const message = diffErrorMessage(diffAgainstUserBranch, err.message);
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__.error(message);
+        return { state: 'failure', message };
+    }
     const truncatedRef = ref.length > maxBranchNameLength ? `${ref.substring(0, maxBranchNameLength)}...` : ref;
     const truncatedBranchName = `${username}:${truncatedRef}`;
-    const { data: { files: filesWhichBranchIsBehindOn } } = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.repos.compareCommitsWithBasehead({
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo,
-        basehead: `${branchName}...${baseOwner}:${default_branch}`
-    });
-    const fileNamesWhichBranchIsBehindOn = filesWhichBranchIsBehindOn?.map(file => file.filename) ?? [];
     const globalFilesOutdatedOnBranch = override_filter_globs
-        ? micromatch__WEBPACK_IMPORTED_MODULE_2___default()(fileNamesWhichBranchIsBehindOn, override_filter_globs.split(/[\n,]/))
+        ? micromatch__WEBPACK_IMPORTED_MODULE_3___default()(fileNamesWhichBranchIsBehindOn, override_filter_globs.split(/[\n,]/))
         : override_filter_paths
             ? fileNamesWhichBranchIsBehindOn.filter(changedFile => override_filter_paths.split(/[\n,]/).includes(changedFile))
             : [];
     if (globalFilesOutdatedOnBranch.length) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_6__.error(buildErrorMessage(globalFilesOutdatedOnBranch, 'global files', truncatedBranchName));
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__.error(buildErrorMessage(globalFilesOutdatedOnBranch, 'global files', truncatedBranchName));
         return {
             state: 'failure',
             message: `This branch has one or more outdated global files. Please update with ${default_branch}.`
         };
     }
-    const { data: { files: changedFiles } } = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.repos.compareCommitsWithBasehead({
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo,
-        basehead: `${baseOwner}:${default_branch}...${branchName}`
-    });
-    const changedFileNames = changedFiles?.map(file => file.filename);
-    const changedFilesToIgnore = changedFileNames && ignore_globs ? micromatch__WEBPACK_IMPORTED_MODULE_2___default()(changedFileNames, ignore_globs.split(/[\n,]/)) : [];
+    const diffAgainstDefaultBranch = `${baseOwner}:${default_branch}...${branchName}`;
+    let changedFileNames;
+    try {
+        changedFileNames = await getDiff(pullRequest.base, pullRequest.head, diffAgainstDefaultBranch);
+    }
+    catch (err) {
+        const message = diffErrorMessage(diffAgainstDefaultBranch, err.message);
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__.error(message);
+        return { state: 'failure', message };
+    }
+    const changedFilesToIgnore = changedFileNames && ignore_globs ? micromatch__WEBPACK_IMPORTED_MODULE_3___default()(changedFileNames, ignore_globs.split(/[\n,]/)) : [];
     const filteredFileNames = changedFileNames?.filter(file => !changedFilesToIgnore.includes(file));
     const allProjectDirectories = paths?.split(/[\n,]/);
     const changedProjectsOutdatedOnBranch = allProjectDirectories?.filter(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && filteredFileNames?.some(file => file.includes(dir)));
     if (changedProjectsOutdatedOnBranch?.length) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_6__.error(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects', truncatedBranchName));
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__.error(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects', truncatedBranchName));
         return {
             state: 'failure',
             message: `This branch has one or more outdated projects. Please update with ${default_branch}.`
         };
     }
     const safeMessage = buildSuccessMessage(truncatedBranchName);
-    _actions_core__WEBPACK_IMPORTED_MODULE_6__.info(safeMessage);
+    _actions_core__WEBPACK_IMPORTED_MODULE_7__.info(safeMessage);
     return {
         state: 'success',
         message: safeMessage
@@ -142,6 +212,7 @@ The following ${pathType} are outdated on branch ${branchName}
 
 ${paths.map(path => `* ${path}`).join('\n')}
 `;
+const diffErrorMessage = (basehead, message = '') => `Failed to generate diff for ${basehead}. Please verify SHAs are valid and try again.${message ? `\nError: ${message}` : ''}`;
 const buildSuccessMessage = (branchName) => `Branch ${branchName} is safe to merge!`;
 
 

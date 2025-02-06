@@ -13,13 +13,16 @@ limitations under the License.
 
 import { HelperInputs } from '../types/generated';
 import { context as githubContext } from '@actions/github';
+import { simpleGit } from 'simple-git';
 import { octokit } from '../octokit';
 import micromatch from 'micromatch';
-import { PullRequest } from '../types/github';
+import { GithubError, PullRequest } from '../types/github';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
 import { map } from 'bluebird';
 import { setCommitStatus } from './set-commit-status';
 import * as core from '@actions/core';
+
+const git = simpleGit();
 
 const maxBranchNameLength = 50;
 export class CheckMergeSafety extends HelperInputs {
@@ -87,6 +90,64 @@ const checkForExistingFailureStatus = async (pullRequest: PullRequest, context: 
   return false;
 };
 
+const fetchSha = async (repoUrl: string, sha: string) => {
+  let success = false;
+  try {
+    await git.fetch(repoUrl, sha, { '--depth': 1 });
+    core.info(`Fetched ${sha} from ${repoUrl}`);
+    success = true;
+  } catch (err) {
+    core.info(`Failed to fetch ${sha} from ${repoUrl}: ${(err as GithubError).message}`);
+    throw new Error(`Failed to fetch ${sha} from ${repoUrl}: ${(err as GithubError).message}`);
+  }
+  return success;
+};
+
+const getDiffUsingGitCommand = async (repoUrl: string, baseSha: string, headSha: string): Promise<string[]> => {
+  // update local repo copy
+  await fetchSha(repoUrl, baseSha);
+  await fetchSha(repoUrl, headSha);
+
+  try {
+    const diff = await git.diff(['--name-only', baseSha, headSha]);
+    return (diff ?? '').split('\n').filter(Boolean);
+  } catch (err) {
+    core.error(`Failed to run local git diff for ${repoUrl}: ${(err as GithubError).message}`);
+    throw new Error(`Failed to run local git diff for ${repoUrl}: ${(err as GithubError).message}`);
+  }
+};
+
+type DiffRefs = PullRequest['base' | 'head'];
+const getDiff = async (compareBase: DiffRefs, compareHead: DiffRefs, basehead: string) => {
+  let changedFileNames: string[] = [];
+  try {
+    const { data: { files: changedFiles } = {}, status } = await octokit.repos.compareCommitsWithBasehead({
+      ...githubContext.repo,
+      basehead
+    });
+    if (status > 400) {
+      throw { status };
+    }
+    changedFileNames = changedFiles?.map(file => file.filename) ?? [];
+  } catch (err) {
+    core.info(`Failed to fetch diff: ${(err as GithubError).message} Status: ${(err as GithubError).status}`);
+
+    // diff too large error
+    if ((err as GithubError)?.status === 406) {
+      core.info(`Attempting to generate diff using local git command`);
+      if (compareBase.repo?.html_url) {
+        changedFileNames = await getDiffUsingGitCommand(compareBase.repo?.html_url, compareBase.sha, compareHead.sha);
+      } else {
+        core.error(`Could not fetch repo url to run local git diff`);
+        throw err;
+      }
+    } else {
+      throw err;
+    }
+  }
+  return changedFileNames;
+};
+
 const getMergeSafetyStateAndMessage = async (
   pullRequest: PullRequest,
   { paths, ignore_globs, override_filter_paths, override_filter_globs }: CheckMergeSafety
@@ -105,17 +166,18 @@ const getMergeSafetyStateAndMessage = async (
   } = pullRequest;
 
   const branchName = `${username}:${ref}`;
+  const diffAgainstUserBranch = `${branchName}...${baseOwner}:${default_branch}`;
+  let fileNamesWhichBranchIsBehindOn;
+  try {
+    fileNamesWhichBranchIsBehindOn = await getDiff(pullRequest.head, pullRequest.base, diffAgainstUserBranch);
+  } catch (err) {
+    const message = diffErrorMessage(diffAgainstUserBranch, (err as GithubError).message);
+    core.error(message);
+    return { state: 'failure', message } as const;
+  }
+
   const truncatedRef = ref.length > maxBranchNameLength ? `${ref.substring(0, maxBranchNameLength)}...` : ref;
   const truncatedBranchName = `${username}:${truncatedRef}`;
-
-  const {
-    data: { files: filesWhichBranchIsBehindOn }
-  } = await octokit.repos.compareCommitsWithBasehead({
-    ...githubContext.repo,
-    basehead: `${branchName}...${baseOwner}:${default_branch}`
-  });
-  const fileNamesWhichBranchIsBehindOn = filesWhichBranchIsBehindOn?.map(file => file.filename) ?? [];
-
   const globalFilesOutdatedOnBranch = override_filter_globs
     ? micromatch(fileNamesWhichBranchIsBehindOn, override_filter_globs.split(/[\n,]/))
     : override_filter_paths
@@ -130,13 +192,16 @@ const getMergeSafetyStateAndMessage = async (
     } as const;
   }
 
-  const {
-    data: { files: changedFiles }
-  } = await octokit.repos.compareCommitsWithBasehead({
-    ...githubContext.repo,
-    basehead: `${baseOwner}:${default_branch}...${branchName}`
-  });
-  const changedFileNames = changedFiles?.map(file => file.filename);
+  const diffAgainstDefaultBranch = `${baseOwner}:${default_branch}...${branchName}`;
+  let changedFileNames;
+  try {
+    changedFileNames = await getDiff(pullRequest.base, pullRequest.head, diffAgainstDefaultBranch);
+  } catch (err) {
+    const message = diffErrorMessage(diffAgainstDefaultBranch, (err as GithubError).message);
+    core.error(message);
+    return { state: 'failure', message } as const;
+  }
+
   const changedFilesToIgnore = changedFileNames && ignore_globs ? micromatch(changedFileNames, ignore_globs.split(/[\n,]/)) : [];
   const filteredFileNames = changedFileNames?.filter(file => !changedFilesToIgnore.includes(file));
   const allProjectDirectories = paths?.split(/[\n,]/);
@@ -167,5 +232,8 @@ The following ${pathType} are outdated on branch ${branchName}
 
 ${paths.map(path => `* ${path}`).join('\n')}
 `;
+
+const diffErrorMessage = (basehead: string, message = '') =>
+  `Failed to generate diff for ${basehead}. Please verify SHAs are valid and try again.${message ? `\nError: ${message}` : ''}`;
 
 const buildSuccessMessage = (branchName: string) => `Branch ${branchName} is safe to merge!`;

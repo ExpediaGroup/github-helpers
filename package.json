@@ -19,7 +19,8 @@
     "lodash.samplesize": "4.2.0",
     "lodash.union": "4.6.0",
     "lodash.uniq": "4.5.0",
-    "micromatch": "4.0.8"
+    "micromatch": "4.0.8",
+    "simple-git": "3.27.0"
   },
   "devDependencies": {
     "@swc/jest": "0.2.37",
