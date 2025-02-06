@@ -14,6 +14,7 @@ limitations under the License.
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import * as core from '@actions/core';
+import { simpleGit } from 'simple-git';
 import { checkMergeSafety } from '../../src/helpers/check-merge-safety';
 import { octokit } from '../../src/octokit';
 import { setCommitStatus } from '../../src/helpers/set-commit-status';
@@ -23,8 +24,15 @@ const branchName = 'some-branch-name';
 const username = 'username';
 const baseOwner = 'owner';
 const defaultBranch = 'main';
+const baseRepoHtmlUrl = 'baseRepoHtmlUrl';
+const headRepoHtmlUrl = 'headRepoHtmlUrl';
+const baseSha = 'baseSha';
 const sha = 'sha';
 
+jest.mock('simple-git', () => {
+  const mockSimpleGit = { diff: jest.fn(), fetch: jest.fn() };
+  return { simpleGit: jest.fn(() => mockSimpleGit) };
+});
 jest.mock('../../src/utils/paginate-open-pull-requests');
 jest.mock('../../src/helpers/set-commit-status');
 jest.mock('@actions/core');
@@ -41,8 +49,8 @@ jest.mock('@actions/github', () => ({
       pulls: {
         get: jest.fn(() => ({
           data: {
-            base: { repo: { default_branch: defaultBranch, owner: { login: baseOwner } } },
-            head: { sha, ref: branchName, user: { login: username } }
+            base: { repo: { default_branch: defaultBranch, owner: { login: baseOwner }, html_url: baseRepoHtmlUrl }, sha: baseSha },
+            head: { sha, ref: branchName, user: { login: username }, repo: { html_url: headRepoHtmlUrl } }
           }
         }))
       }
@@ -50,21 +58,60 @@ jest.mock('@actions/github', () => ({
   }))
 }));
 
-const mockGithubRequests = (filesOutOfDate: string[], changedFilesOnPr: string[], branch = branchName) => {
+type MockGithubRequests = (
+  filesOutOfDate: string[],
+  changedFilesOnPr: string[],
+  branch?: string,
+  error?: { status: number; message?: string } | null
+) => void;
+const mockGithubRequests: MockGithubRequests = (filesOutOfDate, changedFilesOnPr, branch = branchName, error = null) => {
   (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
     const changedFiles = basehead === `${username}:${branch}...${baseOwner}:${defaultBranch}` ? filesOutOfDate : changedFilesOnPr;
-    return {
-      data: {
-        files: changedFiles.map(file => ({ filename: file }))
-      }
-    };
+    return error
+      ? error
+      : {
+          data: {
+            files: changedFiles.map(file => ({ filename: file }))
+          }
+        };
   });
+};
+
+type MockGitInteractions = Partial<Record<'diff' | 'fetch', number>>;
+const mockGitInteractions = (filesOutOfDate: string[], changedFilesOnPr: string[], whichCallToFail: MockGitInteractions = {}) => {
+  const diffHandler = (diffOptions = []) => {
+    const changedFiles = Array.isArray(diffOptions) && diffOptions[1] === 'sha' ? filesOutOfDate : changedFilesOnPr;
+    return changedFiles.join('\n');
+  };
+
+  const diff = simpleGit().diff as jest.Mock;
+  diff.mockImplementation(diffHandler);
+  if (typeof whichCallToFail.diff === 'number') {
+    Array(whichCallToFail.diff)
+      .fill(1)
+      .forEach((_, i, arr) =>
+        i === arr.length - 1 ? diff.mockRejectedValueOnce(new Error('mock diff error')) : diff.mockImplementationOnce(diffHandler)
+      );
+  }
+
+  const fetch = simpleGit().fetch as jest.Mock;
+  fetch.mockImplementation(() => 'new fetch value');
+  if (typeof whichCallToFail.fetch === 'number') {
+    Array(whichCallToFail.fetch)
+      .fill(1)
+      .forEach((_, i, arr) =>
+        i === arr.length - 1
+          ? fetch.mockRejectedValueOnce(new Error(`mock fetch error`))
+          : fetch.mockImplementationOnce(() => 'new fetch value')
+      );
+  }
 };
 
 const allProjectPaths = ['packages/package-1/', 'packages/package-2/', 'packages/package-3/'].join('\n');
 
 describe('checkMergeSafety', () => {
   beforeEach(async () => {
+    jest.clearAllMocks();
     (octokit.repos.getCombinedStatusForRef as unknown as jest.Mock).mockResolvedValue({
       data: { state: 'success', statuses: [] }
     });
@@ -87,6 +134,128 @@ describe('checkMergeSafety', () => {
       owner: 'owner'
     });
     expect(core.setFailed).toHaveBeenCalledWith('This branch has one or more outdated projects. Please update with main.');
+  });
+
+  it('should allow merge when branch is only out of date for an unchanged project - diff too large error', async () => {
+    const filesOutOfDate = ['packages/package-2/src/another-file.ts'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr, branchName, { status: 406 });
+    mockGitInteractions(filesOutOfDate, changedFilesOnPr);
+
+    await checkMergeSafety({
+      paths: allProjectPaths,
+      ...context.repo
+    });
+    expect(setCommitStatus).toHaveBeenCalledWith({
+      sha,
+      state: 'success',
+      context: 'Merge Safety',
+      description: 'Branch username:some-branch-name is safe to merge!',
+      repo: 'repo',
+      owner: 'owner'
+    });
+    expect(core.setFailed).not.toHaveBeenCalled();
+  });
+
+  it('should prevent merge when branch is out of date for a changed project - diff too large error', async () => {
+    const filesOutOfDate = ['packages/package-1/src/another-file.ts'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr, branchName, { status: 406 });
+    mockGitInteractions(filesOutOfDate, changedFilesOnPr);
+
+    await checkMergeSafety({
+      paths: allProjectPaths,
+      ...context.repo
+    });
+    expect(setCommitStatus).toHaveBeenCalledWith({
+      sha,
+      state: 'failure',
+      context: 'Merge Safety',
+      description: 'This branch has one or more outdated projects. Please update with main.',
+      repo: 'repo',
+      owner: 'owner'
+    });
+    expect(core.setFailed).toHaveBeenCalledWith('This branch has one or more outdated projects. Please update with main.');
+  });
+
+  it.each([
+    {
+      whichCallToFail: 1,
+      baseHead: 'username:some-branch-name...owner:main',
+      repoUrl: headRepoHtmlUrl
+    },
+    {
+      whichCallToFail: 2,
+      baseHead: 'owner:main...username:some-branch-name',
+      repoUrl: baseRepoHtmlUrl
+    }
+  ])('should prevent merge when diff fails - diff too large error', async ({ whichCallToFail, baseHead, repoUrl }) => {
+    const filesOutOfDate = ['packages/package-1/src/another-file.ts'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr, branchName, { status: 406 });
+    mockGitInteractions(filesOutOfDate, changedFilesOnPr, { diff: whichCallToFail });
+    const description = `Failed to generate diff for ${baseHead}. Please verify SHAs are valid and try again.\nError: Failed to run local git diff for ${repoUrl}: mock diff error`;
+
+    await checkMergeSafety({
+      paths: allProjectPaths,
+      ...context.repo
+    });
+    expect(setCommitStatus).toHaveBeenCalledWith({
+      sha,
+      state: 'failure',
+      context: 'Merge Safety',
+      description,
+      repo: 'repo',
+      owner: 'owner'
+    });
+    expect(core.setFailed).toHaveBeenCalledWith(description);
+  });
+
+  it.each([
+    {
+      whichCallToFail: 1,
+      baseHead: 'username:some-branch-name...owner:main',
+      targetSha: sha,
+      repoUrl: headRepoHtmlUrl
+    },
+    {
+      whichCallToFail: 2,
+      baseHead: 'username:some-branch-name...owner:main',
+      targetSha: baseSha,
+      repoUrl: headRepoHtmlUrl
+    },
+    {
+      whichCallToFail: 3,
+      baseHead: 'owner:main...username:some-branch-name',
+      targetSha: baseSha,
+      repoUrl: baseRepoHtmlUrl
+    },
+    {
+      whichCallToFail: 4,
+      baseHead: 'owner:main...username:some-branch-name',
+      targetSha: sha,
+      repoUrl: baseRepoHtmlUrl
+    }
+  ])('should prevent merge when fetch fails - diff too large error', async ({ whichCallToFail, baseHead, targetSha, repoUrl }) => {
+    const filesOutOfDate = ['packages/package-1/src/another-file.ts'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr, branchName, { status: 406 });
+    mockGitInteractions(filesOutOfDate, changedFilesOnPr, { fetch: whichCallToFail });
+    const description = `Failed to generate diff for ${baseHead}. Please verify SHAs are valid and try again.\nError: Failed to fetch ${targetSha} from ${repoUrl}: mock fetch error`;
+
+    await checkMergeSafety({
+      paths: allProjectPaths,
+      ...context.repo
+    });
+    expect(setCommitStatus).toHaveBeenCalledWith({
+      sha,
+      state: 'failure',
+      context: 'Merge Safety',
+      description,
+      repo: 'repo',
+      owner: 'owner'
+    });
+    expect(core.setFailed).toHaveBeenCalledWith(description);
   });
 
   it('should allow merge when branch is only out of date for an unchanged project', async () => {
