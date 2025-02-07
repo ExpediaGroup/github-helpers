@@ -33,29 +33,37 @@ export const deleteStaleBranches = async ({ days = '30' }: DeleteStaleBranches =
   const featureBranchesWithNoOpenPullRequest = unprotectedBranches.filter(
     ({ name }) => !openPullRequestBranches.has(name) && name !== defaultBranch
   );
-  const branchesWithUpdatedDates = await map(featureBranchesWithNoOpenPullRequest, async ({ name, commit: { sha } }) => {
-    const {
-      data: {
-        committer: { date }
-      }
-    } = await octokit.git.getCommit({
-      commit_sha: sha,
-      ...context.repo
-    });
-    return {
-      name,
-      date
-    };
-  });
+  const branchesWithUpdatedDates = await map(
+    featureBranchesWithNoOpenPullRequest,
+    async ({ name, commit: { sha } }) => {
+      const {
+        data: {
+          committer: { date }
+        }
+      } = await octokit.git.getCommit({
+        commit_sha: sha,
+        ...context.repo
+      });
+      return {
+        name,
+        date
+      };
+    },
+    { concurrency: 10 }
+  );
 
   const branchesToDelete = branchesWithUpdatedDates.filter(({ date }) => branchIsTooOld(date, days)).map(({ name }) => name);
-  await map(branchesToDelete, async branch => {
-    core.info(`Deleting branch ${branch}...`);
-    await octokit.git.deleteRef({
-      ref: `heads/${branch}`,
-      ...context.repo
-    });
-  });
+  await map(
+    branchesToDelete,
+    async branch => {
+      core.info(`Deleting branch ${branch}...`);
+      await octokit.git.deleteRef({
+        ref: `heads/${branch}`,
+        ...context.repo
+      });
+    },
+    { concurrency: 10 }
+  );
 };
 
 const branchIsTooOld = (dateLastUpdated: string, daysThreshold: string) => {
