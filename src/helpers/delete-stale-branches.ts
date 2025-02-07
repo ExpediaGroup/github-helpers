@@ -49,13 +49,17 @@ export const deleteStaleBranches = async ({ days = '30' }: DeleteStaleBranches =
   });
 
   const branchesToDelete = branchesWithUpdatedDates.filter(({ date }) => branchIsTooOld(date, days)).map(({ name }) => name);
-  await map(branchesToDelete, async branch => {
-    core.info(`Deleting branch ${branch}...`);
-    await octokit.git.deleteRef({
-      ref: `heads/${branch}`,
-      ...context.repo
-    });
-  });
+  await map(
+    branchesToDelete,
+    async branch => {
+      core.info(`Deleting branch ${branch}...`);
+      await octokit.git.deleteRef({
+        ref: `heads/${branch}`,
+        ...context.repo
+      });
+    },
+    { concurrency: 1 }
+  );
 };
 
 const branchIsTooOld = (dateLastUpdated: string, daysThreshold: string) => {

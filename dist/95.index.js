@@ -153,7 +153,7 @@ const deleteStaleBranches = async ({ days = '30' } = {}) => {
             ref: `heads/${branch}`,
             ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo
         });
-    });
+    }, { concurrency: 1 });
 };
 const branchIsTooOld = (dateLastUpdated, daysThreshold) => {
     const lastUpdated = new Date(dateLastUpdated);
