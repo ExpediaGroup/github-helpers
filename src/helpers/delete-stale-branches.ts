@@ -49,7 +49,7 @@ export const deleteStaleBranches = async ({ days = '30' }: DeleteStaleBranches =
         date
       };
     },
-    { concurrency: 10 }
+    { concurrency: 5 }
   );
 
   const branchesToDelete = branchesWithUpdatedDates.filter(({ date }) => branchIsTooOld(date, days)).map(({ name }) => name);
@@ -62,7 +62,7 @@ export const deleteStaleBranches = async ({ days = '30' }: DeleteStaleBranches =
         ...context.repo
       });
     },
-    { concurrency: 10 }
+    { concurrency: 5 }
   );
 };
 
