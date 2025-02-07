@@ -145,7 +145,7 @@ const deleteStaleBranches = async ({ days = '30' } = {}) => {
             name,
             date
         };
-    });
+    }, { concurrency: 10 });
     const branchesToDelete = branchesWithUpdatedDates.filter(({ date }) => branchIsTooOld(date, days)).map(({ name }) => name);
     await (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(branchesToDelete, async (branch) => {
         _actions_core__WEBPACK_IMPORTED_MODULE_1__.info(`Deleting branch ${branch}...`);
@@ -153,7 +153,7 @@ const deleteStaleBranches = async ({ days = '30' } = {}) => {
             ref: `heads/${branch}`,
             ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo
         });
-    }, { concurrency: 1 });
+    }, { concurrency: 10 });
 };
 const branchIsTooOld = (dateLastUpdated, daysThreshold) => {
     const lastUpdated = new Date(dateLastUpdated);

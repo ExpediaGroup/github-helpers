@@ -33,20 +33,24 @@ export const deleteStaleBranches = async ({ days = '30' }: DeleteStaleBranches =
   const featureBranchesWithNoOpenPullRequest = unprotectedBranches.filter(
     ({ name }) => !openPullRequestBranches.has(name) && name !== defaultBranch
   );
-  const branchesWithUpdatedDates = await map(featureBranchesWithNoOpenPullRequest, async ({ name, commit: { sha } }) => {
-    const {
-      data: {
-        committer: { date }
-      }
-    } = await octokit.git.getCommit({
-      commit_sha: sha,
-      ...context.repo
-    });
-    return {
-      name,
-      date
-    };
-  });
+  const branchesWithUpdatedDates = await map(
+    featureBranchesWithNoOpenPullRequest,
+    async ({ name, commit: { sha } }) => {
+      const {
+        data: {
+          committer: { date }
+        }
+      } = await octokit.git.getCommit({
+        commit_sha: sha,
+        ...context.repo
+      });
+      return {
+        name,
+        date
+      };
+    },
+    { concurrency: 10 }
+  );
 
   const branchesToDelete = branchesWithUpdatedDates.filter(({ date }) => branchIsTooOld(date, days)).map(({ name }) => name);
   await map(
@@ -58,7 +62,7 @@ export const deleteStaleBranches = async ({ days = '30' }: DeleteStaleBranches =
         ...context.repo
       });
     },
-    { concurrency: 1 }
+    { concurrency: 10 }
   );
 };
 
