@@ -1,6 +1,6 @@
 {
   "name": "github-helpers",
-  "packageManager": "bun@1.1.8",
+  "packageManager": "bun@1.2.2",
   "main": "src/main.ts",
   "type": "module",
   "private": true,
