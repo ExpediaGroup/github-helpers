@@ -218,9 +218,9 @@ exports.getOctokitOptions = exports.GitHub = exports.defaults = exports.context 
 const Context = __importStar(__webpack_require__(1648));
 const Utils = __importStar(__webpack_require__(5156));
 // octokit + plugins
-const core_1 = __webpack_require__(8452);
-const plugin_rest_endpoint_methods_1 = __webpack_require__(5726);
-const plugin_paginate_rest_1 = __webpack_require__(7731);
+const core_1 = __webpack_require__(1897);
+const plugin_rest_endpoint_methods_1 = __webpack_require__(4935);
+const plugin_paginate_rest_1 = __webpack_require__(8082);
 exports.context = new Context.Context();
 const baseUrl = Utils.getApiBaseUrl();
 exports.defaults = {
@@ -251,7 +251,263 @@ exports.getOctokitOptions = getOctokitOptions;
 
 /***/ }),
 
-/***/ 2057:
+/***/ 1806:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+
+const AbortController = __webpack_require__(7413);
+const fetch = __webpack_require__(6705);
+const {FetchError} = fetch;
+
+function getTimeRemaining(retryOptions) {
+    if (retryOptions && retryOptions.startTime && retryOptions.retryMaxDuration) {
+        const millisEllapsed = Date.now() - retryOptions.startTime;        
+        const remaining = retryOptions.retryMaxDuration - millisEllapsed;
+        return Math.max(0, remaining);
+    } else {
+        return Infinity;
+    }
+}
+
+/**
+ * Have we exceeded the max duration for this fetch operation?
+ * @param {*} retryOptions Options including retryMaxDuration and startTime
+ * @returns True if we have a max duration set and it is exceeded, otherwise false
+ */
+function isResponseTimedOut(retryOptions) {
+    return getTimeRemaining(retryOptions) <= 0;
+}
+
+/**
+ * shouldRetry
+ * @param {RetryOptions} retryOptions whether or not to retry on all http error codes or just >500
+ * @param {Object} error error object if the fetch request returned an error
+ * @param {Object} response fetch call response
+ * @param {Number} wait Amount of time we will wait before retrying next
+ * @returns {Promise<Boolean>} whether or not to retry the request
+ */
+async function shouldRetry(retryOptions, error, response, waitTime) {
+    if (getTimeRemaining(retryOptions) < waitTime) {
+        return false;
+    } else if (retryOptions && retryOptions.retryOnHttpError && error != null) {
+        // retryOnHttpError can be sync or async because either the promise or result will be
+        // bubbled up to what shouldRetry returns
+        return retryOptions.retryOnHttpError(error);
+    } else if (retryOptions && retryOptions.retryOnHttpResponse) {
+        // retryOnHttpResponse can be sync or async because either the promise or result will be
+        // bubbled up to what shouldRetry returns
+        return retryOptions.retryOnHttpResponse(response);
+    } else {
+        return false;
+    }
+}
+
+/**
+ * Retry Init to set up retry options used in `fetch-retry`
+ * @param {Options} options object containing fetch options and retry options
+ * @returns {RetryOptions|Boolean} object containing specific attributes for retries or `false` if no retries should be performed
+ */
+function retryInit(options={}) {
+    if (options.retryOptions !== false) {
+        const retryOptions = options.retryOptions || {};
+        checkParameters(retryOptions);
+
+        // default settings (environment variables available to help unit testing)
+        const DEFAULT_MAX_RETRY = parseInt(process.env.NODE_FETCH_RETRY_MAX_RETRY) || 60000;
+        const DEFAULT_INITIAL_WAIT = parseInt(process.env.NODE_FETCH_RETRY_INITIAL_WAIT) || 100;
+        const DEFAULT_BACKOFF = parseInt(process.env.NODE_FETCH_RETRY_BACKOFF) || 2.0;
+        const DEFAULT_SOCKET_TIMEOUT = parseInt(process.env.NODE_FETCH_RETRY_SOCKET_TIMEOUT) || 30000;
+        const DEFAULT_FORCE_TIMEOUT = process.env.NODE_FETCH_RETRY_FORCE_TIMEOUT || false;
+
+        let retryMaxDuration = retryOptions.retryMaxDuration || DEFAULT_MAX_RETRY;
+        // take into account action timeout if running in the context of an OpenWhisk action
+        const timeTillActionTimeout = process.env.__OW_ACTION_DEADLINE && ( process.env.__OW_ACTION_DEADLINE - Date.now()); // duration until action timeout
+        if (timeTillActionTimeout && (retryMaxDuration > timeTillActionTimeout) ) {
+            retryMaxDuration = timeTillActionTimeout;
+        }
+        let socketTimeoutValue = retryOptions.socketTimeout || DEFAULT_SOCKET_TIMEOUT;
+        if (socketTimeoutValue >= retryMaxDuration) {
+            socketTimeoutValue = retryMaxDuration * 0.5; // make socket timeout half of retryMaxDuration to force at least one retry
+        }
+        if ((retryOptions.forceSocketTimeout || (DEFAULT_FORCE_TIMEOUT === 'true') || DEFAULT_FORCE_TIMEOUT === true)) { // for unit test only - test also for boolean type
+            // force the use of set timeout, do not ignore if larger than retryMaxDuration
+            console.log('Forced to use socket timeout of (ms):', retryOptions.socketTimeout);
+            socketTimeoutValue = retryOptions.socketTimeout;
+        }
+
+        return {
+            startTime: Date.now(),
+            retryMaxDuration: retryMaxDuration,
+            retryInitialDelay: retryOptions.retryInitialDelay || DEFAULT_INITIAL_WAIT,
+            retryBackoff: retryOptions.retryBackoff || DEFAULT_BACKOFF,
+            retryOnHttpResponse: ((typeof retryOptions.retryOnHttpResponse === 'function') && retryOptions.retryOnHttpResponse) ||
+                ((response) => { return response.status >= 500; }),
+            retryOnHttpError: ((typeof retryOptions.retryOnHttpError === 'function') && retryOptions.retryOnHttpError) ||
+                ((error) => { return shouldRetryOnHttpError(error); }),
+            socketTimeout: socketTimeoutValue
+        };
+    }
+    return false;
+}
+
+/**
+ * Calculate the retry delay
+ *
+ * @param {RetryOptions|Boolean} retryOptions Retry options
+ * @param {Boolean} [random=true] Add randomness
+ */
+function getRetryDelay(retryOptions, random = true) {
+    return retryOptions.retryInitialDelay +
+        (random ? Math.floor(Math.random() * 100) : 99);
+}
+
+/**
+ * Check parameters
+ * @param {RetryOptions} retryOptions
+ * @returns an Error if a parameter is malformed or nothing
+ */
+
+function checkParameters(retryOptions) {
+    if (retryOptions.retryMaxDuration && !(Number.isInteger(retryOptions.retryMaxDuration) && retryOptions.retryMaxDuration >= 0)) {
+        throw new Error('`retryMaxDuration` must not be a negative integer');
+    }
+    if (retryOptions.retryInitialDelay && !(Number.isInteger(retryOptions.retryInitialDelay) && retryOptions.retryInitialDelay >= 0)) {
+        throw new Error('`retryInitialDelay` must not be a negative integer');
+    }
+    if (retryOptions.retryOnHttpResponse && !(typeof retryOptions.retryOnHttpResponse === 'function')) {
+        throw new Error(`'retryOnHttpResponse' must be a function: ${retryOptions.retryOnHttpResponse}`);
+    }
+    if (retryOptions.retryOnHttpError && !(typeof retryOptions.retryOnHttpError === 'function')) {
+        throw new Error(`'retryOnHttpError' must be a function: ${retryOptions.retryOnHttpError}`);
+    }
+    if (typeof retryOptions.retryBackoff !== 'undefined'
+        && !(Number.isInteger(retryOptions.retryBackoff) && retryOptions.retryBackoff >= 1.0)) {
+        throw new Error('`retryBackoff` must be a positive integer >= 1');
+    }
+    if (retryOptions.socketTimeout && !(Number.isInteger(retryOptions.socketTimeout) && retryOptions.socketTimeout >= 0)) {
+        throw new Error('`socketTimeout` must not be a negative integer');
+    }
+}
+
+/**
+ * Evaluates whether or not to retry based on HTTP error
+ * @param {Object} error 
+ * @returns Returns true for all FetchError's of type `system`
+ */
+function shouldRetryOnHttpError(error) {
+    // special handling for known fetch errors: https://github.com/node-fetch/node-fetch/blob/main/docs/ERROR-HANDLING.md
+    // retry on all errors originating from Node.js core
+    // retry on AbortError caused by network timeouts
+    if (error.name === 'FetchError' && error.type === 'system') {
+        console.error(`FetchError failed with code: ${error.code}; message: ${error.message}`);
+        return true;
+    } else if (error.name === 'AbortError') {
+        console.error(`AbortError failed with type: ${error.type}; message: ${error.message}`);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * @typedef {Object} RetryOptions options for retry or false if want to disable retry
+ * @property {Integer} retryMaxDuration time (in milliseconds) to retry until throwing an error
+ * @property {Integer} retryInitialDelay time to wait between retries in milliseconds
+ * @property {Function} retryOnHttpResponse a function determining whether to retry on a specific HTTP code
+ * @property {Function} retryOnHttpError a function determining whether to retry on a specific HTTP error
+ * @property {Integer} retryBackoff backoff factor for wait time between retries (defaults to 2.0)
+ * @property {Integer} socketTimeout Optional socket timeout in milliseconds (defaults to 60000ms)
+ * @property {Boolean} forceSocketTimeout If true, socket timeout will be forced to use `socketTimeout` property declared (defaults to false)
+ */
+/**
+ * @typedef {Function} retryOnHttpResponse determines whether to do a retry on the response
+ * @property {Number} response response from the http fetch call
+ * @returns {Boolean} true if want to retry on this response, false if do not want to retry on the response
+ */
+/**
+ * @typedef {Function} retryOnHttpError determines whether to do a retry on the HTTP error response
+ * @property {Object} error error thrown during the fetch request
+ * @returns {Boolean} true if want to retry on this error, false if do not want to retry on the response
+ */
+/**
+ * @typedef {Object} Options options for fetch-retry
+ * @property {Object} RetryOptions options for retry or false if want to disable retry
+ * ... other options for fetch call (method, headers, etc...)
+ */
+/**
+ * Fetch retry that wraps around `node-fetch` library
+ * @param {String} url request url
+ * @param {Options} options options for fetch request (e.g. headers, RetryOptions for retries or `false` if no do not want to perform retries)
+ * @returns {Object} json response of calling fetch 
+ */
+module.exports = async function (url, options) {
+    options = options || {};
+    const retryOptions = retryInit(options); // set up retry options or set to default settings if not set
+    delete options.retryOptions; // remove retry options from options passed to actual fetch
+    let attempt = 0;
+
+    return new Promise(function (resolve, reject) {
+        const wrappedFetch = async () => {
+            while (!isResponseTimedOut(retryOptions)) {
+                ++attempt;
+                const waitTime = getRetryDelay(retryOptions);
+
+                let timeoutHandler;
+                if (retryOptions.socketTimeout) {
+                    const controller = new AbortController();
+                    timeoutHandler = setTimeout(() => controller.abort(), retryOptions.socketTimeout);
+                    options.signal = controller.signal;
+                }                
+    
+                try {
+                    const response = await fetch(url, options);
+
+                    if (await shouldRetry(retryOptions, null, response, waitTime)) {
+                        console.error(`Retrying in ${waitTime} milliseconds, attempt ${attempt} failed (status ${response.status}): ${response.statusText}`);
+                    } else {
+                        // response.timeout should reflect the actual timeout
+                        response.timeout = retryOptions.socketTimeout;
+                        return resolve(response);
+                    }
+                } catch (error) {
+                    if (!(await shouldRetry(retryOptions, error, null, waitTime))) {
+                        if (error.name === 'AbortError') {
+                            return reject(new FetchError(`network timeout at ${url}`, 'request-timeout'));
+                        } else {
+                            return reject(error);
+                        }
+                    }
+                    console.error(`Retrying in ${waitTime} milliseconds, attempt ${attempt} error: ${error.name}, ${error.message}`);
+                } finally {
+                    clearTimeout(timeoutHandler);
+                }
+                // Fetch loop is about to repeat, delay as needed first.
+                if (waitTime > 0) {
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                }
+                retryOptions.retryInitialDelay *= retryOptions.retryBackoff; // update retry interval
+            }
+            reject(new FetchError(`network timeout at ${url}`, 'request-timeout'));
+        };
+        wrappedFetch();
+    });
+};
+
+
+/***/ }),
+
+/***/ 7864:
 /***/ ((module) => {
 
 
@@ -335,7 +591,7 @@ var createTokenAuth = function createTokenAuth2(token) {
 
 /***/ }),
 
-/***/ 8452:
+/***/ 1897:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 
@@ -363,11 +619,11 @@ __export(dist_src_exports, {
   Octokit: () => Octokit
 });
 module.exports = __toCommonJS(dist_src_exports);
-var import_universal_user_agent = __webpack_require__(7900);
-var import_before_after_hook = __webpack_require__(5029);
-var import_request = __webpack_require__(8576);
-var import_graphql = __webpack_require__(5448);
-var import_auth_token = __webpack_require__(2057);
+var import_universal_user_agent = __webpack_require__(3843);
+var import_before_after_hook = __webpack_require__(2732);
+var import_request = __webpack_require__(8636);
+var import_graphql = __webpack_require__(7);
+var import_auth_token = __webpack_require__(7864);
 
 // pkg/dist-src/version.js
 var VERSION = "5.2.0";
@@ -503,7 +759,7 @@ var Octokit = class {
 
 /***/ }),
 
-/***/ 4806:
+/***/ 4471:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 
@@ -533,7 +789,7 @@ __export(dist_src_exports, {
 module.exports = __toCommonJS(dist_src_exports);
 
 // pkg/dist-src/defaults.js
-var import_universal_user_agent = __webpack_require__(7900);
+var import_universal_user_agent = __webpack_require__(3843);
 
 // pkg/dist-src/version.js
 var VERSION = "9.0.5";
@@ -886,7 +1142,7 @@ var endpoint = withDefaults(null, DEFAULTS);
 
 /***/ }),
 
-/***/ 5448:
+/***/ 7:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 
@@ -916,17 +1172,17 @@ __export(dist_src_exports, {
   withCustomRequest: () => withCustomRequest
 });
 module.exports = __toCommonJS(dist_src_exports);
-var import_request3 = __webpack_require__(8576);
-var import_universal_user_agent = __webpack_require__(7900);
+var import_request3 = __webpack_require__(8636);
+var import_universal_user_agent = __webpack_require__(3843);
 
 // pkg/dist-src/version.js
 var VERSION = "7.1.0";
 
 // pkg/dist-src/with-defaults.js
-var import_request2 = __webpack_require__(8576);
+var import_request2 = __webpack_require__(8636);
 
 // pkg/dist-src/graphql.js
-var import_request = __webpack_require__(8576);
+var import_request = __webpack_require__(8636);
 
 // pkg/dist-src/error.js
 function _buildMessageForResponseErrors(data) {
@@ -1043,7 +1299,7 @@ function withCustomRequest(customRequest) {
 
 /***/ }),
 
-/***/ 7731:
+/***/ 8082:
 /***/ ((module) => {
 
 
@@ -1443,7 +1699,7 @@ paginateRest.VERSION = VERSION;
 
 /***/ }),
 
-/***/ 5726:
+/***/ 4935:
 /***/ ((module) => {
 
 
@@ -3612,7 +3868,7 @@ legacyRestEndpointMethods.VERSION = VERSION;
 
 /***/ }),
 
-/***/ 7651:
+/***/ 3708:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 
@@ -3709,7 +3965,7 @@ var RequestError = class extends Error {
 
 /***/ }),
 
-/***/ 8576:
+/***/ 8636:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 
@@ -3737,8 +3993,8 @@ __export(dist_src_exports, {
   request: () => request
 });
 module.exports = __toCommonJS(dist_src_exports);
-var import_endpoint = __webpack_require__(4806);
-var import_universal_user_agent = __webpack_require__(7900);
+var import_endpoint = __webpack_require__(4471);
+var import_universal_user_agent = __webpack_require__(3843);
 
 // pkg/dist-src/version.js
 var VERSION = "8.4.0";
@@ -3757,7 +4013,7 @@ function isPlainObject(value) {
 }
 
 // pkg/dist-src/fetch-wrapper.js
-var import_request_error = __webpack_require__(7651);
+var import_request_error = __webpack_require__(3708);
 
 // pkg/dist-src/get-buffer-response.js
 function getBufferResponse(response) {
@@ -3938,468 +4194,6 @@ var request = withDefaults(import_endpoint.endpoint, {
 
 /***/ }),
 
-/***/ 5029:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-var register = __webpack_require__(604);
-var addHook = __webpack_require__(8878);
-var removeHook = __webpack_require__(9357);
-
-// bind with array of arguments: https://stackoverflow.com/a/21792913
-var bind = Function.bind;
-var bindable = bind.bind(bind);
-
-function bindApi(hook, state, name) {
-  var removeHookRef = bindable(removeHook, null).apply(
-    null,
-    name ? [state, name] : [state]
-  );
-  hook.api = { remove: removeHookRef };
-  hook.remove = removeHookRef;
-  ["before", "error", "after", "wrap"].forEach(function (kind) {
-    var args = name ? [state, kind, name] : [state, kind];
-    hook[kind] = hook.api[kind] = bindable(addHook, null).apply(null, args);
-  });
-}
-
-function HookSingular() {
-  var singularHookName = "h";
-  var singularHookState = {
-    registry: {},
-  };
-  var singularHook = register.bind(null, singularHookState, singularHookName);
-  bindApi(singularHook, singularHookState, singularHookName);
-  return singularHook;
-}
-
-function HookCollection() {
-  var state = {
-    registry: {},
-  };
-
-  var hook = register.bind(null, state);
-  bindApi(hook, state);
-
-  return hook;
-}
-
-var collectionHookDeprecationMessageDisplayed = false;
-function Hook() {
-  if (!collectionHookDeprecationMessageDisplayed) {
-    console.warn(
-      '[before-after-hook]: "Hook()" repurposing warning, use "Hook.Collection()". Read more: https://git.io/upgrade-before-after-hook-to-1.4'
-    );
-    collectionHookDeprecationMessageDisplayed = true;
-  }
-  return HookCollection();
-}
-
-Hook.Singular = HookSingular.bind();
-Hook.Collection = HookCollection.bind();
-
-module.exports = Hook;
-// expose constructors as a named property for TypeScript
-module.exports.Hook = Hook;
-module.exports.Singular = Hook.Singular;
-module.exports.Collection = Hook.Collection;
-
-
-/***/ }),
-
-/***/ 8878:
-/***/ ((module) => {
-
-module.exports = addHook;
-
-function addHook(state, kind, name, hook) {
-  var orig = hook;
-  if (!state.registry[name]) {
-    state.registry[name] = [];
-  }
-
-  if (kind === "before") {
-    hook = function (method, options) {
-      return Promise.resolve()
-        .then(orig.bind(null, options))
-        .then(method.bind(null, options));
-    };
-  }
-
-  if (kind === "after") {
-    hook = function (method, options) {
-      var result;
-      return Promise.resolve()
-        .then(method.bind(null, options))
-        .then(function (result_) {
-          result = result_;
-          return orig(result, options);
-        })
-        .then(function () {
-          return result;
-        });
-    };
-  }
-
-  if (kind === "error") {
-    hook = function (method, options) {
-      return Promise.resolve()
-        .then(method.bind(null, options))
-        .catch(function (error) {
-          return orig(error, options);
-        });
-    };
-  }
-
-  state.registry[name].push({
-    hook: hook,
-    orig: orig,
-  });
-}
-
-
-/***/ }),
-
-/***/ 604:
-/***/ ((module) => {
-
-module.exports = register;
-
-function register(state, name, method, options) {
-  if (typeof method !== "function") {
-    throw new Error("method for before hook must be a function");
-  }
-
-  if (!options) {
-    options = {};
-  }
-
-  if (Array.isArray(name)) {
-    return name.reverse().reduce(function (callback, name) {
-      return register.bind(null, state, name, callback, options);
-    }, method)();
-  }
-
-  return Promise.resolve().then(function () {
-    if (!state.registry[name]) {
-      return method(options);
-    }
-
-    return state.registry[name].reduce(function (method, registered) {
-      return registered.hook.bind(null, method, options);
-    }, method)();
-  });
-}
-
-
-/***/ }),
-
-/***/ 9357:
-/***/ ((module) => {
-
-module.exports = removeHook;
-
-function removeHook(state, name, method) {
-  if (!state.registry[name]) {
-    return;
-  }
-
-  var index = state.registry[name]
-    .map(function (registered) {
-      return registered.orig;
-    })
-    .indexOf(method);
-
-  if (index === -1) {
-    return;
-  }
-
-  state.registry[name].splice(index, 1);
-}
-
-
-/***/ }),
-
-/***/ 7900:
-/***/ ((__unused_webpack_module, exports) => {
-
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-
-function getUserAgent() {
-  if (typeof navigator === "object" && "userAgent" in navigator) {
-    return navigator.userAgent;
-  }
-
-  if (typeof process === "object" && process.version !== undefined) {
-    return `Node.js/${process.version.substr(1)} (${process.platform}; ${process.arch})`;
-  }
-
-  return "<environment undetectable>";
-}
-
-exports.getUserAgent = getUserAgent;
-//# sourceMappingURL=index.js.map
-
-
-/***/ }),
-
-/***/ 1806:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-/*
- * Copyright 2020 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
-
-
-const AbortController = __webpack_require__(7413);
-const fetch = __webpack_require__(6705);
-const {FetchError} = fetch;
-
-function getTimeRemaining(retryOptions) {
-    if (retryOptions && retryOptions.startTime && retryOptions.retryMaxDuration) {
-        const millisEllapsed = Date.now() - retryOptions.startTime;        
-        const remaining = retryOptions.retryMaxDuration - millisEllapsed;
-        return Math.max(0, remaining);
-    } else {
-        return Infinity;
-    }
-}
-
-/**
- * Have we exceeded the max duration for this fetch operation?
- * @param {*} retryOptions Options including retryMaxDuration and startTime
- * @returns True if we have a max duration set and it is exceeded, otherwise false
- */
-function isResponseTimedOut(retryOptions) {
-    return getTimeRemaining(retryOptions) <= 0;
-}
-
-/**
- * shouldRetry
- * @param {RetryOptions} retryOptions whether or not to retry on all http error codes or just >500
- * @param {Object} error error object if the fetch request returned an error
- * @param {Object} response fetch call response
- * @param {Number} wait Amount of time we will wait before retrying next
- * @returns {Promise<Boolean>} whether or not to retry the request
- */
-async function shouldRetry(retryOptions, error, response, waitTime) {
-    if (getTimeRemaining(retryOptions) < waitTime) {
-        return false;
-    } else if (retryOptions && retryOptions.retryOnHttpError && error != null) {
-        // retryOnHttpError can be sync or async because either the promise or result will be
-        // bubbled up to what shouldRetry returns
-        return retryOptions.retryOnHttpError(error);
-    } else if (retryOptions && retryOptions.retryOnHttpResponse) {
-        // retryOnHttpResponse can be sync or async because either the promise or result will be
-        // bubbled up to what shouldRetry returns
-        return retryOptions.retryOnHttpResponse(response);
-    } else {
-        return false;
-    }
-}
-
-/**
- * Retry Init to set up retry options used in `fetch-retry`
- * @param {Options} options object containing fetch options and retry options
- * @returns {RetryOptions|Boolean} object containing specific attributes for retries or `false` if no retries should be performed
- */
-function retryInit(options={}) {
-    if (options.retryOptions !== false) {
-        const retryOptions = options.retryOptions || {};
-        checkParameters(retryOptions);
-
-        // default settings (environment variables available to help unit testing)
-        const DEFAULT_MAX_RETRY = parseInt(process.env.NODE_FETCH_RETRY_MAX_RETRY) || 60000;
-        const DEFAULT_INITIAL_WAIT = parseInt(process.env.NODE_FETCH_RETRY_INITIAL_WAIT) || 100;
-        const DEFAULT_BACKOFF = parseInt(process.env.NODE_FETCH_RETRY_BACKOFF) || 2.0;
-        const DEFAULT_SOCKET_TIMEOUT = parseInt(process.env.NODE_FETCH_RETRY_SOCKET_TIMEOUT) || 30000;
-        const DEFAULT_FORCE_TIMEOUT = process.env.NODE_FETCH_RETRY_FORCE_TIMEOUT || false;
-
-        let retryMaxDuration = retryOptions.retryMaxDuration || DEFAULT_MAX_RETRY;
-        // take into account action timeout if running in the context of an OpenWhisk action
-        const timeTillActionTimeout = process.env.__OW_ACTION_DEADLINE && ( process.env.__OW_ACTION_DEADLINE - Date.now()); // duration until action timeout
-        if (timeTillActionTimeout && (retryMaxDuration > timeTillActionTimeout) ) {
-            retryMaxDuration = timeTillActionTimeout;
-        }
-        let socketTimeoutValue = retryOptions.socketTimeout || DEFAULT_SOCKET_TIMEOUT;
-        if (socketTimeoutValue >= retryMaxDuration) {
-            socketTimeoutValue = retryMaxDuration * 0.5; // make socket timeout half of retryMaxDuration to force at least one retry
-        }
-        if ((retryOptions.forceSocketTimeout || (DEFAULT_FORCE_TIMEOUT === 'true') || DEFAULT_FORCE_TIMEOUT === true)) { // for unit test only - test also for boolean type
-            // force the use of set timeout, do not ignore if larger than retryMaxDuration
-            console.log('Forced to use socket timeout of (ms):', retryOptions.socketTimeout);
-            socketTimeoutValue = retryOptions.socketTimeout;
-        }
-
-        return {
-            startTime: Date.now(),
-            retryMaxDuration: retryMaxDuration,
-            retryInitialDelay: retryOptions.retryInitialDelay || DEFAULT_INITIAL_WAIT,
-            retryBackoff: retryOptions.retryBackoff || DEFAULT_BACKOFF,
-            retryOnHttpResponse: ((typeof retryOptions.retryOnHttpResponse === 'function') && retryOptions.retryOnHttpResponse) ||
-                ((response) => { return response.status >= 500; }),
-            retryOnHttpError: ((typeof retryOptions.retryOnHttpError === 'function') && retryOptions.retryOnHttpError) ||
-                ((error) => { return shouldRetryOnHttpError(error); }),
-            socketTimeout: socketTimeoutValue
-        };
-    }
-    return false;
-}
-
-/**
- * Calculate the retry delay
- *
- * @param {RetryOptions|Boolean} retryOptions Retry options
- * @param {Boolean} [random=true] Add randomness
- */
-function getRetryDelay(retryOptions, random = true) {
-    return retryOptions.retryInitialDelay +
-        (random ? Math.floor(Math.random() * 100) : 99);
-}
-
-/**
- * Check parameters
- * @param {RetryOptions} retryOptions
- * @returns an Error if a parameter is malformed or nothing
- */
-
-function checkParameters(retryOptions) {
-    if (retryOptions.retryMaxDuration && !(Number.isInteger(retryOptions.retryMaxDuration) && retryOptions.retryMaxDuration >= 0)) {
-        throw new Error('`retryMaxDuration` must not be a negative integer');
-    }
-    if (retryOptions.retryInitialDelay && !(Number.isInteger(retryOptions.retryInitialDelay) && retryOptions.retryInitialDelay >= 0)) {
-        throw new Error('`retryInitialDelay` must not be a negative integer');
-    }
-    if (retryOptions.retryOnHttpResponse && !(typeof retryOptions.retryOnHttpResponse === 'function')) {
-        throw new Error(`'retryOnHttpResponse' must be a function: ${retryOptions.retryOnHttpResponse}`);
-    }
-    if (retryOptions.retryOnHttpError && !(typeof retryOptions.retryOnHttpError === 'function')) {
-        throw new Error(`'retryOnHttpError' must be a function: ${retryOptions.retryOnHttpError}`);
-    }
-    if (typeof retryOptions.retryBackoff !== 'undefined'
-        && !(Number.isInteger(retryOptions.retryBackoff) && retryOptions.retryBackoff >= 1.0)) {
-        throw new Error('`retryBackoff` must be a positive integer >= 1');
-    }
-    if (retryOptions.socketTimeout && !(Number.isInteger(retryOptions.socketTimeout) && retryOptions.socketTimeout >= 0)) {
-        throw new Error('`socketTimeout` must not be a negative integer');
-    }
-}
-
-/**
- * Evaluates whether or not to retry based on HTTP error
- * @param {Object} error 
- * @returns Returns true for all FetchError's of type `system`
- */
-function shouldRetryOnHttpError(error) {
-    // special handling for known fetch errors: https://github.com/node-fetch/node-fetch/blob/main/docs/ERROR-HANDLING.md
-    // retry on all errors originating from Node.js core
-    // retry on AbortError caused by network timeouts
-    if (error.name === 'FetchError' && error.type === 'system') {
-        console.error(`FetchError failed with code: ${error.code}; message: ${error.message}`);
-        return true;
-    } else if (error.name === 'AbortError') {
-        console.error(`AbortError failed with type: ${error.type}; message: ${error.message}`);
-        return true;
-    }
-    return false;
-}
-
-/**
- * @typedef {Object} RetryOptions options for retry or false if want to disable retry
- * @property {Integer} retryMaxDuration time (in milliseconds) to retry until throwing an error
- * @property {Integer} retryInitialDelay time to wait between retries in milliseconds
- * @property {Function} retryOnHttpResponse a function determining whether to retry on a specific HTTP code
- * @property {Function} retryOnHttpError a function determining whether to retry on a specific HTTP error
- * @property {Integer} retryBackoff backoff factor for wait time between retries (defaults to 2.0)
- * @property {Integer} socketTimeout Optional socket timeout in milliseconds (defaults to 60000ms)
- * @property {Boolean} forceSocketTimeout If true, socket timeout will be forced to use `socketTimeout` property declared (defaults to false)
- */
-/**
- * @typedef {Function} retryOnHttpResponse determines whether to do a retry on the response
- * @property {Number} response response from the http fetch call
- * @returns {Boolean} true if want to retry on this response, false if do not want to retry on the response
- */
-/**
- * @typedef {Function} retryOnHttpError determines whether to do a retry on the HTTP error response
- * @property {Object} error error thrown during the fetch request
- * @returns {Boolean} true if want to retry on this error, false if do not want to retry on the response
- */
-/**
- * @typedef {Object} Options options for fetch-retry
- * @property {Object} RetryOptions options for retry or false if want to disable retry
- * ... other options for fetch call (method, headers, etc...)
- */
-/**
- * Fetch retry that wraps around `node-fetch` library
- * @param {String} url request url
- * @param {Options} options options for fetch request (e.g. headers, RetryOptions for retries or `false` if no do not want to perform retries)
- * @returns {Object} json response of calling fetch 
- */
-module.exports = async function (url, options) {
-    options = options || {};
-    const retryOptions = retryInit(options); // set up retry options or set to default settings if not set
-    delete options.retryOptions; // remove retry options from options passed to actual fetch
-    let attempt = 0;
-
-    return new Promise(function (resolve, reject) {
-        const wrappedFetch = async () => {
-            while (!isResponseTimedOut(retryOptions)) {
-                ++attempt;
-                const waitTime = getRetryDelay(retryOptions);
-
-                let timeoutHandler;
-                if (retryOptions.socketTimeout) {
-                    const controller = new AbortController();
-                    timeoutHandler = setTimeout(() => controller.abort(), retryOptions.socketTimeout);
-                    options.signal = controller.signal;
-                }                
-    
-                try {
-                    const response = await fetch(url, options);
-
-                    if (await shouldRetry(retryOptions, null, response, waitTime)) {
-                        console.error(`Retrying in ${waitTime} milliseconds, attempt ${attempt} failed (status ${response.status}): ${response.statusText}`);
-                    } else {
-                        // response.timeout should reflect the actual timeout
-                        response.timeout = retryOptions.socketTimeout;
-                        return resolve(response);
-                    }
-                } catch (error) {
-                    if (!(await shouldRetry(retryOptions, error, null, waitTime))) {
-                        if (error.name === 'AbortError') {
-                            return reject(new FetchError(`network timeout at ${url}`, 'request-timeout'));
-                        } else {
-                            return reject(error);
-                        }
-                    }
-                    console.error(`Retrying in ${waitTime} milliseconds, attempt ${attempt} error: ${error.name}, ${error.message}`);
-                } finally {
-                    clearTimeout(timeoutHandler);
-                }
-                // Fetch loop is about to repeat, delay as needed first.
-                if (waitTime > 0) {
-                    await new Promise(resolve => setTimeout(resolve, waitTime));
-                }
-                retryOptions.retryInitialDelay *= retryOptions.retryBackoff; // update retry interval
-            }
-            reject(new FetchError(`network timeout at ${url}`, 'request-timeout'));
-        };
-        wrappedFetch();
-    });
-};
-
-
-/***/ }),
-
 /***/ 7413:
 /***/ ((module, exports, __webpack_require__) => {
 
@@ -4530,6 +4324,187 @@ module.exports = AbortController
 module.exports.AbortController = module.exports["default"] = AbortController
 module.exports.AbortSignal = AbortSignal
 //# sourceMappingURL=abort-controller.js.map
+
+
+/***/ }),
+
+/***/ 2732:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var register = __webpack_require__(1063);
+var addHook = __webpack_require__(2027);
+var removeHook = __webpack_require__(9934);
+
+// bind with array of arguments: https://stackoverflow.com/a/21792913
+var bind = Function.bind;
+var bindable = bind.bind(bind);
+
+function bindApi(hook, state, name) {
+  var removeHookRef = bindable(removeHook, null).apply(
+    null,
+    name ? [state, name] : [state]
+  );
+  hook.api = { remove: removeHookRef };
+  hook.remove = removeHookRef;
+  ["before", "error", "after", "wrap"].forEach(function (kind) {
+    var args = name ? [state, kind, name] : [state, kind];
+    hook[kind] = hook.api[kind] = bindable(addHook, null).apply(null, args);
+  });
+}
+
+function HookSingular() {
+  var singularHookName = "h";
+  var singularHookState = {
+    registry: {},
+  };
+  var singularHook = register.bind(null, singularHookState, singularHookName);
+  bindApi(singularHook, singularHookState, singularHookName);
+  return singularHook;
+}
+
+function HookCollection() {
+  var state = {
+    registry: {},
+  };
+
+  var hook = register.bind(null, state);
+  bindApi(hook, state);
+
+  return hook;
+}
+
+var collectionHookDeprecationMessageDisplayed = false;
+function Hook() {
+  if (!collectionHookDeprecationMessageDisplayed) {
+    console.warn(
+      '[before-after-hook]: "Hook()" repurposing warning, use "Hook.Collection()". Read more: https://git.io/upgrade-before-after-hook-to-1.4'
+    );
+    collectionHookDeprecationMessageDisplayed = true;
+  }
+  return HookCollection();
+}
+
+Hook.Singular = HookSingular.bind();
+Hook.Collection = HookCollection.bind();
+
+module.exports = Hook;
+// expose constructors as a named property for TypeScript
+module.exports.Hook = Hook;
+module.exports.Singular = Hook.Singular;
+module.exports.Collection = Hook.Collection;
+
+
+/***/ }),
+
+/***/ 2027:
+/***/ ((module) => {
+
+module.exports = addHook;
+
+function addHook(state, kind, name, hook) {
+  var orig = hook;
+  if (!state.registry[name]) {
+    state.registry[name] = [];
+  }
+
+  if (kind === "before") {
+    hook = function (method, options) {
+      return Promise.resolve()
+        .then(orig.bind(null, options))
+        .then(method.bind(null, options));
+    };
+  }
+
+  if (kind === "after") {
+    hook = function (method, options) {
+      var result;
+      return Promise.resolve()
+        .then(method.bind(null, options))
+        .then(function (result_) {
+          result = result_;
+          return orig(result, options);
+        })
+        .then(function () {
+          return result;
+        });
+    };
+  }
+
+  if (kind === "error") {
+    hook = function (method, options) {
+      return Promise.resolve()
+        .then(method.bind(null, options))
+        .catch(function (error) {
+          return orig(error, options);
+        });
+    };
+  }
+
+  state.registry[name].push({
+    hook: hook,
+    orig: orig,
+  });
+}
+
+
+/***/ }),
+
+/***/ 1063:
+/***/ ((module) => {
+
+module.exports = register;
+
+function register(state, name, method, options) {
+  if (typeof method !== "function") {
+    throw new Error("method for before hook must be a function");
+  }
+
+  if (!options) {
+    options = {};
+  }
+
+  if (Array.isArray(name)) {
+    return name.reverse().reduce(function (callback, name) {
+      return register.bind(null, state, name, callback, options);
+    }, method)();
+  }
+
+  return Promise.resolve().then(function () {
+    if (!state.registry[name]) {
+      return method(options);
+    }
+
+    return state.registry[name].reduce(function (method, registered) {
+      return registered.hook.bind(null, method, options);
+    }, method)();
+  });
+}
+
+
+/***/ }),
+
+/***/ 9934:
+/***/ ((module) => {
+
+module.exports = removeHook;
+
+function removeHook(state, name, method) {
+  if (!state.registry[name]) {
+    return;
+  }
+
+  var index = state.registry[name]
+    .map(function (registered) {
+      return registered.orig;
+    })
+    .indexOf(method);
+
+  if (index === -1) {
+    return;
+  }
+
+  state.registry[name].splice(index, 1);
+}
 
 
 /***/ }),
@@ -7478,6 +7453,31 @@ module.exports.toUnicode = function(domain_name, useSTD3) {
 };
 
 module.exports.PROCESSING_OPTIONS = PROCESSING_OPTIONS;
+
+
+/***/ }),
+
+/***/ 3843:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+
+function getUserAgent() {
+  if (typeof navigator === "object" && "userAgent" in navigator) {
+    return navigator.userAgent;
+  }
+
+  if (typeof process === "object" && process.version !== undefined) {
+    return `Node.js/${process.version.substr(1)} (${process.platform}; ${process.arch})`;
+  }
+
+  return "<environment undetectable>";
+}
+
+exports.getUserAgent = getUserAgent;
+//# sourceMappingURL=index.js.map
 
 
 /***/ }),
