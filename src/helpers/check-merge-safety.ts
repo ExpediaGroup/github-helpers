@@ -130,7 +130,7 @@ const getDiff = async (compareBase: DiffRefs, compareHead: DiffRefs, basehead: s
     core.info(`Failed to fetch diff: ${(err as GithubError).message} Status: ${(err as GithubError).status}`);
 
     // diff too large error
-    if ((err as GithubError)?.status === 406) {
+    if ((err as GithubError)?.status === 406 || (err as GithubError)?.message.includes('diff is taking too long to generate')) {
       core.info(`Attempting to generate diff using local git command`);
       if (compareBase.repo?.html_url) {
         changedFileNames = await getDiffUsingGitCommand(compareBase.repo?.html_url, compareBase.sha, compareHead.sha);

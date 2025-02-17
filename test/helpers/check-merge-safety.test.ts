@@ -62,7 +62,7 @@ type MockGithubRequests = (
   filesOutOfDate: string[],
   changedFilesOnPr: string[],
   branch?: string,
-  error?: { status: number; message?: string } | null
+  error?: { status: number | string; message?: string } | null
 ) => void;
 const mockGithubRequests: MockGithubRequests = (filesOutOfDate, changedFilesOnPr, branch = branchName, error = null) => {
   (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
@@ -136,10 +136,34 @@ describe('checkMergeSafety', () => {
     expect(core.setFailed).toHaveBeenCalledWith('This branch has one or more outdated projects. Please update with main.');
   });
 
-  it('should allow merge when branch is only out of date for an unchanged project - diff too large error', async () => {
+  it('should allow merge when branch is only out of date for an unchanged project - diff too large error status', async () => {
     const filesOutOfDate = ['packages/package-2/src/another-file.ts'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr, branchName, { status: 406 });
+    mockGitInteractions(filesOutOfDate, changedFilesOnPr);
+
+    await checkMergeSafety({
+      paths: allProjectPaths,
+      ...context.repo
+    });
+    expect(setCommitStatus).toHaveBeenCalledWith({
+      sha,
+      state: 'success',
+      context: 'Merge Safety',
+      description: 'Branch username:some-branch-name is safe to merge!',
+      repo: 'repo',
+      owner: 'owner'
+    });
+    expect(core.setFailed).not.toHaveBeenCalled();
+  });
+
+  it('should allow merge when branch is only out of date for an unchanged project - diff too large error message', async () => {
+    const filesOutOfDate = ['packages/package-2/src/another-file.ts'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr, branchName, {
+      status: 'not_available',
+      message: 'yadda yadda diff is taking too long to generate yadda yadda'
+    });
     mockGitInteractions(filesOutOfDate, changedFilesOnPr);
 
     await checkMergeSafety({
