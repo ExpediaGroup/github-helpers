@@ -133,7 +133,7 @@ const getDiff = async (compareBase, compareHead, basehead) => {
     catch (err) {
         _actions_core__WEBPACK_IMPORTED_MODULE_7__.info(`Failed to fetch diff: ${err.message} Status: ${err.status}`);
         // diff too large error
-        if (err?.status === 406) {
+        if (err?.status === 406 || err?.message.includes('diff is taking too long to generate')) {
             _actions_core__WEBPACK_IMPORTED_MODULE_7__.info(`Attempting to generate diff using local git command`);
             if (compareBase.repo?.html_url) {
                 changedFileNames = await getDiffUsingGitCommand(compareBase.repo?.html_url, compareBase.sha, compareHead.sha);
