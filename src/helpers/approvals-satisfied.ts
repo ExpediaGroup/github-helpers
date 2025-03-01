@@ -13,15 +13,14 @@ limitations under the License.
 
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
-import { octokit } from '../octokit';
 import { getRequiredCodeOwnersEntries } from '../utils/get-core-member-logins';
 import { map } from 'bluebird';
-import { convertToTeamSlug } from '../utils/convert-to-team-slug';
 import { CodeOwnersEntry } from 'codeowners-utils';
 import * as core from '@actions/core';
 import { paginateAllReviews } from '../utils/paginate-all-reviews';
 import { uniq, uniqBy } from 'lodash';
 import { createPrComment } from './create-pr-comment';
+import { paginateMembersInOrg } from '../utils/paginate-members-in-org';
 
 export class ApprovalsSatisfied extends HelperInputs {
   teams?: string;
@@ -74,7 +73,8 @@ export const approvalsSatisfied = async ({
   const codeOwnersEntrySatisfiesApprovals = async (entry: Pick<CodeOwnersEntry, 'owners'>) => {
     const loginsLists = await map(entry.owners, async teamOrUsers => {
       if (isTeam(teamOrUsers)) {
-        return await fetchTeamLogins(teamOrUsers);
+        const members = await paginateMembersInOrg(teamOrUsers);
+        return members.map(({ login }) => login);
       } else {
         return teamOrUsers.replaceAll('@', '').split(',');
       }
@@ -119,14 +119,6 @@ const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }: { teams?: s
   { owners: teams.concat(users) }
 ];
 const isTeam = (teamOrUsers: string) => teamOrUsers.includes('/');
-const fetchTeamLogins = async (team: string) => {
-  const { data } = await octokit.teams.listMembersInOrg({
-    org: context.repo.owner,
-    team_slug: convertToTeamSlug(team),
-    per_page: 100
-  });
-  return data.map(({ login }) => login);
-};
 const updateTeamsList = (teamsList?: string[]) => {
   return teamsList?.map(team => {
     if (!team.includes('/')) {
