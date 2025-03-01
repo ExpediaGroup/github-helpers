@@ -42792,18 +42792,18 @@ var map = {
 		110
 	],
 	"./approvals-satisfied": [
-		8059,
+		419,
 		461,
 		366,
 		409,
-		59
+		419
 	],
 	"./approvals-satisfied.ts": [
-		8059,
+		419,
 		461,
 		366,
 		409,
-		59
+		419
 	],
 	"./approve-pr": [
 		2579,

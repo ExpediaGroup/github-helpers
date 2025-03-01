@@ -1,5 +1,5 @@
 export const id = 284;
-export const ids = [284,59,280,862,783,598,250];
+export const ids = [284,419,280,862,783,598,250];
 export const modules = {
 
 /***/ 7242:
@@ -87,7 +87,7 @@ limitations under the License.
 
 /***/ }),
 
-/***/ 8059:
+/***/ 419:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 // ESM COMPAT FLAG
@@ -103,16 +103,14 @@ __webpack_require__.d(__webpack_exports__, {
 var generated = __webpack_require__(8428);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __webpack_require__(3228);
-// EXTERNAL MODULE: ./src/octokit.ts
-var octokit = __webpack_require__(6590);
 // EXTERNAL MODULE: ./src/utils/get-core-member-logins.ts
 var get_core_member_logins = __webpack_require__(5587);
 // EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
 var bluebird = __webpack_require__(4366);
-// EXTERNAL MODULE: ./src/utils/convert-to-team-slug.ts
-var convert_to_team_slug = __webpack_require__(6668);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __webpack_require__(7484);
+// EXTERNAL MODULE: ./src/octokit.ts
+var octokit = __webpack_require__(6590);
 ;// CONCATENATED MODULE: ./src/utils/paginate-all-reviews.ts
 /*
 Copyright 2022 Expedia, Inc.
@@ -145,6 +143,41 @@ const paginateAllReviews = async (prNumber, page = 1) => {
 var lodash = __webpack_require__(2356);
 // EXTERNAL MODULE: ./src/helpers/create-pr-comment.ts
 var create_pr_comment = __webpack_require__(9280);
+// EXTERNAL MODULE: ./src/utils/convert-to-team-slug.ts
+var convert_to_team_slug = __webpack_require__(6668);
+;// CONCATENATED MODULE: ./src/utils/paginate-members-in-org.ts
+/*
+Copyright 2025 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+
+
+const paginateMembersInOrg = async (team, page = 1) => {
+    const response = await octokit/* octokit */.A.teams.listMembersInOrg({
+        org: github.context.repo.owner,
+        team_slug: (0,convert_to_team_slug/* convertToTeamSlug */.j)(team),
+        per_page: 100,
+        page
+    });
+    if (!response?.data?.length) {
+        return [];
+    }
+    // If the response size is less than 100, we have reached the end of the pagination
+    if (response.data.length < 100) {
+        return response.data;
+    }
+    return [...response.data, ...(await paginateMembersInOrg(team, page + 1))];
+};
+
 ;// CONCATENATED MODULE: ./src/helpers/approvals-satisfied.ts
 /*
 Copyright 2021 Expedia, Inc.
@@ -158,7 +191,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
 
 
 
@@ -196,7 +228,8 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', req
     const codeOwnersEntrySatisfiesApprovals = async (entry) => {
         const loginsLists = await (0,bluebird.map)(entry.owners, async (teamOrUsers) => {
             if (isTeam(teamOrUsers)) {
-                return await fetchTeamLogins(teamOrUsers);
+                const members = await paginateMembersInOrg(teamOrUsers);
+                return members.map(({ login }) => login);
             }
             else {
                 return teamOrUsers.replaceAll('@', '').split(',');
@@ -230,14 +263,6 @@ const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }) => [
     { owners: teams.concat(users) }
 ];
 const isTeam = (teamOrUsers) => teamOrUsers.includes('/');
-const fetchTeamLogins = async (team) => {
-    const { data } = await octokit/* octokit */.A.teams.listMembersInOrg({
-        org: github.context.repo.owner,
-        team_slug: (0,convert_to_team_slug/* convertToTeamSlug */.j)(team),
-        per_page: 100
-    });
-    return data.map(({ login }) => login);
-};
 const updateTeamsList = (teamsList) => {
     return teamsList?.map(team => {
         if (!team.includes('/')) {
@@ -583,8 +608,8 @@ const updateQueuePosition = async (pr, index) => {
 
 // EXTERNAL MODULE: ./src/utils/paginate-open-pull-requests.ts
 var paginate_open_pull_requests = __webpack_require__(3332);
-// EXTERNAL MODULE: ./src/helpers/approvals-satisfied.ts + 1 modules
-var approvals_satisfied = __webpack_require__(8059);
+// EXTERNAL MODULE: ./src/helpers/approvals-satisfied.ts + 2 modules
+var approvals_satisfied = __webpack_require__(419);
 // EXTERNAL MODULE: ./src/helpers/create-pr-comment.ts
 var create_pr_comment = __webpack_require__(9280);
 // EXTERNAL MODULE: ./src/helpers/is-user-in-team.ts
