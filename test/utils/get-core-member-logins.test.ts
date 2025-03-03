@@ -118,7 +118,7 @@ describe('getCoreMemberLogins', () => {
         }));
       });
 
-      it('should return expected result', async () => {
+      it('should return CODEOWNERS entries for changed files', async () => {
         const result = await getRequiredCodeOwnersEntries(pull_number);
 
         expect(result).toEqual([
@@ -129,6 +129,25 @@ describe('getCoreMemberLogins', () => {
           {
             pattern: '/file/path/shared',
             owners: ['@ExpediaGroup/test-shared-owners-1', '@ExpediaGroup/test-shared-owners-2']
+          },
+          {
+            pattern: '/file/path/users',
+            owners: ['@user1', '@user2']
+          }
+        ]);
+      });
+
+      it('should allow CODEOWNERS overrides via codeowners_overrides', async () => {
+        const result = await getRequiredCodeOwnersEntries(pull_number, '/file/path/1 @override1 @override2,/file/path/shared');
+
+        expect(result).toEqual([
+          {
+            pattern: '/file/path/1',
+            owners: ['@override1', '@override2']
+          },
+          {
+            pattern: '/file/path/shared',
+            owners: []
           },
           {
             pattern: '/file/path/users',

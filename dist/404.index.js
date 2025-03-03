@@ -219,8 +219,21 @@ const getCoreMemberLogins = async (pull_number, teams) => {
     const teamsAndLogins = await getCoreTeamsAndLogins(codeOwners);
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(teamsAndLogins.map(({ login }) => login));
 };
-const getRequiredCodeOwnersEntries = async (pull_number) => {
-    const codeOwners = (await (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd())) ?? [];
+const getRequiredCodeOwnersEntries = async (pull_number, codeowners_overrides) => {
+    let codeOwners = (await (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd())) ?? [];
+    if (codeowners_overrides) {
+        const codeOwnerOverrides = codeowners_overrides.split(',').map(overrideString => {
+            const [pattern, ...owners] = overrideString.split(/\s+/);
+            if (!pattern) {
+                _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('Invalid code_owners_override format. Please provide a comma-separated list of lines in GitHub CODEOWNERS format. For example, "/foo @owner1 @owner2,/bar @owner3".');
+                throw new Error();
+            }
+            return { pattern, owners };
+        });
+        // codeowners-utils sorts its CodeOwnersEntry array in reverse order of the CODEOWNERS file
+        codeOwnerOverrides.reverse();
+        codeOwners = codeOwnerOverrides.concat(codeOwners);
+    }
     const changedFilePaths = await (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__/* .getChangedFilepaths */ .t)(pull_number);
     return changedFilePaths.map(filePath => (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.matchFile)(filePath, codeOwners)).filter(Boolean);
 };
