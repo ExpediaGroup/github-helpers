@@ -39,9 +39,8 @@ export const getRequiredCodeOwnersEntries = async (pull_number: number, codeowne
       }
       return { pattern, owners };
     });
-    // codeowners-utils sorts its CodeOwnersEntry array in reverse order of the CODEOWNERS file
-    codeOwnerOverrides.reverse();
-    codeOwners = codeOwnerOverrides.concat(codeOwners);
+    // codeowners-utils ordering is the reverse of the CODEOWNERS file
+    codeOwners = codeOwnerOverrides.toReversed().concat(codeOwners);
   }
   const changedFilePaths = await getChangedFilepaths(pull_number);
   return changedFilePaths.map(filePath => matchFile(filePath, codeOwners)).filter(Boolean);

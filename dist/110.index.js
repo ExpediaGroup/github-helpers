@@ -322,9 +322,8 @@ const getRequiredCodeOwnersEntries = async (pull_number, codeowners_overrides) =
             }
             return { pattern, owners };
         });
-        // codeowners-utils sorts its CodeOwnersEntry array in reverse order of the CODEOWNERS file
-        codeOwnerOverrides.reverse();
-        codeOwners = codeOwnerOverrides.concat(codeOwners);
+        // codeowners-utils ordering is the reverse of the CODEOWNERS file
+        codeOwners = codeOwnerOverrides.toReversed().concat(codeOwners);
     }
     const changedFilePaths = await (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__/* .getChangedFilepaths */ .t)(pull_number);
     return changedFilePaths.map(filePath => (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.matchFile)(filePath, codeOwners)).filter(Boolean);
