@@ -202,7 +202,7 @@ limitations under the License.
 
 class ApprovalsSatisfied extends generated/* HelperInputs */.m {
 }
-const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', required_review_overrides, pull_number, body } = {}) => {
+const approvalsSatisfied = async ({ teams, users, codeowners_overrides, number_of_reviewers = '1', required_review_overrides, pull_number, body } = {}) => {
     const prNumber = pull_number ? Number(pull_number) : github.context.issue.number;
     const teamOverrides = required_review_overrides?.split(',').map(overrideString => {
         const [team, numberOfRequiredReviews] = overrideString.split(':');
@@ -223,7 +223,7 @@ const approvalsSatisfied = async ({ teams, users, number_of_reviewers = '1', req
     logs.push(`PR already approved by: ${approverLogins.toString()}`);
     const requiredCodeOwnersEntries = teamsList || usersList
         ? createArtificialCodeOwnersEntry({ teams: teamsList, users: usersList })
-        : await (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.D)(prNumber);
+        : await (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.D)(prNumber, codeowners_overrides);
     const requiredCodeOwnersEntriesWithOwners = (0,lodash.uniqBy)(requiredCodeOwnersEntries.filter(({ owners }) => owners.length), 'owners');
     const codeOwnersEntrySatisfiesApprovals = async (entry) => {
         const loginsLists = await (0,bluebird.map)(entry.owners, async (teamOrUsers) => {
@@ -547,8 +547,20 @@ const getCoreMemberLogins = async (pull_number, teams) => {
     const teamsAndLogins = await getCoreTeamsAndLogins(codeOwners);
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(teamsAndLogins.map(({ login }) => login));
 };
-const getRequiredCodeOwnersEntries = async (pull_number) => {
-    const codeOwners = (await (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd())) ?? [];
+const getRequiredCodeOwnersEntries = async (pull_number, codeowners_overrides) => {
+    let codeOwners = (await (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd())) ?? [];
+    if (codeowners_overrides) {
+        const codeOwnerOverrides = codeowners_overrides.split(',').map(overrideString => {
+            const [pattern, ...owners] = overrideString.split(/\s+/);
+            if (!pattern) {
+                _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('Invalid code_owners_override format. Please provide a comma-separated list of lines in GitHub CODEOWNERS format. For example, "/foo @owner1 @owner2,/bar @owner3".');
+                throw new Error();
+            }
+            return { pattern, owners };
+        });
+        // codeowners-utils ordering is the reverse of the CODEOWNERS file
+        codeOwners = codeOwnerOverrides.toReversed().concat(codeOwners);
+    }
     const changedFilePaths = await (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__/* .getChangedFilepaths */ .t)(pull_number);
     return changedFilePaths.map(filePath => (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.matchFile)(filePath, codeOwners)).filter(Boolean);
 };

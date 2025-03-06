@@ -26,8 +26,22 @@ export const getCoreMemberLogins = async (pull_number: number, teams?: string[])
   return uniq(teamsAndLogins.map(({ login }) => login));
 };
 
-export const getRequiredCodeOwnersEntries = async (pull_number: number): Promise<CodeOwnersEntry[]> => {
-  const codeOwners = (await loadOwners(process.cwd())) ?? [];
+export const getRequiredCodeOwnersEntries = async (pull_number: number, codeowners_overrides?: string): Promise<CodeOwnersEntry[]> => {
+  let codeOwners: CodeOwnersEntry[] = (await loadOwners(process.cwd())) ?? [];
+  if (codeowners_overrides) {
+    const codeOwnerOverrides: CodeOwnersEntry[] = codeowners_overrides.split(',').map(overrideString => {
+      const [pattern, ...owners] = overrideString.split(/\s+/);
+      if (!pattern) {
+        core.setFailed(
+          'Invalid code_owners_override format. Please provide a comma-separated list of lines in GitHub CODEOWNERS format. For example, "/foo @owner1 @owner2,/bar @owner3".'
+        );
+        throw new Error();
+      }
+      return { pattern, owners };
+    });
+    // codeowners-utils ordering is the reverse of the CODEOWNERS file
+    codeOwners = codeOwnerOverrides.toReversed().concat(codeOwners);
+  }
   const changedFilePaths = await getChangedFilepaths(pull_number);
   return changedFilePaths.map(filePath => matchFile(filePath, codeOwners)).filter(Boolean);
 };

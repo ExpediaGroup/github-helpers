@@ -201,8 +201,25 @@ describe('approvalsSatisfied', () => {
     });
     const result = await approvalsSatisfied({ pull_number: '12345' });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
-    expect(getRequiredCodeOwnersEntries).toHaveBeenCalledWith(12345);
+    expect(getRequiredCodeOwnersEntries).toHaveBeenCalledWith(12345, undefined);
     expect(result).toBe(false);
+  });
+
+  it('should return true when a member from the team specified in codeowners_overrides has approved', async () => {
+    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@ExpediaGroup/team6'] }]);
+    mockPagination({
+      data: [
+        {
+          state: 'APPROVED',
+          user: { login: 'user9' }
+        }
+      ]
+    });
+    const codeOwnersOverrides = '* @ExpediaGroup/team6';
+    const result = await approvalsSatisfied({ pull_number: '12345', codeowners_overrides: codeOwnersOverrides });
+    expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
+    expect(getRequiredCodeOwnersEntries).toHaveBeenCalledWith(12345, codeOwnersOverrides);
+    expect(result).toBe(true);
   });
 
   it('should return true when a core member has approved', async () => {

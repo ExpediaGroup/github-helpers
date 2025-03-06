@@ -60,6 +60,7 @@ export class HelperInputs {
   repo_owner_name?: string;
   load_balancing_sizes?: string;
   required_review_overrides?: string;
+  codeowners_overrides?: string;
   max_queue_size?: string;
   allow_only_for_maintainers?: string;
   use_basic_matrix_configuration?: string;

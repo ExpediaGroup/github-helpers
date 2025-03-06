@@ -73,7 +73,8 @@ Each of the following helpers are defined in a file of the same name in `src/hel
 ### [approvals-satisfied](.github/workflows/approvals-satisfied.yml)
 
 - Returns `true` if the PR has been approved by the specified GitHub team(s) or user(s) and `false` otherwise
-- If GitHub teams are omitted, uses `CODEOWNERS.md` to determine teams and/or users to use
+- If GitHub teams are omitted, uses `CODEOWNERS` to determine teams and/or users to use.
+- The parameter `codeowners_overrides` can be used to override entries from `CODEOWNERS`. It is a string formatted as comma-separated list of lines in [the `CODEOWNERS` syntax](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners#codeowners-syntax). For example: `/path/foo @user1 @user2,/path/bar @user3`
 - Note: If you are providing teams in input, full team name is NOT needed. i.e. `team-name` works and `org/team-name` is NOT needed
 
 ### [approve-pr](.github/workflows/approve-pr.yml)

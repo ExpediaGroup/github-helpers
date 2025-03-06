@@ -25,6 +25,7 @@ import { paginateMembersInOrg } from '../utils/paginate-members-in-org';
 export class ApprovalsSatisfied extends HelperInputs {
   teams?: string;
   users?: string;
+  codeowners_overrides?: string;
   number_of_reviewers?: string;
   required_review_overrides?: string;
   pull_number?: string;
@@ -34,6 +35,7 @@ export class ApprovalsSatisfied extends HelperInputs {
 export const approvalsSatisfied = async ({
   teams,
   users,
+  codeowners_overrides,
   number_of_reviewers = '1',
   required_review_overrides,
   pull_number,
@@ -64,7 +66,7 @@ export const approvalsSatisfied = async ({
   const requiredCodeOwnersEntries =
     teamsList || usersList
       ? createArtificialCodeOwnersEntry({ teams: teamsList, users: usersList })
-      : await getRequiredCodeOwnersEntries(prNumber);
+      : await getRequiredCodeOwnersEntries(prNumber, codeowners_overrides);
   const requiredCodeOwnersEntriesWithOwners = uniqBy(
     requiredCodeOwnersEntries.filter(({ owners }) => owners.length),
     'owners'
