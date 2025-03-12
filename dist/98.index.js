@@ -230,16 +230,29 @@ const getCoreMemberLogins = async (pull_number, teams) => {
 const getRequiredCodeOwnersEntries = async (pull_number, codeowners_overrides) => {
     let codeOwners = (await (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.loadOwners)(process.cwd())) ?? [];
     if (codeowners_overrides) {
-        const codeOwnerOverrides = codeowners_overrides.split(',').map(overrideString => {
+        const unmatchedOverrides = [];
+        codeowners_overrides.split(',').forEach(overrideString => {
             const [pattern, ...owners] = overrideString.split(/\s+/);
             if (!pattern) {
                 _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('Invalid code_owners_override format. Please provide a comma-separated list of lines in GitHub CODEOWNERS format. For example, "/foo @owner1 @owner2,/bar @owner3".');
                 throw new Error();
             }
-            return { pattern, owners };
+            // Replace exact pattern matches with overrides
+            const patternMatched = codeOwners.some((originalEntry, index) => {
+                if (originalEntry.pattern === pattern) {
+                    codeOwners[index] = { pattern, owners };
+                    return true;
+                }
+                return false;
+            });
+            // Queue up unmatched overrides
+            if (!patternMatched) {
+                unmatchedOverrides.push({ pattern, owners });
+            }
         });
-        // codeowners-utils ordering is the reverse of the CODEOWNERS file
-        codeOwners = codeOwnerOverrides.toReversed().concat(codeOwners);
+        // Append remaining overrides to the end of the list
+        // Note: codeowners-utils ordering is the reverse of the CODEOWNERS file
+        codeOwners = unmatchedOverrides.toReversed().concat(codeOwners);
     }
     const changedFilePaths = await (0,_get_changed_filepaths__WEBPACK_IMPORTED_MODULE_4__/* .getChangedFilepaths */ .t)(pull_number);
     return changedFilePaths.map(filePath => (0,codeowners_utils__WEBPACK_IMPORTED_MODULE_1__.matchFile)(filePath, codeOwners)).filter(Boolean);

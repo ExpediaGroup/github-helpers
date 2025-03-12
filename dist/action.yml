@@ -146,7 +146,7 @@ inputs:
     description: 'A comma-separated list of team overrides which specify the number of required reviews per team (e.g. "@ExpediaGroup/team1:1,@ExpediaGroup/team2:2")'
     required: false
   codeowners_overrides:
-    description: 'A comma-separated list of lines formatted in GitHub CODEOWNERS syntax which override the CODEOWNERS file (e.g. "/path/foo @user1 @user2,/path/bar @user3")'
+    description: 'A comma-separated list of lines formatted in GitHub CODEOWNERS syntax which override the CODEOWNERS file (e.g. "/path/foo @user1 @user2,/path/bar @user3"). Exact pattern matches in CODEOWNERS will be replaced. Unmatched patterns will be appended.'
     required: false
   max_queue_size:
     description: 'The maximum number of PRs that can be in the merge queue at any given time'
