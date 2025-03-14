@@ -4131,26 +4131,6 @@ const toFiniteNumber = (value, defaultValue) => {
   return value != null && Number.isFinite(value = +value) ? value : defaultValue;
 }
 
-const ALPHA = 'abcdefghijklmnopqrstuvwxyz'
-
-const DIGIT = '0123456789';
-
-const ALPHABET = {
-  DIGIT,
-  ALPHA,
-  ALPHA_DIGIT: ALPHA + ALPHA.toUpperCase() + DIGIT
-}
-
-const generateString = (size = 16, alphabet = ALPHABET.ALPHA_DIGIT) => {
-  let str = '';
-  const {length} = alphabet;
-  while (size--) {
-    str += alphabet[Math.random() * length|0]
-  }
-
-  return str;
-}
-
 /**
  * If the thing is a FormData object, return true, otherwise return false.
  *
@@ -4278,8 +4258,6 @@ const asap = typeof queueMicrotask !== 'undefined' ?
   findKey,
   global: _global,
   isContextDefined,
-  ALPHABET,
-  generateString,
   isSpecCompliantForm,
   toJSONObject,
   isAsyncFn,
@@ -4834,6 +4812,8 @@ class InterceptorManager {
   clarifyTimeoutError: false
 });
 
+// EXTERNAL MODULE: external "crypto"
+var external_crypto_ = __webpack_require__(6982);
 // EXTERNAL MODULE: external "url"
 var external_url_ = __webpack_require__(7016);
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/platform/node/classes/URLSearchParams.js
@@ -4846,6 +4826,30 @@ var external_url_ = __webpack_require__(7016);
 
 
 
+
+const ALPHA = 'abcdefghijklmnopqrstuvwxyz'
+
+const DIGIT = '0123456789';
+
+const ALPHABET = {
+  DIGIT,
+  ALPHA,
+  ALPHA_DIGIT: ALPHA + ALPHA.toUpperCase() + DIGIT
+}
+
+const generateString = (size = 16, alphabet = ALPHABET.ALPHA_DIGIT) => {
+  let str = '';
+  const {length} = alphabet;
+  const randomValues = new Uint32Array(size);
+  external_crypto_.randomFillSync(randomValues);
+  for (let i = 0; i < size; i++) {
+    str += alphabet[randomValues[i] % length];
+  }
+
+  return str;
+}
+
+
 /* harmony default export */ const node = ({
   isNode: true,
   classes: {
@@ -4853,6 +4857,8 @@ var external_url_ = __webpack_require__(7016);
     FormData: classes_FormData,
     Blob: typeof Blob !== 'undefined' && Blob || null
   },
+  ALPHABET,
+  generateString,
   protocols: [ 'http', 'https', 'file', 'data' ]
 });
 
@@ -5696,8 +5702,9 @@ function combineURLs(baseURL, relativeURL) {
  *
  * @returns {string} The combined full path
  */
-function buildFullPath(baseURL, requestedURL) {
-  if (baseURL && !isAbsoluteURL(requestedURL)) {
+function buildFullPath(baseURL, requestedURL, allowAbsoluteUrls) {
+  let isRelativeUrl = !isAbsoluteURL(requestedURL);
+  if (baseURL && isRelativeUrl || allowAbsoluteUrls == false) {
     return combineURLs(baseURL, requestedURL);
   }
   return requestedURL;
@@ -5716,7 +5723,7 @@ var follow_redirects = __webpack_require__(1573);
 // EXTERNAL MODULE: external "zlib"
 var external_zlib_ = __webpack_require__(3106);
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/env/data.js
-const VERSION = "1.7.9";
+const VERSION = "1.8.2";
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/helpers/parseProtocol.js
 
 
@@ -5952,7 +5959,8 @@ const readBlob = async function* (blob) {
 
 
 
-const BOUNDARY_ALPHABET = utils.ALPHABET.ALPHA_DIGIT + '-_';
+
+const BOUNDARY_ALPHABET = platform.ALPHABET.ALPHA_DIGIT + '-_';
 
 const textEncoder = typeof TextEncoder === 'function' ? new TextEncoder() : new external_util_.TextEncoder();
 
@@ -6012,7 +6020,7 @@ const formDataToStream = (form, headersHandler, options) => {
   const {
     tag = 'form-data-boundary',
     size = 25,
-    boundary = tag + '-' + utils.generateString(size, BOUNDARY_ALPHABET)
+    boundary = tag + '-' + platform.generateString(size, BOUNDARY_ALPHABET)
   } = options || {};
 
   if(!utils.isFormData(form)) {
@@ -6487,7 +6495,7 @@ const buildAddressEntry = (address, family) => resolveFamily(utils.isObject(addr
     }
 
     // Parse url
-    const fullPath = buildFullPath(config.baseURL, config.url);
+    const fullPath = buildFullPath(config.baseURL, config.url, config.allowAbsoluteUrls);
     const parsed = new URL(fullPath, platform.hasBrowserEnv ? platform.origin : undefined);
     const protocol = parsed.protocol || supportedProtocols[0];
 
@@ -8114,6 +8122,15 @@ class Axios {
       }
     }
 
+    // Set config.allowAbsoluteUrls
+    if (config.allowAbsoluteUrls !== undefined) {
+      // do nothing
+    } else if (this.defaults.allowAbsoluteUrls !== undefined) {
+      config.allowAbsoluteUrls = this.defaults.allowAbsoluteUrls;
+    } else {
+      config.allowAbsoluteUrls = true;
+    }
+
     validator.assertOptions(config, {
       baseUrl: Axios_validators.spelling('baseURL'),
       withXsrfToken: Axios_validators.spelling('withXSRFToken')
@@ -8209,7 +8226,7 @@ class Axios {
 
   getUri(config) {
     config = mergeConfig(this.defaults, config);
-    const fullPath = buildFullPath(config.baseURL, config.url);
+    const fullPath = buildFullPath(config.baseURL, config.url, config.allowAbsoluteUrls);
     return buildURL(fullPath, config.params, config.paramsSerializer);
   }
 }
