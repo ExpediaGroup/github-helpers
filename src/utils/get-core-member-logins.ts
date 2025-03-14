@@ -29,7 +29,8 @@ export const getCoreMemberLogins = async (pull_number: number, teams?: string[])
 export const getRequiredCodeOwnersEntries = async (pull_number: number, codeowners_overrides?: string): Promise<CodeOwnersEntry[]> => {
   let codeOwners: CodeOwnersEntry[] = (await loadOwners(process.cwd())) ?? [];
   if (codeowners_overrides) {
-    const codeOwnerOverrides: CodeOwnersEntry[] = codeowners_overrides.split(',').map(overrideString => {
+    const unmatchedOverrides: CodeOwnersEntry[] = [];
+    codeowners_overrides.split(',').forEach(overrideString => {
       const [pattern, ...owners] = overrideString.split(/\s+/);
       if (!pattern) {
         core.setFailed(
@@ -37,10 +38,22 @@ export const getRequiredCodeOwnersEntries = async (pull_number: number, codeowne
         );
         throw new Error();
       }
-      return { pattern, owners };
+      // Replace exact pattern matches with overrides
+      const patternMatched = codeOwners.some((originalEntry, index) => {
+        if (originalEntry.pattern === pattern) {
+          codeOwners[index] = { pattern, owners };
+          return true;
+        }
+        return false;
+      });
+      // Queue up unmatched overrides
+      if (!patternMatched) {
+        unmatchedOverrides.push({ pattern, owners });
+      }
     });
-    // codeowners-utils ordering is the reverse of the CODEOWNERS file
-    codeOwners = codeOwnerOverrides.toReversed().concat(codeOwners);
+    // Append remaining overrides to the end of the list
+    // Note: codeowners-utils ordering is the reverse of the CODEOWNERS file
+    codeOwners = unmatchedOverrides.toReversed().concat(codeOwners);
   }
   const changedFilePaths = await getChangedFilepaths(pull_number);
   return changedFilePaths.map(filePath => matchFile(filePath, codeOwners)).filter(Boolean);

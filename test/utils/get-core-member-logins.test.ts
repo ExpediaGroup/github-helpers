@@ -105,6 +105,9 @@ describe('getCoreMemberLogins', () => {
             page === 1
               ? [
                   {
+                    filename: 'new/entry/1/file.ts'
+                  },
+                  {
                     filename: file1
                   },
                   {
@@ -123,6 +126,10 @@ describe('getCoreMemberLogins', () => {
 
         expect(result).toEqual([
           {
+            pattern: '*',
+            owners: ['@ExpediaGroup/github-helpers-committers']
+          },
+          {
             pattern: '/file/path/1',
             owners: ['@ExpediaGroup/test-owners-1']
           },
@@ -137,13 +144,20 @@ describe('getCoreMemberLogins', () => {
         ]);
       });
 
-      it('should allow CODEOWNERS overrides via codeowners_overrides', async () => {
-        const result = await getRequiredCodeOwnersEntries(pull_number, '/file/path/1 @override1 @override2,/file/path/shared');
+      it('should allow CODEOWNERS overrides via codeowners_overrides, replacing existing entries and appending new ones', async () => {
+        const result = await getRequiredCodeOwnersEntries(
+          pull_number,
+          '/file/path/1/file1.txt @specific-override1 @specific-override2,/new/entry/1 @newowner1,/file/path/shared,/new/entry/2 @newowner2'
+        );
 
         expect(result).toEqual([
           {
-            pattern: '/file/path/1',
-            owners: ['@override1', '@override2']
+            pattern: '/new/entry/1',
+            owners: ['@newowner1']
+          },
+          {
+            pattern: '/file/path/1/file1.txt',
+            owners: ['@specific-override1', '@specific-override2']
           },
           {
             pattern: '/file/path/shared',
