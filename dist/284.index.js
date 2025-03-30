@@ -30,10 +30,7 @@ limitations under the License.
 
 
 class GetEmailOnUserProfile extends _types_generated__WEBPACK_IMPORTED_MODULE_2__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.login = '';
-    }
+    login = '';
 }
 const getEmailOnUserProfile = async ({ login, pattern }) => {
     const { data: { email } } = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit */ .A.users.getByUsername({ username: login });
@@ -82,11 +79,7 @@ limitations under the License.
 
 
 class IsUserInTeam extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.login = '';
-        this.team = '';
-    }
+    team = '';
 }
 const isUserInTeam = async ({ login = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.actor, team }) => {
     const members = await paginateAllMembersInOrg(team);
@@ -514,10 +507,7 @@ limitations under the License.
 
 
 class RemoveLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.label = '';
-    }
+    label = '';
 }
 const removeLabel = async ({ label }) => removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number);
 const removeLabelIfExists = async (labelName, issue_number) => {
@@ -572,12 +562,9 @@ limitations under the License.
 
 
 class SetCommitStatus extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.sha = '';
-        this.context = '';
-        this.state = '';
-    }
+    sha = '';
+    context = '';
+    state = '';
 }
 const setCommitStatus = async ({ sha, context, state, description, target_url, skip_if_already_set }) => {
     await (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(context.split('\n').filter(Boolean), async (context) => {

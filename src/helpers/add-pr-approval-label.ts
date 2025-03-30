@@ -19,7 +19,7 @@ import { octokit } from '../octokit';
 
 export class AddPrApprovalLabel extends HelperInputs {
   login = '';
-  teams?: string;
+  declare teams?: string;
 }
 
 export const addPrApprovalLabel = async ({ teams, login }: AddPrApprovalLabel) => {

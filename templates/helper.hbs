@@ -17,7 +17,7 @@ import { octokit } from '../octokit';
 
 export class {{ properCase helper }} extends HelperInputs {
   requiredInput = '';
-  optionalInput?: string;
+  declare optionalInput?: string;
 }
 
 export const {{ camelCase helper }} = async ({ requiredInput, optionalInput }: {{ properCase helper }}) => {

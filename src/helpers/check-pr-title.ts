@@ -18,7 +18,7 @@ import { octokit } from '../octokit';
 import { setFailed } from '@actions/core';
 
 export class CheckPrTitle extends HelperInputs {
-  pattern?: string;
+  declare pattern?: string;
 }
 
 export const checkPrTitle = async ({ pattern = DEFAULT_PR_TITLE_REGEX }: CheckPrTitle) => {

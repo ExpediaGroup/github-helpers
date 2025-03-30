@@ -18,8 +18,8 @@ import * as core from '@actions/core';
 import { MembersInOrg } from '../types/github';
 
 export class IsUserInTeam extends HelperInputs {
-  login? = '';
   team = '';
+  declare login?: string;
 }
 
 export const isUserInTeam = async ({ login = context.actor, team }: IsUserInTeam) => {

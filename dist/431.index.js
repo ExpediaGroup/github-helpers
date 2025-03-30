@@ -249,12 +249,9 @@ limitations under the License.
 
 
 class SetCommitStatus extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.sha = '';
-        this.context = '';
-        this.state = '';
-    }
+    sha = '';
+    context = '';
+    state = '';
 }
 const setCommitStatus = async ({ sha, context, state, description, target_url, skip_if_already_set }) => {
     await (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(context.split('\n').filter(Boolean), async (context) => {
@@ -337,6 +334,58 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 class HelperInputs {
+    helper;
+    github_token;
+    body;
+    project_name;
+    project_destination_column_name;
+    note;
+    project_origin_column_name;
+    sha;
+    context;
+    state;
+    description;
+    target_url;
+    environment;
+    environment_url;
+    label;
+    labels;
+    paths;
+    ignore_globs;
+    override_filter_paths;
+    batches;
+    pattern;
+    teams;
+    users;
+    login;
+    paths_no_filter;
+    slack_webhook_url;
+    number_of_assignees;
+    number_of_reviewers;
+    globs;
+    override_filter_globs;
+    title;
+    seconds;
+    pull_number;
+    base;
+    head;
+    days;
+    no_evict_upon_conflict;
+    skip_if_already_set;
+    delimiter;
+    team;
+    ignore_deleted;
+    return_full_payload;
+    skip_auto_merge;
+    repo_name;
+    repo_owner_name;
+    load_balancing_sizes;
+    required_review_overrides;
+    codeowners_overrides;
+    max_queue_size;
+    allow_only_for_maintainers;
+    use_basic_matrix_configuration;
+    merge_queue_enabled;
 }
 
 

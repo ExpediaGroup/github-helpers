@@ -46,7 +46,8 @@ describe('main', () => {
   });
 
   it('should call getActionInputs with correct params', () => {
-    expect(getActionInputs).toHaveBeenCalled();
+    const requiredInputs = ['body'];
+    expect(getActionInputs).toHaveBeenCalledWith(requiredInputs);
   });
 
   it('should call helper with all inputs', () => {

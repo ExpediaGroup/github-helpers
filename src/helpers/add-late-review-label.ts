@@ -20,7 +20,7 @@ import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-request
 import { SinglePullRequest } from '../types/github';
 
 export class AddLateReviewLabel extends HelperInputs {
-  days?: string;
+  declare days?: string;
 }
 
 export const addLateReviewLabel = async ({ days = '1' }: AddLateReviewLabel) => {

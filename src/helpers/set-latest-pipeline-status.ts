@@ -20,8 +20,8 @@ import { octokit } from '../octokit';
 
 export class SetLatestPipelineStatus extends HelperInputs {
   sha = '';
-  context?: string;
-  environment?: string;
+  declare context?: string;
+  declare environment?: string;
 }
 
 export const setLatestPipelineStatus = async ({

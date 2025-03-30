@@ -16,9 +16,9 @@ import { chunk, sum } from 'lodash';
 
 export class GenerateMatrix extends HelperInputs {
   paths = '';
-  batches?: string;
-  load_balancing_sizes?: string;
-  use_basic_matrix_configuration?: string;
+  declare batches?: string;
+  declare load_balancing_sizes?: string;
+  declare use_basic_matrix_configuration?: string;
 }
 
 export const generateMatrix = ({

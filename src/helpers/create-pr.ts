@@ -19,9 +19,9 @@ import { getDefaultBranch } from '../utils/get-default-branch';
 export class CreatePR extends HelperInputs {
   title = '';
   body = '';
-  head?: string;
-  base?: string;
-  return_full_payload?: string;
+  declare head?: string;
+  declare base?: string;
+  declare return_full_payload?: string;
 }
 
 export const createPr = async ({ title, body, head = context.ref.replace('refs/heads/', ''), base, return_full_payload }: CreatePR) => {

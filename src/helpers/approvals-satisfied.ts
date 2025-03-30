@@ -23,13 +23,13 @@ import { createPrComment } from './create-pr-comment';
 import { paginateMembersInOrg } from '../utils/paginate-members-in-org';
 
 export class ApprovalsSatisfied extends HelperInputs {
-  teams?: string;
-  users?: string;
-  codeowners_overrides?: string;
-  number_of_reviewers?: string;
-  required_review_overrides?: string;
-  pull_number?: string;
-  body?: string;
+  declare teams?: string;
+  declare users?: string;
+  declare codeowners_overrides?: string;
+  declare number_of_reviewers?: string;
+  declare required_review_overrides?: string;
+  declare pull_number?: string;
+  declare body?: string;
 }
 
 export const approvalsSatisfied = async ({

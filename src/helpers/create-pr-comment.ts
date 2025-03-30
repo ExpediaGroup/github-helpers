@@ -18,11 +18,11 @@ import { octokit } from '../octokit';
 
 export class CreatePrComment extends HelperInputs {
   body = '';
-  sha?: string;
-  login?: string;
-  pull_number?: string;
-  repo_name?: string;
-  repo_owner_name?: string;
+  declare sha?: string;
+  declare login?: string;
+  declare pull_number?: string;
+  declare repo_name?: string;
+  declare repo_owner_name?: string;
 }
 
 const emptyResponse = { data: [] };

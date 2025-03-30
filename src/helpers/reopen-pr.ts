@@ -16,9 +16,9 @@ import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
 export class ReopenPr extends HelperInputs {
-  pull_number?: string;
-  repo_name?: string;
-  repo_owner_name?: string;
+  declare pull_number?: string;
+  declare repo_name?: string;
+  declare repo_owner_name?: string;
 }
 
 export const reopenPr = async ({ pull_number, repo_name, repo_owner_name }: ReopenPr = {}) => {

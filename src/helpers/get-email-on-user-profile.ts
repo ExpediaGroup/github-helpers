@@ -17,7 +17,7 @@ import { setFailed } from '@actions/core';
 
 export class GetEmailOnUserProfile extends HelperInputs {
   login = '';
-  pattern?: string;
+  declare pattern?: string;
 }
 
 export const getEmailOnUserProfile = async ({ login, pattern }: GetEmailOnUserProfile) => {
