@@ -120,10 +120,7 @@ limitations under the License.
 
 
 class SetLatestPipelineStatus extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.sha = '';
-    }
+    sha = '';
 }
 const setLatestPipelineStatus = async ({ sha, context = _constants__WEBPACK_IMPORTED_MODULE_1__/* .DEFAULT_PIPELINE_STATUS */ .Md, environment = _constants__WEBPACK_IMPORTED_MODULE_1__/* .PRODUCTION_ENVIRONMENT */ .E$ }) => {
     const { data: deployments } = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.listDeployments({

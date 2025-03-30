@@ -30,10 +30,7 @@ limitations under the License.
 
 
 class GetEmailOnUserProfile extends _types_generated__WEBPACK_IMPORTED_MODULE_2__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.login = '';
-    }
+    login = '';
 }
 const getEmailOnUserProfile = async ({ login, pattern }) => {
     const { data: { email } } = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit */ .A.users.getByUsername({ username: login });

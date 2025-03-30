@@ -16,9 +16,9 @@ import { context } from '@actions/github';
 import { getChangedFilepaths } from '../utils/get-changed-filepaths';
 
 export class GetChangedFiles extends HelperInputs {
-  pattern?: string;
-  delimiter?: string;
-  ignore_deleted?: string;
+  declare pattern?: string;
+  declare delimiter?: string;
+  declare ignore_deleted?: string;
 }
 
 export const getChangedFiles = async ({ pattern, delimiter = ',', ignore_deleted }: GetChangedFiles) => {

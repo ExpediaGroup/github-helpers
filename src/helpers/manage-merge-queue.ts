@@ -35,13 +35,13 @@ import { isUserInTeam } from './is-user-in-team';
 import { getEmailOnUserProfile } from './get-email-on-user-profile';
 
 export class ManageMergeQueue extends HelperInputs {
-  max_queue_size?: string;
-  login?: string;
-  slack_webhook_url?: string;
-  skip_auto_merge?: string;
-  team?: string;
-  allow_only_for_maintainers?: string;
-  pattern?: string;
+  declare max_queue_size?: string;
+  declare login?: string;
+  declare slack_webhook_url?: string;
+  declare skip_auto_merge?: string;
+  declare team?: string;
+  declare allow_only_for_maintainers?: string;
+  declare pattern?: string;
 }
 
 export const manageMergeQueue = async ({

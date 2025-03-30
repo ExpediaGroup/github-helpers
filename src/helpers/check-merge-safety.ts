@@ -26,11 +26,11 @@ const git = simpleGit();
 
 const maxBranchNameLength = 50;
 export class CheckMergeSafety extends HelperInputs {
-  context?: string;
-  paths?: string;
-  ignore_globs?: string;
-  override_filter_paths?: string;
-  override_filter_globs?: string;
+  declare context?: string;
+  declare paths?: string;
+  declare ignore_globs?: string;
+  declare override_filter_paths?: string;
+  declare override_filter_globs?: string;
 }
 
 export const checkMergeSafety = async (inputs: CheckMergeSafety) => {

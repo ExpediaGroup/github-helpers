@@ -119,10 +119,7 @@ limitations under the License.
 
 
 class AddPrApprovalLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.login = '';
-    }
+    login = '';
 }
 const addPrApprovalLabel = async ({ teams, login }) => {
     const coreMemberLogins = await (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .u)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number, teams?.split('\n'));

@@ -22,11 +22,11 @@ import { sampleSize } from 'lodash';
 import { CORE_APPROVED_PR_LABEL } from '../constants';
 
 export class AssignPrReviewer extends HelperInputs {
-  teams?: string;
-  login?: string;
-  number_of_assignees?: string;
-  slack_webhook_url?: string;
-  pull_number?: string;
+  declare teams?: string;
+  declare login?: string;
+  declare number_of_assignees?: string;
+  declare slack_webhook_url?: string;
+  declare pull_number?: string;
 }
 
 export const assignPrReviewers = async ({

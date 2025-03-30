@@ -30,12 +30,9 @@ limitations under the License.
 
 
 class UpdateCheckResult extends _types_generated__WEBPACK_IMPORTED_MODULE_2__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.context = '';
-        this.sha = '';
-        this.state = '';
-    }
+    context = '';
+    sha = '';
+    state = '';
 }
 const updateCheckResult = async ({ context, sha, state, description }) => {
     const checks = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.checks.listForRef({

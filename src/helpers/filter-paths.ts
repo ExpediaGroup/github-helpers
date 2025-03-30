@@ -19,8 +19,8 @@ import { octokit } from '../octokit';
 import { getPrNumberFromMergeQueueRef } from '../utils/merge-queue';
 
 export class FilterPaths extends HelperInputs {
-  paths?: string;
-  globs?: string;
+  declare paths?: string;
+  declare globs?: string;
 }
 
 export const filterPaths = async ({ paths, globs }: FilterPaths) => {

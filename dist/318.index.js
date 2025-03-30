@@ -119,10 +119,7 @@ limitations under the License.
 
 
 class RemoveLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.label = '';
-    }
+    label = '';
 }
 const removeLabel = async ({ label }) => removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number);
 const removeLabelIfExists = async (labelName, issue_number) => {
@@ -184,10 +181,7 @@ limitations under the License.
 
 
 class RemovePrFromMergeQueue extends _types_generated__WEBPACK_IMPORTED_MODULE_7__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.seconds = '';
-    }
+    seconds = '';
 }
 const removePrFromMergeQueue = async ({ seconds }) => {
     const { data: pullRequests } = await _octokit__WEBPACK_IMPORTED_MODULE_4__/* .octokit */ .A.pulls.list({

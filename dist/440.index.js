@@ -32,11 +32,8 @@ limitations under the License.
 
 
 class CreatePR extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.title = '';
-        this.body = '';
-    }
+    title = '';
+    body = '';
 }
 const createPr = async ({ title, body, head = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.ref.replace('refs/heads/', ''), base, return_full_payload }) => {
     const pr_base = base || (await (0,_utils_get_default_branch__WEBPACK_IMPORTED_MODULE_2__/* .getDefaultBranch */ .Q)());

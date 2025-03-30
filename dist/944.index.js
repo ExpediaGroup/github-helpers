@@ -117,11 +117,8 @@ limitations under the License.
 
 
 class SetDeploymentStatus extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.state = '';
-        this.environment = '';
-    }
+    state = '';
+    environment = '';
 }
 const setDeploymentStatus = async ({ sha, state, environment, description, target_url, environment_url }) => {
     const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.listDeployments({

@@ -22,7 +22,7 @@ import { SECONDS_IN_A_DAY } from '../constants';
 import { paginateAllBranches } from '../utils/paginate-all-branches';
 
 export class DeleteStaleBranches extends HelperInputs {
-  days?: string;
+  declare days?: string;
 }
 
 export const deleteStaleBranches = async ({ days = '30' }: DeleteStaleBranches = {}) => {

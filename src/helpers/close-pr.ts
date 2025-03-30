@@ -17,10 +17,10 @@ import { octokit } from '../octokit';
 import { createPrComment } from './create-pr-comment';
 
 export class ClosePr extends HelperInputs {
-  body?: string;
-  pull_number?: string;
-  repo_name?: string;
-  repo_owner_name?: string;
+  declare body?: string;
+  declare pull_number?: string;
+  declare repo_name?: string;
+  declare repo_owner_name?: string;
 }
 
 export const closePr = async ({ body, pull_number, repo_name, repo_owner_name }: ClosePr = {}) => {

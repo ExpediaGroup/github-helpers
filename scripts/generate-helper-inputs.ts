@@ -7,7 +7,7 @@ const inputs = (load(yamlContents) as { inputs: { [input: string]: { description
 const newContents = `${COPYRIGHT_HEADER}
 
 export class HelperInputs {
-${Object.keys(inputs).map(input => `  ${input}?: string;`).join('\n')}
+${Object.keys(inputs).map(input => `  declare ${input}?: string;`).join('\n')}
 }
 `
 

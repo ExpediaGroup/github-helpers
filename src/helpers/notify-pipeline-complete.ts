@@ -19,11 +19,11 @@ import { octokit } from '../octokit';
 import { getMergeQueueCommitHashes } from '../utils/merge-queue';
 
 export class NotifyPipelineComplete extends HelperInputs {
-  context?: string;
-  description?: string;
-  environment?: string;
-  target_url?: string;
-  merge_queue_enabled?: string;
+  declare context?: string;
+  declare description?: string;
+  declare environment?: string;
+  declare target_url?: string;
+  declare merge_queue_enabled?: string;
 }
 
 export const notifyPipelineComplete = async ({

@@ -18,7 +18,7 @@ import { Repository } from '@octokit/graphql-schema';
 import { getPrNumberFromMergeQueueRef } from '../utils/merge-queue';
 
 export class GetMergeQueuePosition extends HelperInputs {
-  max_queue_size?: string;
+  declare max_queue_size?: string;
 }
 
 export const getMergeQueuePosition = async ({ max_queue_size = '10' }: GetMergeQueuePosition) => {

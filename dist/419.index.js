@@ -313,10 +313,7 @@ limitations under the License.
 
 
 class CreatePrComment extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.body = '';
-    }
+    body = '';
 }
 const emptyResponse = { data: [] };
 const getFirstPrByCommit = async (sha, repo_name, repo_owner_name) => {

@@ -117,11 +117,8 @@ limitations under the License.
 
 
 class DeleteDeployment extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.sha = '';
-        this.environment = '';
-    }
+    sha = '';
+    environment = '';
 }
 const deleteDeployment = async ({ sha, environment }) => {
     const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.listDeployments({

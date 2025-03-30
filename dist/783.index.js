@@ -33,11 +33,7 @@ limitations under the License.
 
 
 class IsUserInTeam extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.login = '';
-        this.team = '';
-    }
+    team = '';
 }
 const isUserInTeam = async ({ login = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.actor, team }) => {
     const members = await paginateAllMembersInOrg(team);

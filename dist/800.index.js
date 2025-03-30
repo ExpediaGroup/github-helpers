@@ -30,10 +30,7 @@ limitations under the License.
 
 
 class AddLabels extends _types_generated__WEBPACK_IMPORTED_MODULE_2__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.labels = '';
-    }
+    labels = '';
 }
 const addLabels = ({ labels }) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.issues.addLabels({
     labels: labels.split('\n'),

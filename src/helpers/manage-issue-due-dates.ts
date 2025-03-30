@@ -22,7 +22,7 @@ import { context } from '@actions/github';
 import { removeLabelIfExists } from './remove-label';
 
 export class ManageIssueDueDates extends HelperInputs {
-  days?: string;
+  declare days?: string;
 }
 
 export const manageIssueDueDates = async ({ days = '7' }: ManageIssueDueDates) => {

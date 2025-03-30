@@ -28,10 +28,7 @@ limitations under the License.
 
 
 class GenerateMatrix extends _types_generated__WEBPACK_IMPORTED_MODULE_1__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.paths = '';
-    }
+    paths = '';
 }
 const generateMatrix = ({ paths, batches: _batches = '1', load_balancing_sizes, use_basic_matrix_configuration = '' }) => {
     const matrixValues = paths.split(/[\n,]/);

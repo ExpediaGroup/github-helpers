@@ -21,7 +21,7 @@ import { octokit } from '../octokit';
 export class CreateProjectCardProps extends HelperInputs {
   project_name = '';
   project_destination_column_name = '';
-  note?: string;
+  declare note?: string;
 }
 
 export const createProjectCard = async ({ project_name, project_destination_column_name, note }: CreateProjectCardProps) => {

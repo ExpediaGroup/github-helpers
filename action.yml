@@ -56,9 +56,6 @@ inputs:
   ignore_globs:
     description: 'A list of file path globs to ignore (newline/comma separated)'
     required: false
-  extensions:
-    description: 'A list of file extensions (new line separated)'
-    required: false
   override_filter_paths:
     description: 'A list of file paths to trigger an override of the filter (newline/comma separated)'
     required: false

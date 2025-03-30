@@ -122,11 +122,8 @@ limitations under the License.
 
 
 class CreateProjectCardProps extends _types_generated__WEBPACK_IMPORTED_MODULE_5__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.project_name = '';
-        this.project_destination_column_name = '';
-    }
+    project_name = '';
+    project_destination_column_name = '';
 }
 const createProjectCard = async ({ project_name, project_destination_column_name, note }) => {
     const columnsList = await (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__/* .getProjectColumns */ .V)({ project_name });

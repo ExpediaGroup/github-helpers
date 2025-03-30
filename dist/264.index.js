@@ -117,11 +117,8 @@ limitations under the License.
 
 
 class InitiateDeployment extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.sha = '';
-        this.environment = '';
-    }
+    sha = '';
+    environment = '';
 }
 const initiateDeployment = async ({ sha, state = 'in_progress', environment, environment_url, description, target_url }) => {
     const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.createDeployment({

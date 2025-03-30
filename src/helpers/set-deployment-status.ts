@@ -20,10 +20,10 @@ import { octokit } from '../octokit';
 export class SetDeploymentStatus extends HelperInputs {
   state = '';
   environment = '';
-  sha?: string;
-  description?: string;
-  target_url?: string;
-  environment_url?: string;
+  declare sha?: string;
+  declare description?: string;
+  declare target_url?: string;
+  declare environment_url?: string;
 }
 
 export const setDeploymentStatus = async ({ sha, state, environment, description, target_url, environment_url }: SetDeploymentStatus) => {

@@ -19,12 +19,12 @@ import { getChangedFilepaths } from '../utils/get-changed-filepaths';
 import micromatch from 'micromatch';
 
 export class GeneratePathMatrix extends HelperInputs {
-  paths?: string;
-  globs?: string;
-  override_filter_paths?: string;
-  override_filter_globs?: string;
-  paths_no_filter?: string;
-  batches?: string;
+  declare paths?: string;
+  declare globs?: string;
+  declare override_filter_paths?: string;
+  declare override_filter_globs?: string;
+  declare paths_no_filter?: string;
+  declare batches?: string;
 }
 
 export const generatePathMatrix = async ({

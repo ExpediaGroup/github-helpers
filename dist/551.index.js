@@ -122,12 +122,9 @@ limitations under the License.
 
 
 class MoveProjectCardProps extends _types_generated__WEBPACK_IMPORTED_MODULE_5__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.project_destination_column_name = '';
-        this.project_name = '';
-        this.project_origin_column_name = '';
-    }
+    project_destination_column_name = '';
+    project_name = '';
+    project_origin_column_name = '';
 }
 const moveProjectCard = async ({ project_destination_column_name, project_origin_column_name, project_name }) => {
     const columnsList = await (0,_utils_get_project_columns__WEBPACK_IMPORTED_MODULE_1__/* .getProjectColumns */ .V)({ project_name });

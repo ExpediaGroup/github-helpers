@@ -20,7 +20,7 @@ export class UpdateCheckResult extends HelperInputs {
   context = '';
   sha = '';
   state = '';
-  description?: string;
+  declare description?: string;
 }
 
 export const updateCheckResult = async ({ context, sha, state, description }: UpdateCheckResult) => {

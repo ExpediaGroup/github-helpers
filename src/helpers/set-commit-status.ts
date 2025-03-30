@@ -22,9 +22,9 @@ export class SetCommitStatus extends HelperInputs {
   sha = '';
   context = '';
   state = '';
-  description?: string;
-  target_url?: string;
-  skip_if_already_set?: string;
+  declare description?: string;
+  declare target_url?: string;
+  declare skip_if_already_set?: string;
 }
 
 export const setCommitStatus = async ({ sha, context, state, description, target_url, skip_if_already_set }: SetCommitStatus) => {

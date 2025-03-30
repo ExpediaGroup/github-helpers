@@ -33,10 +33,7 @@ limitations under the License.
 
 
 class AreReviewersRequired extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .m {
-    constructor() {
-        super(...arguments);
-        this.teams = '';
-    }
+    teams = '';
 }
 const areReviewersRequired = async ({ teams }) => {
     const prNumber = _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.issue.number;
