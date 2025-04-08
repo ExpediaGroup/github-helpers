@@ -64,4 +64,5 @@ export class HelperInputs {
   declare allow_only_for_maintainers?: string;
   declare use_basic_matrix_configuration?: string;
   declare merge_queue_enabled?: string;
+  declare packages?: string;
 }
