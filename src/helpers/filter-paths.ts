@@ -18,14 +18,16 @@ import micromatch from 'micromatch';
 import { octokit } from '../octokit';
 import { getPrNumberFromMergeQueueRef } from '../utils/merge-queue';
 import { GITHUB_OPTIONS } from '../constants';
+import { file } from 'bun';
 
 export class FilterPaths extends HelperInputs {
   declare paths?: string;
   declare globs?: string;
   declare sha?: string;
+  declare packages?: string;
 }
 
-export const filterPaths = async ({ paths, globs, sha }: FilterPaths) => {
+export const filterPaths = async ({ paths, globs, sha, packages }: FilterPaths) => {
   const listPrsResult = sha
     ? await octokit.repos.listPullRequestsAssociatedWithCommit({
         commit_sha: sha,
@@ -42,7 +44,12 @@ export const filterPaths = async ({ paths, globs, sha }: FilterPaths) => {
     ...context.repo
   });
 
+  if (hasRelevantPackageChanged(data, packages)) {
+    return true;
+  }
+
   const fileNames = data.map(file => file.filename);
+
   if (globs) {
     if (paths) core.info('`paths` and `globs` inputs found, defaulting to use `globs` for filtering');
     return micromatch(fileNames, globs.split('\n')).length > 0;
@@ -52,4 +59,15 @@ export const filterPaths = async ({ paths, globs, sha }: FilterPaths) => {
   } else {
     core.error('Must pass `globs` or `paths` for filtering');
   }
+};
+
+const hasRelevantPackageChanged = (files: any[], packages?: string) => {
+  if (!packages || !files.map(file => file.fileName).includes('package.json')) {
+    return false;
+  }
+
+  const relevantPackages = packages.split('\n');
+  const fileDiffs = files.map(file => file.patch);
+
+  return fileDiffs.some(diff => relevantPackages.some(pkg => diff.includes(pkg)));
 };
