@@ -126,7 +126,7 @@ limitations under the License.
 
 class FilterPaths extends _types_generated__WEBPACK_IMPORTED_MODULE_6__/* .HelperInputs */ .m {
 }
-const filterPaths = async ({ paths, globs, sha }) => {
+const filterPaths = async ({ paths, globs, sha, packages }) => {
     const listPrsResult = sha
         ? await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.listPullRequestsAssociatedWithCommit({
             commit_sha: sha,
@@ -141,6 +141,9 @@ const filterPaths = async ({ paths, globs, sha }) => {
         pull_number,
         ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
     });
+    if (packages && hasRelevantPackageChanged(data, packages)) {
+        return true;
+    }
     const fileNames = data.map(file => file.filename);
     if (globs) {
         if (paths)
@@ -154,6 +157,13 @@ const filterPaths = async ({ paths, globs, sha }) => {
     else {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.error('Must pass `globs` or `paths` for filtering');
     }
+};
+const hasRelevantPackageChanged = (files, packages) => {
+    const packageJson = files.find(file => file.filename === 'package.json');
+    if (!packageJson) {
+        return false;
+    }
+    return packages.split('\n').some(pkg => packageJson.patch?.includes(pkg));
 };
 
 
