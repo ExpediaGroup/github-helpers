@@ -17,14 +17,24 @@ import { context } from '@actions/github';
 import micromatch from 'micromatch';
 import { octokit } from '../octokit';
 import { getPrNumberFromMergeQueueRef } from '../utils/merge-queue';
+import { GITHUB_OPTIONS } from '../constants';
 
 export class FilterPaths extends HelperInputs {
   declare paths?: string;
   declare globs?: string;
+  declare sha?: string;
 }
 
-export const filterPaths = async ({ paths, globs }: FilterPaths) => {
-  const pull_number = context.eventName === 'merge_group' ? getPrNumberFromMergeQueueRef() : context.issue.number;
+export const filterPaths = async ({ paths, globs, sha }: FilterPaths) => {
+  const listPrsResult = sha
+    ? await octokit.repos.listPullRequestsAssociatedWithCommit({
+        commit_sha: sha,
+        ...context.repo,
+        ...GITHUB_OPTIONS
+      })
+    : undefined;
+  const prNumberFromSha = listPrsResult?.data.find(Boolean)?.number;
+  const pull_number = context.eventName === 'merge_group' ? getPrNumberFromMergeQueueRef() : (prNumberFromSha ?? context.issue.number);
 
   const { data } = await octokit.pulls.listFiles({
     per_page: 100,

@@ -188,6 +188,19 @@ describe('filterPaths', () => {
     expect(result).toBe(true);
   });
 
+  it('should call listFiles with correct pr number in sha case', async () => {
+    await filterPaths({
+      paths,
+      sha: 'sha'
+    });
+
+    expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
+      per_page: 100,
+      pull_number: 789,
+      ...context.repo
+    });
+  });
+
   it('should call listFiles with correct pr number in merge queue case', async () => {
     context.eventName = 'merge_group';
     context.ref = 'refs/heads/gh-readonly-queue/default-branch/pr-12345-f0d9a4cb862b13cdaab6522f72d6dc17e4336b7f';
@@ -200,5 +213,6 @@ describe('filterPaths', () => {
       pull_number: 12345,
       ...context.repo
     });
+    expect(octokit.repos.listPullRequestsAssociatedWithCommit).not.toHaveBeenCalled();
   });
 });
