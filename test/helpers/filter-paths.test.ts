@@ -293,4 +293,12 @@ describe('filterPaths', () => {
     });
     expect(octokit.repos.listPullRequestsAssociatedWithCommit).not.toHaveBeenCalled();
   });
+
+  it('should return false when no filtering params are passed', async () => {
+    const result = await filterPaths({});
+
+    expect(result).toBe(false);
+    expect(octokit.pulls.listFiles).not.toHaveBeenCalled();
+    expect(octokit.repos.listPullRequestsAssociatedWithCommit).not.toHaveBeenCalled();
+  });
 });

@@ -28,6 +28,11 @@ export class FilterPaths extends HelperInputs {
 }
 
 export const filterPaths = async ({ paths, globs, sha, packages }: FilterPaths) => {
+  if (!paths && !globs && !packages) {
+    core.error('Must pass `globs` or `paths` or `packages` for filtering');
+    return false;
+  }
+
   const listPrsResult = sha
     ? await octokit.repos.listPullRequestsAssociatedWithCommit({
         commit_sha: sha,
@@ -55,8 +60,6 @@ export const filterPaths = async ({ paths, globs, sha, packages }: FilterPaths) 
   } else if (paths) {
     const filePaths = paths.split('\n');
     return fileNames.some(changedFile => filePaths.some(filePath => changedFile.startsWith(filePath)));
-  } else {
-    core.error('Must pass `globs` or `paths` for filtering');
   }
 };
 
