@@ -164,7 +164,7 @@ const hasRelevantPackageChanged = (files, packages) => {
     if (!packageJson) {
         return false;
     }
-    return packages.split('\n').some(pkg => packageJson.patch?.includes(pkg));
+    return packages.split('\n').some(pkg => new RegExp(`(-|\\+)\\s*\\"${pkg}\\"`).test(packageJson.patch ?? ''));
 };
 
 

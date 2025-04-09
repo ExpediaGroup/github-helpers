@@ -69,5 +69,5 @@ const hasRelevantPackageChanged = (files: ChangedFilesList, packages: string) =>
     return false;
   }
 
-  return packages.split('\n').some(pkg => packageJson.patch?.includes(pkg));
+  return packages.split('\n').some(pkg => new RegExp(`(-|\\+)\\s*\\"${pkg}\\"`).test(packageJson.patch ?? ''));
 };
