@@ -240,15 +240,15 @@ describe('filterPaths', () => {
             contents_url:
               'https://api.github.com/repos/octocat/Hello-World/contents/file1.txt?ref=6dcb09b5b57875f334f61aebed695e2e4193db5e',
             patch: `
-        @@ -143,7 +143,7 @@
-       "@shared-ui/retail-activities-reviews": "15.0.0",
-       "@shared-ui/retail-affiliates-stripe": "1.13.7",
-       "@shared-ui/retail-communication-center-preview-menu": "2.0.0",
-  -    "@shared-ui/retail-compare-providers": "5.0.5",
-  +    "@shared-ui/retail-compare-providers": "5.0.6",
-       "@shared-ui/retail-compare-toggle": "1.0.2",
-       "@shared-ui/retail-credit-card-account-placement": "2.0.0",
-       "@shared-ui/retail-customer-direct-feedback": "4.0.0",
+@@ -143,7 +143,7 @@
+      "@shared-ui/retail-activities-reviews": "15.0.0",
+      "@shared-ui/retail-affiliates-stripe": "1.13.7",
+      "@shared-ui/retail-communication-center-preview-menu": "2.0.0",
+-    "@shared-ui/retail-compare-providers": "5.0.5",
++    "@shared-ui/retail-compare-providers": "5.0.6",
+      "@shared-ui/retail-compare-toggle": "1.0.2",
+      "@shared-ui/retail-credit-card-account-placement": "2.0.0",
+      "@shared-ui/retail-customer-direct-feedback": "4.0.0",
   `
           }
         ]
@@ -276,15 +276,15 @@ describe('filterPaths', () => {
             contents_url:
               'https://api.github.com/repos/octocat/Hello-World/contents/file1.txt?ref=6dcb09b5b57875f334f61aebed695e2e4193db5e',
             patch: `
-            @@ -142,7 +142,7 @@
-       "@shared-ui/retail-activities-cross-sell-rate-calendar": "4.0.0",
-       "@shared-ui/retail-activities-reviews": "15.0.0",
-       "@shared-ui/retail-affiliates-stripe": "1.13.7",
-  -    "@shared-ui/retail-communication-center-preview-menu": "2.0.0",
-  +    "@shared-ui/retail-communication-center-preview-menu": "2.0.1",
-       "@shared-ui/retail-compare-providers": "5.0.5",
-       "@shared-ui/retail-compare-toggle": "1.0.2",
-       "@shared-ui/retail-credit-card-account-placement": "2.0.0",
+@@ -142,7 +142,7 @@
+      "@shared-ui/retail-activities-cross-sell-rate-calendar": "4.0.0",
+      "@shared-ui/retail-activities-reviews": "15.0.0",
+      "@shared-ui/retail-affiliates-stripe": "1.13.7",
+-    "@shared-ui/retail-communication-center-preview-menu": "2.0.0",
++    "@shared-ui/retail-communication-center-preview-menu": "2.0.1",
+      "@shared-ui/retail-compare-providers": "5.0.5",
+      "@shared-ui/retail-compare-toggle": "1.0.2",
+      "@shared-ui/retail-credit-card-account-placement": "2.0.0",
   `
           }
         ]
