@@ -157,6 +157,9 @@ inputs:
   merge_queue_enabled:
     description: 'Boolean to indicate if the repo is using the merge queue feature'
     required: false
+  packages:
+    description: 'A list of dependencies inside package.json'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'

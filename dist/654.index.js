@@ -127,6 +127,10 @@ limitations under the License.
 class FilterPaths extends _types_generated__WEBPACK_IMPORTED_MODULE_6__/* .HelperInputs */ .m {
 }
 const filterPaths = async ({ paths, globs, sha, packages }) => {
+    if (!paths && !globs && !packages) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error('Must pass `globs` or `paths` or `packages` for filtering');
+        return false;
+    }
     const listPrsResult = sha
         ? await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.listPullRequestsAssociatedWithCommit({
             commit_sha: sha,
@@ -153,9 +157,6 @@ const filterPaths = async ({ paths, globs, sha, packages }) => {
     else if (paths) {
         const filePaths = paths.split('\n');
         return fileNames.some(changedFile => filePaths.some(filePath => changedFile.startsWith(filePath)));
-    }
-    else {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error('Must pass `globs` or `paths` for filtering');
     }
 };
 const hasRelevantPackageChanged = (files, packages) => {
