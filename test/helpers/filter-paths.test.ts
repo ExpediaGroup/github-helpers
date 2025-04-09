@@ -139,84 +139,6 @@ describe('filterPaths', () => {
     expect(result).toBe(true);
   });
 
-  it('should return true if one of the packages matches a changed package in package.json', async () => {
-    (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
-      data: [
-        {
-          sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
-          filename: 'package.json',
-          status: 'added',
-          additions: 103,
-          deletions: 21,
-          changes: 124,
-          blob_url: 'https://github.com/octocat/Hello-World/blob/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
-          raw_url: 'https://github.com/octocat/Hello-World/raw/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
-          contents_url: 'https://api.github.com/repos/octocat/Hello-World/contents/file1.txt?ref=6dcb09b5b57875f334f61aebed695e2e4193db5e',
-          patch:
-            '@@ -132,7 +132,7 @@ "@shared-ui/retail-lodging-compare": "2.0.1", @@ -1000,7 +1000,7 @@ "@shared-ui/retail-lodging-compare": "2.0.1",'
-        }
-      ]
-    }));
-    const result = await filterPaths({
-      globs,
-      packages: '@shared-ui/retail-lodging-compare'
-    });
-
-    expect(result).toBe(true);
-  });
-
-  it('should return false if no package matches a changed package in package.json', async () => {
-    (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
-      data: [
-        {
-          sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
-          filename: 'package.json',
-          status: 'added',
-          additions: 103,
-          deletions: 21,
-          changes: 124,
-          blob_url: 'https://github.com/octocat/Hello-World/blob/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
-          raw_url: 'https://github.com/octocat/Hello-World/raw/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
-          contents_url: 'https://api.github.com/repos/octocat/Hello-World/contents/file1.txt?ref=6dcb09b5b57875f334f61aebed695e2e4193db5e',
-          patch:
-            '@@ -132,7 +132,7 @@ "@shared-ui/retail-property-offers": "2.0.1", @@ -1000,7 +1000,7 @@ "@shared-ui/retail-property-offers": "2.0.1",'
-        }
-      ]
-    }));
-    const result = await filterPaths({
-      globs,
-      packages: '@shared-ui/retail-lodging-compare'
-    });
-
-    expect(result).toBe(false);
-  });
-
-  it('should return false if there are no package.json changes', async () => {
-    (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
-      data: [
-        {
-          sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
-          filename: 'not-package.json',
-          status: 'added',
-          additions: 103,
-          deletions: 21,
-          changes: 124,
-          blob_url: 'https://github.com/octocat/Hello-World/blob/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
-          raw_url: 'https://github.com/octocat/Hello-World/raw/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
-          contents_url: 'https://api.github.com/repos/octocat/Hello-World/contents/file1.txt?ref=6dcb09b5b57875f334f61aebed695e2e4193db5e',
-          patch:
-            '@@ -132,7 +132,7 @@ "@shared-ui/retail-property-offers": "2.0.1", @@ -1000,7 +1000,7 @@ "@shared-ui/retail-property-offers": "2.0.1",'
-        }
-      ]
-    }));
-    const result = await filterPaths({
-      globs,
-      packages: '@shared-ui/retail-lodging-compare'
-    });
-
-    expect(result).toBe(false);
-  });
-
   it('should return false when data is an empty array', async () => {
     const exactFilePath = 'exact/file/path';
     (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
@@ -300,5 +222,130 @@ describe('filterPaths', () => {
     expect(result).toBe(false);
     expect(octokit.pulls.listFiles).not.toHaveBeenCalled();
     expect(octokit.repos.listPullRequestsAssociatedWithCommit).not.toHaveBeenCalled();
+  });
+
+  describe('tests related to the packages parameter', () => {
+    it('should return true if one of the packages matches a changed package in package.json', async () => {
+      (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
+        data: [
+          {
+            sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
+            filename: 'package.json',
+            status: 'added',
+            additions: 103,
+            deletions: 21,
+            changes: 124,
+            blob_url: 'https://github.com/octocat/Hello-World/blob/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+            raw_url: 'https://github.com/octocat/Hello-World/raw/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+            contents_url:
+              'https://api.github.com/repos/octocat/Hello-World/contents/file1.txt?ref=6dcb09b5b57875f334f61aebed695e2e4193db5e',
+            patch: `
+        @@ -143,7 +143,7 @@
+       "@shared-ui/retail-activities-reviews": "15.0.0",
+       "@shared-ui/retail-affiliates-stripe": "1.13.7",
+       "@shared-ui/retail-communication-center-preview-menu": "2.0.0",
+  -    "@shared-ui/retail-compare-providers": "5.0.5",
+  +    "@shared-ui/retail-compare-providers": "5.0.6",
+       "@shared-ui/retail-compare-toggle": "1.0.2",
+       "@shared-ui/retail-credit-card-account-placement": "2.0.0",
+       "@shared-ui/retail-customer-direct-feedback": "4.0.0",
+  `
+          }
+        ]
+      }));
+      const result = await filterPaths({
+        globs,
+        packages: '@shared-ui/retail-compare-providers'
+      });
+
+      expect(result).toBe(true);
+    });
+
+    it('should return false if no package matches a changed package in package.json', async () => {
+      (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
+        data: [
+          {
+            sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
+            filename: 'package.json',
+            status: 'added',
+            additions: 103,
+            deletions: 21,
+            changes: 124,
+            blob_url: 'https://github.com/octocat/Hello-World/blob/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+            raw_url: 'https://github.com/octocat/Hello-World/raw/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+            contents_url:
+              'https://api.github.com/repos/octocat/Hello-World/contents/file1.txt?ref=6dcb09b5b57875f334f61aebed695e2e4193db5e',
+            patch: `
+            @@ -142,7 +142,7 @@
+       "@shared-ui/retail-activities-cross-sell-rate-calendar": "4.0.0",
+       "@shared-ui/retail-activities-reviews": "15.0.0",
+       "@shared-ui/retail-affiliates-stripe": "1.13.7",
+  -    "@shared-ui/retail-communication-center-preview-menu": "2.0.0",
+  +    "@shared-ui/retail-communication-center-preview-menu": "2.0.1",
+       "@shared-ui/retail-compare-providers": "5.0.5",
+       "@shared-ui/retail-compare-toggle": "1.0.2",
+       "@shared-ui/retail-credit-card-account-placement": "2.0.0",
+  `
+          }
+        ]
+      }));
+      const result = await filterPaths({
+        globs,
+        packages: '@shared-ui/retail-compare-providers'
+      });
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false if there are no package.json changes', async () => {
+      (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
+        data: [
+          {
+            sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
+            filename: 'not-package.json',
+            status: 'added',
+            additions: 103,
+            deletions: 21,
+            changes: 124,
+            blob_url: 'https://github.com/octocat/Hello-World/blob/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+            raw_url: 'https://github.com/octocat/Hello-World/raw/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+            contents_url:
+              'https://api.github.com/repos/octocat/Hello-World/contents/file1.txt?ref=6dcb09b5b57875f334f61aebed695e2e4193db5e',
+            patch:
+              '@@ -132,7 +132,7 @@ "@shared-ui/retail-property-offers": "2.0.1", @@ -1000,7 +1000,7 @@ "@shared-ui/retail-property-offers": "2.0.1",'
+          }
+        ]
+      }));
+      const result = await filterPaths({
+        globs,
+        packages: '@shared-ui/retail-lodging-compare'
+      });
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false if patch is undefined', async () => {
+      (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
+        data: [
+          {
+            sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
+            filename: 'not-package.json',
+            status: 'added',
+            additions: 103,
+            deletions: 21,
+            changes: 124,
+            blob_url: 'https://github.com/octocat/Hello-World/blob/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+            raw_url: 'https://github.com/octocat/Hello-World/raw/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+            contents_url: 'https://api.github.com/repos/octocat/Hello-World/contents/file1.txt?ref=6dcb09b5b57875f334f61aebed695e2e4193db5e'
+          }
+        ]
+      }));
+      const result = await filterPaths({
+        globs,
+        packages: '@shared-ui/retail-lodging-compare'
+      });
+
+      expect(result).toBe(false);
+    });
   });
 });

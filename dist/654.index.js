@@ -161,11 +161,10 @@ const filterPaths = async ({ paths, globs, sha, packages }) => {
 };
 const hasRelevantPackageChanged = (files, packages) => {
     const packageJson = files.find(file => file.filename === 'package.json');
-    if (!packageJson) {
+    if (!packageJson?.patch) {
         return false;
     }
-    console.log(packageJson.patch);
-    return packages.split('\n').some(pkg => packageJson.patch?.includes(pkg));
+    return packages.split('\n').some(pkg => new RegExp(`(-|\\+)\\s*\\"${pkg}\\"`).test(packageJson.patch ?? ''));
 };
 
 
