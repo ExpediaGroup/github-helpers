@@ -14,6 +14,7 @@ limitations under the License.
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { getChangedFilepaths } from '../utils/get-changed-filepaths';
+import { getPrNumberFromMergeQueueRef } from '../utils/merge-queue';
 
 export class GetChangedFiles extends HelperInputs {
   declare pattern?: string;
@@ -22,7 +23,8 @@ export class GetChangedFiles extends HelperInputs {
 }
 
 export const getChangedFiles = async ({ pattern, delimiter = ',', ignore_deleted }: GetChangedFiles) => {
-  const filePaths = await getChangedFilepaths(context.issue.number, Boolean(ignore_deleted));
+  const pullNumber = context.eventName === 'merge_group' ? getPrNumberFromMergeQueueRef() : context.issue.number;
+  const filePaths = await getChangedFilepaths(pullNumber, Boolean(ignore_deleted));
   const filteredFilePaths = pattern ? filePaths.filter(fileName => fileName.match(pattern)) : filePaths;
   return filteredFilePaths.join(delimiter);
 };
