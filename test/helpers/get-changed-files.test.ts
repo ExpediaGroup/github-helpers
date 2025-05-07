@@ -14,6 +14,7 @@ limitations under the License.
 import { Mocktokit } from '../types';
 import { getChangedFiles } from '../../src/helpers/get-changed-files';
 import { octokit } from '../../src/octokit';
+import { context } from '@actions/github';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
@@ -151,6 +152,17 @@ describe('getChangedFiles', () => {
       data: page === 1 ? mock_data4 : []
     }));
     const result = await getChangedFiles({ ignore_deleted: 'true' });
+
+    expect(result).toEqual([mock_data4[0].filename, mock_data4[1].filename, mock_data4[1].previous_filename].join(','));
+  });
+
+  it('should handle merge queue case', async () => {
+    context.eventName = 'merge_group';
+    context.ref = 'refs/heads/gh-readonly-queue/default-branch/pr-12345-f0d9a4cb862b13cdaab6522f72d6dc17e4336b7f';
+    (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async ({ page, pull_number }) => ({
+      data: pull_number === 12345 && page === 1 ? mock_data4 : []
+    }));
+    const result = await getChangedFiles({});
 
     expect(result).toEqual([mock_data4[0].filename, mock_data4[1].filename, mock_data4[1].previous_filename].join(','));
   });
