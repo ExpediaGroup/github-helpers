@@ -15,6 +15,7 @@ import { GITHUB_OPTIONS } from '../constants';
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
+import { map } from 'bluebird';
 
 class DeleteDeploymentResponse {
   deploymentsDeleted = 0;
@@ -40,14 +41,6 @@ const setDeploymentStatus = async (deployment_id: number) => {
   });
 };
 
-const deleteDeploymentPromise = async (deployment_id: number) => {
-  return octokit.repos.deleteDeployment({
-    deployment_id,
-    ...context.repo,
-    ...GITHUB_OPTIONS
-  });
-};
-
 export const deleteDeployment = async ({ sha, environment }: DeleteDeployment): Promise<DeleteDeploymentResponse> => {
   const { data } = await octokit.repos.listDeployments({
     sha,
@@ -67,22 +60,39 @@ export const deleteDeployment = async ({ sha, environment }: DeleteDeployment): 
   const deactivateRequests = deployments.map(setDeploymentStatus);
   await Promise.all(deactivateRequests);
 
-  const deleteRequests = deployments.map(deleteDeploymentPromise);
+  const reqResults = await map(
+    deployments,
+    async (deploymentId: number) => {
+      try {
+        const reqResult = await octokit.repos.deleteDeployment({
+          deployment_id: deploymentId,
+          ...context.repo,
+          ...GITHUB_OPTIONS
+        });
+        return {
+          status: 'fulfilled',
+          value: reqResult
+        };
+      } catch (error) {
+        return {
+          status: 'rejected',
+          reason: error
+        };
+      }
+    },
+    { concurrency: 5 }
+  );
 
-  const reqResults = await Promise.allSettled([
-    ...deleteRequests,
-    octokit.repos.deleteAnEnvironment({
+  const envDelResult = await octokit.repos
+    .deleteAnEnvironment({
       environment_name: environment,
       ...context.repo,
       ...GITHUB_OPTIONS
     })
-  ]);
+    .catch(() => null);
 
-  const deploymentsResults = reqResults.slice(0, deleteRequests.length);
-  const environmentResult = reqResults[deleteRequests.length];
-
-  const deploymentsDeleted = deploymentsResults.filter(result => result.status === 'fulfilled').length;
-  const environmentDeleted = environmentResult?.status === 'fulfilled';
+  const deploymentsDeleted = reqResults.filter(result => result.status === 'fulfilled').length;
+  const environmentDeleted = envDelResult?.status === 204;
 
   return new DeleteDeploymentResponse({
     deploymentsDeleted,

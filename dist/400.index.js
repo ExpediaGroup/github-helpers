@@ -96,10 +96,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   deleteDeployment: () => (/* binding */ deleteDeployment)
 /* harmony export */ });
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7242);
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8428);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(8428);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6590);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4366);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_3__);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -116,6 +118,7 @@ limitations under the License.
 
 
 
+
 class DeleteDeploymentResponse {
     deploymentsDeleted = 0;
     deploymentsFound = 0;
@@ -125,19 +128,12 @@ class DeleteDeploymentResponse {
         Object.assign(this, init);
     }
 }
-class DeleteDeployment extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .m {
+class DeleteDeployment extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .m {
     environment = '';
 }
 const setDeploymentStatus = async (deployment_id) => {
     return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.createDeploymentStatus({
         state: 'inactive',
-        deployment_id,
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
-        ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
-    });
-};
-const deleteDeploymentPromise = async (deployment_id) => {
-    return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.deleteDeployment({
         deployment_id,
         ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
         ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
@@ -158,19 +154,34 @@ const deleteDeployment = async ({ sha, environment }) => {
     const deployments = data.map(deployment => deployment.id);
     const deactivateRequests = deployments.map(setDeploymentStatus);
     await Promise.all(deactivateRequests);
-    const deleteRequests = deployments.map(deleteDeploymentPromise);
-    const reqResults = await Promise.allSettled([
-        ...deleteRequests,
-        _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.deleteAnEnvironment({
-            environment_name: environment,
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
-            ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
-        })
-    ]);
-    const deploymentsResults = reqResults.slice(0, deleteRequests.length);
-    const environmentResult = reqResults[deleteRequests.length];
-    const deploymentsDeleted = deploymentsResults.filter(result => result.status === 'fulfilled').length;
-    const environmentDeleted = environmentResult?.status === 'fulfilled';
+    const reqResults = await (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(deployments, async (deploymentId) => {
+        try {
+            const reqResult = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.deleteDeployment({
+                deployment_id: deploymentId,
+                ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+                ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
+            });
+            return {
+                status: 'fulfilled',
+                value: reqResult
+            };
+        }
+        catch (error) {
+            return {
+                status: 'rejected',
+                reason: error
+            };
+        }
+    }, { concurrency: 5 });
+    const envDelResult = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos
+        .deleteAnEnvironment({
+        environment_name: environment,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+        ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
+    })
+        .catch(() => null);
+    const deploymentsDeleted = reqResults.filter(result => result.status === 'fulfilled').length;
+    const environmentDeleted = envDelResult?.status === 204;
     return new DeleteDeploymentResponse({
         deploymentsDeleted,
         deploymentsFound: data.length,
