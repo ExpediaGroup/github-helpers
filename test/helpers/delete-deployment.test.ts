@@ -32,22 +32,26 @@ jest.mock('@actions/github', () => ({
   }))
 }));
 
+function* getDeployments(requested: number) {
+  const baseId = 123;
+  while (requested--) {
+    yield {
+      id: baseId + requested
+    };
+  }
+}
+
 describe('deleteDeployment', () => {
   const sha = 'sha';
   const environment = 'environment';
   const deployment_id = 123;
 
   describe('deployment exists', () => {
+    const deployments = [...getDeployments(5)];
+
     beforeEach(() => {
       (octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
-        data: [
-          {
-            id: deployment_id
-          },
-          {
-            id: 456
-          }
-        ]
+        data: deployments
       }));
       deleteDeployment({
         sha,
@@ -79,6 +83,10 @@ describe('deleteDeployment', () => {
         ...context.repo,
         ...GITHUB_OPTIONS
       });
+    });
+
+    it('should call deleteDeployment once per member of deployments', () => {
+      expect(octokit.repos.deleteDeployment).toHaveBeenCalledTimes(deployments.length);
     });
 
     it('should call deleteAnEnvironment with correct params', () => {

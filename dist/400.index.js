@@ -116,10 +116,33 @@ limitations under the License.
 
 
 
+class DeleteDeploymentResponse {
+    deploymentsDeleted = 0;
+    deploymentsFound = 0;
+    message = '';
+    environmentDeleted = false;
+    constructor(init) {
+        Object.assign(this, init);
+    }
+}
 class DeleteDeployment extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .m {
-    sha = '';
     environment = '';
 }
+const setDeploymentStatus = async (deployment_id) => {
+    return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.createDeploymentStatus({
+        state: 'inactive',
+        deployment_id,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+        ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
+    });
+};
+const deleteDeploymentPromise = async (deployment_id) => {
+    return _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.deleteDeployment({
+        deployment_id,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+        ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
+    });
+};
 const deleteDeployment = async ({ sha, environment }) => {
     const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.listDeployments({
         sha,
@@ -127,27 +150,33 @@ const deleteDeployment = async ({ sha, environment }) => {
         ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
         ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
     });
-    const deployment_id = data.find(Boolean)?.id;
-    if (deployment_id) {
-        await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.createDeploymentStatus({
-            state: 'inactive',
-            deployment_id,
+    if (!data.length) {
+        return new DeleteDeploymentResponse({
+            message: `No deployments found for environment ${environment}`
+        });
+    }
+    const deployments = data.map(deployment => deployment.id);
+    const deactivateRequests = deployments.map(setDeploymentStatus);
+    await Promise.all(deactivateRequests);
+    const deleteRequests = deployments.map(deleteDeploymentPromise);
+    const reqResults = await Promise.allSettled([
+        ...deleteRequests,
+        _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.deleteAnEnvironment({
+            environment_name: environment,
             ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
             ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
-        });
-        return Promise.all([
-            _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.deleteDeployment({
-                deployment_id,
-                ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
-                ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
-            }),
-            _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.deleteAnEnvironment({
-                environment_name: environment,
-                ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
-                ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
-            })
-        ]);
-    }
+        })
+    ]);
+    const deploymentsResults = reqResults.slice(0, deleteRequests.length);
+    const environmentResult = reqResults[deleteRequests.length];
+    const deploymentsDeleted = deploymentsResults.filter(result => result.status === 'fulfilled').length;
+    const environmentDeleted = environmentResult?.status === 'fulfilled';
+    return new DeleteDeploymentResponse({
+        deploymentsDeleted,
+        deploymentsFound: data.length,
+        environmentDeleted,
+        message: `Deleted ${deploymentsDeleted} deployments for environment ${environment}`
+    });
 };
 
 
