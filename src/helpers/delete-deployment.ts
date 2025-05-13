@@ -11,11 +11,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import core from '@actions/core';
 import { GITHUB_OPTIONS } from '../constants';
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import { map } from 'bluebird';
+
+const DEFAULT_MAP_CONCURRENCY = 5;
 
 class DeleteDeploymentResponse {
   deploymentsDeleted = 0;
@@ -32,13 +35,38 @@ export class DeleteDeployment extends HelperInputs {
   environment = '';
 }
 
-const setDeploymentStatus = async (deployment_id: number) => {
-  return octokit.repos.createDeploymentStatus({
-    state: 'inactive',
-    deployment_id,
-    ...context.repo,
-    ...GITHUB_OPTIONS
-  });
+const deactiveDeployments = async (deployments: number[]) => {
+  const statusResponse = await map(
+    deployments,
+    async (deploymentId: number) => {
+      return octokit.repos.createDeploymentStatus({
+        state: 'inactive',
+        deployment_id: deploymentId,
+        ...context.repo,
+        ...GITHUB_OPTIONS
+      });
+    },
+    { concurrency: DEFAULT_MAP_CONCURRENCY }
+  );
+
+  const deletionMatch = statusResponse.filter(result => result.data.state === 'success').length === deployments.length;
+  if (!deletionMatch) {
+    core.info(`Not all deployments were successfully deactivated. Some may still be active.`);
+  }
+};
+
+const deleteDeployments = async (deployments: number[]) => {
+  return await map(
+    deployments,
+    async (deploymentId: number) => {
+      return octokit.repos.deleteDeployment({
+        deployment_id: deploymentId,
+        ...context.repo,
+        ...GITHUB_OPTIONS
+      });
+    },
+    { concurrency: DEFAULT_MAP_CONCURRENCY }
+  );
 };
 
 export const deleteDeployment = async ({ sha, environment }: DeleteDeployment): Promise<DeleteDeploymentResponse> => {
@@ -57,31 +85,9 @@ export const deleteDeployment = async ({ sha, environment }: DeleteDeployment): 
 
   const deployments = data.map(deployment => deployment.id);
 
-  const deactivateRequests = deployments.map(setDeploymentStatus);
-  await Promise.all(deactivateRequests);
+  await deactiveDeployments(deployments);
 
-  const reqResults = await map(
-    deployments,
-    async (deploymentId: number) => {
-      try {
-        const reqResult = await octokit.repos.deleteDeployment({
-          deployment_id: deploymentId,
-          ...context.repo,
-          ...GITHUB_OPTIONS
-        });
-        return {
-          status: 'fulfilled',
-          value: reqResult
-        };
-      } catch (error) {
-        return {
-          status: 'rejected',
-          reason: error
-        };
-      }
-    },
-    { concurrency: 5 }
-  );
+  const reqResults = await deleteDeployments(deployments);
 
   const envDelResult = await octokit.repos
     .deleteAnEnvironment({
@@ -91,7 +97,7 @@ export const deleteDeployment = async ({ sha, environment }: DeleteDeployment): 
     })
     .catch(() => null);
 
-  const deploymentsDeleted = reqResults.filter(result => result.status === 'fulfilled').length;
+  const deploymentsDeleted = reqResults.filter(result => result.status === 204).length;
   const environmentDeleted = envDelResult?.status === 204;
 
   return new DeleteDeploymentResponse({
