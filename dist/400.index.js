@@ -95,11 +95,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   DeleteDeployment: () => (/* binding */ DeleteDeployment),
 /* harmony export */   deleteDeployment: () => (/* binding */ deleteDeployment)
 /* harmony export */ });
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7242);
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8428);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6590);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7484);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(7242);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(8428);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3228);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6590);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(4366);
+/* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_4__);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -116,38 +120,74 @@ limitations under the License.
 
 
 
-class DeleteDeployment extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .m {
-    sha = '';
+
+
+const DEFAULT_MAP_CONCURRENCY = 5;
+class DeleteDeploymentResponse {
+    deploymentsDeleted = 0;
+    deploymentsFound = 0;
+    message = '';
+    environmentDeleted = false;
+    constructor(init) {
+        Object.assign(this, init);
+    }
+}
+class DeleteDeployment extends _types_generated__WEBPACK_IMPORTED_MODULE_5__/* .HelperInputs */ .m {
     environment = '';
 }
+const deactivateDeployments = async (deployments) => {
+    const statusResponse = await (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(deployments, async (deploymentId) => {
+        return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.createDeploymentStatus({
+            state: 'inactive',
+            deployment_id: deploymentId,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo,
+            ..._constants__WEBPACK_IMPORTED_MODULE_1__/* .GITHUB_OPTIONS */ .r0
+        });
+    }, { concurrency: DEFAULT_MAP_CONCURRENCY });
+    const deletionMatch = statusResponse.filter(result => result.data.state === 'success').length === deployments.length;
+    if (!deletionMatch) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0___default().info(`Not all deployments were successfully deactivated. Some may still be active.`);
+    }
+};
+const deleteDeployments = async (deployments) => {
+    return await (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(deployments, async (deploymentId) => {
+        return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.deleteDeployment({
+            deployment_id: deploymentId,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo,
+            ..._constants__WEBPACK_IMPORTED_MODULE_1__/* .GITHUB_OPTIONS */ .r0
+        });
+    }, { concurrency: DEFAULT_MAP_CONCURRENCY });
+};
 const deleteDeployment = async ({ sha, environment }) => {
-    const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.listDeployments({
+    const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.listDeployments({
         sha,
         environment,
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
-        ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo,
+        ..._constants__WEBPACK_IMPORTED_MODULE_1__/* .GITHUB_OPTIONS */ .r0
     });
-    const deployment_id = data.find(Boolean)?.id;
-    if (deployment_id) {
-        await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.createDeploymentStatus({
-            state: 'inactive',
-            deployment_id,
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
-            ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
+    if (!data.length) {
+        return new DeleteDeploymentResponse({
+            message: `No deployments found for environment ${environment}`
         });
-        return Promise.all([
-            _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.deleteDeployment({
-                deployment_id,
-                ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
-                ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
-            }),
-            _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.deleteAnEnvironment({
-                environment_name: environment,
-                ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
-                ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
-            })
-        ]);
     }
+    const deployments = data.map(deployment => deployment.id);
+    await deactivateDeployments(deployments);
+    const reqResults = await deleteDeployments(deployments);
+    const envDelResult = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos
+        .deleteAnEnvironment({
+        environment_name: environment,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo,
+        ..._constants__WEBPACK_IMPORTED_MODULE_1__/* .GITHUB_OPTIONS */ .r0
+    })
+        .catch(() => null);
+    const deploymentsDeleted = reqResults.filter(result => result.status === 204).length;
+    const environmentDeleted = envDelResult?.status === 204;
+    return new DeleteDeploymentResponse({
+        deploymentsDeleted,
+        deploymentsFound: data.length,
+        environmentDeleted,
+        message: `Deleted ${deploymentsDeleted} deployments for environment ${environment}`
+    });
 };
 
 
