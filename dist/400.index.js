@@ -146,7 +146,7 @@ const deactivateDeployments = async (deployments) => {
     }, { concurrency: DEFAULT_MAP_CONCURRENCY });
     const deletionMatch = statusResponse.filter(result => result.data.state === 'success').length === deployments.length;
     if (!deletionMatch) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0___default().info(`Not all deployments were successfully deactivated. Some may still be active.`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Not all deployments were successfully deactivated. Some may still be active.`);
     }
 };
 const deleteDeployments = async (deployments) => {
