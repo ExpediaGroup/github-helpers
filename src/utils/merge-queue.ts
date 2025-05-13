@@ -20,9 +20,9 @@ export const getMergeQueueCommitHashes = async () => {
   return mergeQueueBranches.map(branch => branch.commit.sha);
 };
 
-export const getPrNumberFromMergeQueueRef = () => {
+export const getPrNumberFromMergeQueueRef = (ref = context.ref) => {
   const prNumber = Number(
-    context.ref
+    ref
       .split('/')
       .find(part => part.includes('pr-'))
       ?.match(/\d+/)?.[0]
