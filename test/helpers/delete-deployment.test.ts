@@ -11,13 +11,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { info } from '@actions/core';
 import { GITHUB_OPTIONS } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { deleteDeployment } from '../../src/helpers/delete-deployment';
 import { octokit } from '../../src/octokit';
 
-jest.mock('@actions/core');
+jest.mock('@actions/core', () => ({
+  getInput: jest.fn(),
+  info: jest.fn()
+}));
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' } },
   getOctokit: jest.fn(() => ({
@@ -49,11 +53,28 @@ describe('deleteDeployment', () => {
   describe('deployment exists', () => {
     const deployments = [...getDeployments(5)];
 
-    beforeEach(() => {
+    beforeEach(async () => {
       (octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
         data: deployments
       }));
-      deleteDeployment({
+
+      (octokit.repos.createDeploymentStatus as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {
+          state: 'success'
+        }
+      }));
+
+      (octokit.repos.deleteDeployment as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {},
+        status: 204
+      }));
+
+      (octokit.repos.deleteAnEnvironment as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {},
+        status: 204
+      }));
+
+      await deleteDeployment({
         sha,
         environment
       });
@@ -128,6 +149,47 @@ describe('deleteDeployment', () => {
 
     it('should not call deleteAnEnvironment', () => {
       expect(octokit.repos.deleteAnEnvironment).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('some deployments were no deactivated', () => {
+    const deployments = [...getDeployments(5)];
+
+    beforeEach(async () => {
+      let callCount = 0;
+
+      (octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
+        data: deployments
+      }));
+
+      (octokit.repos.createDeploymentStatus as unknown as Mocktokit).mockImplementation(async () => {
+        const isEven = callCount % 2 === 0;
+        callCount++;
+        return {
+          data: {
+            state: isEven ? 'success' : 'failure'
+          }
+        };
+      });
+
+      (octokit.repos.deleteDeployment as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {},
+        status: 204
+      }));
+
+      (octokit.repos.deleteAnEnvironment as unknown as Mocktokit).mockImplementation(async () => ({
+        data: {},
+        status: 204
+      }));
+
+      await deleteDeployment({
+        sha,
+        environment
+      });
+    });
+
+    it('should print a warning message', async () => {
+      expect(info).toHaveBeenCalledWith(`Not all deployments were successfully deactivated. Some may still be active.`);
     });
   });
 });
