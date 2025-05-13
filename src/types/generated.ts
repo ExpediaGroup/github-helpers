@@ -65,4 +65,6 @@ export class HelperInputs {
   declare use_basic_matrix_configuration?: string;
   declare merge_queue_enabled?: string;
   declare packages?: string;
+  declare branch_name?: string;
+  declare commit_message?: string;
 }

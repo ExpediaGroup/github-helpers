@@ -10,11 +10,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   CreatePR: () => (/* binding */ CreatePR),
 /* harmony export */   createPr: () => (/* binding */ createPr)
 /* harmony export */ });
-/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8428);
+/* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(8428);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3228);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6590);
 /* harmony import */ var _utils_get_default_branch__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(4682);
+/* harmony import */ var simple_git__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(9070);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,11 +32,14 @@ limitations under the License.
 
 
 
-class CreatePR extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .m {
+
+class CreatePR extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .m {
     title = '';
     body = '';
+    commit_message = '';
 }
-const createPr = async ({ title, body, head = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.ref.replace('refs/heads/', ''), base, return_full_payload }) => {
+const createPr = async ({ title, body, head, base, return_full_payload, branch_name, commit_message }) => {
+    head = await getOrCreateHeadBranch({ head, branch_name, commit_message });
     const pr_base = base || (await (0,_utils_get_default_branch__WEBPACK_IMPORTED_MODULE_2__/* .getDefaultBranch */ .Q)());
     await updateHeadWithBaseBranch(pr_base, head);
     const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.pulls.create({
@@ -47,6 +51,17 @@ const createPr = async ({ title, body, head = _actions_github__WEBPACK_IMPORTED_
         ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo
     });
     return return_full_payload === 'true' ? data : data.number;
+};
+const getOrCreateHeadBranch = async ({ head, branch_name, commit_message }) => {
+    if (branch_name && commit_message) {
+        const git = (0,simple_git__WEBPACK_IMPORTED_MODULE_3__/* ["default"] */ .Ay)();
+        await git.checkoutLocalBranch(branch_name);
+        await git.add('.');
+        await git.commit(commit_message);
+        await git.push('origin', branch_name);
+        return branch_name;
+    }
+    return head || _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.ref.replace('refs/heads/', '');
 };
 const updateHeadWithBaseBranch = (base, head) => _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.repos.merge({
     base: head,

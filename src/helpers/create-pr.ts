@@ -15,16 +15,21 @@ import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 import { getDefaultBranch } from '../utils/get-default-branch';
+import simpleGit from 'simple-git';
 
 export class CreatePR extends HelperInputs {
   title = '';
   body = '';
+  commit_message: string = '';
   declare head?: string;
   declare base?: string;
   declare return_full_payload?: string;
+  declare branch_name?: string;
 }
 
-export const createPr = async ({ title, body, head = context.ref.replace('refs/heads/', ''), base, return_full_payload }: CreatePR) => {
+export const createPr = async ({ title, body, head, base, return_full_payload, branch_name, commit_message }: CreatePR) => {
+  head = await getOrCreateHeadBranch({ head, branch_name, commit_message });
+
   const pr_base = base || (await getDefaultBranch());
   await updateHeadWithBaseBranch(pr_base, head);
   const { data } = await octokit.pulls.create({
@@ -36,6 +41,21 @@ export const createPr = async ({ title, body, head = context.ref.replace('refs/h
     ...context.repo
   });
   return return_full_payload === 'true' ? data : data.number;
+};
+
+const getOrCreateHeadBranch = async ({ head, branch_name, commit_message }: Partial<CreatePR>): Promise<string> => {
+  if (branch_name && commit_message) {
+    const git = simpleGit();
+
+    await git.checkoutLocalBranch(branch_name);
+    await git.add('.');
+    await git.commit(commit_message);
+    await git.push('origin', branch_name);
+
+    return branch_name;
+  }
+
+  return head || context.ref.replace('refs/heads/', '');
 };
 
 const updateHeadWithBaseBranch = (base: string, head: string) =>
