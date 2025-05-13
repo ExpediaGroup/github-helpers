@@ -35,7 +35,7 @@ export class DeleteDeployment extends HelperInputs {
   environment = '';
 }
 
-const deactiveDeployments = async (deployments: number[]) => {
+const deactivateDeployments = async (deployments: number[]) => {
   const statusResponse = await map(
     deployments,
     async (deploymentId: number) => {
