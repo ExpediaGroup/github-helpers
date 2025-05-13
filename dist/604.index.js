@@ -145,8 +145,8 @@ const getMergeQueueCommitHashes = async () => {
     const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/'));
     return mergeQueueBranches.map(branch => branch.commit.sha);
 };
-const getPrNumberFromMergeQueueRef = () => {
-    const prNumber = Number(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref
+const getPrNumberFromMergeQueueRef = (ref = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref) => {
+    const prNumber = Number(ref
         .split('/')
         .find(part => part.includes('pr-'))
         ?.match(/\d+/)?.[0]);
