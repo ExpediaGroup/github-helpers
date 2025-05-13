@@ -85,7 +85,7 @@ export const deleteDeployment = async ({ sha, environment }: DeleteDeployment): 
 
   const deployments = data.map(deployment => deployment.id);
 
-  await deactiveDeployments(deployments);
+  await deactivateDeployments(deployments);
 
   const reqResults = await deleteDeployments(deployments);
 

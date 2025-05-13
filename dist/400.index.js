@@ -135,7 +135,7 @@ class DeleteDeploymentResponse {
 class DeleteDeployment extends _types_generated__WEBPACK_IMPORTED_MODULE_5__/* .HelperInputs */ .m {
     environment = '';
 }
-const deactiveDeployments = async (deployments) => {
+const deactivateDeployments = async (deployments) => {
     const statusResponse = await (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(deployments, async (deploymentId) => {
         return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.createDeploymentStatus({
             state: 'inactive',
@@ -171,7 +171,7 @@ const deleteDeployment = async ({ sha, environment }) => {
         });
     }
     const deployments = data.map(deployment => deployment.id);
-    await deactiveDeployments(deployments);
+    await deactivateDeployments(deployments);
     const reqResults = await deleteDeployments(deployments);
     const envDelResult = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos
         .deleteAnEnvironment({
