@@ -148,7 +148,7 @@ The following parameters can be used for additional control over when it is safe
 |        body         |                                            Description of the PR                                            |          N/A          |    ✔️    |
 |        base         |                                   Base ref to initiate pull request onto                                    |          N/A          |    ❌    |
 |     branch_name     | Name of the branch to be created. Use this parameter if you want the helper to create a new branch for you. |          N/A          |    ❌    |
-|   commit_message    |                          Text used when creating a commit if branch_name is given                           | Automated PR creation |    ❌    |
+|   commit_message    |   Text used when creating a commit if branch_name is given. Similar to `git commit -m "<commit_message>"`   | Automated PR creation |    ❌    |
 |        head         |        Head ref to initiate pull request from. If branch_name is provided it'll be the value of head        |          N/A          |    ❌    |
 | return_full_payload |             Return full payload from GitHub rather than a trimmed-down version of the response              |          N/A          |    ❌    |
 
