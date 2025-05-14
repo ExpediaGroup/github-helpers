@@ -20,7 +20,7 @@ import simpleGit from 'simple-git';
 export class CreatePR extends HelperInputs {
   title = '';
   body = '';
-  commit_message: string = '';
+  declare commit_message?: string;
   declare head?: string;
   declare base?: string;
   declare return_full_payload?: string;

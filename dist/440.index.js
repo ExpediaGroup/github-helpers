@@ -36,7 +36,6 @@ limitations under the License.
 class CreatePR extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperInputs */ .m {
     title = '';
     body = '';
-    commit_message = '';
 }
 const createPr = async ({ title, body, head, base, return_full_payload, branch_name, commit_message }) => {
     const resolvedHead = await getOrCreateHeadBranch({ head, branch_name, commit_message });
