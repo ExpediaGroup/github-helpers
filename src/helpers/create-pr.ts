@@ -47,6 +47,10 @@ const getOrCreateHeadBranch = async ({ head, branch_name, commit_message }: Part
   if (branch_name && commit_message) {
     const git = simpleGit();
 
+    const { name: userName, email: userEmail } = await getUserIdentity();
+    await git.addConfig('user.name', userName);
+    await git.addConfig('user.email', userEmail);
+
     await git.checkoutLocalBranch(branch_name);
     await git.add('.');
     await git.commit(commit_message);
@@ -64,3 +68,10 @@ const updateHeadWithBaseBranch = (base: string, head: string) =>
     head: base,
     ...context.repo
   });
+
+const getUserIdentity = async () => {
+  const { data: user } = await octokit.users.getAuthenticated();
+  const name = user.name || user.login;
+  const email = user.email || `${user.id}+${user.login}@users.noreply.github.com`;
+  return { name, email };
+};
