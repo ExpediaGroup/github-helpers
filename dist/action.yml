@@ -160,6 +160,13 @@ inputs:
   packages:
     description: 'A list of dependencies inside package.json'
     required: false
+  branch_name:
+    description: 'The name of the branch to create'
+    required: false
+  commit_message:
+    description: 'The commit message to use'
+    required: false
+    default: 'Automated PR creation'
 outputs:
   output:
     description: 'The output of the helper'
