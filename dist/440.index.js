@@ -39,12 +39,12 @@ class CreatePR extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/* .HelperIn
     commit_message = '';
 }
 const createPr = async ({ title, body, head, base, return_full_payload, branch_name, commit_message }) => {
-    head = await getOrCreateHeadBranch({ head, branch_name, commit_message });
+    const resolvedHead = await getOrCreateHeadBranch({ head, branch_name, commit_message });
     const pr_base = base || (await (0,_utils_get_default_branch__WEBPACK_IMPORTED_MODULE_2__/* .getDefaultBranch */ .Q)());
-    await updateHeadWithBaseBranch(pr_base, head);
+    await updateHeadWithBaseBranch(pr_base, resolvedHead);
     const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.pulls.create({
         title,
-        head,
+        head: resolvedHead,
         base: pr_base,
         body,
         maintainer_can_modify: true,

@@ -28,13 +28,13 @@ export class CreatePR extends HelperInputs {
 }
 
 export const createPr = async ({ title, body, head, base, return_full_payload, branch_name, commit_message }: CreatePR) => {
-  head = await getOrCreateHeadBranch({ head, branch_name, commit_message });
+  const resolvedHead = await getOrCreateHeadBranch({ head, branch_name, commit_message });
 
   const pr_base = base || (await getDefaultBranch());
-  await updateHeadWithBaseBranch(pr_base, head);
+  await updateHeadWithBaseBranch(pr_base, resolvedHead);
   const { data } = await octokit.pulls.create({
     title,
-    head,
+    head: resolvedHead,
     base: pr_base,
     body,
     maintainer_can_modify: true,
