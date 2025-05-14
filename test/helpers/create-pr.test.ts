@@ -33,7 +33,8 @@ jest.mock('simple-git', () => {
     checkoutLocalBranch: jest.fn(),
     add: jest.fn(),
     commit: jest.fn(),
-    push: jest.fn()
+    push: jest.fn(),
+    addConfig: jest.fn()
   };
 
   const simpleGitMock = jest.fn(() => mockGit);
@@ -177,6 +178,8 @@ describe('createPr', () => {
 
     const git = (simpleGit as unknown as MockSimpleGit).__mockGitInstance;
 
+    expect(git.addConfig).toHaveBeenCalledWith('user.name', 'github-actions[bot]');
+    expect(git.addConfig).toHaveBeenCalledWith('user.email', 'github-actions[bot]@users.noreply.github.com');
     expect(git.checkoutLocalBranch).toHaveBeenCalledWith(branch_name);
     expect(git.add).toHaveBeenCalledWith('.');
     expect(git.commit).toHaveBeenCalledWith(commit_message);

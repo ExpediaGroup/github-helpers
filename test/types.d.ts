@@ -16,6 +16,8 @@ import { SimpleGit } from 'simple-git';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Mocktokit = jest.MockInstance<any, any[]>;
 
-export type MockSimpleGit = jest.MockedFunction<() => jest.Mocked<Pick<SimpleGit, 'checkoutLocalBranch' | 'add' | 'commit' | 'push'>>> & {
-  __mockGitInstance: jest.Mocked<Pick<SimpleGit, 'checkoutLocalBranch' | 'add' | 'commit' | 'push'>>;
+export type MockSimpleGit = jest.MockedFunction<
+  () => jest.Mocked<Pick<SimpleGit, 'checkoutLocalBranch' | 'add' | 'commit' | 'push' | 'addConfig'>>
+> & {
+  __mockGitInstance: jest.Mocked<Pick<SimpleGit, 'checkoutLocalBranch' | 'add' | 'commit' | 'push' | 'addConfig'>>;
 };

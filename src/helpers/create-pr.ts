@@ -47,6 +47,9 @@ const getOrCreateHeadBranch = async ({ head, branch_name, commit_message }: Part
   if (branch_name && commit_message) {
     const git = simpleGit();
 
+    await git.addConfig('user.name', 'github-actions[bot]');
+    await git.addConfig('user.email', 'github-actions[bot]@users.noreply.github.com');
+
     await git.checkoutLocalBranch(branch_name);
     await git.add('.');
     await git.commit(commit_message);

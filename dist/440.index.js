@@ -54,6 +54,8 @@ const createPr = async ({ title, body, head, base, return_full_payload, branch_n
 const getOrCreateHeadBranch = async ({ head, branch_name, commit_message }) => {
     if (branch_name && commit_message) {
         const git = (0,simple_git__WEBPACK_IMPORTED_MODULE_3__/* ["default"] */ .Ay)();
+        await git.addConfig('user.name', 'github-actions[bot]');
+        await git.addConfig('user.email', 'github-actions[bot]@users.noreply.github.com');
         await git.checkoutLocalBranch(branch_name);
         await git.add('.');
         await git.commit(commit_message);
