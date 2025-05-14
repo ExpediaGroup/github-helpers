@@ -23,17 +23,7 @@ jest.mock('@actions/github', () => ({
   getOctokit: jest.fn(() => ({
     rest: {
       repos: { get: jest.fn(), merge: jest.fn() },
-      pulls: { create: jest.fn() },
-      users: {
-        getAuthenticated: jest.fn(() => ({
-          data: {
-            login: 'user',
-            id: 123,
-            name: 'Mock User',
-            email: 'mock@expedia.com'
-          }
-        }))
-      }
+      pulls: { create: jest.fn() }
     }
   }))
 }));
@@ -188,8 +178,8 @@ describe('createPr', () => {
 
     const git = (simpleGit as unknown as MockSimpleGit).__mockGitInstance;
 
-    expect(git.addConfig).toHaveBeenCalledWith('user.name', 'Mock User');
-    expect(git.addConfig).toHaveBeenCalledWith('user.email', 'mock@expedia.com');
+    expect(git.addConfig).toHaveBeenCalledWith('user.name', 'github-actions[bot]');
+    expect(git.addConfig).toHaveBeenCalledWith('user.email', 'github-actions[bot]@users.noreply.github.com');
     expect(git.checkoutLocalBranch).toHaveBeenCalledWith(branch_name);
     expect(git.add).toHaveBeenCalledWith('.');
     expect(git.commit).toHaveBeenCalledWith(commit_message);

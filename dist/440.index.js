@@ -54,9 +54,8 @@ const createPr = async ({ title, body, head, base, return_full_payload, branch_n
 const getOrCreateHeadBranch = async ({ head, branch_name, commit_message }) => {
     if (branch_name && commit_message) {
         const git = (0,simple_git__WEBPACK_IMPORTED_MODULE_3__/* ["default"] */ .Ay)();
-        const { name: userName, email: userEmail } = await getUserIdentity();
-        await git.addConfig('user.name', userName);
-        await git.addConfig('user.email', userEmail);
+        await git.addConfig('user.name', 'github-actions[bot]');
+        await git.addConfig('user.email', 'github-actions[bot]@users.noreply.github.com');
         await git.checkoutLocalBranch(branch_name);
         await git.add('.');
         await git.commit(commit_message);
@@ -70,12 +69,6 @@ const updateHeadWithBaseBranch = (base, head) => _octokit__WEBPACK_IMPORTED_MODU
     head: base,
     ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo
 });
-const getUserIdentity = async () => {
-    const { data: user } = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.users.getAuthenticated();
-    const name = user.name || user.login;
-    const email = user.email || `${user.id}+${user.login}@users.noreply.github.com`;
-    return { name, email };
-};
 
 
 /***/ }),
