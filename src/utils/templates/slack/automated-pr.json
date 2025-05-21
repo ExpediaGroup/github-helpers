@@ -1,0 +1,41 @@
+{
+  "text": "There is a new automated PR",
+  "blocks": [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Release please PR",
+        "emoji": true
+      }
+    },
+    {
+      "type": "section",
+      "fields": [
+        {
+          "type": "mrkdwn",
+          "text": "*Type:*\nNew version: {{VERSION}}"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "fields": [
+        {
+          "type": "mrkdwn",
+          "text": "*Required:*\n<!subteam^{{TEAM_ID}}|{{TEAM_NAME}}>"
+        }
+      ],
+      "accessory": {
+        "type": "button",
+        "text": {
+          "type": "plain_text",
+          "text": "PR link",
+          "emoji": true
+        },
+        "url": "{{PR_URL}}",
+        "action_id": "button-action"
+      }
+    }
+  ]
+}

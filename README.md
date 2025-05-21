@@ -46,6 +46,10 @@ with:
 
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
 
+### [slack-bot-webhook](.github/workflows/slack-bot-webhook.yml)
+
+- Send a webhook to a slack bot to trigger a message given the params
+
 ### [get-email-on-user-profile](.github/workflows/get-email-on-user-profile.yml)
 
 - Retrieves a user&#x27;s github email with optional regex verification

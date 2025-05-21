@@ -10,6 +10,7 @@
     "@adobe/node-fetch-retry": "2.2.0",
     "@octokit/graphql-schema": "15.26.0",
     "@octokit/rest": "21.1.1",
+    "@slack/web-api": "^7.9.2",
     "axios": "1.8.4",
     "bluebird": "3.7.2",
     "codeowners-utils": "1.0.2",
