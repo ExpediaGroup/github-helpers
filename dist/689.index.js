@@ -146,9 +146,10 @@ __webpack_unused_export__ = deferred;
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Ay: () => (/* binding */ esm_default),
 /* harmony export */   Lp: () => (/* binding */ simpleGit)
 /* harmony export */ });
-/* unused harmony exports CheckRepoActions, CleanOptions, DiffNameStatus, GitConfigScope, GitConstructError, GitError, GitPluginError, GitResponseError, ResetMode, TaskConfigurationError, default, gitP, grepQueryBuilder, pathspec */
+/* unused harmony exports CheckRepoActions, CleanOptions, DiffNameStatus, GitConfigScope, GitConstructError, GitError, GitPluginError, GitResponseError, ResetMode, TaskConfigurationError, gitP, grepQueryBuilder, pathspec */
 /* harmony import */ var _kwsites_file_exists__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7117);
 /* harmony import */ var debug__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2830);
 /* harmony import */ var child_process__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5317);
@@ -4947,7 +4948,7 @@ function toError(error) {
 
 // src/esm.mjs
 var simpleGit = gitInstanceFactory;
-var esm_default = (/* unused pure expression or super */ null && (gitInstanceFactory));
+var esm_default = gitInstanceFactory;
 
 //# sourceMappingURL=index.js.map
 

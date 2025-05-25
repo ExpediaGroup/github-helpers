@@ -22,12 +22,22 @@ jest.mock('@actions/github', () => ({
   getOctokit: jest.fn(() => ({
     rest: {
       pulls: { listFiles: jest.fn() },
-      repos: { listPullRequestsAssociatedWithCommit: jest.fn(() => ({ data: [{ number: 789 }] })) }
+      repos: {
+        listPullRequestsAssociatedWithCommit: jest.fn(() => ({ data: [{ number: 789 }] })),
+        listBranchesForHeadCommit: jest.fn(() => ({
+          data: [{ name: 'gh-readonly-queue/default-branch/pr-999-f0d9a4cb862b13cdaab6522f72d6dc17e4336b7f' }]
+        }))
+      }
     }
   }))
 }));
 
 describe('filterPaths', () => {
+  afterEach(() => {
+    context.eventName = '';
+    context.ref = '';
+  });
+
   const paths = 'file/path/1\nfile/path/2';
   const globs = '**/*.md\nsomething/**/file1.txt';
 
@@ -211,6 +221,21 @@ describe('filterPaths', () => {
     expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
       per_page: 100,
       pull_number: 12345,
+      ...context.repo
+    });
+    expect(octokit.repos.listPullRequestsAssociatedWithCommit).not.toHaveBeenCalled();
+  });
+
+  it('should call listFiles with correct pr number in merge queue with sha case', async () => {
+    await filterPaths({
+      paths,
+      sha: 'sha',
+      merge_queue_enabled: 'true'
+    });
+
+    expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
+      per_page: 100,
+      pull_number: 999,
       ...context.repo
     });
     expect(octokit.repos.listPullRequestsAssociatedWithCommit).not.toHaveBeenCalled();

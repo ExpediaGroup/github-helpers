@@ -11,5 +11,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { SimpleGit } from 'simple-git';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Mocktokit = jest.MockInstance<any, any[]>;
+
+export type MockSimpleGit = jest.MockedFunction<
+  () => jest.Mocked<Pick<SimpleGit, 'checkoutLocalBranch' | 'add' | 'commit' | 'push' | 'addConfig'>>
+> & {
+  __mockGitInstance: jest.Mocked<Pick<SimpleGit, 'checkoutLocalBranch' | 'add' | 'commit' | 'push' | 'addConfig'>>;
+};

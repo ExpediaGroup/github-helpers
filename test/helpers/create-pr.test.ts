@@ -11,10 +11,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mocktokit } from '../types';
+import { Mocktokit, MockSimpleGit } from '../types';
 import { context } from '@actions/github';
 import { createPr } from '../../src/helpers/create-pr';
 import { octokit } from '../../src/octokit';
+import simpleGit from 'simple-git';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
@@ -26,6 +27,25 @@ jest.mock('@actions/github', () => ({
     }
   }))
 }));
+
+jest.mock('simple-git', () => {
+  const mockGit = {
+    checkoutLocalBranch: jest.fn(),
+    add: jest.fn(),
+    commit: jest.fn(),
+    push: jest.fn(),
+    addConfig: jest.fn()
+  };
+
+  const simpleGitMock = jest.fn(() => mockGit);
+
+  (simpleGitMock as unknown as MockSimpleGit).__mockGitInstance = mockGit;
+
+  return {
+    __esModule: true,
+    default: simpleGitMock
+  };
+});
 
 (octokit.repos.get as unknown as Mocktokit).mockImplementation(async () => ({
   data: {
@@ -42,11 +62,13 @@ jest.mock('@actions/github', () => ({
 describe('createPr', () => {
   const title = 'title';
   const body = 'body';
+  const commit_message = 'commit message';
 
   it('should call repos get with correct params', async () => {
     await createPr({
       title,
-      body
+      body,
+      commit_message
     });
     expect(octokit.repos.get).toHaveBeenCalledWith({ ...context.repo });
   });
@@ -54,7 +76,8 @@ describe('createPr', () => {
   it('should call repos merge with correct params', async () => {
     await createPr({
       title,
-      body
+      body,
+      commit_message
     });
     expect(octokit.repos.merge).toHaveBeenCalledWith({
       base: 'source',
@@ -66,7 +89,8 @@ describe('createPr', () => {
   it('should call create with correct params', async () => {
     await createPr({
       title,
-      body
+      body,
+      commit_message
     });
     expect(octokit.pulls.create).toHaveBeenCalledWith({
       title,
@@ -83,7 +107,8 @@ describe('createPr', () => {
   it('should return the pull number', async () => {
     const result = await createPr({
       title,
-      body
+      body,
+      commit_message
     });
     expect(result).toBe(100);
   });
@@ -92,6 +117,7 @@ describe('createPr', () => {
     const result = await createPr({
       title,
       body,
+      commit_message,
       return_full_payload: 'true'
     });
     expect(result).toMatchObject({ title, number: 100 });
@@ -102,6 +128,7 @@ describe('createPr', () => {
     await createPr({
       title,
       body,
+      commit_message,
       head
     });
     expect(octokit.pulls.create).toHaveBeenCalledWith({
@@ -121,6 +148,7 @@ describe('createPr', () => {
     await createPr({
       title,
       body,
+      commit_message,
       base
     });
     expect(octokit.pulls.create).toHaveBeenCalledWith({
@@ -135,5 +163,26 @@ describe('createPr', () => {
     });
     // Since the base was provided, the repos PR should not be called.
     expect(octokit.repos.get).not.toHaveBeenCalled();
+  });
+
+  it('should create a branch if branch_name is given', async () => {
+    const branch_name = 'feature/abc';
+    const commit_message = 'commit message';
+
+    await createPr({
+      title,
+      body,
+      commit_message,
+      branch_name
+    });
+
+    const git = (simpleGit as unknown as MockSimpleGit).__mockGitInstance;
+
+    expect(git.addConfig).toHaveBeenCalledWith('user.name', 'github-actions[bot]');
+    expect(git.addConfig).toHaveBeenCalledWith('user.email', 'github-actions[bot]@users.noreply.github.com');
+    expect(git.checkoutLocalBranch).toHaveBeenCalledWith(branch_name);
+    expect(git.add).toHaveBeenCalledWith('.');
+    expect(git.commit).toHaveBeenCalledWith(commit_message);
+    expect(git.push).toHaveBeenCalledWith('origin', branch_name);
   });
 });

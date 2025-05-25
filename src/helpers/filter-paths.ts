@@ -17,7 +17,6 @@ import { context } from '@actions/github';
 import micromatch from 'micromatch';
 import { octokit } from '../octokit';
 import { getPrNumberFromMergeQueueRef } from '../utils/merge-queue';
-import { GITHUB_OPTIONS } from '../constants';
 import { ChangedFilesList } from '../types/github';
 
 export class FilterPaths extends HelperInputs {
@@ -25,23 +24,38 @@ export class FilterPaths extends HelperInputs {
   declare globs?: string;
   declare sha?: string;
   declare packages?: string;
+  declare merge_queue_enabled?: string;
 }
 
-export const filterPaths = async ({ paths, globs, sha, packages }: FilterPaths) => {
+export const filterPaths = async ({ paths, globs, sha, packages, merge_queue_enabled }: FilterPaths) => {
   if (!paths && !globs && !packages) {
     core.error('Must pass `globs` or `paths` or `packages` for filtering');
     return false;
   }
 
-  const listPrsResult = sha
-    ? await octokit.repos.listPullRequestsAssociatedWithCommit({
-        commit_sha: sha,
-        ...context.repo,
-        ...GITHUB_OPTIONS
-      })
-    : undefined;
-  const prNumberFromSha = listPrsResult?.data.find(Boolean)?.number;
-  const pull_number = context.eventName === 'merge_group' ? getPrNumberFromMergeQueueRef() : (prNumberFromSha ?? context.issue.number);
+  let pull_number: number;
+  if (context.eventName === 'merge_group') {
+    pull_number = getPrNumberFromMergeQueueRef();
+  } else if (sha && merge_queue_enabled === 'true') {
+    const branchesResult = sha
+      ? await octokit.repos.listBranchesForHeadCommit({
+          commit_sha: sha,
+          ...context.repo
+        })
+      : undefined;
+    const branchName = branchesResult?.data[0]?.name;
+    pull_number = getPrNumberFromMergeQueueRef(branchName);
+  } else if (sha) {
+    const listPrsResult = await octokit.repos.listPullRequestsAssociatedWithCommit({
+      commit_sha: sha,
+      ...context.repo
+    });
+    const prFromSha = listPrsResult?.data.find(Boolean);
+    if (!prFromSha) throw new Error(`No PR found for commit ${sha}`);
+    pull_number = prFromSha.number;
+  } else {
+    pull_number = context.issue.number;
+  }
 
   const { data } = await octokit.pulls.listFiles({
     per_page: 100,
