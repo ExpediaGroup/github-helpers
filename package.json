@@ -9,7 +9,6 @@
     "@actions/github": "6.0.1",
     "@adobe/node-fetch-retry": "2.2.0",
     "@octokit/graphql-schema": "15.26.0",
-    "@octokit/rest": "22.0.0",
     "axios": "1.9.0",
     "bluebird": "3.7.2",
     "codeowners-utils": "1.0.2",
@@ -59,7 +58,7 @@
     "generate": "bun scripts/generate-helper-inputs.ts",
     "lint": "eslint --quiet --fix ./**/*.ts src/**/*.ts test/**/*.ts",
     "package": "ncc build --source-map --license licenses.txt",
-    "prepare": "husky install",
+    "prepare": "husky",
     "setup": "./scripts/dev-setup.sh",
     "test": "bun jest"
   }
