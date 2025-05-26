@@ -12,15 +12,14 @@ limitations under the License.
 */
 
 import { paginateMembersInOrg } from '../../src/utils/paginate-members-in-org';
-import { MembersInOrg } from '../../src/types/github';
-import { RestEndpointMethodTypes } from '@octokit/rest';
+import { MembersInOrg, MembersInOrgParams } from '../../src/types/github';
 
 jest.mock('@actions/github', () => ({
   context: { repo: { repo: 'repo', owner: 'owner' } },
   getOctokit: jest.fn(() => ({
     rest: {
       teams: {
-        listMembersInOrg: jest.fn(async (args: RestEndpointMethodTypes['teams']['listMembersInOrg']['parameters']) => {
+        listMembersInOrg: jest.fn(async (args: MembersInOrgParams) => {
           let teamMembers: MembersInOrg = [];
           switch (args.team_slug) {
             case 'empty-team':

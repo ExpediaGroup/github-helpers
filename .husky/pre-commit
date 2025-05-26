@@ -1,2 +1,1 @@
-#!/bin/sh
 bun generate && bun lint && bun format && bun package && git add .
