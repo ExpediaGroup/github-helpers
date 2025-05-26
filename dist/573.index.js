@@ -448,7 +448,7 @@ function descending(a, b)
 
 var util = __webpack_require__(9023);
 var Stream = (__webpack_require__(2203).Stream);
-var DelayedStream = __webpack_require__(2710);
+var DelayedStream = __webpack_require__(329);
 
 module.exports = CombinedStream;
 function CombinedStream() {
@@ -658,7 +658,7 @@ CombinedStream.prototype._emitError = function(err) {
 
 /***/ }),
 
-/***/ 2710:
+/***/ 329:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 var Stream = (__webpack_require__(2203).Stream);
