@@ -12,10 +12,12 @@ limitations under the License.
 */
 
 import { DeploymentState } from '../types/github';
-import { GITHUB_OPTIONS } from '../constants';
+import { DEFAULT_PIPELINE_STATUS, GITHUB_OPTIONS } from '../constants';
 import { HelperInputs } from '../types/generated';
 import { context as githubContext } from '@actions/github';
 import { octokit } from '../octokit';
+import { getMergeQueueCommitHashes } from '../utils/merge-queue';
+import { map } from 'bluebird';
 
 export class InitiateDeployment extends HelperInputs {
   sha = '';
@@ -24,6 +26,8 @@ export class InitiateDeployment extends HelperInputs {
   declare environment_url?: string;
   declare description?: string;
   declare target_url?: string;
+  declare context?: string;
+  declare merge_queue_enabled?: string;
 }
 
 export const initiateDeployment = async ({
@@ -32,7 +36,9 @@ export const initiateDeployment = async ({
   environment,
   environment_url,
   description,
-  target_url
+  target_url,
+  context = DEFAULT_PIPELINE_STATUS,
+  merge_queue_enabled
 }: InitiateDeployment) => {
   const { data } = await octokit.repos.createDeployment({
     ref: sha,
@@ -55,5 +61,17 @@ export const initiateDeployment = async ({
     ...GITHUB_OPTIONS
   });
 
-  return deployment_id;
+  if (merge_queue_enabled === 'true') {
+    const mergeQueueCommitHashes = await getMergeQueueCommitHashes();
+    return map(mergeQueueCommitHashes, async sha =>
+      octokit.repos.createCommitStatus({
+        sha,
+        context,
+        state: 'pending',
+        description,
+        target_url,
+        ...githubContext.repo
+      })
+    );
+  }
 };
