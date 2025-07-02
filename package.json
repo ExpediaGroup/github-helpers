@@ -25,7 +25,6 @@
     "@swc/jest": "0.2.38",
     "@total-typescript/ts-reset": "0.6.1",
     "@types/bluebird": "3.5.42",
-    "@types/glob": "8.1.0",
     "@types/jest": "30.0.0",
     "@types/js-yaml": "4.0.9",
     "@types/lodash.camelcase": "4.3.9",
