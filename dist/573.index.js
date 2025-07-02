@@ -3337,6 +3337,10 @@ function toFormData(obj, formData, options) {
       return value.toISOString();
     }
 
+    if (utils.isBoolean(value)) {
+      return value.toString();
+    }
+
     if (!useBlob && utils.isBlob(value)) {
       throw new core_AxiosError('Blob is not supported. Use a Buffer instead.');
     }
@@ -4571,7 +4575,7 @@ var follow_redirects = __webpack_require__(1573);
 // EXTERNAL MODULE: external "zlib"
 var external_zlib_ = __webpack_require__(3106);
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/env/data.js
-const VERSION = "1.9.0";
+const VERSION = "1.10.0";
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/helpers/parseProtocol.js
 
 
@@ -6544,7 +6548,7 @@ const resolveBodyLength = async (headers, body) => {
       credentials: isCredentialsSupported ? withCredentials : undefined
     });
 
-    let response = await fetch(request);
+    let response = await fetch(request, fetchOptions);
 
     const isStreamResponse = supportsResponseStream && (responseType === 'stream' || responseType === 'response');
 
