@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { DEFAULT_PIPELINE_STATUS, GITHUB_OPTIONS, PRODUCTION_ENVIRONMENT } from '../constants';
+import { DEFAULT_PIPELINE_STATUS, PRODUCTION_ENVIRONMENT } from '../constants';
 import { PipelineState } from '../types/github';
 import { HelperInputs } from '../types/generated';
 import { context as githubContext } from '@actions/github';
@@ -31,8 +31,7 @@ export const setLatestPipelineStatus = async ({
 }: SetLatestPipelineStatus) => {
   const { data: deployments } = await octokit.repos.listDeployments({
     environment,
-    ...githubContext.repo,
-    ...GITHUB_OPTIONS
+    ...githubContext.repo
   });
   const deployment_id = deployments.find(Boolean)?.id;
   if (!deployment_id) {
@@ -41,8 +40,7 @@ export const setLatestPipelineStatus = async ({
   }
   const { data: deploymentStatuses } = await octokit.repos.listDeploymentStatuses({
     deployment_id,
-    ...githubContext.repo,
-    ...GITHUB_OPTIONS
+    ...githubContext.repo
   });
   const deploymentStatus = deploymentStatuses.find(Boolean);
   if (!deploymentStatus) {

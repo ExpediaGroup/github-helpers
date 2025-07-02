@@ -11,14 +11,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// These extra headers are for experimental API features on Github Enterprise. See https://docs.github.com/en/enterprise-server@3.0/rest/overview/api-previews for details.
-const PREVIEWS = ['ant-man', 'flash', 'groot', 'inertia', 'starfox'];
-export const GITHUB_OPTIONS = {
-  headers: {
-    accept: PREVIEWS.map(preview => `application/vnd.github.${preview}-preview+json`).join()
-  }
-};
-
 export const SECONDS_IN_A_DAY = 86400000;
 export const DEFAULT_PIPELINE_STATUS = 'Pipeline Status';
 export const DEFAULT_PIPELINE_DESCRIPTION = 'Pipeline clear.';

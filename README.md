@@ -152,12 +152,6 @@ The following parameters can be used for additional control over when it is safe
 |        head         |        Head ref to initiate pull request from. If branch_name is provided it'll be the value of head        |          N/A          |    ❌    |
 | return_full_payload |             Return full payload from GitHub rather than a trimmed-down version of the response              |          N/A          |    ❌    |
 
-### [create-project-card](.github/workflows/create-project-card.yml)
-
-- Creates a Project card into your GitHub Project repository by providing a `project_name` and `project_destination_column_name` in which the card should be created.
-- If `note` is provided, it will add that information into the card. If it is not provided, it will use the PR information details to populate it.
-- Useful when opening a pull request and want to track its information details into a GitHub Project.
-
 ### [check-pr-title](.github/workflows/check-pr-title.yml)
 
 - Checks whether PR title matches a certain regular expression
@@ -234,11 +228,6 @@ Additionally, the following parameters can be used for additional control over t
     - When a PR is merged, it automatically updates the first-queued PR with the default branch.
 - You can also pass `login` and `slack_webhook_url` to notify the PR author when they are in the 1st position of the merge queue.
 - Passing `skip_auto_merge: true` changes the default behaviour of automatically enabling auto-merge for PRs from the merge queue. In such case auto-merging should be enabled manually on individual PRs. It can be useful to avoid unattended deployments in case of CICD pipelines which are not fully prepared for continuous deployment.
-
-### [move-project-card](.github/workflows/move-project-card.yml)
-
-- Moves a GitHub Project card to a new column, using the `project_origin_column_name` and`project_destination_column_name` you provide.
-- In order to move a card from one place to another, it must already exist.
 
 ### [notify-pipeline-complete](.github/workflows/notify-pipeline-complete.yml)
 

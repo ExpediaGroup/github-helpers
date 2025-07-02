@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { DEFAULT_PIPELINE_DESCRIPTION, DEFAULT_PIPELINE_STATUS, GITHUB_OPTIONS, PRODUCTION_ENVIRONMENT } from '../constants';
+import { DEFAULT_PIPELINE_DESCRIPTION, DEFAULT_PIPELINE_STATUS, PRODUCTION_ENVIRONMENT } from '../constants';
 import { HelperInputs } from '../types/generated';
 import { context as githubContext } from '@actions/github';
 import { map } from 'bluebird';
@@ -35,8 +35,7 @@ export const notifyPipelineComplete = async ({
 }: NotifyPipelineComplete) => {
   const { data: deployments } = await octokit.repos.listDeployments({
     environment,
-    ...githubContext.repo,
-    ...GITHUB_OPTIONS
+    ...githubContext.repo
   });
   const deployment_id = deployments.find(Boolean)?.id;
   if (!deployment_id) return;
@@ -46,8 +45,7 @@ export const notifyPipelineComplete = async ({
     state: 'success',
     description,
     target_url,
-    ...githubContext.repo,
-    ...GITHUB_OPTIONS
+    ...githubContext.repo
   });
 
   if (merge_queue_enabled === 'true') {

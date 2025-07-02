@@ -12,7 +12,6 @@ limitations under the License.
 */
 
 import { info } from '@actions/core';
-import { GITHUB_OPTIONS } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { deleteDeployment } from '../../src/helpers/delete-deployment';
@@ -84,8 +83,7 @@ describe('deleteDeployment', () => {
       expect(octokit.repos.listDeployments).toHaveBeenCalledWith({
         sha,
         environment,
-        ...context.repo,
-        ...GITHUB_OPTIONS
+        ...context.repo
       });
     });
 
@@ -93,16 +91,14 @@ describe('deleteDeployment', () => {
       expect(octokit.repos.createDeploymentStatus).toHaveBeenCalledWith({
         state: 'inactive',
         deployment_id,
-        ...context.repo,
-        ...GITHUB_OPTIONS
+        ...context.repo
       });
     });
 
     it('should call deleteDeployment with correct params', () => {
       expect(octokit.repos.deleteDeployment).toHaveBeenCalledWith({
         deployment_id,
-        ...context.repo,
-        ...GITHUB_OPTIONS
+        ...context.repo
       });
     });
 
@@ -113,8 +109,7 @@ describe('deleteDeployment', () => {
     it('should call deleteAnEnvironment with correct params', () => {
       expect(octokit.repos.deleteAnEnvironment).toHaveBeenCalledWith({
         environment_name: environment,
-        ...context.repo,
-        ...GITHUB_OPTIONS
+        ...context.repo
       });
     });
   });
@@ -134,8 +129,7 @@ describe('deleteDeployment', () => {
       expect(octokit.repos.listDeployments).toHaveBeenCalledWith({
         sha,
         environment,
-        ...context.repo,
-        ...GITHUB_OPTIONS
+        ...context.repo
       });
     });
 

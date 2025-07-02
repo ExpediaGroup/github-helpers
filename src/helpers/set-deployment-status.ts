@@ -13,7 +13,6 @@ limitations under the License.
 
 import { DeploymentState } from '../types/github';
 import { HelperInputs } from '../types/generated';
-import { GITHUB_OPTIONS } from '../constants';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
 
@@ -30,8 +29,7 @@ export const setDeploymentStatus = async ({ sha, state, environment, description
   const { data } = await octokit.repos.listDeployments({
     sha,
     environment,
-    ...context.repo,
-    ...GITHUB_OPTIONS
+    ...context.repo
   });
   const deployment_id = data.find(Boolean)?.id;
   if (deployment_id) {
@@ -41,8 +39,7 @@ export const setDeploymentStatus = async ({ sha, state, environment, description
       description,
       target_url,
       environment_url,
-      ...context.repo,
-      ...GITHUB_OPTIONS
+      ...context.repo
     });
   }
 };

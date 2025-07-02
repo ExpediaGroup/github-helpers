@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { DEFAULT_PIPELINE_STATUS, GITHUB_OPTIONS, PRODUCTION_ENVIRONMENT } from '../../src/constants';
+import { DEFAULT_PIPELINE_STATUS, PRODUCTION_ENVIRONMENT } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { notifyPipelineComplete } from '../../src/helpers/notify-pipeline-complete';
@@ -98,8 +98,7 @@ describe('notify-pipeline-complete', () => {
       environment: PRODUCTION_ENVIRONMENT,
       deployment_id: 123,
       description,
-      ...context.repo,
-      ...GITHUB_OPTIONS
+      ...context.repo
     });
   });
 
@@ -155,8 +154,7 @@ describe('notify-pipeline-complete', () => {
       environment: PRODUCTION_ENVIRONMENT,
       deployment_id: 123,
       description,
-      ...context.repo,
-      ...GITHUB_OPTIONS
+      ...context.repo
     });
   });
 });

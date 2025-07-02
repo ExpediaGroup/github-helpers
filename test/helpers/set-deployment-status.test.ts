@@ -11,7 +11,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { GITHUB_OPTIONS } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
@@ -65,8 +64,7 @@ describe('setDeploymentStatus', () => {
       expect(octokit.repos.listDeployments).toHaveBeenCalledWith({
         sha,
         environment,
-        ...context.repo,
-        ...GITHUB_OPTIONS
+        ...context.repo
       });
     });
 
@@ -77,8 +75,7 @@ describe('setDeploymentStatus', () => {
         description,
         target_url,
         environment_url,
-        ...context.repo,
-        ...GITHUB_OPTIONS
+        ...context.repo
       });
     });
   });
@@ -102,8 +99,7 @@ describe('setDeploymentStatus', () => {
       expect(octokit.repos.listDeployments).toHaveBeenCalledWith({
         sha,
         environment,
-        ...context.repo,
-        ...GITHUB_OPTIONS
+        ...context.repo
       });
     });
 
@@ -134,8 +130,7 @@ describe('setDeploymentStatus', () => {
     it('should call listDeployments with correct params', () => {
       expect(octokit.repos.listDeployments).toHaveBeenCalledWith({
         environment,
-        ...context.repo,
-        ...GITHUB_OPTIONS
+        ...context.repo
       });
     });
 
@@ -144,8 +139,7 @@ describe('setDeploymentStatus', () => {
         state,
         deployment_id,
         description,
-        ...context.repo,
-        ...GITHUB_OPTIONS
+        ...context.repo
       });
     });
   });
