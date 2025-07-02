@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { DEFAULT_PIPELINE_STATUS, GITHUB_OPTIONS } from '../../src/constants';
+import { DEFAULT_PIPELINE_STATUS } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { initiateDeployment } from '../../src/helpers/initiate-deployment';
@@ -60,16 +60,14 @@ describe('initiateDeployment', () => {
       environment,
       auto_merge,
       required_contexts: [],
-      ...context.repo,
-      ...GITHUB_OPTIONS
+      ...context.repo
     });
     expect(octokit.repos.createDeploymentStatus).toHaveBeenCalledWith({
       state: 'in_progress',
       deployment_id,
       description,
       target_url,
-      ...context.repo,
-      ...GITHUB_OPTIONS
+      ...context.repo
     });
     expect(octokit.repos.listBranches).not.toHaveBeenCalled();
   });
@@ -108,16 +106,14 @@ describe('initiateDeployment', () => {
       environment,
       auto_merge,
       required_contexts: [],
-      ...context.repo,
-      ...GITHUB_OPTIONS
+      ...context.repo
     });
     expect(octokit.repos.createDeploymentStatus).toHaveBeenCalledWith({
       state: 'in_progress',
       deployment_id,
       description,
       target_url,
-      ...context.repo,
-      ...GITHUB_OPTIONS
+      ...context.repo
     });
     expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha: 'merge queue sha 1',

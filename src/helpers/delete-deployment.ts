@@ -12,7 +12,6 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { GITHUB_OPTIONS } from '../constants';
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
@@ -42,8 +41,7 @@ const deactivateDeployments = async (deployments: number[]) => {
       return octokit.repos.createDeploymentStatus({
         state: 'inactive',
         deployment_id: deploymentId,
-        ...context.repo,
-        ...GITHUB_OPTIONS
+        ...context.repo
       });
     },
     { concurrency: DEFAULT_MAP_CONCURRENCY }
@@ -61,8 +59,7 @@ const deleteDeployments = async (deployments: number[]) => {
     async (deploymentId: number) => {
       return octokit.repos.deleteDeployment({
         deployment_id: deploymentId,
-        ...context.repo,
-        ...GITHUB_OPTIONS
+        ...context.repo
       });
     },
     { concurrency: DEFAULT_MAP_CONCURRENCY }
@@ -73,8 +70,7 @@ export const deleteDeployment = async ({ sha, environment }: DeleteDeployment): 
   const { data } = await octokit.repos.listDeployments({
     sha,
     environment,
-    ...context.repo,
-    ...GITHUB_OPTIONS
+    ...context.repo
   });
 
   if (!data.length) {
@@ -92,8 +88,7 @@ export const deleteDeployment = async ({ sha, environment }: DeleteDeployment): 
   const envDelResult = await octokit.repos
     .deleteAnEnvironment({
       environment_name: environment,
-      ...context.repo,
-      ...GITHUB_OPTIONS
+      ...context.repo
     })
     .catch(() => null);
 

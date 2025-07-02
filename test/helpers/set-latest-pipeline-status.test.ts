@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { DEFAULT_PIPELINE_STATUS, GITHUB_OPTIONS, PRODUCTION_ENVIRONMENT } from '../../src/constants';
+import { DEFAULT_PIPELINE_STATUS, PRODUCTION_ENVIRONMENT } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { octokit } from '../../src/octokit';
@@ -66,16 +66,14 @@ describe('setLatestDeploymentStatus', () => {
     it('should call listDeployments with correct params', () => {
       expect(octokit.repos.listDeployments).toHaveBeenCalledWith({
         environment: PRODUCTION_ENVIRONMENT,
-        ...context.repo,
-        ...GITHUB_OPTIONS
+        ...context.repo
       });
     });
 
     it('should call listDeploymentStatuses with correct params', () => {
       expect(octokit.repos.listDeploymentStatuses).toHaveBeenCalledWith({
         deployment_id,
-        ...context.repo,
-        ...GITHUB_OPTIONS
+        ...context.repo
       });
     });
 

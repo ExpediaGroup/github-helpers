@@ -11,7 +11,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { GITHUB_OPTIONS } from '../constants';
 import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import { octokit } from '../octokit';
@@ -33,8 +32,7 @@ const getFirstPrByCommit = async (sha?: string, repo_name?: string, repo_owner_n
       (await octokit.repos.listPullRequestsAssociatedWithCommit({
         commit_sha: sha,
         repo: repo_name ?? context.repo.repo,
-        owner: repo_owner_name ?? context.repo.owner,
-        ...GITHUB_OPTIONS
+        owner: repo_owner_name ?? context.repo.owner
       }))) ||
     emptyResponse;
 

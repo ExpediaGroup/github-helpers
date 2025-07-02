@@ -11,7 +11,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { GITHUB_OPTIONS } from '../../src/constants';
 import { Mocktokit } from '../types';
 import { context } from '@actions/github';
 import { createPrComment } from '../../src/helpers/create-pr-comment';
@@ -108,8 +107,7 @@ describe('createPrComment', () => {
     it('should call listPullRequestsAssociatedWithCommit with correct params', () => {
       expect(octokit.repos.listPullRequestsAssociatedWithCommit).toHaveBeenCalledWith({
         commit_sha: 'sha',
-        ...context.repo,
-        ...GITHUB_OPTIONS
+        ...context.repo
       });
     });
 
@@ -166,8 +164,7 @@ describe('createPrComment', () => {
     it('should call listPullRequestsAssociatedWithCommit with correct params', () => {
       expect(octokit.repos.listPullRequestsAssociatedWithCommit).toHaveBeenCalledWith({
         commit_sha: 'sha',
-        ...context.repo,
-        ...GITHUB_OPTIONS
+        ...context.repo
       });
     });
 

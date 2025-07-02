@@ -21,7 +21,6 @@ export const modules = {
 /* harmony export */   ZV: () => (/* binding */ READY_FOR_MERGE_PR_LABEL),
 /* harmony export */   hU: () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL),
 /* harmony export */   mR: () => (/* binding */ PRIORITY_TO_DAYS_MAP),
-/* harmony export */   r0: () => (/* binding */ GITHUB_OPTIONS),
 /* harmony export */   uJ: () => (/* binding */ CORE_APPROVED_PR_LABEL),
 /* harmony export */   zh: () => (/* binding */ PRIORITY_LABELS)
 /* harmony export */ });
@@ -38,13 +37,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-// These extra headers are for experimental API features on Github Enterprise. See https://docs.github.com/en/enterprise-server@3.0/rest/overview/api-previews for details.
-const PREVIEWS = ['ant-man', 'flash', 'groot', 'inertia', 'starfox'];
-const GITHUB_OPTIONS = {
-    headers: {
-        accept: PREVIEWS.map(preview => `application/vnd.github.${preview}-preview+json`).join()
-    }
-};
 const SECONDS_IN_A_DAY = 86400000;
 const DEFAULT_PIPELINE_STATUS = 'Pipeline Status';
 const DEFAULT_PIPELINE_DESCRIPTION = 'Pipeline clear.';
@@ -131,8 +123,7 @@ const initiateDeployment = async ({ sha, state = 'in_progress', environment, env
         environment,
         auto_merge: false,
         required_contexts: [],
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
-        ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
     });
     const deployment_id = 'ref' in data ? data.id : undefined;
     if (!deployment_id)
@@ -143,8 +134,7 @@ const initiateDeployment = async ({ sha, state = 'in_progress', environment, env
         description,
         environment_url,
         target_url,
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
-        ..._constants__WEBPACK_IMPORTED_MODULE_0__/* .GITHUB_OPTIONS */ .r0
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
     });
     if (merge_queue_enabled === 'true') {
         const mergeQueueCommitHashes = await (0,_utils_merge_queue__WEBPACK_IMPORTED_MODULE_3__/* .getMergeQueueCommitHashes */ .T)();

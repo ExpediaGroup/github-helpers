@@ -21,7 +21,6 @@ export const modules = {
 /* harmony export */   ZV: () => (/* binding */ READY_FOR_MERGE_PR_LABEL),
 /* harmony export */   hU: () => (/* binding */ JUMP_THE_QUEUE_PR_LABEL),
 /* harmony export */   mR: () => (/* binding */ PRIORITY_TO_DAYS_MAP),
-/* harmony export */   r0: () => (/* binding */ GITHUB_OPTIONS),
 /* harmony export */   uJ: () => (/* binding */ CORE_APPROVED_PR_LABEL),
 /* harmony export */   zh: () => (/* binding */ PRIORITY_LABELS)
 /* harmony export */ });
@@ -38,13 +37,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-// These extra headers are for experimental API features on Github Enterprise. See https://docs.github.com/en/enterprise-server@3.0/rest/overview/api-previews for details.
-const PREVIEWS = ['ant-man', 'flash', 'groot', 'inertia', 'starfox'];
-const GITHUB_OPTIONS = {
-    headers: {
-        accept: PREVIEWS.map(preview => `application/vnd.github.${preview}-preview+json`).join()
-    }
-};
 const SECONDS_IN_A_DAY = 86400000;
 const DEFAULT_PIPELINE_STATUS = 'Pipeline Status';
 const DEFAULT_PIPELINE_DESCRIPTION = 'Pipeline clear.';

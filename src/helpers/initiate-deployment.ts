@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import { DeploymentState } from '../types/github';
-import { DEFAULT_PIPELINE_STATUS, GITHUB_OPTIONS } from '../constants';
+import { DEFAULT_PIPELINE_STATUS } from '../constants';
 import { HelperInputs } from '../types/generated';
 import { context as githubContext } from '@actions/github';
 import { octokit } from '../octokit';
@@ -45,8 +45,7 @@ export const initiateDeployment = async ({
     environment,
     auto_merge: false,
     required_contexts: [],
-    ...githubContext.repo,
-    ...GITHUB_OPTIONS
+    ...githubContext.repo
   });
   const deployment_id = 'ref' in data ? data.id : undefined;
   if (!deployment_id) return;
@@ -57,8 +56,7 @@ export const initiateDeployment = async ({
     description,
     environment_url,
     target_url,
-    ...githubContext.repo,
-    ...GITHUB_OPTIONS
+    ...githubContext.repo
   });
 
   if (merge_queue_enabled === 'true') {
