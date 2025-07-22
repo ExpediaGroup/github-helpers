@@ -46,6 +46,14 @@ with:
 
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
 
+### [stop-if-merged](.github/workflows/stop-if-merged.yml)
+
+- Action will stop the workflow if the PR has been merged.
+
+|      Parameter      |                                  Description                                  | Default value | Required |
+| :-----------------: | :---------------------------------------------------------------------------: | :-----------: | :------: |
+| pull_request_number | Number of the PR, visible in PR url and by `github.event.pull_request.number` |      N/A      |    ✔️    |
+
 ### [get-email-on-user-profile](.github/workflows/get-email-on-user-profile.yml)
 
 - Retrieves a user&#x27;s github email with optional regex verification

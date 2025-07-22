@@ -1,0 +1,18 @@
+name: Stop if Merged
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/helpers/stop-if-merged.ts'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: ./
+        with:
+          helper: stop-if-merged

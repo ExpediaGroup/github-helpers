@@ -43167,6 +43167,16 @@ var map = {
 		461,
 		83
 	],
+	"./stop-if-merged": [
+		9846,
+		461,
+		846
+	],
+	"./stop-if-merged.ts": [
+		9846,
+		461,
+		846
+	],
 	"./update-check-result": [
 		1843,
 		461,
