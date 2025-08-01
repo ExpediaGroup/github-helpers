@@ -1,6 +1,6 @@
 {
   "name": "github-helpers",
-  "packageManager": "bun@1.2.17",
+  "packageManager": "bun@1.2.19",
   "main": "src/main.ts",
   "type": "module",
   "private": true,
@@ -46,7 +46,14 @@
   "jest": {
     "clearMocks": true,
     "transform": {
-      "^.+\\.(t|j)sx?$": "@swc/jest"
+      "^.+\\.(t|j)sx?$": [
+        "@swc/jest",
+        {
+          "jsc": {
+            "target": "esnext"
+          }
+        }
+      ]
     },
     "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$"
   },
