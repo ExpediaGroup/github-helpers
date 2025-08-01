@@ -1,6 +1,6 @@
 {
   "name": "github-helpers",
-  "packageManager": "bun@1.2.17",
+  "packageManager": "bun@1.2.19",
   "main": "src/main.ts",
   "type": "module",
   "private": true,
@@ -9,7 +9,7 @@
     "@actions/github": "6.0.1",
     "@adobe/node-fetch-retry": "2.2.0",
     "@octokit/graphql-schema": "15.26.0",
-    "axios": "1.10.0",
+    "axios": "1.11.0",
     "bluebird": "3.7.2",
     "codeowners-utils": "1.0.2",
     "js-yaml": "4.1.0",
@@ -22,7 +22,7 @@
     "simple-git": "3.28.0"
   },
   "devDependencies": {
-    "@swc/jest": "0.2.38",
+    "@swc/jest": "0.2.39",
     "@total-typescript/ts-reset": "0.6.1",
     "@types/bluebird": "3.5.42",
     "@types/jest": "30.0.0",
@@ -34,19 +34,26 @@
     "@types/lodash.uniq": "4.5.9",
     "@types/micromatch": "4.0.9",
     "@vercel/ncc": "0.38.3",
-    "bun-types": "1.2.17",
-    "eslint": "9.30.1",
+    "bun-types": "1.2.19",
+    "eslint": "9.32.0",
     "husky": "9.1.7",
-    "jest": "30.0.3",
+    "jest": "30.0.5",
     "plop": "4.0.1",
     "prettier": "3.6.2",
-    "typescript": "5.8.3",
-    "typescript-eslint": "8.35.1"
+    "typescript": "5.9.2",
+    "typescript-eslint": "8.38.0"
   },
   "jest": {
     "clearMocks": true,
     "transform": {
-      "^.+\\.(t|j)sx?$": "@swc/jest"
+      "^.+\\.(t|j)sx?$": [
+        "@swc/jest",
+        {
+          "jsc": {
+            "target": "esnext"
+          }
+        }
+      ]
     },
     "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$"
   },
