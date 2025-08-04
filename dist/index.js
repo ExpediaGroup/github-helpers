@@ -42757,81 +42757,94 @@ exports.debug = debug; // for test
 var map = {
 	"./add-labels": [
 		6800,
-		461,
+		228,
+		806,
 		800
 	],
 	"./add-labels.ts": [
 		6800,
-		461,
+		228,
+		806,
 		800
 	],
 	"./add-late-review-label": [
 		9655,
-		461,
+		228,
+		806,
 		366,
 		655
 	],
 	"./add-late-review-label.ts": [
 		9655,
-		461,
+		228,
+		806,
 		366,
 		655
 	],
 	"./add-pr-approval-label": [
 		3110,
-		461,
+		228,
+		806,
 		366,
 		409,
 		110
 	],
 	"./add-pr-approval-label.ts": [
 		3110,
-		461,
+		228,
+		806,
 		366,
 		409,
 		110
 	],
 	"./approvals-satisfied": [
 		419,
-		461,
+		228,
+		806,
 		366,
 		409,
 		419
 	],
 	"./approvals-satisfied.ts": [
 		419,
-		461,
+		228,
+		806,
 		366,
 		409,
 		419
 	],
 	"./approve-pr": [
 		2579,
-		461,
+		228,
+		806,
 		579
 	],
 	"./approve-pr.ts": [
 		2579,
-		461,
+		228,
+		806,
 		579
 	],
 	"./are-reviewers-required": [
 		7098,
-		461,
+		228,
+		806,
 		366,
 		409,
 		98
 	],
 	"./are-reviewers-required.ts": [
 		7098,
-		461,
+		228,
+		806,
 		366,
 		409,
 		98
 	],
 	"./assign-pr-reviewers": [
 		4946,
-		461,
+		228,
+		806,
 		366,
 		409,
 		830,
@@ -42840,7 +42853,8 @@ var map = {
 	],
 	"./assign-pr-reviewers.ts": [
 		4946,
-		461,
+		228,
+		806,
 		366,
 		409,
 		830,
@@ -42849,7 +42863,8 @@ var map = {
 	],
 	"./check-merge-safety": [
 		5431,
-		461,
+		228,
+		806,
 		366,
 		830,
 		785,
@@ -42858,7 +42873,8 @@ var map = {
 	],
 	"./check-merge-safety.ts": [
 		5431,
-		461,
+		228,
+		806,
 		366,
 		830,
 		785,
@@ -42867,81 +42883,105 @@ var map = {
 	],
 	"./check-pr-title": [
 		271,
-		461,
+		228,
+		806,
 		271
 	],
 	"./check-pr-title.ts": [
 		271,
-		461,
+		228,
+		806,
 		271
 	],
 	"./close-pr": [
 		4720,
-		461,
+		228,
+		806,
 		720
 	],
 	"./close-pr.ts": [
 		4720,
-		461,
+		228,
+		806,
 		720
+	],
+	"./create-batched-commit-message": [
+		8813,
+		228,
+		813
+	],
+	"./create-batched-commit-message.ts": [
+		8813,
+		228,
+		813
 	],
 	"./create-pr": [
 		7440,
-		461,
+		228,
+		806,
 		830,
 		689,
 		440
 	],
 	"./create-pr-comment": [
 		9280,
-		461,
+		228,
+		806,
 		280
 	],
 	"./create-pr-comment.ts": [
 		9280,
-		461,
+		228,
+		806,
 		280
 	],
 	"./create-pr.ts": [
 		7440,
-		461,
+		228,
+		806,
 		830,
 		689,
 		440
 	],
 	"./delete-deployment": [
 		6400,
-		461,
+		228,
+		806,
 		366,
 		400
 	],
 	"./delete-deployment.ts": [
 		6400,
-		461,
+		228,
+		806,
 		366,
 		400
 	],
 	"./delete-stale-branches": [
 		1095,
-		461,
+		228,
+		806,
 		366,
 		95
 	],
 	"./delete-stale-branches.ts": [
 		1095,
-		461,
+		228,
+		806,
 		366,
 		95
 	],
 	"./filter-paths": [
 		8654,
-		461,
+		228,
+		806,
 		785,
 		654
 	],
 	"./filter-paths.ts": [
 		8654,
-		461,
+		228,
+		806,
 		785,
 		654
 	],
@@ -42955,97 +42995,114 @@ var map = {
 	],
 	"./generate-path-matrix": [
 		208,
-		461,
+		228,
+		806,
 		785,
 		208
 	],
 	"./generate-path-matrix.ts": [
 		208,
-		461,
+		228,
+		806,
 		785,
 		208
 	],
 	"./get-changed-files": [
 		8338,
-		461,
+		228,
+		806,
 		338
 	],
 	"./get-changed-files.ts": [
 		8338,
-		461,
+		228,
+		806,
 		338
 	],
 	"./get-email-on-user-profile": [
 		4862,
-		461,
+		228,
+		806,
 		862
 	],
 	"./get-email-on-user-profile.ts": [
 		4862,
-		461,
+		228,
+		806,
 		862
 	],
 	"./get-merge-queue-position": [
 		3604,
-		461,
+		228,
+		806,
 		604
 	],
 	"./get-merge-queue-position.ts": [
 		3604,
-		461,
+		228,
+		806,
 		604
 	],
 	"./initiate-deployment": [
 		5264,
-		461,
+		228,
+		806,
 		366,
 		264
 	],
 	"./initiate-deployment.ts": [
 		5264,
-		461,
+		228,
+		806,
 		366,
 		264
 	],
 	"./is-user-core-member": [
 		2404,
-		461,
+		228,
+		806,
 		366,
 		409,
 		404
 	],
 	"./is-user-core-member.ts": [
 		2404,
-		461,
+		228,
+		806,
 		366,
 		409,
 		404
 	],
 	"./is-user-in-team": [
 		8783,
-		461,
+		228,
+		806,
 		783
 	],
 	"./is-user-in-team.ts": [
 		8783,
-		461,
+		228,
+		806,
 		783
 	],
 	"./manage-issue-due-dates": [
 		8579,
-		461,
+		228,
+		806,
 		366,
 		960
 	],
 	"./manage-issue-due-dates.ts": [
 		8579,
-		461,
+		228,
+		806,
 		366,
 		960
 	],
 	"./manage-merge-queue": [
 		4703,
-		461,
+		228,
+		806,
 		366,
 		409,
 		830,
@@ -43054,7 +43111,8 @@ var map = {
 	],
 	"./manage-merge-queue.ts": [
 		4703,
-		461,
+		228,
+		806,
 		366,
 		409,
 		830,
@@ -43063,19 +43121,22 @@ var map = {
 	],
 	"./notify-pipeline-complete": [
 		7467,
-		461,
+		228,
+		806,
 		366,
 		467
 	],
 	"./notify-pipeline-complete.ts": [
 		7467,
-		461,
+		228,
+		806,
 		366,
 		467
 	],
 	"./prepare-queued-pr-for-merge": [
 		6546,
-		461,
+		228,
+		806,
 		366,
 		409,
 		830,
@@ -43084,7 +43145,8 @@ var map = {
 	],
 	"./prepare-queued-pr-for-merge.ts": [
 		6546,
-		461,
+		228,
+		806,
 		366,
 		409,
 		830,
@@ -43093,88 +43155,104 @@ var map = {
 	],
 	"./remove-label": [
 		5598,
-		461,
+		228,
+		806,
 		598
 	],
 	"./remove-label.ts": [
 		5598,
-		461,
+		228,
+		806,
 		598
 	],
 	"./remove-pr-from-merge-queue": [
 		3318,
-		461,
+		228,
+		806,
 		366,
 		318
 	],
 	"./remove-pr-from-merge-queue.ts": [
 		3318,
-		461,
+		228,
+		806,
 		366,
 		318
 	],
 	"./reopen-pr": [
 		5732,
-		461,
+		228,
+		806,
 		351
 	],
 	"./reopen-pr.ts": [
 		5732,
-		461,
+		228,
+		806,
 		351
 	],
 	"./rerun-pr-checks": [
 		1682,
-		461,
+		228,
+		806,
 		366,
 		682
 	],
 	"./rerun-pr-checks.ts": [
 		1682,
-		461,
+		228,
+		806,
 		366,
 		682
 	],
 	"./set-commit-status": [
 		9250,
-		461,
+		228,
+		806,
 		366,
 		250
 	],
 	"./set-commit-status.ts": [
 		9250,
-		461,
+		228,
+		806,
 		366,
 		250
 	],
 	"./set-deployment-status": [
 		1944,
-		461,
+		228,
+		806,
 		944
 	],
 	"./set-deployment-status.ts": [
 		1944,
-		461,
+		228,
+		806,
 		944
 	],
 	"./set-latest-pipeline-status": [
 		8083,
-		461,
+		228,
+		806,
 		83
 	],
 	"./set-latest-pipeline-status.ts": [
 		8083,
-		461,
+		228,
+		806,
 		83
 	],
 	"./update-check-result": [
 		1843,
-		461,
+		228,
+		806,
 		843
 	],
 	"./update-check-result.ts": [
 		1843,
-		461,
+		228,
+		806,
 		843
 	]
 };

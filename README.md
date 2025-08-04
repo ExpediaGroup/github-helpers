@@ -46,6 +46,10 @@ with:
 
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
 
+### [create-batched-commit-message](.github/workflows/create-batched-commit-message.yml)
+
+- Generates a combined description for multiple commits in a push event
+
 ### [get-email-on-user-profile](.github/workflows/get-email-on-user-profile.yml)
 
 - Retrieves a user&#x27;s github email with optional regex verification
