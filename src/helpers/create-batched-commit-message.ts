@@ -15,5 +15,5 @@ import { context } from '@actions/github';
 import { info } from '@actions/core';
 
 export const createBatchedCommitMessage = async () => {
-  info(context.payload.event.before);
+  info(JSON.stringify(context.payload));
 };

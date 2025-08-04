@@ -28,7 +28,7 @@ limitations under the License.
 
 
 const createBatchedCommitMessage = async () => {
-    (0,_actions_core__WEBPACK_IMPORTED_MODULE_1__.info)(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.payload.event.before);
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_1__.info)(JSON.stringify(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.payload));
 };
 
 
