@@ -21,11 +21,14 @@ export const createBatchedCommitMessage = () => {
     error('No commits found in the event payload.');
     return;
   }
+
+  const maxCharactersPerMessage = 50;
+
   return eventPayload.commits
     .map(commit => {
       const prNumberMatch = commit.message.match(/\(#(\d+)\)/)?.[0] ?? '';
       const messageWithoutPrNumber = commit.message.replace(prNumberMatch, '').trim();
-      const truncatedMessage = messageWithoutPrNumber.slice(0, 50);
+      const truncatedMessage = messageWithoutPrNumber.slice(0, maxCharactersPerMessage);
       if (truncatedMessage.length < messageWithoutPrNumber.length) {
         return `${truncatedMessage}... ${prNumberMatch ?? 'PR unknown'}`;
       }
