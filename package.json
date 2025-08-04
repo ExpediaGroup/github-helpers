@@ -22,6 +22,7 @@
     "simple-git": "3.28.0"
   },
   "devDependencies": {
+    "@octokit/webhooks-types": "7.6.1",
     "@swc/jest": "0.2.39",
     "@total-typescript/ts-reset": "0.6.1",
     "@types/bluebird": "3.5.42",
