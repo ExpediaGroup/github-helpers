@@ -12,21 +12,53 @@ limitations under the License.
 */
 
 import { createBatchedCommitMessage } from '../../src/helpers/create-batched-commit-message';
+import { context } from '@actions/github';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({
-    rest: {}
-  }))
+  context: { payload: {} }
 }));
 
 describe('createBatchedCommitMessage', () => {
   beforeEach(() => {
-    createBatchedCommitMessage();
+    context.payload.commits = [
+      {
+        id: '1234567890abcdef',
+        message: 'Fix issue (#1)',
+        author: { name: 'John Doe', email: '' }
+      },
+      {
+        id: '1234567891abcdef',
+        message: 'Fix another issue (#2)',
+        author: { name: 'Jane Doe', email: '' }
+      }
+    ];
   });
+  it('should generate combined commit message', () => {
+    const result = createBatchedCommitMessage();
+    expect(result).toBe('Fix issue (#1) and Fix another issue (#2)');
+  });
+});
 
-  it('should pass', () => {
-    expect(false).toBe(true);
+describe('createBatchedCommitMessage', () => {
+  beforeEach(() => {
+    context.payload.commits = [
+      {
+        id: '1234567890abcdef',
+        message: 'Fix a really really really really really long issue (#1)',
+        author: { name: 'John Doe', email: '' }
+      },
+      {
+        id: '1234567891abcdef',
+        message: 'Fix another really really really really really long issue (#2)',
+        author: { name: 'Jane Doe', email: '' }
+      }
+    ];
+  });
+  it('should truncate the message', () => {
+    const result = createBatchedCommitMessage();
+    expect(result).toBe(
+      'Fix a really really really really really long issu... (#1) and Fix another really really really really really lon... (#2)'
+    );
   });
 });

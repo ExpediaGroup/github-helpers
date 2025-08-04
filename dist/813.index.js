@@ -27,8 +27,23 @@ limitations under the License.
 */
 
 
-const createBatchedCommitMessage = async () => {
-    (0,_actions_core__WEBPACK_IMPORTED_MODULE_1__.info)(JSON.stringify(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.payload));
+const createBatchedCommitMessage = () => {
+    const eventPayload = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.payload;
+    if (!('commits' in eventPayload)) {
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_1__.error)('No commits found in the event payload.');
+        return;
+    }
+    return eventPayload.commits
+        .map(commit => {
+        const prNumberMatch = commit.message.match(/\(#(\d+)\)/)?.[0] ?? '';
+        const messageWithoutPrNumber = commit.message.replace(prNumberMatch, '').trim();
+        const truncatedMessage = messageWithoutPrNumber.slice(0, 50);
+        if (truncatedMessage.length < messageWithoutPrNumber.length) {
+            return `${truncatedMessage}... ${prNumberMatch ?? 'PR unknown'}`;
+        }
+        return commit.message;
+    })
+        .join(' and ');
 };
 
 

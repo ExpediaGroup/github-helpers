@@ -12,8 +12,24 @@ limitations under the License.
 */
 
 import { context } from '@actions/github';
-import { info } from '@actions/core';
+import { error } from '@actions/core';
+import { PushEvent } from '@octokit/webhooks-types';
 
-export const createBatchedCommitMessage = async () => {
-  info(JSON.stringify(context.payload));
+export const createBatchedCommitMessage = () => {
+  const eventPayload = context.payload as PushEvent;
+  if (!('commits' in eventPayload)) {
+    error('No commits found in the event payload.');
+    return;
+  }
+  return eventPayload.commits
+    .map(commit => {
+      const prNumberMatch = commit.message.match(/\(#(\d+)\)/)?.[0] ?? '';
+      const messageWithoutPrNumber = commit.message.replace(prNumberMatch, '').trim();
+      const truncatedMessage = messageWithoutPrNumber.slice(0, 50);
+      if (truncatedMessage.length < messageWithoutPrNumber.length) {
+        return `${truncatedMessage}... ${prNumberMatch ?? 'PR unknown'}`;
+      }
+      return commit.message;
+    })
+    .join(' and ');
 };
