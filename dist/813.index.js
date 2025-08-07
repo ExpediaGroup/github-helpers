@@ -37,12 +37,10 @@ const createBatchedCommitMessage = () => {
     return eventPayload.commits
         .map(commit => {
         const prNumberWithParens = commit.message.match(/\(#(\d+)\)/)?.[0] ?? '';
-        const messageWithoutPrNumber = commit.message.replace(prNumberWithParens, '').trim();
+        const messageWithoutPrNumber = commit.message.replace(prNumberWithParens, '').split('\n')[0]?.trim() ?? '';
         const truncatedMessage = messageWithoutPrNumber.slice(0, maxCharactersPerMessage);
-        if (truncatedMessage.length < messageWithoutPrNumber.length) {
-            return `${truncatedMessage}... ${prNumberWithParens ?? 'PR unknown'}`;
-        }
-        return commit.message;
+        const ellipses = truncatedMessage.length < messageWithoutPrNumber.length ? '...' : '';
+        return `${truncatedMessage}${ellipses} ${prNumberWithParens}`;
     })
         .join(' and ');
 };

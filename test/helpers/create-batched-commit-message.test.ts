@@ -40,7 +40,7 @@ describe('createBatchedCommitMessage', () => {
   });
 });
 
-describe('createBatchedCommitMessage', () => {
+describe('createBatchedCommitMessage long messages', () => {
   beforeEach(() => {
     context.payload.commits = [
       {
@@ -60,5 +60,26 @@ describe('createBatchedCommitMessage', () => {
     expect(result).toBe(
       'Fix a really really really really really long issu... (#1) and Fix another really really really really really lon... (#2)'
     );
+  });
+});
+
+describe('createBatchedCommitMessage multiline messages', () => {
+  beforeEach(() => {
+    context.payload.commits = [
+      {
+        id: '1234567890abcdef',
+        message: 'Fix a really really long issue \n' + '  \n' + '  * fix the issue\n' + '  \n' + '  * definitely fix the issue (#1)',
+        author: { name: 'John Doe', email: '' }
+      },
+      {
+        id: '1234567891abcdef',
+        message: 'Fix another really really long issue \n' + '  \n' + '  * fix the issue\n' + '  \n' + '  * definitely fix the issue (#2)',
+        author: { name: 'Jane Doe', email: '' }
+      }
+    ];
+  });
+  it('should truncate the message', () => {
+    const result = createBatchedCommitMessage();
+    expect(result).toBe('Fix a really really long issue (#1) and Fix another really really long issue (#2)');
   });
 });
