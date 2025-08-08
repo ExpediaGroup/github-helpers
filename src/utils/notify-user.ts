@@ -21,10 +21,9 @@ interface NotifyUser {
   login: string;
   pull_number: number;
   slack_webhook_url: string;
-  queuePosition?: number;
 }
 
-export const notifyUser = async ({ login, pull_number, slack_webhook_url, queuePosition }: NotifyUser) => {
+export const notifyUser = async ({ login, pull_number, slack_webhook_url }: NotifyUser) => {
   const email = await getEmailOnUserProfile({ login });
   if (!email) {
     return;
@@ -38,8 +37,7 @@ export const notifyUser = async ({ login, pull_number, slack_webhook_url, queueP
     assignee: email,
     title,
     html_url,
-    repo: context.repo.repo,
-    queuePosition
+    repo: context.repo.repo
   });
   if (result.status !== 200) {
     core.error(result.statusText);

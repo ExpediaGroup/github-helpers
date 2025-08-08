@@ -459,7 +459,7 @@ limitations under the License.
 
 
 
-const notifyUser = async ({ login, pull_number, slack_webhook_url, queuePosition }) => {
+const notifyUser = async ({ login, pull_number, slack_webhook_url }) => {
     const email = await (0,_helpers_get_email_on_user_profile__WEBPACK_IMPORTED_MODULE_3__.getEmailOnUserProfile)({ login });
     if (!email) {
         return;
@@ -470,8 +470,7 @@ const notifyUser = async ({ login, pull_number, slack_webhook_url, queuePosition
         assignee: email,
         title,
         html_url,
-        repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
-        queuePosition
+        repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo
     });
     if (result.status !== 200) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(result.statusText);
