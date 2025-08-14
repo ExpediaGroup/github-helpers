@@ -16,6 +16,7 @@ import axios from 'axios';
 import { context } from '@actions/github';
 import { notifyUser } from '../../src/utils/notify-user';
 import { octokit } from '../../src/octokit';
+import { setFailed } from '@actions/core';
 
 jest.mock('../../src/helpers/create-pr-comment');
 jest.mock('@actions/core');
@@ -86,5 +87,24 @@ describe('notifyUser with a PR comment', () => {
   it('should do nothing when email is not found', () => {
     expect(octokit.users.getByUsername).toHaveBeenCalledWith({ username: login });
     expect(axios.post).not.toHaveBeenCalled();
+  });
+});
+
+describe('notifyUser should fail if slack webhook input is invalid', () => {
+  const pull_number = 123;
+  const slack_webhook_url = 'https://hooks.slack.com/workflows/1234567890';
+
+  beforeEach(async () => {
+    (octokit.users.getByUsername as unknown as Mocktokit).mockImplementation(async () => ({
+      data: {
+        email: null
+      }
+    }));
+
+    await notifyUser({ login: '', pull_number, slack_webhook_url });
+  });
+
+  it('should fail the job', () => {
+    expect(setFailed).toHaveBeenCalled();
   });
 });
