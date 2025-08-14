@@ -28,11 +28,14 @@ export const notifyUser = async ({ login, pull_number, slack_webhook_url }: Noti
   if (!email) {
     return;
   }
-  core.info(`Notifying user ${login}...`);
   const {
     data: { title, html_url }
   } = await octokit.pulls.get({ pull_number, ...context.repo });
+  if (!title || !html_url) {
+    return;
+  }
 
+  core.info(`Notifying user ${login}...`);
   const result = await axios.post(slack_webhook_url, {
     assignee: email,
     title,
