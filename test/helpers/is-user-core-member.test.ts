@@ -35,7 +35,16 @@ describe('isUserCoreMember', () => {
 
     const response = await isUserCoreMember({ login, pull_number });
 
-    expect(getCoreMemberLogins).toHaveBeenCalledWith(Number(pull_number));
+    expect(getCoreMemberLogins).toHaveBeenCalledWith(Number(pull_number), undefined, undefined);
+    expect(response).toBe(true);
+  });
+
+  it('should call isUserCoreMember with correct params and find user as core member when CODEOWNERS overrides are specified', async () => {
+    (getCoreMemberLogins as jest.Mock).mockResolvedValue(['octocat', 'admin']);
+
+    const response = await isUserCoreMember({ login, pull_number, codeowners_overrides: '/foo @octocat' });
+
+    expect(getCoreMemberLogins).toHaveBeenCalledWith(Number(pull_number), undefined, '/foo @octocat');
     expect(response).toBe(true);
   });
 
@@ -44,7 +53,7 @@ describe('isUserCoreMember', () => {
 
     const response = await isUserCoreMember({ pull_number });
 
-    expect(getCoreMemberLogins).toHaveBeenCalledWith(Number(pull_number));
+    expect(getCoreMemberLogins).toHaveBeenCalledWith(Number(pull_number), undefined, undefined);
     expect(response).toBe(true);
   });
 
@@ -53,7 +62,7 @@ describe('isUserCoreMember', () => {
 
     const response = await isUserCoreMember({ login, pull_number });
 
-    expect(getCoreMemberLogins).toHaveBeenCalledWith(Number(pull_number));
+    expect(getCoreMemberLogins).toHaveBeenCalledWith(Number(pull_number), undefined, undefined);
     expect(response).toBe(false);
   });
 });

@@ -14,7 +14,7 @@ with:
     helper: <HELPER NAME>
 ```
 
-The `helper` input is required for all helpers, and the `github_token` input defaults to the included workflow token `${{ github.token }}`. Additional inputs vary by helper. Each helper file in `src/helpers` contains an interface that defines which additional inputs are required or optional. If a required input is ommitted, the helper will throw a descriptive error.
+The `helper` input is required for all helpers, and the `github_token` input defaults to the included workflow token `${{ github.token }}`. Additional inputs vary by helper. Each helper file in `src/helpers` contains an interface that defines which additional inputs are required or optional. If a required input is omitted, the helper will throw a descriptive error.
 
 ### Example
 
@@ -211,6 +211,8 @@ Additionally, the following parameters can be used for additional control over t
 ### [is-user-core-member](.github/workflows/is-user-core-member.yml)
 
 - Checks if a specified GitHub user is a core member for a given pull request.
+- The parameter `codeowners_overrides` can be used to override entries from `CODEOWNERS`. It is a string formatted as comma-separated list of lines in [the `CODEOWNERS` syntax](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners#codeowners-syntax). Exact pattern matches in CODEOWNERS will be replaced. Unmatched patterns will be appended.
+    - example: `/path/foo @user1 @user2,/path/bar @user3`
 
 ### [is-user-in-team](.github/workflows/is-user-in-team.yml)
 
