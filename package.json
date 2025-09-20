@@ -1,6 +1,6 @@
 {
   "name": "github-helpers",
-  "packageManager": "bun@1.2.19",
+  "packageManager": "bun@1.2.22",
   "main": "src/main.ts",
   "type": "module",
   "private": true,
@@ -13,11 +13,7 @@
     "bluebird": "3.7.2",
     "codeowners-utils": "1.0.2",
     "js-yaml": "4.1.0",
-    "lodash.camelcase": "4.3.0",
-    "lodash.chunk": "4.2.0",
-    "lodash.samplesize": "4.2.0",
-    "lodash.union": "4.6.0",
-    "lodash.uniq": "4.5.0",
+    "lodash": "4.17.21",
     "micromatch": "4.0.8",
     "simple-git": "3.28.0"
   },
