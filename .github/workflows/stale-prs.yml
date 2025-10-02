@@ -1,0 +1,86 @@
+name: Stale PRs
+
+on:
+  workflow_call:
+    inputs:
+      days:
+        description: 'Number of days before a PR is considered stale'
+        required: false
+        default: '30'
+        type: string
+      exempt_labels:
+        description: 'Comma separated list of labels that exempt PRs from being marked stale'
+        required: false
+        default: ''
+        type: string
+      stale_label:
+        description: 'Label to add to stale PRs'
+        required: false
+        default: 'stale'
+        type: string
+      close_label:
+        description: 'Label that marks a PR for closure'
+        required: false
+        default: ''
+        type: string
+      stale_comment:
+        description: 'Comment to add when marking PR as stale'
+        required: false
+        default: 'This pull request has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs.'
+        type: string
+      close_comment:
+        description: 'Comment to add when closing stale PR'
+        required: false
+        default: 'This pull request has been automatically closed due to inactivity.'
+        type: string
+      operations_per_run:
+        description: 'Maximum number of operations to perform in a single run'
+        required: false
+        default: '30'
+        type: string
+      ascending:
+        description: 'Process PRs in ascending order of last update'
+        required: false
+        default: 'false'
+        type: string
+      only_labels:
+        description: 'Only process PRs with these labels (comma separated)'
+        required: false
+        default: ''
+        type: string
+      exempt_authors:
+        description: 'Exempt PRs from these authors (comma separated)'
+        required: false
+        default: ''
+        type: string
+      exempt_draft_pr:
+        description: 'Exempt draft PRs from being processed'
+        required: false
+        default: 'true'
+        type: string
+
+jobs:
+  stale-prs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: srescio/github-helpers
+
+      - name: Mark stale PRs
+        uses: ./
+        with:
+          helper: stale-prs
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          days: ${{ inputs.days }}
+          exempt_labels: ${{ inputs.exempt_labels }}
+          stale_label: ${{ inputs.stale_label }}
+          close_label: ${{ inputs.close_label }}
+          stale_comment: ${{ inputs.stale_comment }}
+          close_comment: ${{ inputs.close_comment }}
+          operations_per_run: ${{ inputs.operations_per_run }}
+          ascending: ${{ inputs.ascending }}
+          only_labels: ${{ inputs.only_labels }}
+          exempt_authors: ${{ inputs.exempt_authors }}
+          exempt_draft_pr: ${{ inputs.exempt_draft_pr }}

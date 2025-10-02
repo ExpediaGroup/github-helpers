@@ -46,6 +46,29 @@ with:
 
 Each of the following helpers are defined in a file of the same name in `src/helpers`:
 
+### [stale-prs](.github/workflows/stale-prs.yml)
+
+Automatically manages stale pull requests by marking them with labels and optionally closing them after inactivity.
+
+**Key Features:**
+
+- Mark PRs as stale after a configurable number of days of inactivity
+- Automatically close PRs with specific labels
+- Exempt certain labels, authors, or draft PRs from processing
+- Limit operations per run to avoid rate limiting
+- Flexible sorting and filtering options
+
+**Common Usage:**
+
+```yaml
+uses: srescio/github-helpers/.github/workflows/stale-prs.yml@main
+with:
+    days: '60' # Mark PRs stale after 60 days
+    exempt_labels: 'wip,blocked,on-hold' # Skip PRs with these labels
+    stale_label: 'stale' # Label to add to stale PRs
+    operations_per_run: '30' # Limit operations to avoid rate limits
+```
+
 ### [create-batched-commit-message](.github/workflows/create-batched-commit-message.yml)
 
 - Generates a combined description for multiple commits in a push event

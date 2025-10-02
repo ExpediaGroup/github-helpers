@@ -647,7 +647,7 @@ return Context;
 module.exports = function(Promise, Context,
     enableAsyncHooks, disableAsyncHooks) {
 var async = Promise._async;
-var Warning = (__webpack_require__(6937).Warning);
+var Warning = (__webpack_require__(9318).Warning);
 var util = __webpack_require__(409);
 var es5 = __webpack_require__(8974);
 var canAttachTrace = util.canAttachTrace;
@@ -1746,7 +1746,7 @@ Promise.mapSeries = PromiseMapSeries;
 
 /***/ }),
 
-/***/ 6937:
+/***/ 9318:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 
@@ -2138,7 +2138,7 @@ module.exports = function(Promise,
                           tryConvertToPromise,
                           Proxyable,
                           debug) {
-var errors = __webpack_require__(6937);
+var errors = __webpack_require__(9318);
 var TypeError = errors.TypeError;
 var util = __webpack_require__(409);
 var errorObj = util.errorObj;
@@ -2780,7 +2780,7 @@ Promise.prototype._resolveFromSyncValue = function (value) {
 
 var util = __webpack_require__(409);
 var maybeWrapAsError = util.maybeWrapAsError;
-var errors = __webpack_require__(6937);
+var errors = __webpack_require__(9318);
 var OperationalError = errors.OperationalError;
 var es5 = __webpack_require__(8974);
 
@@ -2955,7 +2955,7 @@ var es5 = __webpack_require__(8974);
 var Async = __webpack_require__(1281);
 var async = new Async();
 es5.defineProperty(Promise, "_async", {value: async});
-var errors = __webpack_require__(6937);
+var errors = __webpack_require__(9318);
 var TypeError = Promise.TypeError = errors.TypeError;
 Promise.RangeError = errors.RangeError;
 var CancellationError = Promise.CancellationError = errors.CancellationError;
@@ -3927,7 +3927,7 @@ var nodebackForPromise = __webpack_require__(1774);
 var withAppended = util.withAppended;
 var maybeWrapAsError = util.maybeWrapAsError;
 var canEvaluate = util.canEvaluate;
-var TypeError = (__webpack_require__(6937).TypeError);
+var TypeError = (__webpack_require__(9318).TypeError);
 var defaultSuffix = "Async";
 var defaultPromisified = {__isPromisified__: true};
 var noCopyProps = [
@@ -4818,8 +4818,8 @@ Promise.prototype.settle = function () {
 module.exports =
 function(Promise, PromiseArray, apiRejection) {
 var util = __webpack_require__(409);
-var RangeError = (__webpack_require__(6937).RangeError);
-var AggregateError = (__webpack_require__(6937).AggregateError);
+var RangeError = (__webpack_require__(9318).RangeError);
+var AggregateError = (__webpack_require__(9318).AggregateError);
 var isArray = util.isArray;
 var CANCELLATION = {};
 
@@ -5276,7 +5276,7 @@ Promise.prototype.timeout = function (ms, message) {
 module.exports = function (Promise, apiRejection, tryConvertToPromise,
     createContext, INTERNAL, debug) {
     var util = __webpack_require__(409);
-    var TypeError = (__webpack_require__(6937).TypeError);
+    var TypeError = (__webpack_require__(9318).TypeError);
     var inherits = (__webpack_require__(409).inherits);
     var errorObj = util.errorObj;
     var tryCatch = util.tryCatch;
