@@ -32,6 +32,8 @@ export class StalePrs extends HelperInputs {
   declare only_labels?: string;
   declare exempt_authors?: string;
   declare exempt_draft_pr?: string;
+  declare remove_stale_when_updated?: string;
+  declare days_before_close?: string;
 }
 
 export const stalePrs = async ({
@@ -45,12 +47,16 @@ export const stalePrs = async ({
   ascending = 'false',
   only_labels = '',
   exempt_authors = '',
-  exempt_draft_pr = 'true'
+  exempt_draft_pr = 'true',
+  remove_stale_when_updated = 'true',
+  days_before_close = ''
 }: StalePrs = {}) => {
   const staleDays = Number(days);
   const maxOperations = Number(operations_per_run);
   const isAscending = ascending.toLowerCase() === 'true';
   const exemptDraftPr = exempt_draft_pr.toLowerCase() === 'true';
+  const removeStaleWhenUpdated = remove_stale_when_updated.toLowerCase() === 'true';
+  const daysBeforeClose = days_before_close ? Number(days_before_close) : null;
 
   const exemptLabelsList = exempt_labels
     .split(',')
@@ -92,7 +98,39 @@ export const stalePrs = async ({
   });
 
   let operationsCount = 0;
-  const processedPrs: { number: number; action: 'staled' | 'closed' | 'skipped'; reason?: string }[] = [];
+  const processedPrs: { number: number; action: 'staled' | 'closed' | 'skipped' | 'unstaled'; reason?: string }[] = [];
+
+  // First pass: Remove stale labels from recently updated PRs
+  if (removeStaleWhenUpdated) {
+    const stalePrs = candidatePrs.filter(pr => {
+      const prLabels = pr.labels?.map(label => (typeof label === 'string' ? label : label.name)) || [];
+      return prLabels.includes(stale_label);
+    });
+
+    for (const pr of stalePrs) {
+      if (operationsCount >= maxOperations) break;
+
+      const daysSinceUpdate = getDaysSinceLastUpdate(pr.updated_at);
+
+      // If PR was updated recently (less than stale days), remove stale label
+      if (daysSinceUpdate < staleDays) {
+        core.info(`Removing stale label from PR #${pr.number} (recently updated: ${daysSinceUpdate} days ago)`);
+
+        try {
+          await octokit.issues.removeLabel({
+            ...context.repo,
+            issue_number: pr.number,
+            name: stale_label
+          });
+        } catch {
+          // Ignore if label doesn't exist
+        }
+
+        processedPrs.push({ number: pr.number, action: 'unstaled', reason: 'recently updated' });
+        operationsCount++;
+      }
+    }
+  }
 
   for (const pr of candidatePrs) {
     if (operationsCount >= maxOperations) {
@@ -118,8 +156,23 @@ export const stalePrs = async ({
     const hasStaleLabel = prLabels.includes(stale_label);
     const hasCloseLabel = close_label && prLabels.includes(close_label);
 
-    if (!isStale) {
+    // Check if PR should be closed based on days_before_close
+    const shouldAutoClose = daysBeforeClose && hasStaleLabel && daysSinceUpdate >= staleDays + daysBeforeClose;
+
+    if (!isStale && !hasStaleLabel) {
       processedPrs.push({ number: pr.number, action: 'skipped', reason: 'not stale' });
+      continue;
+    }
+
+    // Auto-close stale PRs that have exceeded the close threshold
+    if (shouldAutoClose) {
+      core.info(`Auto-closing stale PR #${pr.number} (stale for ${daysSinceUpdate - staleDays} days)`);
+      await closePr({
+        body: close_comment,
+        pull_number: pr.number.toString()
+      });
+      processedPrs.push({ number: pr.number, action: 'closed', reason: 'auto-close after stale period' });
+      operationsCount++;
       continue;
     }
 
@@ -130,7 +183,7 @@ export const stalePrs = async ({
         body: close_comment,
         pull_number: pr.number.toString()
       });
-      processedPrs.push({ number: pr.number, action: 'closed' });
+      processedPrs.push({ number: pr.number, action: 'closed', reason: 'close label' });
       operationsCount++;
       continue;
     }
@@ -164,6 +217,7 @@ export const stalePrs = async ({
     staled: processedPrs.filter(pr => pr.action === 'staled').length,
     closed: processedPrs.filter(pr => pr.action === 'closed').length,
     skipped: processedPrs.filter(pr => pr.action === 'skipped').length,
+    unstaled: processedPrs.filter(pr => pr.action === 'unstaled').length,
     operations_performed: operationsCount
   };
 

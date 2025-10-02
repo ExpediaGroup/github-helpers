@@ -58,6 +58,17 @@ on:
         required: false
         default: 'true'
         type: string
+      remove_stale_when_updated:
+        description: 'Remove stale label when PR is updated'
+        required: false
+        default: 'true'
+        type: string
+
+      days_before_close:
+        description: 'Days after marking stale before auto-closing (empty = no auto-close)'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   stale-prs:
@@ -84,3 +95,5 @@ jobs:
           only_labels: ${{ inputs.only_labels }}
           exempt_authors: ${{ inputs.exempt_authors }}
           exempt_draft_pr: ${{ inputs.exempt_draft_pr }}
+          remove_stale_when_updated: ${{ inputs.remove_stale_when_updated }}
+          days_before_close: ${{ inputs.days_before_close }}

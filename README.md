@@ -53,7 +53,8 @@ Automatically manages stale pull requests by marking them with labels and option
 **Key Features:**
 
 - Mark PRs as stale after a configurable number of days of inactivity
-- Automatically close PRs with specific labels
+- Automatically close PRs with specific labels or after additional stale time
+- Auto-remove stale labels from recently updated PRs
 - Exempt certain labels, authors, or draft PRs from processing
 - Limit operations per run to avoid rate limiting
 - Flexible sorting and filtering options
@@ -64,10 +65,19 @@ Automatically manages stale pull requests by marking them with labels and option
 uses: srescio/github-helpers/.github/workflows/stale-prs.yml@main
 with:
     days: '60' # Mark PRs stale after 60 days
+    days_before_close: '14' # Auto-close 14 days after marking stale (74 days total)
     exempt_labels: 'wip,blocked,on-hold' # Skip PRs with these labels
     stale_label: 'stale' # Label to add to stale PRs
+    remove_stale_when_updated: 'true' # Remove stale label if PR is updated
     operations_per_run: '30' # Limit operations to avoid rate limits
 ```
+
+**Advanced Features:**
+
+- **Auto-removal**: Automatically remove stale labels when PRs are updated
+- **Auto-closure**: Set `days_before_close` to automatically close stale PRs after additional time
+- **Fine-grained control**: Use `only_labels` to target specific PR types
+- **Author exemptions**: Skip PRs from bots or specific users with `exempt_authors`
 
 ### [create-batched-commit-message](.github/workflows/create-batched-commit-message.yml)
 

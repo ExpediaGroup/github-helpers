@@ -252,11 +252,13 @@ limitations under the License.
 
 class StalePrs extends _types_generated__WEBPACK_IMPORTED_MODULE_7__/* .HelperInputs */ .m {
 }
-const stalePrs = async ({ days = '30', exempt_labels = '', stale_label = 'stale', close_label = '', stale_comment = 'This pull request has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs.', close_comment = 'This pull request has been automatically closed due to inactivity.', operations_per_run = '30', ascending = 'false', only_labels = '', exempt_authors = '', exempt_draft_pr = 'true' } = {}) => {
+const stalePrs = async ({ days = '30', exempt_labels = '', stale_label = 'stale', close_label = '', stale_comment = 'This pull request has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs.', close_comment = 'This pull request has been automatically closed due to inactivity.', operations_per_run = '30', ascending = 'false', only_labels = '', exempt_authors = '', exempt_draft_pr = 'true', remove_stale_when_updated = 'true', days_before_close = '' } = {}) => {
     const staleDays = Number(days);
     const maxOperations = Number(operations_per_run);
     const isAscending = ascending.toLowerCase() === 'true';
     const exemptDraftPr = exempt_draft_pr.toLowerCase() === 'true';
+    const removeStaleWhenUpdated = remove_stale_when_updated.toLowerCase() === 'true';
+    const daysBeforeClose = days_before_close ? Number(days_before_close) : null;
     const exemptLabelsList = exempt_labels
         .split(',')
         .map(label => label.trim())
@@ -291,6 +293,34 @@ const stalePrs = async ({ days = '30', exempt_labels = '', stale_label = 'stale'
     });
     let operationsCount = 0;
     const processedPrs = [];
+    // First pass: Remove stale labels from recently updated PRs
+    if (removeStaleWhenUpdated) {
+        const stalePrs = candidatePrs.filter(pr => {
+            const prLabels = pr.labels?.map(label => (typeof label === 'string' ? label : label.name)) || [];
+            return prLabels.includes(stale_label);
+        });
+        for (const pr of stalePrs) {
+            if (operationsCount >= maxOperations)
+                break;
+            const daysSinceUpdate = getDaysSinceLastUpdate(pr.updated_at);
+            // If PR was updated recently (less than stale days), remove stale label
+            if (daysSinceUpdate < staleDays) {
+                _actions_core__WEBPACK_IMPORTED_MODULE_1__.info(`Removing stale label from PR #${pr.number} (recently updated: ${daysSinceUpdate} days ago)`);
+                try {
+                    await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.issues.removeLabel({
+                        ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo,
+                        issue_number: pr.number,
+                        name: stale_label
+                    });
+                }
+                catch {
+                    // Ignore if label doesn't exist
+                }
+                processedPrs.push({ number: pr.number, action: 'unstaled', reason: 'recently updated' });
+                operationsCount++;
+            }
+        }
+    }
     for (const pr of candidatePrs) {
         if (operationsCount >= maxOperations) {
             break;
@@ -310,8 +340,21 @@ const stalePrs = async ({ days = '30', exempt_labels = '', stale_label = 'stale'
         const isStale = daysSinceUpdate >= staleDays;
         const hasStaleLabel = prLabels.includes(stale_label);
         const hasCloseLabel = close_label && prLabels.includes(close_label);
-        if (!isStale) {
+        // Check if PR should be closed based on days_before_close
+        const shouldAutoClose = daysBeforeClose && hasStaleLabel && daysSinceUpdate >= staleDays + daysBeforeClose;
+        if (!isStale && !hasStaleLabel) {
             processedPrs.push({ number: pr.number, action: 'skipped', reason: 'not stale' });
+            continue;
+        }
+        // Auto-close stale PRs that have exceeded the close threshold
+        if (shouldAutoClose) {
+            _actions_core__WEBPACK_IMPORTED_MODULE_1__.info(`Auto-closing stale PR #${pr.number} (stale for ${daysSinceUpdate - staleDays} days)`);
+            await (0,_close_pr__WEBPACK_IMPORTED_MODULE_6__.closePr)({
+                body: close_comment,
+                pull_number: pr.number.toString()
+            });
+            processedPrs.push({ number: pr.number, action: 'closed', reason: 'auto-close after stale period' });
+            operationsCount++;
             continue;
         }
         // If PR has close label, close it
@@ -321,7 +364,7 @@ const stalePrs = async ({ days = '30', exempt_labels = '', stale_label = 'stale'
                 body: close_comment,
                 pull_number: pr.number.toString()
             });
-            processedPrs.push({ number: pr.number, action: 'closed' });
+            processedPrs.push({ number: pr.number, action: 'closed', reason: 'close label' });
             operationsCount++;
             continue;
         }
@@ -350,6 +393,7 @@ const stalePrs = async ({ days = '30', exempt_labels = '', stale_label = 'stale'
         staled: processedPrs.filter(pr => pr.action === 'staled').length,
         closed: processedPrs.filter(pr => pr.action === 'closed').length,
         skipped: processedPrs.filter(pr => pr.action === 'skipped').length,
+        unstaled: processedPrs.filter(pr => pr.action === 'unstaled').length,
         operations_performed: operationsCount
     };
     _actions_core__WEBPACK_IMPORTED_MODULE_1__.info(`Stale PR processing complete: ${JSON.stringify(summary)}`);

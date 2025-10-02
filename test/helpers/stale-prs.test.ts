@@ -28,7 +28,8 @@ jest.mock('@actions/github', () => ({
   getOctokit: jest.fn(() => ({
     rest: {
       issues: {
-        addLabels: jest.fn()
+        addLabels: jest.fn(),
+        removeLabel: jest.fn()
       }
     }
   }))
@@ -345,5 +346,82 @@ describe('stalePrs', () => {
       issue_number: 1,
       labels: ['stale']
     });
+  });
+
+  it('should remove stale label from recently updated PRs when remove_stale_when_updated is true', async () => {
+    const mockPrs: MockPullRequest[] = [
+      {
+        number: 1,
+        updated_at: fiveDaysAgo.toISOString(), // Recently updated
+        draft: false,
+        user: { login: 'user1' },
+        labels: [{ name: 'stale' }] // Already has stale label
+      }
+    ];
+
+    mockPaginateAllOpenPullRequests.mockResolvedValue(mockPrs as PullRequestList);
+
+    const result = await stalePrs({
+      days: '30',
+      remove_stale_when_updated: 'true'
+    });
+
+    expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+      ...context.repo,
+      issue_number: 1,
+      name: 'stale'
+    });
+    expect(result.summary.unstaled).toBe(1);
+  });
+
+  it('should auto-close stale PRs after days_before_close period', async () => {
+    const fortyDaysAgo = new Date('2023-01-15T10:00:00Z'); // 40 days ago
+    const mockPrs: MockPullRequest[] = [
+      {
+        number: 1,
+        updated_at: fortyDaysAgo.toISOString(),
+        draft: false,
+        user: { login: 'user1' },
+        labels: [{ name: 'stale' }] // Already stale
+      }
+    ];
+
+    mockPaginateAllOpenPullRequests.mockResolvedValue(mockPrs as PullRequestList);
+
+    const result = await stalePrs({
+      days: '30', // Stale after 30 days
+      days_before_close: '10', // Close 10 days after becoming stale (40 days total)
+      close_comment: 'Auto-closing stale PR'
+    });
+
+    expect(mockClosePr).toHaveBeenCalledWith({
+      body: 'Auto-closing stale PR',
+      pull_number: '1'
+    });
+    expect(result.summary.closed).toBe(1);
+    expect(result.processed_prs[0]?.reason).toBe('auto-close after stale period');
+  });
+
+  it('should not auto-close if days_before_close is not set', async () => {
+    const fortyDaysAgo = new Date('2023-01-15T10:00:00Z');
+    const mockPrs: MockPullRequest[] = [
+      {
+        number: 1,
+        updated_at: fortyDaysAgo.toISOString(),
+        draft: false,
+        user: { login: 'user1' },
+        labels: [{ name: 'stale' }]
+      }
+    ];
+
+    mockPaginateAllOpenPullRequests.mockResolvedValue(mockPrs as PullRequestList);
+
+    const result = await stalePrs({
+      days: '30'
+      // No days_before_close set
+    });
+
+    expect(mockClosePr).not.toHaveBeenCalled();
+    expect(result.summary.closed).toBe(0);
   });
 });
