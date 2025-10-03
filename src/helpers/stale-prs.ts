@@ -11,9 +11,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { HelperInputs } from '../types/generated';
 import { context } from '@actions/github';
 import * as core from '@actions/core';
+import { HelperInputs } from '../types/generated';
 import { octokit } from '../octokit';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';
 import { SECONDS_IN_A_DAY } from '../constants';
