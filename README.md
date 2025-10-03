@@ -62,7 +62,7 @@ Automatically manages stale pull requests by marking them with labels and option
 **Common Usage:**
 
 ```yaml
-uses: srescio/github-helpers/.github/workflows/stale-prs.yml@main
+uses: ExpediaGroup/github-helpers/.github/workflows/stale-prs.yml@main
 with:
     days: '60' # Mark PRs stale after 60 days
     days_before_close: '14' # Auto-close 14 days after marking stale (74 days total)
