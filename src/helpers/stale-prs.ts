@@ -13,6 +13,7 @@ limitations under the License.
 
 import { context } from '@actions/github';
 import * as core from '@actions/core';
+
 import { HelperInputs } from '../types/generated';
 import { octokit } from '../octokit';
 import { paginateAllOpenPullRequests } from '../utils/paginate-open-pull-requests';

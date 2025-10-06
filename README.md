@@ -62,8 +62,10 @@ Automatically manages stale pull requests by marking them with labels and option
 **Common Usage:**
 
 ```yaml
-uses: ExpediaGroup/github-helpers/.github/workflows/stale-prs.yml@main
+uses: ExpediaGroup/github-helpers@v1
 with:
+    helper: stale-prs
+    github_token: ${{ secrets.GITHUB_TOKEN }}
     days: '60' # Mark PRs stale after 60 days
     days_before_close: '14' # Auto-close 14 days after marking stale (74 days total)
     exempt_labels: 'wip,blocked,on-hold' # Skip PRs with these labels
