@@ -9,8 +9,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "moduleResolution": "node",
-    "types": ["bun-types", "jest"]
+    "moduleResolution": "node"
   },
   "exclude": ["node_modules"]
 }

@@ -5660,7 +5660,7 @@ var follow_redirects = __webpack_require__(1573);
 // EXTERNAL MODULE: external "zlib"
 var external_zlib_ = __webpack_require__(3106);
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/env/data.js
-const VERSION = "1.13.0";
+const VERSION = "1.13.1";
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/helpers/parseProtocol.js
 
 
@@ -7016,7 +7016,7 @@ const http2Transport = {
 
       if (responseType === 'stream') {
         response.data = responseStream;
-        settle(resolve, abort, response);
+        settle(resolve, reject, response);
       } else {
         const responseBuffer = [];
         let totalResponseBytes = 0;
