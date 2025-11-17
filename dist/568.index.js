@@ -5558,8 +5558,6 @@ utils.inherits(CanceledError, core_AxiosError, {
 
 /* harmony default export */ const cancel_CanceledError = (CanceledError);
 
-// EXTERNAL MODULE: external "http2"
-var external_http2_ = __webpack_require__(5675);
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/core/settle.js
 
 
@@ -5653,6 +5651,8 @@ var proxy_from_env = __webpack_require__(7777);
 var external_http_ = __webpack_require__(8611);
 // EXTERNAL MODULE: external "https"
 var external_https_ = __webpack_require__(5692);
+// EXTERNAL MODULE: external "http2"
+var external_http2_ = __webpack_require__(5675);
 // EXTERNAL MODULE: external "util"
 var external_util_ = __webpack_require__(9023);
 // EXTERNAL MODULE: ./node_modules/follow-redirects/index.js
@@ -5660,7 +5660,7 @@ var follow_redirects = __webpack_require__(1573);
 // EXTERNAL MODULE: external "zlib"
 var external_zlib_ = __webpack_require__(3106);
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/env/data.js
-const VERSION = "1.13.1";
+const VERSION = "1.13.2";
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/helpers/parseProtocol.js
 
 
@@ -6315,13 +6315,6 @@ const brotliOptions = {
   finishFlush: external_zlib_.constants.BROTLI_OPERATION_FLUSH
 }
 
-const {
-  HTTP2_HEADER_SCHEME,
-  HTTP2_HEADER_METHOD,
-  HTTP2_HEADER_PATH,
-  HTTP2_HEADER_STATUS
-} = external_http2_.constants;
-
 const isBrotliSupported = utils.isFunction(external_zlib_.createBrotliDecompress);
 
 const {http: httpFollow, https: httpsFollow} = follow_redirects;
@@ -6351,9 +6344,9 @@ class Http2Sessions {
       sessionTimeout: 1000
     }, options);
 
-    let authoritySessions;
+    let authoritySessions = this.sessions[authority];
 
-    if ((authoritySessions = this.sessions[authority])) {
+    if (authoritySessions) {
       let len = authoritySessions.length;
 
       for (let i = 0; i < len; i++) {
@@ -6364,7 +6357,7 @@ class Http2Sessions {
       }
     }
 
-    const session = (0,external_http2_.connect)(authority, options);
+    const session = external_http2_.connect(authority, options);
 
     let removed;
 
@@ -6379,11 +6372,12 @@ class Http2Sessions {
 
       while (i--) {
         if (entries[i][0] === session) {
-          entries.splice(i, 1);
           if (len === 1) {
             delete this.sessions[authority];
-            return;
+          } else {
+            entries.splice(i, 1);
           }
+          return;
         }
       }
     };
@@ -6422,12 +6416,12 @@ class Http2Sessions {
 
     session.once('close', removeSession);
 
-    let entries = this.sessions[authority], entry = [
-      session,
-      options
-    ];
+    let entry = [
+        session,
+        options
+      ];
 
-    entries ? this.sessions[authority].push(entry) : authoritySessions =  this.sessions[authority] = [entry];
+    authoritySessions ? authoritySessions.push(entry) : authoritySessions =  this.sessions[authority] = [entry];
 
     return session;
   }
@@ -6554,6 +6548,13 @@ const http2Transport = {
       const {http2Options, headers} = options;
 
       const session = http2Sessions.getSession(authority, http2Options);
+
+      const {
+        HTTP2_HEADER_SCHEME,
+        HTTP2_HEADER_METHOD,
+        HTTP2_HEADER_PATH,
+        HTTP2_HEADER_STATUS
+      } = external_http2_.constants;
 
       const http2Headers = {
         [HTTP2_HEADER_SCHEME]: options.protocol.replace(':', ''),
@@ -7136,6 +7137,9 @@ const http2Transport = {
           req
         ));
       });
+    } else {
+      // explicitly reset the socket timeout value for a possible `keep-alive` request
+      req.setTimeout(0);
     }
 
 
