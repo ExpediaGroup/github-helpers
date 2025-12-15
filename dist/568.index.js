@@ -520,7 +520,7 @@ module.exports = typeof Reflect !== 'undefined' && Reflect && Reflect.apply;
 
 var util = __webpack_require__(9023);
 var Stream = (__webpack_require__(2203).Stream);
-var DelayedStream = __webpack_require__(329);
+var DelayedStream = __webpack_require__(2710);
 
 module.exports = CombinedStream;
 function CombinedStream() {
@@ -730,7 +730,7 @@ CombinedStream.prototype._emitError = function(err) {
 
 /***/ }),
 
-/***/ 329:
+/***/ 2710:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 var Stream = (__webpack_require__(2203).Stream);
@@ -990,7 +990,7 @@ module.exports = Object;
 
 /***/ }),
 
-/***/ 8700:
+/***/ 6319:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 
@@ -1749,7 +1749,7 @@ var Stream = (__webpack_require__(2203).Stream);
 var crypto = __webpack_require__(6982);
 var mime = __webpack_require__(4096);
 var asynckit = __webpack_require__(1324);
-var setToStringTag = __webpack_require__(8700);
+var setToStringTag = __webpack_require__(6319);
 var hasOwn = __webpack_require__(4076);
 var populate = __webpack_require__(1835);
 
