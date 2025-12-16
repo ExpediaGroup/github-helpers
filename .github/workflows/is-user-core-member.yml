@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-  
+
       - uses: ./
         id: is-user-core-member
         with:
@@ -20,5 +20,5 @@ jobs:
           pull_number: ${{ github.event.pull_request.number }}
           login: ${{ github.actor }} # Optional, defaults to the GitHub actor
           github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-  
+
       - run: echo ${{ steps.is-user-core-member.outputs.output }}
