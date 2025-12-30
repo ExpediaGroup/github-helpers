@@ -8,7 +8,23 @@
       "matchDepTypes": ["dependencies", "devDependencies"],
       "matchUpdateTypes": ["patch", "minor"],
       "groupName": "dependencies",
-      "automerge": true
+      "semanticCommits": "disabled"
+    },
+    {
+      "matchManagers": ["custom.regex"],
+      "matchPackageNames": ["bun"],
+      "groupName": "dependencies"
     }
-  ]
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["package.json"],
+      "matchStrings": [
+        "\"packageManager\":\\s*\"(?<depName>bun)@(?<currentValue>[\\d.]+)\""
+      ],
+      "datasourceTemplate": "npm",
+      "versioningTemplate": "semver"
+    }
+  ],
 }
