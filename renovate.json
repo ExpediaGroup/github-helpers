@@ -20,11 +20,9 @@
     {
       "customType": "regex",
       "managerFilePatterns": ["package.json"],
-      "matchStrings": [
-        "\"packageManager\":\\s*\"(?<depName>bun)@(?<currentValue>[\\d.]+)\""
-      ],
+      "matchStrings": ["\"packageManager\":\\s*\"(?<depName>bun)@(?<currentValue>[\\d.]+)\""],
       "datasourceTemplate": "npm",
       "versioningTemplate": "semver"
     }
-  ],
+  ]
 }
