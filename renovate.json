@@ -3,12 +3,12 @@
   "extends": ["local>ExpediaGroup/renovate-config"],
   "assignAutomerge": true,
   "assigneesFromCodeOwners": true,
+  "semanticCommits": "disabled",
   "packageRules": [
     {
       "matchDepTypes": ["dependencies", "devDependencies"],
       "matchUpdateTypes": ["patch", "minor"],
-      "groupName": "dependencies",
-      "semanticCommits": "disabled"
+      "groupName": "dependencies"
     },
     {
       "matchManagers": ["custom.regex"],
