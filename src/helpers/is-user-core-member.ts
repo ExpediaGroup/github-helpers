@@ -20,7 +20,7 @@ export class IsUserCoreMember extends HelperInputs {}
 
 export const isUserCoreMember = async ({ pull_number, login = context.actor, codeowners_overrides }: IsUserCoreMember) => {
   const pullNumber = Number(pull_number);
-  const coreMembers = await getCoreMemberLogins(pullNumber, undefined, codeowners_overrides);
+  const coreMembers = await getCoreMemberLogins({ pull_number: pullNumber, codeowners_overrides });
   core.info(`Checking if ${login} is a core member for pull request ${pullNumber}`);
   core.info(`Core members: ${coreMembers.join(', ')}`);
   return coreMembers.includes(login);

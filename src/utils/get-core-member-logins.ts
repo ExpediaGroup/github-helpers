@@ -19,7 +19,8 @@ import { map } from 'bluebird';
 import { convertToTeamSlug } from './convert-to-team-slug';
 import { paginateMembersInOrg } from './paginate-members-in-org';
 
-export const getCoreMemberLogins = async (pull_number: number, teams?: string[], codeowners_overrides?: string) => {
+export const getCoreMemberLogins = async (params: { pull_number: number; teams?: string[]; codeowners_overrides?: string }) => {
+  const { pull_number, teams, codeowners_overrides } = params;
   const codeOwners = teams ?? getCodeOwnersFromEntries(await getRequiredCodeOwnersEntries(pull_number, codeowners_overrides));
   const teamsAndLogins = await getCoreTeamsAndLogins(codeOwners);
   return uniq(teamsAndLogins.map(({ login }) => login));

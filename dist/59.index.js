@@ -415,7 +415,8 @@ limitations under the License.
 
 
 
-const getCoreMemberLogins = async (pull_number, teams, codeowners_overrides) => {
+const getCoreMemberLogins = async (params) => {
+    const { pull_number, teams, codeowners_overrides } = params;
     const codeOwners = teams ?? getCodeOwnersFromEntries(await getRequiredCodeOwnersEntries(pull_number, codeowners_overrides));
     const teamsAndLogins = await getCoreTeamsAndLogins(codeOwners);
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(teamsAndLogins.map(({ login }) => login));

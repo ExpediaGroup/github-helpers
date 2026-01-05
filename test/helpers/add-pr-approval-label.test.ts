@@ -40,7 +40,7 @@ describe('addPrApprovalLabel', () => {
     });
 
     it('should call getCoreMemberLogins with correct params', () => {
-      expect(getCoreMemberLogins).toHaveBeenCalledWith(123, ['team1', 'team2']);
+      expect(getCoreMemberLogins).toHaveBeenCalledWith({ pull_number: 123, teams: ['team1', 'team2'] });
     });
 
     it('should add core approved label to the pr', () => {

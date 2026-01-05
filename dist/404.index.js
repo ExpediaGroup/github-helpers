@@ -36,7 +36,7 @@ class IsUserCoreMember extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .
 }
 const isUserCoreMember = async ({ pull_number, login = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.actor, codeowners_overrides }) => {
     const pullNumber = Number(pull_number);
-    const coreMembers = await (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .u)(pullNumber, undefined, codeowners_overrides);
+    const coreMembers = await (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .u)({ pull_number: pullNumber, codeowners_overrides });
     _actions_core__WEBPACK_IMPORTED_MODULE_1__.info(`Checking if ${login} is a core member for pull request ${pullNumber}`);
     _actions_core__WEBPACK_IMPORTED_MODULE_1__.info(`Core members: ${coreMembers.join(', ')}`);
     return coreMembers.includes(login);
@@ -211,7 +211,8 @@ limitations under the License.
 
 
 
-const getCoreMemberLogins = async (pull_number, teams, codeowners_overrides) => {
+const getCoreMemberLogins = async (params) => {
+    const { pull_number, teams, codeowners_overrides } = params;
     const codeOwners = teams ?? getCodeOwnersFromEntries(await getRequiredCodeOwnersEntries(pull_number, codeowners_overrides));
     const teamsAndLogins = await getCoreTeamsAndLogins(codeOwners);
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(teamsAndLogins.map(({ login }) => login));

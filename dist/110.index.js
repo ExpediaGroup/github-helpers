@@ -114,7 +114,7 @@ class AddPrApprovalLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_4__/*
     login = '';
 }
 const addPrApprovalLabel = async ({ teams, login }) => {
-    const coreMemberLogins = await (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .u)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number, teams?.split('\n'));
+    const coreMemberLogins = await (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .u)({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number, teams: teams?.split('\n') });
     const approvalLabel = coreMemberLogins.includes(login) ? _constants__WEBPACK_IMPORTED_MODULE_0__/* .CORE_APPROVED_PR_LABEL */ .uJ : _constants__WEBPACK_IMPORTED_MODULE_0__/* .PEER_APPROVED_PR_LABEL */ .XD;
     return _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.issues.addLabels({
         labels: [approvalLabel],
@@ -292,7 +292,8 @@ limitations under the License.
 
 
 
-const getCoreMemberLogins = async (pull_number, teams, codeowners_overrides) => {
+const getCoreMemberLogins = async (params) => {
+    const { pull_number, teams, codeowners_overrides } = params;
     const codeOwners = teams ?? getCodeOwnersFromEntries(await getRequiredCodeOwnersEntries(pull_number, codeowners_overrides));
     const teamsAndLogins = await getCoreTeamsAndLogins(codeOwners);
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(teamsAndLogins.map(({ login }) => login));

@@ -124,7 +124,7 @@ limitations under the License.
 class AssignPrReviewer extends _types_generated__WEBPACK_IMPORTED_MODULE_8__/* .HelperInputs */ .m {
 }
 const assignPrReviewers = async ({ teams, login, number_of_assignees = '1', slack_webhook_url, pull_number = String(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number) }) => {
-    const coreMemberLogins = await (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .u)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number, teams?.split('\n'));
+    const coreMemberLogins = await (0,_utils_get_core_member_logins__WEBPACK_IMPORTED_MODULE_2__/* .getCoreMemberLogins */ .u)({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number, teams: teams?.split('\n') });
     const { data: { user, labels } } = await _octokit__WEBPACK_IMPORTED_MODULE_5__/* .octokit */ .A.pulls.get({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number, ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo });
     if (login && coreMemberLogins.includes(login)) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Already a core member, no need to assign.');
@@ -366,7 +366,8 @@ limitations under the License.
 
 
 
-const getCoreMemberLogins = async (pull_number, teams, codeowners_overrides) => {
+const getCoreMemberLogins = async (params) => {
+    const { pull_number, teams, codeowners_overrides } = params;
     const codeOwners = teams ?? getCodeOwnersFromEntries(await getRequiredCodeOwnersEntries(pull_number, codeowners_overrides));
     const teamsAndLogins = await getCoreTeamsAndLogins(codeOwners);
     return (0,lodash__WEBPACK_IMPORTED_MODULE_2__.uniq)(teamsAndLogins.map(({ login }) => login));
