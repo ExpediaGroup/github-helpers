@@ -3,7 +3,8 @@ name: Check PR Title
 on:
   pull_request:
     branches: [main]
-    types: [edited, opened, reopened, synchronize]
+    paths:
+      - 'src/helpers/check-pr-title.ts'
 
 jobs:
   test:
@@ -11,20 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: package.json
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Validate PR Title Contains Valid Descriptor
-        run: bun ./scripts/verify-pr-title-has-valid-descriptor.ts
-        env:
-          TITLE: ${{ github.event.pull_request.title }}
+        uses: actions/checkout@v6
 
       - uses: ./
         with:

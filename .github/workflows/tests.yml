@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
@@ -31,6 +31,11 @@ jobs:
 
       - name: Install Dependencies
         run: bun install
+
+      - name: Validate PR Title Contains Valid Descriptor
+        run: bun ./scripts/verify-pr-title-has-valid-descriptor.ts
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
 
       - name: Validate Copyright Headers
         run: bun ./scripts/verify-file-headers.ts

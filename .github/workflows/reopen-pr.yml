@@ -8,11 +8,11 @@ on:
 
 jobs:
   test:
-  runs-on: ubuntu-latest
-  steps:
-    - name: Checkout
-      uses: actions/checkout@v5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
 
-    - uses: ./
-      with:
-        helper: reopen-pr
+      - uses: ./
+        with:
+          helper: reopen-pr

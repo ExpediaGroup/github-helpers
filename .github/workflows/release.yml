@@ -10,19 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: latest
+      - name: Install
+        run: bun install
 
-      - name: Create Release
-        run: bunx semantic-release
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
