@@ -4,6 +4,7 @@
   "assignAutomerge": true,
   "assigneesFromCodeOwners": true,
   "semanticCommits": "disabled",
+  "commitMessagePrefix": "chore(repo): ",
   "packageRules": [
     {
       "matchDepTypes": ["dependencies", "devDependencies"],
