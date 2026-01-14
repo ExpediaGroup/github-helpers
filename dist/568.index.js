@@ -990,7 +990,7 @@ module.exports = Object;
 
 /***/ }),
 
-/***/ 6319:
+/***/ 8700:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 
@@ -1749,7 +1749,7 @@ var Stream = (__webpack_require__(2203).Stream);
 var crypto = __webpack_require__(6982);
 var mime = __webpack_require__(4096);
 var asynckit = __webpack_require__(1324);
-var setToStringTag = __webpack_require__(6319);
+var setToStringTag = __webpack_require__(8700);
 var hasOwn = __webpack_require__(4076);
 var populate = __webpack_require__(1835);
 
