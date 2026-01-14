@@ -3,7 +3,8 @@
   "extends": ["local>ExpediaGroup/renovate-config"],
   "assignAutomerge": true,
   "assigneesFromCodeOwners": true,
-  "commitMessage": "chore(repo): update dependencies",
+  "semanticCommits": "disabled",
+  "commitMessagePrefix": "chore(repo): ",
   "packageRules": [
     {
       "matchDepTypes": ["dependencies", "devDependencies"],
