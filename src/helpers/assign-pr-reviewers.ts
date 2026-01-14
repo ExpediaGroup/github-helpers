@@ -36,7 +36,7 @@ export const assignPrReviewers = async ({
   slack_webhook_url,
   pull_number = String(context.issue.number)
 }: AssignPrReviewer) => {
-  const coreMemberLogins = await getCoreMemberLogins(context.issue.number, teams?.split('\n'));
+  const coreMemberLogins = await getCoreMemberLogins({ pull_number: context.issue.number, teams: teams?.split('\n') });
   const {
     data: { user, labels }
   } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });

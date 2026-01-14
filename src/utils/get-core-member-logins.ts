@@ -14,14 +14,14 @@ limitations under the License.
 import * as core from '@actions/core';
 import { CodeOwnersEntry, loadOwners, matchFile } from 'codeowners-utils';
 import { uniq, union } from 'lodash';
-import { context } from '@actions/github';
 import { getChangedFilepaths } from './get-changed-filepaths';
 import { map } from 'bluebird';
-import { octokit } from '../octokit';
 import { convertToTeamSlug } from './convert-to-team-slug';
+import { paginateMembersInOrg } from './paginate-members-in-org';
 
-export const getCoreMemberLogins = async (pull_number: number, teams?: string[]) => {
-  const codeOwners = teams ?? getCodeOwnersFromEntries(await getRequiredCodeOwnersEntries(pull_number));
+export const getCoreMemberLogins = async (params: { pull_number: number; teams?: string[]; codeowners_overrides?: string }) => {
+  const { pull_number, teams, codeowners_overrides } = params;
+  const codeOwners = teams ?? getCodeOwnersFromEntries(await getRequiredCodeOwnersEntries(pull_number, codeowners_overrides));
   const teamsAndLogins = await getCoreTeamsAndLogins(codeOwners);
   return uniq(teamsAndLogins.map(({ login }) => login));
 };
@@ -66,13 +66,7 @@ const getCoreTeamsAndLogins = async (codeOwners?: string[]) => {
   }
 
   const teamsAndLogins = await map(codeOwners, async team =>
-    octokit.teams
-      .listMembersInOrg({
-        org: context.repo.owner,
-        team_slug: team,
-        per_page: 100
-      })
-      .then(listMembersResponse => listMembersResponse.data.map(({ login }) => ({ team, login })))
+    paginateMembersInOrg(team).then(members => members.map(({ login }) => ({ team, login })))
   );
   return union(...teamsAndLogins);
 };

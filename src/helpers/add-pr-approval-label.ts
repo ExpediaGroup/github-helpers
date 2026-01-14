@@ -23,7 +23,7 @@ export class AddPrApprovalLabel extends HelperInputs {
 }
 
 export const addPrApprovalLabel = async ({ teams, login }: AddPrApprovalLabel) => {
-  const coreMemberLogins = await getCoreMemberLogins(context.issue.number, teams?.split('\n'));
+  const coreMemberLogins = await getCoreMemberLogins({ pull_number: context.issue.number, teams: teams?.split('\n') });
   const approvalLabel = coreMemberLogins.includes(login) ? CORE_APPROVED_PR_LABEL : PEER_APPROVED_PR_LABEL;
   return octokit.issues.addLabels({
     labels: [approvalLabel],

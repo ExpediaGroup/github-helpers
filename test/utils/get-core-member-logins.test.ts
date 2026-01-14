@@ -62,7 +62,7 @@ describe('getCoreMemberLogins', () => {
       });
 
       it('should return expected result', async () => {
-        const result = await getCoreMemberLogins(pull_number);
+        const result = await getCoreMemberLogins({ pull_number });
 
         expect(result).toEqual(['user1', 'user2', 'user3']);
       });
@@ -92,7 +92,7 @@ describe('getCoreMemberLogins', () => {
       });
 
       it('should return expected result', async () => {
-        const result = await getCoreMemberLogins(pull_number);
+        const result = await getCoreMemberLogins({ pull_number });
 
         expect(result).toEqual(['user1', 'user2', 'user3', 'user4']);
       });
@@ -198,7 +198,7 @@ describe('getCoreMemberLogins', () => {
     });
 
     it('should return expected result', async () => {
-      const result = await getCoreMemberLogins(pull_number, teams);
+      const result = await getCoreMemberLogins({ pull_number, teams });
 
       expect(result).toEqual(['user1', 'user2', 'user3']);
     });
