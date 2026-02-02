@@ -11,128 +11,32 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { describe, it, expect, beforeEach, mock, spyOn } from 'bun:test';
-import type { Mock } from 'bun:test';
+import { describe, it, expect, beforeEach, spyOn } from 'bun:test';
+import { setupMocks } from './setup';
 
-process.env.INPUT_GITHUB_TOKEN = 'mock-token';
+setupMocks();
 
-const mockOctokit = {
-  rest: {
-    actions: {
-      listWorkflowRunsForRepo: mock(() => ({})),
-      reRunWorkflow: mock(() => ({}))
-    },
-    checks: {
-      listForRef: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    git: {
-      deleteRef: mock(() => ({})),
-      getCommit: mock(() => ({}))
-    },
-    issues: {
-      addAssignees: mock(() => ({})),
-      addLabels: mock(() => ({})),
-      createComment: mock(() => ({})),
-      get: mock(() => ({})),
-      listComments: mock(() => ({})),
-      listForRepo: mock(() => ({})),
-      removeLabel: mock(() => ({})),
-      update: mock(() => ({})),
-      updateComment: mock(() => ({}))
-    },
-    pulls: {
-      create: mock(() => ({})),
-      createReview: mock(() => ({})),
-      get: mock(() => ({})),
-      list: mock(() => ({})),
-      listFiles: mock(() => ({})),
-      listReviews: mock(() => ({})),
-      merge: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    repos: {
-      compareCommitsWithBasehead: mock(() => ({})),
-      createCommitStatus: mock(() => ({})),
-      createDeployment: mock(() => ({})),
-      createDeploymentStatus: mock(() => ({})),
-      deleteAnEnvironment: mock(() => ({})),
-      deleteDeployment: mock(() => ({})),
-      get: mock(() => ({})),
-      getCombinedStatusForRef: mock(() => ({})),
-      listBranches: mock(() => ({})),
-      listBranchesForHeadCommit: mock(() => ({})),
-      listCommitStatusesForRef: mock(() => ({})),
-      listDeploymentStatuses: mock(() => ({})),
-      listDeployments: mock(() => ({})),
-      listPullRequestsAssociatedWithCommit: mock(() => ({})),
-      merge: mock(() => ({})),
-      mergeUpstream: mock(() => ({}))
-    },
-    teams: {
-      listMembersInOrg: mock(() => ({}))
-    },
-    users: {
-      getByUsername: mock(() => ({}))
-    }
-  },
-  graphql: mock(() => ({}))
-};
-
-const mockGetInput = mock(() => 'create-pr-comment');
-const mockSetOutput = mock(() => {});
-const mockSetFailed = mock(() => {});
-const mockInfo = mock(() => {});
-const mockWarning = mock(() => {});
-const mockError = mock(() => {});
-
-mock.module('@actions/core', () => ({
-  getInput: mockGetInput,
-  setOutput: mockSetOutput,
-  setFailed: mockSetFailed,
-  info: mockInfo,
-  warning: mockWarning,
-  error: mockError
-}));
-
-mock.module('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: mock(() => mockOctokit)
-}));
-
-mock.module('../../src/octokit', () => ({
-  octokit: mockOctokit.rest,
-  octokitGraphql: mockOctokit.graphql
-}));
-
-const mockGetActionInputs = mock(() => ({ my: 'input', another: 'input' }));
-
-mock.module('../src/utils/get-action-inputs', () => ({
-  getActionInputs: mockGetActionInputs
-}));
-
-const mockCreatePrComment = mock(() => Promise.resolve('some output'));
-
-mock.module('../src/helpers/create-pr-comment', () => ({
-  createPrComment: mockCreatePrComment
-}));
-
-const core = await import('@actions/core');
-const { getInput } = await import('@actions/core');
-const { getActionInputs } = await import('../src/utils/get-action-inputs');
+const coreModule = await import('@actions/core');
+const getActionInputsModule = await import('../src/utils/get-action-inputs');
 const helperModule = await import('../src/helpers/create-pr-comment');
+
+const getInputSpy = spyOn(coreModule, 'getInput');
+const getActionInputsSpy = spyOn(getActionInputsModule, 'getActionInputs');
+const helperSpy = spyOn(helperModule, 'createPrComment');
+const setOutputSpy = spyOn(coreModule, 'setOutput');
+
+// Import after setting up spies
 const { run } = await import('../src/main');
 
-const helperSpy = mockCreatePrComment;
 const helper = 'create-pr-comment';
 const otherInputs = {
   my: 'input',
   another: 'input'
 };
-const output = 'some output';
-(getInput as Mock<any>).mockReturnValue(helper);
-(getActionInputs as Mock<any>).mockReturnValue(otherInputs);
-(helperSpy as Mock<any>).mockResolvedValue(output);
+const output = { data: {} } as any;
+getInputSpy.mockReturnValue(helper);
+getActionInputsSpy.mockReturnValue(otherInputs);
+helperSpy.mockResolvedValue(output);
 
 describe('main', () => {
   beforeEach(async () => {
@@ -141,7 +45,7 @@ describe('main', () => {
 
   it('should call getActionInputs with correct params', () => {
     const requiredInputs = ['body'];
-    expect(getActionInputs).toHaveBeenCalledWith(requiredInputs);
+    expect(getActionInputsSpy).toHaveBeenCalledWith(requiredInputs);
   });
 
   it('should call helper with all inputs', () => {
@@ -149,6 +53,6 @@ describe('main', () => {
   });
 
   it('should set output', () => {
-    expect(core.setOutput).toHaveBeenCalledWith('output', output);
+    expect(setOutputSpy).toHaveBeenCalledWith('output', output);
   });
 });

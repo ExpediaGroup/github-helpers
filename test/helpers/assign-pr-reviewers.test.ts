@@ -11,91 +11,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mock, beforeEach, describe, expect, it, mock } from 'bun:test';
-import type { Mocktokit } from '../types';
+import { describe, it, expect, beforeEach, Mock, mock } from 'bun:test';
+import { setupMocks } from '../setup';
+import * as lodash from 'lodash';
 
-process.env.INPUT_GITHUB_TOKEN = 'mock-token';
+setupMocks();
 
-const mockOctokit = {
-  rest: {
-    actions: {
-      listWorkflowRunsForRepo: mock(() => ({})),
-      reRunWorkflow: mock(() => ({}))
-    },
-    checks: {
-      listForRef: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    git: {
-      deleteRef: mock(() => ({})),
-      getCommit: mock(() => ({}))
-    },
-    issues: {
-      addAssignees: mock(() => ({})),
-      addLabels: mock(() => ({})),
-      createComment: mock(() => ({})),
-      get: mock(() => ({})),
-      listComments: mock(() => ({})),
-      listForRepo: mock(() => ({})),
-      removeLabel: mock(() => ({})),
-      update: mock(() => ({})),
-      updateComment: mock(() => ({}))
-    },
-    pulls: {
-      create: mock(() => ({})),
-      createReview: mock(() => ({})),
-      get: mock(() => ({})),
-      list: mock(() => ({})),
-      listFiles: mock(() => ({})),
-      listReviews: mock(() => ({})),
-      merge: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    repos: {
-      compareCommitsWithBasehead: mock(() => ({})),
-      createCommitStatus: mock(() => ({})),
-      createDeployment: mock(() => ({})),
-      createDeploymentStatus: mock(() => ({})),
-      deleteAnEnvironment: mock(() => ({})),
-      deleteDeployment: mock(() => ({})),
-      get: mock(() => ({})),
-      getCombinedStatusForRef: mock(() => ({})),
-      listBranches: mock(() => ({})),
-      listBranchesForHeadCommit: mock(() => ({})),
-      listCommitStatusesForRef: mock(() => ({})),
-      listDeploymentStatuses: mock(() => ({})),
-      listDeployments: mock(() => ({})),
-      listPullRequestsAssociatedWithCommit: mock(() => ({})),
-      merge: mock(() => ({})),
-      mergeUpstream: mock(() => ({}))
-    },
-    teams: {
-      listMembersInOrg: mock(() => ({}))
-    },
-    users: {
-      getByUsername: mock(() => ({}))
-    }
-  },
-  graphql: mock(() => ({}))
-};
-
-mock.module('@actions/core', () => ({
-  getInput: () => 'mock-token',
-  setOutput: () => {},
-  setFailed: () => {},
-  info: () => {},
-  warning: () => {},
-  error: () => {}
+// Mock lodash sampleSize
+const mockSampleSize = mock(() => ['assignee']);
+mock.module('lodash', () => ({
+  ...lodash,
+  sampleSize: mockSampleSize
 }));
 
-mock.module('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: mock(() => mockOctokit)
+// Mock get-core-member-logins
+mock.module('../../src/utils/get-core-member-logins', () => ({
+  getCoreMemberLogins: mock(() => Promise.resolve(['user1', 'user2', 'user3'])),
+  getRequiredCodeOwnersEntries: mock(() => Promise.resolve([]))
 }));
 
-mock.module('../../src/octokit', () => ({
-  octokit: mockOctokit.rest,
-  octokitGraphql: mockOctokit.graphql
+// Mock notify-user
+mock.module('../../src/utils/notify-user', () => ({
+  notifyUser: mock(() => Promise.resolve())
 }));
 
 const { assignPrReviewers } = await import('../../src/helpers/assign-pr-reviewers');
@@ -104,26 +41,17 @@ const { notifyUser } = await import('../../src/utils/notify-user');
 const { octokit } = await import('../../src/octokit');
 const { CORE_APPROVED_PR_LABEL, PEER_APPROVED_PR_LABEL } = await import('../../src/constants');
 const { context } = await import('@actions/github');
+const { sampleSize } = await import('lodash');
 
-(getCoreMemberLogins as Mock<any>).mockResolvedValue(['user1', 'user2', 'user3']);
-(sampleSize as Mock<any>).mockReturnValue(['assignee']);
+(getCoreMemberLogins as unknown as Mock<any>).mockResolvedValue(['user1', 'user2', 'user3']);
+(sampleSize as unknown as Mock<any>).mockReturnValue(['assignee']);
 
 describe('assignPrReviewer', () => {
   const teams = 'team1\nteam2';
   const pull_number = 123;
 
   beforeEach(() => {
-    (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-      data: {
-        id: 1,
-        number: 123,
-        state: 'open',
-        title: 'feat: added feature to project',
-        user: {
-          login: 'author'
-        }
-      }
-    }));
+    mock.clearAllMocks()
   });
 
   describe('login provided', () => {
@@ -162,7 +90,7 @@ describe('assignPrReviewer', () => {
     describe('author is a core member', () => {
       const login = 'user6';
       beforeEach(() => {
-        (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
           data: {
             id: 1,
             number: 123,
@@ -184,7 +112,7 @@ describe('assignPrReviewer', () => {
     describe('already core approved', () => {
       const login = 'user6';
       beforeEach(() => {
-        (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
           data: {
             id: 1,
             number: 123,
@@ -211,7 +139,7 @@ describe('assignPrReviewer', () => {
     describe('not core approved', () => {
       const login = 'user6';
       beforeEach(() => {
-        (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+        (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
           data: {
             id: 1,
             number: 123,

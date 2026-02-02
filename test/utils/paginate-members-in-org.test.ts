@@ -11,144 +11,48 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { describe, it, expect, mock } from 'bun:test';
+import { describe, it, expect, beforeEach, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-process.env.INPUT_GITHUB_TOKEN = 'mock-token';
-
-const generateMember = (baseMember: object): any => {
-  return {
-    login: 'login',
-    id: 0,
-    node_id: 'node_id',
-    avatar_url: 'avatar_url',
-    gravatar_id: 'gravatar_id',
-    url: 'url',
-    html_url: 'html_url',
-    followers_url: 'followers_url',
-    following_url: 'following_url',
-    gists_url: 'gists_url',
-    starred_url: 'starred_url',
-    subscriptions_url: 'subscriptions_url',
-    organizations_url: 'organizations_url',
-    repos_url: 'repos_url',
-    events_url: 'events_url',
-    received_events_url: 'received_events_url',
-    type: 'type',
-    site_admin: false,
-    ...baseMember
-  };
-};
-
-const mockListMembersInOrg = mock(async (args: any) => {
-  let teamMembers: any[] = [];
-  switch (args.team_slug) {
-    case 'empty-team':
-      break;
-    case 'small-team':
-      teamMembers = [
-        generateMember({ login: 'user1', id: 1 }),
-        generateMember({ login: 'user2', id: 2 }),
-        generateMember({ login: 'user3', id: 3 })
-      ];
-      break;
-    case 'large-team':
-      const teamSize = 250;
-      const page = args.page || 1;
-      const pageOffset = (page - 1) * 100;
-      const pageSize = Math.min(teamSize - pageOffset, 100);
-      for (let i = 0; i < pageSize; i++) {
-        teamMembers.push(generateMember({ login: `user${i + pageOffset}`, id: i + pageOffset }));
-      }
-      break;
-  }
-  return { data: teamMembers };
-});
-
-const mockOctokit = {
-  rest: {
-    actions: {
-      listWorkflowRunsForRepo: mock(() => ({})),
-      reRunWorkflow: mock(() => ({}))
-    },
-    checks: {
-      listForRef: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    git: {
-      deleteRef: mock(() => ({})),
-      getCommit: mock(() => ({}))
-    },
-    issues: {
-      addAssignees: mock(() => ({})),
-      addLabels: mock(() => ({})),
-      createComment: mock(() => ({})),
-      get: mock(() => ({})),
-      listComments: mock(() => ({})),
-      listForRepo: mock(() => ({})),
-      removeLabel: mock(() => ({})),
-      update: mock(() => ({})),
-      updateComment: mock(() => ({}))
-    },
-    pulls: {
-      create: mock(() => ({})),
-      createReview: mock(() => ({})),
-      get: mock(() => ({})),
-      list: mock(() => ({})),
-      listFiles: mock(() => ({})),
-      listReviews: mock(() => ({})),
-      merge: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    repos: {
-      compareCommitsWithBasehead: mock(() => ({})),
-      createCommitStatus: mock(() => ({})),
-      createDeployment: mock(() => ({})),
-      createDeploymentStatus: mock(() => ({})),
-      deleteAnEnvironment: mock(() => ({})),
-      deleteDeployment: mock(() => ({})),
-      get: mock(() => ({})),
-      getCombinedStatusForRef: mock(() => ({})),
-      listBranches: mock(() => ({})),
-      listBranchesForHeadCommit: mock(() => ({})),
-      listCommitStatusesForRef: mock(() => ({})),
-      listDeploymentStatuses: mock(() => ({})),
-      listDeployments: mock(() => ({})),
-      listPullRequestsAssociatedWithCommit: mock(() => ({})),
-      merge: mock(() => ({})),
-      mergeUpstream: mock(() => ({}))
-    },
-    teams: {
-      listMembersInOrg: mock(() => ({}))
-    },
-    users: {
-      getByUsername: mock(() => ({}))
-    }
-  },
-  graphql: mock(() => ({}))
-};
-
-mock.module('@actions/core', () => ({
-  getInput: (input: string) => (input === 'input2' ? '' : input),
-  setOutput: () => {},
-  setFailed: () => {},
-  info: () => {},
-  warning: () => {},
-  error: () => {}
-}));
-
-mock.module('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: mock(() => mockOctokit)
-}));
-
-mock.module('../../src/octokit', () => ({
-  octokit: mockOctokit.rest,
-  octokitGraphql: mockOctokit.graphql
-}));
+setupMocks();
 
 const { paginateMembersInOrg } = await import('../../src/utils/paginate-members-in-org');
+const { octokit } = await import('../../src/octokit');
 
 describe('paginateMembersInOrg', () => {
+  beforeEach(() => {
+    // Set up mock implementation for listMembersInOrg
+    (octokit.teams.listMembersInOrg as unknown as Mock<any>).mockImplementation(async ({ team_slug, page = 1 }: { team_slug: string; page: number }) => {
+      if (team_slug === 'empty-team') {
+        return { data: [] };
+      }
+
+      if (team_slug === 'small-team') {
+        return {
+          data: [
+            { login: 'user1', id: 1 },
+            { login: 'user2', id: 2 },
+            { login: 'user3', id: 3 }
+          ]
+        };
+      }
+
+      if (team_slug === 'large-team') {
+        // Simulate pagination - return 100 items for first two pages, 50 for third
+        const startId = (page - 1) * 100;
+        const count = page <= 2 ? 100 : 50;
+        return {
+          data: Array.from({ length: count }, (_, i) => ({
+            login: `user${startId + i}`,
+            id: startId + i
+          }))
+        };
+      }
+
+      return { data: [] };
+    });
+  });
+
   describe('return all team members', () => {
     it('when the team has no members', async () => {
       const response = await paginateMembersInOrg('empty-team');

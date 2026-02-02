@@ -11,130 +11,41 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { describe, expect, it, mock } from 'bun:test';
-import type { Mocktokit, MockSimpleGit } from '../types';
+import { describe, it, expect, beforeEach, mock, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-process.env.INPUT_GITHUB_TOKEN = 'mock-token';
+setupMocks({ ref: 'refs/heads/source' });
 
-const mockOctokit = {
-  rest: {
-    actions: {
-      listWorkflowRunsForRepo: mock(() => ({})),
-      reRunWorkflow: mock(() => ({}))
-    },
-    checks: {
-      listForRef: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    git: {
-      deleteRef: mock(() => ({})),
-      getCommit: mock(() => ({}))
-    },
-    issues: {
-      addAssignees: mock(() => ({})),
-      addLabels: mock(() => ({})),
-      createComment: mock(() => ({})),
-      get: mock(() => ({})),
-      listComments: mock(() => ({})),
-      listForRepo: mock(() => ({})),
-      removeLabel: mock(() => ({})),
-      update: mock(() => ({})),
-      updateComment: mock(() => ({}))
-    },
-    pulls: {
-      create: mock(() => ({})),
-      createReview: mock(() => ({})),
-      get: mock(() => ({})),
-      list: mock(() => ({})),
-      listFiles: mock(() => ({})),
-      listReviews: mock(() => ({})),
-      merge: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    repos: {
-      compareCommitsWithBasehead: mock(() => ({})),
-      createCommitStatus: mock(() => ({})),
-      createDeployment: mock(() => ({})),
-      createDeploymentStatus: mock(() => ({})),
-      deleteAnEnvironment: mock(() => ({})),
-      deleteDeployment: mock(() => ({})),
-      get: mock(() => ({})),
-      getCombinedStatusForRef: mock(() => ({})),
-      listBranches: mock(() => ({})),
-      listBranchesForHeadCommit: mock(() => ({})),
-      listCommitStatusesForRef: mock(() => ({})),
-      listDeploymentStatuses: mock(() => ({})),
-      listDeployments: mock(() => ({})),
-      listPullRequestsAssociatedWithCommit: mock(() => ({})),
-      merge: mock(() => ({})),
-      mergeUpstream: mock(() => ({}))
-    },
-    teams: {
-      listMembersInOrg: mock(() => ({}))
-    },
-    users: {
-      getByUsername: mock(() => ({}))
-    }
-  },
-  graphql: mock(() => ({}))
+// Create mocks for simpleGit
+const mockGit = {
+  diff: mock(() => ''),
+  fetch: mock(() => 'new fetch value'),
+  checkoutLocalBranch: mock(() => {}),
+  add: mock(() => {}),
+  commit: mock(() => {}),
+  push: mock(() => {}),
+  addConfig: mock(() => {})
 };
 
-mock.module('@actions/core', () => ({
-  getInput: () => 'mock-token',
-  setOutput: () => {},
-  setFailed: () => {},
-  info: () => {},
-  warning: () => {},
-  error: () => {}
-}));
-
-mock.module('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: mock(() => mockOctokit)
-}));
-
-mock.module('../../src/octokit', () => ({
-  octokit: mockOctokit.rest,
-  octokitGraphql: mockOctokit.graphql
-}));
-
-const mockGitInstance = {
-  checkoutLocalBranch: mock(() => mockGitInstance),
-  add: mock(() => mockGitInstance),
-  commit: mock(() => mockGitInstance),
-  push: mock(() => mockGitInstance),
-  addConfig: mock(() => mockGitInstance)
-};
-
-const mockSimpleGit = mock(() => mockGitInstance) as any;
-mockSimpleGit.__mockGitInstance = mockGitInstance;
+const simpleGitMock = mock(() => mockGit) as any;
+simpleGitMock.__mockGitInstance = mockGit;
 
 mock.module('simple-git', () => ({
-  simpleGit: mockSimpleGit,
-  default: mockSimpleGit
+  default: simpleGitMock,
+  simpleGit: simpleGitMock
 }));
 
 const { createPr } = await import('../../src/helpers/create-pr');
 const { octokit } = await import('../../src/octokit');
 const { context } = await import('@actions/github');
+const simpleGit = (await import('simple-git')).default;
 
-
-  const simpleGitMock = jest.fn(() => mockGit);
-
-  (simpleGitMock as unknown as MockSimpleGit).__mockGitInstance = mockGit;
-
-  return {
-    __esModule: true,
-    default: simpleGitMock
-  };
-});
-
-(octokit.repos.get as unknown as Mocktokit).mockImplementation(async () => ({
+(octokit.repos.get as unknown as Mock<any>).mockImplementation(async () => ({
   data: {
     default_branch: 'default branch'
   }
 }));
-(octokit.pulls.create as unknown as Mocktokit).mockImplementation(async () => ({
+(octokit.pulls.create as unknown as Mock<any>).mockImplementation(async () => ({
   data: {
     title: 'title',
     number: 100
@@ -142,6 +53,9 @@ const { context } = await import('@actions/github');
 }));
 
 describe('createPr', () => {
+  beforeEach(() => {
+    mock.clearAllMocks()
+  });
   const title = 'title';
   const body = 'body';
   const commit_message = 'commit message';
@@ -258,7 +172,7 @@ describe('createPr', () => {
       branch_name
     });
 
-    const git = (simpleGit as unknown as MockSimpleGit).__mockGitInstance;
+    const git = (simpleGit as any).__mockGitInstance;
 
     expect(git.addConfig).toHaveBeenCalledWith('user.name', 'github-actions[bot]');
     expect(git.addConfig).toHaveBeenCalledWith('user.email', 'github-actions[bot]@users.noreply.github.com');

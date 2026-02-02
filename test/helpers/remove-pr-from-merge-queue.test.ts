@@ -11,103 +11,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
-import type { Mocktokit } from '../types';
+import { beforeEach, describe, expect, it, mock, spyOn, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-process.env.INPUT_GITHUB_TOKEN = 'mock-token';
-
-const mockOctokit = {
-  rest: {
-    actions: {
-      listWorkflowRunsForRepo: mock(() => ({})),
-      reRunWorkflow: mock(() => ({}))
-    },
-    checks: {
-      listForRef: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    git: {
-      deleteRef: mock(() => ({})),
-      getCommit: mock(() => ({}))
-    },
-    issues: {
-      addAssignees: mock(() => ({})),
-      addLabels: mock(() => ({})),
-      createComment: mock(() => ({})),
-      get: mock(() => ({})),
-      listComments: mock(() => ({})),
-      listForRepo: mock(() => ({})),
-      removeLabel: mock(() => ({})),
-      update: mock(() => ({})),
-      updateComment: mock(() => ({}))
-    },
-    pulls: {
-      create: mock(() => ({})),
-      createReview: mock(() => ({})),
-      get: mock(() => ({})),
-      list: mock(() => ({})),
-      listFiles: mock(() => ({})),
-      listReviews: mock(() => ({})),
-      merge: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    repos: {
-      compareCommitsWithBasehead: mock(() => ({})),
-      createCommitStatus: mock(() => ({})),
-      createDeployment: mock(() => ({})),
-      createDeploymentStatus: mock(() => ({})),
-      deleteAnEnvironment: mock(() => ({})),
-      deleteDeployment: mock(() => ({})),
-      get: mock(() => ({})),
-      getCombinedStatusForRef: mock(() => ({})),
-      listBranches: mock(() => ({})),
-      listBranchesForHeadCommit: mock(() => ({})),
-      listCommitStatusesForRef: mock(() => ({})),
-      listDeploymentStatuses: mock(() => ({})),
-      listDeployments: mock(() => ({})),
-      listPullRequestsAssociatedWithCommit: mock(() => ({})),
-      merge: mock(() => ({})),
-      mergeUpstream: mock(() => ({}))
-    },
-    teams: {
-      listMembersInOrg: mock(() => ({}))
-    },
-    users: {
-      getByUsername: mock(() => ({}))
-    }
-  },
-  graphql: mock(() => ({}))
-};
-
-mock.module('@actions/core', () => ({
-  getInput: () => 'mock-token',
-  setOutput: () => {},
-  setFailed: () => {},
-  info: () => {},
-  warning: () => {},
-  error: () => {}
-}));
-
-mock.module('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: mock(() => mockOctokit)
-}));
-
-mock.module('../../src/octokit', () => ({
-  octokit: mockOctokit.rest,
-  octokitGraphql: mockOctokit.graphql
-}));
+setupMocks();
 
 spyOn(Date, 'now').mockImplementation(() => new Date('2022-01-01T10:00:00Z').getTime());
 
 const { FIRST_QUEUED_PR_LABEL, QUEUED_FOR_MERGE_PREFIX, READY_FOR_MERGE_PR_LABEL } = await import('../../src/constants');
 const { octokit } = await import('../../src/octokit');
-const { removeLabelIfExists } = await import('../../src/helpers/remove-label');
 const { removePrFromMergeQueue } = await import('../../src/helpers/remove-pr-from-merge-queue');
 const { context } = await import('@actions/github');
 
 
-(octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+(octokit.pulls.list as unknown as Mock<any>).mockImplementation(async () => ({
   data: [
     {
       head: { sha: 'wrong sha' },
@@ -125,9 +42,13 @@ const { context } = await import('@actions/github');
 describe('removePrFromMergeQueue', () => {
   const seconds = '3600';
 
+  beforeEach(() => {
+    mock.clearAllMocks();
+  });
+
   describe('should remove pr case', () => {
-    beforeEach(() => {
-      (octokit.repos.listCommitStatusesForRef as unknown as Mocktokit).mockImplementation(async () => ({
+    beforeEach(async () => {
+      (octokit.repos.listCommitStatusesForRef as unknown as Mock<any>).mockImplementation(async () => ({
         data: [
           {
             created_at: '2022-01-01T08:59:00Z',
@@ -139,7 +60,7 @@ describe('removePrFromMergeQueue', () => {
           }
         ]
       }));
-      removePrFromMergeQueue({ seconds });
+      await removePrFromMergeQueue({ seconds });
     });
 
     it('should call pulls.list with correct params', () => {
@@ -158,14 +79,24 @@ describe('removePrFromMergeQueue', () => {
     });
 
     it('should call removeLabelIfExists', () => {
-      expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 12345);
-      expect(removeLabelIfExists).toHaveBeenCalledWith(FIRST_QUEUED_PR_LABEL, 12345);
+      // removeLabelIfExists is now a real function call
+      // Verify the underlying octokit calls happened instead
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: READY_FOR_MERGE_PR_LABEL,
+        issue_number: 12345,
+        ...context.repo
+      });
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: FIRST_QUEUED_PR_LABEL,
+        issue_number: 12345,
+        ...context.repo
+      });
     });
   });
 
   describe('should not remove pr case if latest status is not stale', () => {
-    beforeEach(() => {
-      (octokit.repos.listCommitStatusesForRef as unknown as Mocktokit).mockImplementation(async () => ({
+    beforeEach(async () => {
+      (octokit.repos.listCommitStatusesForRef as unknown as Mock<any>).mockImplementation(async () => ({
         data: [
           {
             created_at: '2022-01-01T09:01:00Z',
@@ -177,7 +108,7 @@ describe('removePrFromMergeQueue', () => {
           }
         ]
       }));
-      removePrFromMergeQueue({ seconds });
+      await removePrFromMergeQueue({ seconds });
     });
 
     it('should call pulls.list with correct params', () => {
@@ -196,13 +127,13 @@ describe('removePrFromMergeQueue', () => {
     });
 
     it('should not call removeLabelIfExists', () => {
-      expect(removeLabelIfExists).not.toHaveBeenCalled();
+      expect(octokit.issues.removeLabel).not.toHaveBeenCalled();
     });
   });
 
   describe('should not remove pr when latest status for a context is pending, even if it is stale', () => {
     beforeEach(async () => {
-      (octokit.repos.listCommitStatusesForRef as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.listCommitStatusesForRef as unknown as Mock<any>).mockImplementation(async () => ({
         data: [
           {
             created_at: '2022-01-01T08:00:00Z',
@@ -240,13 +171,13 @@ describe('removePrFromMergeQueue', () => {
     });
 
     it('should not call removeLabelIfExists', () => {
-      expect(removeLabelIfExists).not.toHaveBeenCalled();
+      expect(octokit.issues.removeLabel).not.toHaveBeenCalled();
     });
   });
 
   describe('should remove stray PRs in the queue', () => {
     beforeEach(async () => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.pulls.list as unknown as Mock<any>).mockImplementation(async () => ({
         data: [
           {
             head: { sha: 'wrong sha' },
@@ -286,11 +217,33 @@ describe('removePrFromMergeQueue', () => {
     });
 
     it('should call removeLabelIfExists', () => {
-      expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 12345);
-      expect(removeLabelIfExists).toHaveBeenCalledWith(`${QUEUED_FOR_MERGE_PREFIX} #2`, 12345);
-      expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 678);
-      expect(removeLabelIfExists).toHaveBeenCalledWith(`${QUEUED_FOR_MERGE_PREFIX} #3`, 678);
-      expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 999);
+      // removeLabelIfExists is now a real function call
+      // Verify the underlying octokit calls happened instead
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: READY_FOR_MERGE_PR_LABEL,
+        issue_number: 12345,
+        ...context.repo
+      });
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: `${QUEUED_FOR_MERGE_PREFIX} #2`,
+        issue_number: 12345,
+        ...context.repo
+      });
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: READY_FOR_MERGE_PR_LABEL,
+        issue_number: 678,
+        ...context.repo
+      });
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: `${QUEUED_FOR_MERGE_PREFIX} #3`,
+        issue_number: 678,
+        ...context.repo
+      });
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: READY_FOR_MERGE_PR_LABEL,
+        issue_number: 999,
+        ...context.repo
+      });
     });
   });
 });

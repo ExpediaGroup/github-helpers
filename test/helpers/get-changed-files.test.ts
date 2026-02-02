@@ -11,92 +11,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { describe, it, expect, mock } from 'bun:test';
-import type { Mocktokit } from '../types';
+import { describe, it, expect, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-process.env.INPUT_GITHUB_TOKEN = 'mock-token';
-
-const mockOctokit = {
-  rest: {
-    actions: {
-      listWorkflowRunsForRepo: mock(() => ({})),
-      reRunWorkflow: mock(() => ({}))
-    },
-    checks: {
-      listForRef: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    git: {
-      deleteRef: mock(() => ({})),
-      getCommit: mock(() => ({}))
-    },
-    issues: {
-      addAssignees: mock(() => ({})),
-      addLabels: mock(() => ({})),
-      createComment: mock(() => ({})),
-      get: mock(() => ({})),
-      listComments: mock(() => ({})),
-      listForRepo: mock(() => ({})),
-      removeLabel: mock(() => ({})),
-      update: mock(() => ({})),
-      updateComment: mock(() => ({}))
-    },
-    pulls: {
-      create: mock(() => ({})),
-      createReview: mock(() => ({})),
-      get: mock(() => ({})),
-      list: mock(() => ({})),
-      listFiles: mock(() => ({})),
-      listReviews: mock(() => ({})),
-      merge: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    repos: {
-      compareCommitsWithBasehead: mock(() => ({})),
-      createCommitStatus: mock(() => ({})),
-      createDeployment: mock(() => ({})),
-      createDeploymentStatus: mock(() => ({})),
-      deleteAnEnvironment: mock(() => ({})),
-      deleteDeployment: mock(() => ({})),
-      get: mock(() => ({})),
-      getCombinedStatusForRef: mock(() => ({})),
-      listBranches: mock(() => ({})),
-      listBranchesForHeadCommit: mock(() => ({})),
-      listCommitStatusesForRef: mock(() => ({})),
-      listDeploymentStatuses: mock(() => ({})),
-      listDeployments: mock(() => ({})),
-      listPullRequestsAssociatedWithCommit: mock(() => ({})),
-      merge: mock(() => ({})),
-      mergeUpstream: mock(() => ({}))
-    },
-    teams: {
-      listMembersInOrg: mock(() => ({}))
-    },
-    users: {
-      getByUsername: mock(() => ({}))
-    }
-  },
-  graphql: mock(() => ({}))
-};
-
-mock.module('@actions/core', () => ({
-  getInput: () => 'mock-token',
-  setOutput: () => {},
-  setFailed: () => {},
-  info: () => {},
-  warning: () => {},
-  error: () => {}
-}));
-
-mock.module('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 }, eventName: 'pull_request', ref: '' },
-  getOctokit: mock(() => mockOctokit)
-}));
-
-mock.module('../../src/octokit', () => ({
-  octokit: mockOctokit.rest,
-  octokitGraphql: mockOctokit.graphql
-}));
+setupMocks();
 
 const { getChangedFiles } = await import('../../src/helpers/get-changed-files');
 const { octokit } = await import('../../src/octokit');
@@ -195,7 +113,7 @@ const mock_data4 = [
     previous_filename: 'original/file/location/file2.txt'
   }
 ] as const;
-(octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+(octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => ({
   data: page === 1 ? mock_data1 : page === 2 ? mock_data2 : []
 }));
 
@@ -219,7 +137,7 @@ describe('getChangedFiles', () => {
   });
 
   it('should ignore deleted files when ignore_deleted input is provided', async () => {
-    (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+    (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => ({
       data: page === 1 ? mock_data3 : []
     }));
     const result = await getChangedFiles({ ignore_deleted: 'true' });
@@ -228,7 +146,7 @@ describe('getChangedFiles', () => {
   });
 
   it('should include original location of renamed files, as if rename was an addition and deletion', async () => {
-    (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+    (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => ({
       data: page === 1 ? mock_data4 : []
     }));
     const result = await getChangedFiles({ ignore_deleted: 'true' });
@@ -239,7 +157,7 @@ describe('getChangedFiles', () => {
   it('should handle merge queue case', async () => {
     context.eventName = 'merge_group';
     context.ref = 'refs/heads/gh-readonly-queue/default-branch/pr-12345-f0d9a4cb862b13cdaab6522f72d6dc17e4336b7f';
-    (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async ({ page, pull_number }) => ({
+    (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async ({ page, pull_number }: { page: number; pull_number: number }) => ({
       data: pull_number === 12345 && page === 1 ? mock_data4 : []
     }));
     const result = await getChangedFiles({});

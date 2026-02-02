@@ -11,98 +11,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { describe, it, expect, afterEach, mock } from 'bun:test';
-import type { Mocktokit } from '../types';
+import { describe, it, expect, afterEach, beforeEach, mock, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-process.env.INPUT_GITHUB_TOKEN = 'mock-token';
-
-const mockOctokit = {
-  rest: {
-    actions: {
-      listWorkflowRunsForRepo: mock(() => ({})),
-      reRunWorkflow: mock(() => ({}))
-    },
-    checks: {
-      listForRef: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    git: {
-      deleteRef: mock(() => ({})),
-      getCommit: mock(() => ({}))
-    },
-    issues: {
-      addAssignees: mock(() => ({})),
-      addLabels: mock(() => ({})),
-      createComment: mock(() => ({})),
-      get: mock(() => ({})),
-      listComments: mock(() => ({})),
-      listForRepo: mock(() => ({})),
-      removeLabel: mock(() => ({})),
-      update: mock(() => ({})),
-      updateComment: mock(() => ({}))
-    },
-    pulls: {
-      create: mock(() => ({})),
-      createReview: mock(() => ({})),
-      get: mock(() => ({})),
-      list: mock(() => ({})),
-      listFiles: mock(() => ({})),
-      listReviews: mock(() => ({})),
-      merge: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    repos: {
-      compareCommitsWithBasehead: mock(() => ({})),
-      createCommitStatus: mock(() => ({})),
-      createDeployment: mock(() => ({})),
-      createDeploymentStatus: mock(() => ({})),
-      deleteAnEnvironment: mock(() => ({})),
-      deleteDeployment: mock(() => ({})),
-      get: mock(() => ({})),
-      getCombinedStatusForRef: mock(() => ({})),
-      listBranches: mock(() => ({})),
-      listBranchesForHeadCommit: mock(() => ({})),
-      listCommitStatusesForRef: mock(() => ({})),
-      listDeploymentStatuses: mock(() => ({})),
-      listDeployments: mock(() => ({})),
-      listPullRequestsAssociatedWithCommit: mock(() => ({})),
-      merge: mock(() => ({})),
-      mergeUpstream: mock(() => ({}))
-    },
-    teams: {
-      listMembersInOrg: mock(() => ({}))
-    },
-    users: {
-      getByUsername: mock(() => ({}))
-    }
-  },
-  graphql: mock(() => ({}))
-};
-
-mock.module('@actions/core', () => ({
-  getInput: () => 'mock-token',
-  setOutput: () => {},
-  setFailed: () => {},
-  info: () => {},
-  warning: () => {},
-  error: () => {}
-}));
-
-mock.module('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 }, eventName: '', ref: '' },
-  getOctokit: mock(() => mockOctokit)
-}));
-
-mock.module('../../src/octokit', () => ({
-  octokit: mockOctokit.rest,
-  octokitGraphql: mockOctokit.graphql
-}));
+setupMocks();
 
 const { filterPaths } = await import('../../src/helpers/filter-paths');
 const { octokit } = await import('../../src/octokit');
 const { context } = await import('@actions/github');
 
+// Set up default mocks for PR lookup by SHA
+(octokit.repos.listPullRequestsAssociatedWithCommit as unknown as Mock<any>).mockResolvedValue({
+  data: [{ number: 789 }]
+});
+
+(octokit.repos.listBranchesForHeadCommit as unknown as Mock<any>).mockResolvedValue({
+  data: [{ name: 'gh-readonly-queue/default-branch/pr-999-abc123' }]
+});
+
 describe('filterPaths', () => {
+  beforeEach(() => {
+    mock.clearAllMocks();
+  });
+
   afterEach(() => {
     context.eventName = '';
     context.ref = '';
@@ -112,7 +43,7 @@ describe('filterPaths', () => {
   const globs = '**/*.md\nsomething/**/file1.txt';
 
   it('should return true if one of the file paths match the file paths that octokit returns', async () => {
-    (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
+    (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async () => ({
       data: [
         {
           sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
@@ -148,7 +79,7 @@ describe('filterPaths', () => {
   });
 
   it('should return false if none of the file paths match the file paths that octokit returns', async () => {
-    (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
+    (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async () => ({
       data: [
         {
           sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
@@ -184,7 +115,7 @@ describe('filterPaths', () => {
   });
 
   it('should return true if one of the globs match the file paths that octokit returns', async () => {
-    (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
+    (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async () => ({
       data: [
         {
           sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
@@ -221,7 +152,7 @@ describe('filterPaths', () => {
 
   it('should return false when data is an empty array', async () => {
     const exactFilePath = 'exact/file/path';
-    (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
+    (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async () => ({
       data: []
     }));
     const result = await filterPaths({
@@ -234,7 +165,7 @@ describe('filterPaths', () => {
 
   it('exact file path case', async () => {
     const exactFilePath = 'exact/file/path';
-    (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
+    (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async () => ({
       data: [
         {
           sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
@@ -321,7 +252,7 @@ describe('filterPaths', () => {
 
   describe('tests related to the packages parameter', () => {
     it('should return true if one of the packages matches a changed package in package.json', async () => {
-      (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async () => ({
         data: [
           {
             sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
@@ -357,7 +288,7 @@ describe('filterPaths', () => {
     });
 
     it('should return false if no package matches a changed package in package.json', async () => {
-      (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async () => ({
         data: [
           {
             sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
@@ -393,7 +324,7 @@ describe('filterPaths', () => {
     });
 
     it('should return false if there are no package.json changes', async () => {
-      (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async () => ({
         data: [
           {
             sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
@@ -420,7 +351,7 @@ describe('filterPaths', () => {
     });
 
     it('should return false if patch is undefined', async () => {
-      (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async () => ({
         data: [
           {
             sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',

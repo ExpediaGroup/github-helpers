@@ -11,106 +11,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { beforeEach, describe, expect, it, mock } from 'bun:test';
+import { describe, it, expect, beforeEach, Mock, mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-process.env.INPUT_GITHUB_TOKEN = 'mock-token';
-
-const mockOctokit = {
-  rest: {
-    actions: {
-      listWorkflowRunsForRepo: mock(() => ({})),
-      reRunWorkflow: mock(() => ({}))
-    },
-    checks: {
-      listForRef: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    git: {
-      deleteRef: mock(() => ({})),
-      getCommit: mock(() => ({}))
-    },
-    issues: {
-      addAssignees: mock(() => ({})),
-      addLabels: mock(() => ({})),
-      createComment: mock(() => ({})),
-      get: mock(() => ({})),
-      listComments: mock(() => ({})),
-      listForRepo: mock(() => ({})),
-      removeLabel: mock(() => ({})),
-      update: mock(() => ({})),
-      updateComment: mock(() => ({}))
-    },
-    pulls: {
-      create: mock(() => ({})),
-      createReview: mock(() => ({})),
-      get: mock(() => ({})),
-      list: mock(() => ({})),
-      listFiles: mock(() => ({})),
-      listReviews: mock(() => ({})),
-      merge: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    repos: {
-      compareCommitsWithBasehead: mock(() => ({})),
-      createCommitStatus: mock(() => ({})),
-      createDeployment: mock(() => ({})),
-      createDeploymentStatus: mock(() => ({})),
-      deleteAnEnvironment: mock(() => ({})),
-      deleteDeployment: mock(() => ({})),
-      get: mock(() => ({})),
-      getCombinedStatusForRef: mock(() => ({})),
-      listBranches: mock(() => ({})),
-      listBranchesForHeadCommit: mock(() => ({})),
-      listCommitStatusesForRef: mock(() => ({})),
-      listDeploymentStatuses: mock(() => ({})),
-      listDeployments: mock(() => ({})),
-      listPullRequestsAssociatedWithCommit: mock(() => ({})),
-      merge: mock(() => ({})),
-      mergeUpstream: mock(() => ({}))
-    },
-    teams: {
-      listMembersInOrg: mock(() => ({}))
-    },
-    users: {
-      getByUsername: mock(() => ({}))
-    }
-  },
-  graphql: mock(() => ({}))
-};
-
-mock.module('@actions/core', () => ({
-  getInput: () => 'mock-token',
-  setOutput: () => {},
-  setFailed: () => {},
-  info: () => {},
-  warning: () => {},
-  error: () => {}
-}));
-
-mock.module('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: mock(() => mockOctokit)
-}));
-
-mock.module('../../src/octokit', () => ({
-  octokit: mockOctokit.rest,
-  octokitGraphql: mockOctokit.graphql
-}));
+setupMocks();
 
 const { closePr } = await import('../../src/helpers/close-pr');
 const { octokit } = await import('../../src/octokit');
-const { createPrComment } = await import('../../src/helpers/create-pr-comment');
 const { context } = await import('@actions/github');
 
 
 describe('closePr', () => {
+  beforeEach(() => {
+    mock.clearAllMocks()
+  });
   describe('without comment in the same PR', () => {
     beforeEach(() => {
       closePr();
     });
 
     it('should not call createPrComment', () => {
-      expect(createPrComment).not.toHaveBeenCalled();
+      expect(octokit.issues.createComment).not.toHaveBeenCalled();
     });
 
     it('should call pulls.update with correct params', () => {
@@ -128,7 +49,7 @@ describe('closePr', () => {
     });
 
     it('should not call createPrComment', () => {
-      expect(createPrComment).not.toHaveBeenCalled();
+      expect(octokit.issues.createComment).not.toHaveBeenCalled();
     });
 
     it('should call pulls.update with correct params', () => {
@@ -146,7 +67,7 @@ describe('closePr', () => {
     });
 
     it('should not call createPrComment', () => {
-      expect(createPrComment).not.toHaveBeenCalled();
+      expect(octokit.issues.createComment).not.toHaveBeenCalled();
     });
 
     it('should call pulls.update with correct params', () => {
@@ -167,7 +88,13 @@ describe('closePr', () => {
     });
 
     it('should call createPrComment with correct params', () => {
-      expect(createPrComment).toHaveBeenCalledWith({ body });
+      // createPrComment is now a real function call
+      // Verify the underlying octokit call happened instead
+      expect(octokit.issues.createComment).toHaveBeenCalledWith({
+        body,
+        issue_number: 123,
+        ...context.repo
+      });
     });
 
     it('should call pulls.update with correct params', () => {
@@ -187,7 +114,13 @@ describe('closePr', () => {
     });
 
     it('should call createPrComment', () => {
-      expect(createPrComment).toHaveBeenCalledWith({ body, pull_number: '456' });
+      // createPrComment is now a real function call
+      // Verify the underlying octokit call happened instead
+      expect(octokit.issues.createComment).toHaveBeenCalledWith({
+        body,
+        issue_number: 456,
+        ...context.repo
+      });
     });
 
     it('should call pulls.update with correct params', () => {
@@ -207,11 +140,13 @@ describe('closePr', () => {
     });
 
     it('should call createPrComment', () => {
-      expect(createPrComment).toHaveBeenCalledWith({
+      // createPrComment is now a real function call
+      // Verify the underlying octokit call happened instead
+      expect(octokit.issues.createComment).toHaveBeenCalledWith({
         body,
-        repo_name: 'another-repo',
-        repo_owner_name: 'another-owner',
-        pull_number: '456'
+        issue_number: 456,
+        repo: 'another-repo',
+        owner: 'another-owner'
       });
     });
 

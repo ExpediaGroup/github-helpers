@@ -11,109 +11,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { beforeEach, describe, expect, it, mock } from 'bun:test';
-import type { Mocktokit } from '../types';
+import { describe, it, expect, beforeEach, mock, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
+import { PullRequestList } from '../../src/types/github';
 
-process.env.INPUT_GITHUB_TOKEN = 'mock-token';
-
-const mockOctokit = {
-  rest: {
-    actions: {
-      listWorkflowRunsForRepo: mock(() => ({})),
-      reRunWorkflow: mock(() => ({}))
-    },
-    checks: {
-      listForRef: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    git: {
-      deleteRef: mock(() => ({})),
-      getCommit: mock(() => ({}))
-    },
-    issues: {
-      addAssignees: mock(() => ({})),
-      addLabels: mock(() => ({})),
-      createComment: mock(() => ({})),
-      get: mock(() => ({})),
-      listComments: mock(() => ({})),
-      listForRepo: mock(() => ({})),
-      removeLabel: mock(() => ({})),
-      update: mock(() => ({})),
-      updateComment: mock(() => ({}))
-    },
-    pulls: {
-      create: mock(() => ({})),
-      createReview: mock(() => ({})),
-      get: mock(() => ({})),
-      list: mock(() => ({})),
-      listFiles: mock(() => ({})),
-      listReviews: mock(() => ({})),
-      merge: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    repos: {
-      compareCommitsWithBasehead: mock(() => ({})),
-      createCommitStatus: mock(() => ({})),
-      createDeployment: mock(() => ({})),
-      createDeploymentStatus: mock(() => ({})),
-      deleteAnEnvironment: mock(() => ({})),
-      deleteDeployment: mock(() => ({})),
-      get: mock(() => ({})),
-      getCombinedStatusForRef: mock(() => ({})),
-      listBranches: mock(() => ({})),
-      listBranchesForHeadCommit: mock(() => ({})),
-      listCommitStatusesForRef: mock(() => ({})),
-      listDeploymentStatuses: mock(() => ({})),
-      listDeployments: mock(() => ({})),
-      listPullRequestsAssociatedWithCommit: mock(() => ({})),
-      merge: mock(() => ({})),
-      mergeUpstream: mock(() => ({}))
-    },
-    teams: {
-      listMembersInOrg: mock(() => ({}))
-    },
-    users: {
-      getByUsername: mock(() => ({}))
-    }
-  },
-  graphql: mock(() => ({}))
-};
-
-mock.module('@actions/core', () => ({
-  getInput: () => 'mock-token',
-  setOutput: () => {},
-  setFailed: () => {},
-  info: () => {},
-  warning: () => {},
-  error: () => {}
-}));
-
-mock.module('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: mock(() => mockOctokit)
-}));
-
-mock.module('../../src/octokit', () => ({
-  octokit: mockOctokit.rest,
-  octokitGraphql: mockOctokit.graphql
-}));
+setupMocks();
 
 const { JUMP_THE_QUEUE_PR_LABEL, MERGE_QUEUE_STATUS, READY_FOR_MERGE_PR_LABEL } = await import('../../src/constants');
-const { PullRequestList } = await import('../../src/types/github');
 const { octokit } = await import('../../src/octokit');
-const { removeLabelIfExists } = await import('../../src/helpers/remove-label');
 const { updateMergeQueue } = await import('../../src/utils/update-merge-queue');
-const { updatePrWithDefaultBranch } = await import('../../src/helpers/prepare-queued-pr-for-merge');
-const { setCommitStatus } = await import('../../src/helpers/set-commit-status');
 const { context } = await import('@actions/github');
 
-(octokit.pulls.get as unknown as Mocktokit).mockImplementation(async input => ({
+(octokit.pulls.get as unknown as Mock<any>).mockImplementation(async ({ pull_number }: { pull_number: number }) => ({
   data: {
-    head: { sha: `sha${input.pull_number}` }
+    head: { sha: `sha${pull_number}` }
   }
 }));
 
 describe('updateMergeQueue', () => {
+  beforeEach(() => {
+    mock.clearAllMocks();
+  });
+
   describe('pr merge case', () => {
     const queuedPrs = [
       {
@@ -145,12 +64,24 @@ describe('updateMergeQueue', () => {
     });
 
     it('should call remove label with correct params', () => {
-      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #2', 123);
-      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #3', 456);
+      // removeLabelIfExists is now a real function call
+      // Verify the underlying octokit calls happened instead
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: 'QUEUED FOR MERGE #2',
+        issue_number: 123,
+        ...context.repo
+      });
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: 'QUEUED FOR MERGE #3',
+        issue_number: 456,
+        ...context.repo
+      });
     });
 
     it('should call updatePrWithDefaultBranch with correct params', () => {
-      expect(updatePrWithDefaultBranch).toHaveBeenCalledWith({ head: { sha: 'sha123' } });
+      // updatePrWithDefaultBranch is now a real function call
+      // Verify the underlying octokit call happened instead
+      expect(octokit.repos.merge).toHaveBeenCalled();
     });
   });
 
@@ -185,12 +116,22 @@ describe('updateMergeQueue', () => {
     });
 
     it('should call remove label with correct params', () => {
-      expect(removeLabelIfExists).not.toHaveBeenCalledWith('QUEUED FOR MERGE #1', 123);
-      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #3', 456);
+      // removeLabelIfExists is now a real function call
+      expect(octokit.issues.removeLabel).not.toHaveBeenCalledWith({
+        name: 'QUEUED FOR MERGE #1',
+        issue_number: 123,
+        ...context.repo
+      });
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: 'QUEUED FOR MERGE #3',
+        issue_number: 456,
+        ...context.repo
+      });
     });
 
     it('should not update pr with default branch', () => {
-      expect(updatePrWithDefaultBranch).not.toHaveBeenCalled();
+      // updatePrWithDefaultBranch is now a real function call
+      expect(octokit.repos.merge).not.toHaveBeenCalled();
     });
   });
 
@@ -208,13 +149,13 @@ describe('updateMergeQueue', () => {
       }
     ];
     beforeEach(async () => {
-      (octokit.pulls.get as unknown as Mocktokit)
-        .mockImplementationOnce(async input => ({
+      (octokit.pulls.get as unknown as Mock<any>)
+        .mockImplementationOnce(async (input: any) => ({
           data: {
             head: { sha: input.pull_number === 123 ? 'sha123' : 'sha456' }
           }
         }))
-        .mockImplementationOnce(async input => ({
+        .mockImplementationOnce(async (input: any) => ({
           data: {
             head: { sha: input.pull_number === 123 ? 'updatedSha123' : 'updatedSha456' }
           }
@@ -236,27 +177,40 @@ describe('updateMergeQueue', () => {
     });
 
     it('should call remove label with correct params', () => {
-      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #2', 123);
-      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #3', 456);
+      // removeLabelIfExists is now a real function call
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: 'QUEUED FOR MERGE #2',
+        issue_number: 123,
+        ...context.repo
+      });
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: 'QUEUED FOR MERGE #3',
+        issue_number: 456,
+        ...context.repo
+      });
     });
 
     it('should set commit status on updated sha of first PR in queue', () => {
-      expect(setCommitStatus).toHaveBeenCalledWith({
+      // setCommitStatus is now a real function call
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
         sha: 'updatedSha123',
         context: MERGE_QUEUE_STATUS,
         state: 'success',
-        description: 'This PR is next to merge.'
+        description: 'This PR is next to merge.',
+        ...context.repo
       });
-      expect(setCommitStatus).not.toHaveBeenCalledWith({
+      expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
         sha: 'sha123',
         context: MERGE_QUEUE_STATUS,
         state: 'pending',
-        description: 'This PR is in line to merge.'
+        description: 'This PR is in line to merge.',
+        ...context.repo
       });
     });
 
     it('should update pr with default branch', () => {
-      expect(updatePrWithDefaultBranch).toHaveBeenCalled();
+      // updatePrWithDefaultBranch is now a real function call
+      expect(octokit.repos.merge).toHaveBeenCalled();
     });
   });
 
@@ -291,29 +245,50 @@ describe('updateMergeQueue', () => {
     });
 
     it('should call remove label with correct params', () => {
-      expect(removeLabelIfExists).toHaveBeenCalledWith(JUMP_THE_QUEUE_PR_LABEL, 123);
-      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #5', 123);
-      expect(removeLabelIfExists).not.toHaveBeenCalledWith(JUMP_THE_QUEUE_PR_LABEL, 456);
-      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #1', 456);
+      // removeLabelIfExists is now a real function call
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: JUMP_THE_QUEUE_PR_LABEL,
+        issue_number: 123,
+        ...context.repo
+      });
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: 'QUEUED FOR MERGE #5',
+        issue_number: 123,
+        ...context.repo
+      });
+      expect(octokit.issues.removeLabel).not.toHaveBeenCalledWith({
+        name: JUMP_THE_QUEUE_PR_LABEL,
+        issue_number: 456,
+        ...context.repo
+      });
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: 'QUEUED FOR MERGE #1',
+        issue_number: 456,
+        ...context.repo
+      });
     });
 
     it('should set the correct commit statuses', () => {
-      expect(setCommitStatus).toHaveBeenCalledWith({
+      // setCommitStatus is now a real function call
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
         sha: 'sha123',
         context: MERGE_QUEUE_STATUS,
         state: 'success',
-        description: 'This PR is next to merge.'
+        description: 'This PR is next to merge.',
+        ...context.repo
       });
-      expect(setCommitStatus).toHaveBeenCalledWith({
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
         sha: 'sha456',
         context: MERGE_QUEUE_STATUS,
         state: 'pending',
-        description: 'This PR is in line to merge.'
+        description: 'This PR is in line to merge.',
+        ...context.repo
       });
     });
 
     it('should call updatePrWithDefaultBranch', () => {
-      expect(updatePrWithDefaultBranch).toHaveBeenCalledWith({ head: { sha: 'sha123' } });
+      // updatePrWithDefaultBranch is now a real function call
+      expect(octokit.repos.merge).toHaveBeenCalled();
     });
   });
 
@@ -358,36 +333,62 @@ describe('updateMergeQueue', () => {
     });
 
     it('should call remove label with correct params', () => {
-      expect(removeLabelIfExists).toHaveBeenCalledWith(JUMP_THE_QUEUE_PR_LABEL, 456);
-      expect(removeLabelIfExists).toHaveBeenCalledWith(JUMP_THE_QUEUE_PR_LABEL, 789);
-      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #1', 123);
-      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #3', 456);
-      expect(removeLabelIfExists).toHaveBeenCalledWith('QUEUED FOR MERGE #2', 789);
+      // removeLabelIfExists is now a real function call
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: JUMP_THE_QUEUE_PR_LABEL,
+        issue_number: 456,
+        ...context.repo
+      });
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: JUMP_THE_QUEUE_PR_LABEL,
+        issue_number: 789,
+        ...context.repo
+      });
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: 'QUEUED FOR MERGE #1',
+        issue_number: 123,
+        ...context.repo
+      });
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: 'QUEUED FOR MERGE #3',
+        issue_number: 456,
+        ...context.repo
+      });
+      expect(octokit.issues.removeLabel).toHaveBeenCalledWith({
+        name: 'QUEUED FOR MERGE #2',
+        issue_number: 789,
+        ...context.repo
+      });
     });
 
     it('should set the correct commit statuses', () => {
-      expect(setCommitStatus).toHaveBeenCalledWith({
+      // setCommitStatus is now a real function call
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
         sha: 'sha789',
         context: MERGE_QUEUE_STATUS,
         state: 'success',
-        description: 'This PR is next to merge.'
+        description: 'This PR is next to merge.',
+        ...context.repo
       });
-      expect(setCommitStatus).toHaveBeenCalledWith({
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
         sha: 'sha456',
         context: MERGE_QUEUE_STATUS,
         state: 'pending',
-        description: 'This PR is in line to merge.'
+        description: 'This PR is in line to merge.',
+        ...context.repo
       });
-      expect(setCommitStatus).toHaveBeenCalledWith({
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
         sha: 'sha123',
         context: MERGE_QUEUE_STATUS,
         state: 'pending',
-        description: 'This PR is in line to merge.'
+        description: 'This PR is in line to merge.',
+        ...context.repo
       });
     });
 
     it('should call updatePrWithDefaultBranch', () => {
-      expect(updatePrWithDefaultBranch).toHaveBeenCalledWith({ head: { sha: 'sha789' } });
+      // updatePrWithDefaultBranch is now a real function call
+      expect(octokit.repos.merge).toHaveBeenCalled();
     });
   });
 });

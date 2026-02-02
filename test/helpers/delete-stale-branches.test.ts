@@ -11,106 +11,55 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mock, describe, expect, it, mock, spyOn } from 'bun:test';
+import { describe, it, expect, mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-process.env.INPUT_GITHUB_TOKEN = 'mock-token';
+setupMocks();
 
-const mockOctokit = {
-  rest: {
-    actions: {
-      listWorkflowRunsForRepo: mock(() => ({})),
-      reRunWorkflow: mock(() => ({}))
-    },
-    checks: {
-      listForRef: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    git: {
-      deleteRef: mock(() => ({})),
-      getCommit: mock(() => ({}))
-    },
-    issues: {
-      addAssignees: mock(() => ({})),
-      addLabels: mock(() => ({})),
-      createComment: mock(() => ({})),
-      get: mock(() => ({})),
-      listComments: mock(() => ({})),
-      listForRepo: mock(() => ({})),
-      removeLabel: mock(() => ({})),
-      update: mock(() => ({})),
-      updateComment: mock(() => ({}))
-    },
-    pulls: {
-      create: mock(() => ({})),
-      createReview: mock(() => ({})),
-      get: mock(() => ({})),
-      list: mock(() => ({})),
-      listFiles: mock(() => ({})),
-      listReviews: mock(() => ({})),
-      merge: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    repos: {
-      compareCommitsWithBasehead: mock(() => ({})),
-      createCommitStatus: mock(() => ({})),
-      createDeployment: mock(() => ({})),
-      createDeploymentStatus: mock(() => ({})),
-      deleteAnEnvironment: mock(() => ({})),
-      deleteDeployment: mock(() => ({})),
-      get: mock(() => ({})),
-      getCombinedStatusForRef: mock(() => ({})),
-      listBranches: mock(() => ({})),
-      listBranchesForHeadCommit: mock(() => ({})),
-      listCommitStatusesForRef: mock(() => ({})),
-      listDeploymentStatuses: mock(() => ({})),
-      listDeployments: mock(() => ({})),
-      listPullRequestsAssociatedWithCommit: mock(() => ({})),
-      merge: mock(() => ({})),
-      mergeUpstream: mock(() => ({}))
-    },
-    teams: {
-      listMembersInOrg: mock(() => ({}))
-    },
-    users: {
-      getByUsername: mock(() => ({}))
-    }
-  },
-  graphql: mock(() => ({}))
-};
-
-mock.module('@actions/core', () => ({
-  getInput: () => 'mock-token',
-  setOutput: () => {},
-  setFailed: () => {},
-  info: () => {},
-  warning: () => {},
-  error: () => {}
+// Mock paginateAllOpenPullRequests
+mock.module('../../src/utils/paginate-open-pull-requests', () => ({
+  paginateAllOpenPullRequests: mock(() => Promise.resolve([
+    { head: { ref: 'branch-with-open-pr' } },
+    { head: { ref: 'some-other-branch' } }
+  ]))
 }));
 
-mock.module('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: mock(() => mockOctokit)
+// Mock paginateAllBranches
+mock.module('../../src/utils/paginate-all-branches', () => ({
+  paginateAllBranches: mock(() => Promise.resolve([
+    { name: 'main', commit: { sha: 'sha1' } },
+    { name: 'new-branch-no-open-pr', commit: { sha: 'sha2' } },
+    { name: 'old-branch-with-no-open-pr', commit: { sha: 'sha3' } },
+    { name: 'branch-with-open-pr', commit: { sha: 'sha4' } }
+  ]))
 }));
 
-mock.module('../../src/octokit', () => ({
-  octokit: mockOctokit.rest,
-  octokitGraphql: mockOctokit.graphql
+// Mock getDefaultBranch
+mock.module('../../src/utils/get-default-branch', () => ({
+  getDefaultBranch: mock(() => Promise.resolve('main'))
 }));
-
-spyOn(Date, 'now').mockImplementation(() => new Date('2023-02-24T10:00:00Z').getTime());
 
 const { deleteStaleBranches } = await import('../../src/helpers/delete-stale-branches');
 const { octokit } = await import('../../src/octokit');
-const { paginateAllOpenPullRequests } = await import('../../src/utils/paginate-open-pull-requests');
 const { context } = await import('@actions/github');
-
-(paginateAllOpenPullRequests as Mock<any>).mockResolvedValue([
-  { head: { ref: 'branch-with-open-pr' } },
-  { head: { ref: 'some-other-branch' } }
-]);
 
 describe('deleteStaleBranches', () => {
   it('should call octokit deleteRef with correct branch names', async () => {
+    // Mock octokit.git.getCommit to return dates
+    (octokit.git.getCommit as any).mockImplementation(async ({ commit_sha }: { commit_sha: string }) => {
+      const dates: Record<string, string> = {
+        sha2: new Date().toISOString(), // new-branch-no-open-pr - recent date
+        sha3: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() // old-branch - 2 days ago
+      };
+      return {
+        data: {
+          committer: {
+            date: dates[commit_sha] || new Date().toISOString()
+          }
+        }
+      };
+    });
+
     await deleteStaleBranches({ days: '1' });
 
     expect(octokit.git.deleteRef).not.toHaveBeenCalledWith({

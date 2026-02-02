@@ -12,90 +12,15 @@ limitations under the License.
 */
 
 import { Mock, beforeEach, describe, expect, it, mock } from 'bun:test';
-import type { Mocktokit } from '../types';
+import { setupMocks } from '../setup';
+import * as core from '@actions/core';
 
-process.env.INPUT_GITHUB_TOKEN = 'mock-token';
+setupMocks();
 
-const mockOctokit = {
-  rest: {
-    actions: {
-      listWorkflowRunsForRepo: mock(() => ({})),
-      reRunWorkflow: mock(() => ({}))
-    },
-    checks: {
-      listForRef: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    git: {
-      deleteRef: mock(() => ({})),
-      getCommit: mock(() => ({}))
-    },
-    issues: {
-      addAssignees: mock(() => ({})),
-      addLabels: mock(() => ({})),
-      createComment: mock(() => ({})),
-      get: mock(() => ({})),
-      listComments: mock(() => ({})),
-      listForRepo: mock(() => ({})),
-      removeLabel: mock(() => ({})),
-      update: mock(() => ({})),
-      updateComment: mock(() => ({}))
-    },
-    pulls: {
-      create: mock(() => ({})),
-      createReview: mock(() => ({})),
-      get: mock(() => ({})),
-      list: mock(() => ({})),
-      listFiles: mock(() => ({})),
-      listReviews: mock(() => ({})),
-      merge: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    repos: {
-      compareCommitsWithBasehead: mock(() => ({})),
-      createCommitStatus: mock(() => ({})),
-      createDeployment: mock(() => ({})),
-      createDeploymentStatus: mock(() => ({})),
-      deleteAnEnvironment: mock(() => ({})),
-      deleteDeployment: mock(() => ({})),
-      get: mock(() => ({})),
-      getCombinedStatusForRef: mock(() => ({})),
-      listBranches: mock(() => ({})),
-      listBranchesForHeadCommit: mock(() => ({})),
-      listCommitStatusesForRef: mock(() => ({})),
-      listDeploymentStatuses: mock(() => ({})),
-      listDeployments: mock(() => ({})),
-      listPullRequestsAssociatedWithCommit: mock(() => ({})),
-      merge: mock(() => ({})),
-      mergeUpstream: mock(() => ({}))
-    },
-    teams: {
-      listMembersInOrg: mock(() => ({}))
-    },
-    users: {
-      getByUsername: mock(() => ({}))
-    }
-  },
-  graphql: mock(() => ({}))
-};
-
-mock.module('@actions/core', () => ({
-  getInput: () => 'mock-token',
-  setOutput: () => {},
-  setFailed: () => {},
-  info: () => {},
-  warning: () => {},
-  error: () => {}
-}));
-
-mock.module('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: mock(() => mockOctokit)
-}));
-
-mock.module('../../src/octokit', () => ({
-  octokit: mockOctokit.rest,
-  octokitGraphql: mockOctokit.graphql
+// Mock removePrFromQueue
+mock.module('../../src/helpers/manage-merge-queue', () => ({
+  removePrFromQueue: mock(() => Promise.resolve()),
+  manageMergeQueue: mock(() => Promise.resolve())
 }));
 
 const { FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } = await import('../../src/constants');
@@ -104,15 +29,18 @@ const { prepareQueuedPrForMerge } = await import('../../src/helpers/prepare-queu
 const { removePrFromQueue } = await import('../../src/helpers/manage-merge-queue');
 const { context } = await import('@actions/github');
 
-(octokit.repos.mergeUpstream as unknown as Mocktokit).mockImplementation(async () => ({ some: 'response' }));
-(octokit.repos.merge as unknown as Mocktokit).mockImplementation(async () => ({ some: 'response' }));
-
 describe('prepareQueuedPrForMerge', () => {
+  beforeEach(() => {
+    mock.clearAllMocks();
+
+    (octokit.repos.mergeUpstream as unknown as Mock<any>).mockImplementation(async () => ({ some: 'response' }));
+    (octokit.repos.merge as unknown as Mock<any>).mockImplementation(async () => ({ some: 'response' }));
+  });
   const ref = 'branch name';
 
   describe('top queued pr exists', () => {
     beforeEach(async () => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.pulls.list as unknown as Mock<any>).mockImplementation(async () => ({
         data: [
           {
             head: {
@@ -163,7 +91,7 @@ describe('prepareQueuedPrForMerge', () => {
 
   describe('top queued pr exists and head is fork branch', () => {
     beforeEach(async () => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.pulls.list as unknown as Mock<any>).mockImplementation(async () => ({
         data: [
           {
             head: {
@@ -233,7 +161,7 @@ describe('prepareQueuedPrForMerge', () => {
   describe('pr jumped the queue', () => {
     const jumpQueueBranch = 'jump queue';
     beforeEach(async () => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.pulls.list as unknown as Mock<any>).mockImplementation(async () => ({
         data: [
           {
             head: {
@@ -298,7 +226,7 @@ describe('prepareQueuedPrForMerge', () => {
 
   describe('no queued prs exist', () => {
     beforeEach(async () => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.pulls.list as unknown as Mock<any>).mockImplementation(async () => ({
         data: [
           {
             head: {
@@ -346,7 +274,7 @@ describe('prepareQueuedPrForMerge', () => {
       ]
     };
     beforeEach(async () => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) =>
+      (octokit.pulls.list as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) =>
         page === 1 || !page
           ? {
               data: [
@@ -366,7 +294,7 @@ describe('prepareQueuedPrForMerge', () => {
             }
           : { data: [] }
       );
-      (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
+      (octokit.repos.merge as unknown as Mock<any>).mockRejectedValue({ status: 409 });
       await prepareQueuedPrForMerge();
     });
 
@@ -393,7 +321,7 @@ describe('prepareQueuedPrForMerge', () => {
       ]
     };
     beforeEach(async () => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) =>
+      (octokit.pulls.list as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) =>
         page === 1 || !page
           ? {
               data: [
@@ -413,7 +341,7 @@ describe('prepareQueuedPrForMerge', () => {
             }
           : { data: [] }
       );
-      (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
+      (octokit.repos.merge as unknown as Mock<any>).mockRejectedValue({ status: 409 });
       (core.getInput as Mock<any>).mockReturnValue('true');
       await prepareQueuedPrForMerge();
     });
@@ -441,7 +369,7 @@ describe('prepareQueuedPrForMerge', () => {
       ]
     };
     beforeEach(async () => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) =>
+      (octokit.pulls.list as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) =>
         page === 1 || !page
           ? {
               data: [
@@ -461,7 +389,7 @@ describe('prepareQueuedPrForMerge', () => {
             }
           : { data: [] }
       );
-      (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
+      (octokit.repos.merge as unknown as Mock<any>).mockRejectedValue({ status: 409 });
       (core.getInput as Mock<any>).mockReturnValue('');
       await prepareQueuedPrForMerge();
     });
@@ -499,7 +427,7 @@ describe('prepareQueuedPrForMerge', () => {
       ]
     };
     beforeEach(async () => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) =>
+      (octokit.pulls.list as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) =>
         page === 1 || !page
           ? {
               data: [
@@ -519,7 +447,7 @@ describe('prepareQueuedPrForMerge', () => {
             }
           : { data: [] }
       );
-      (octokit.repos.mergeUpstream as unknown as Mocktokit).mockRejectedValue({ status: 409 });
+      (octokit.repos.mergeUpstream as unknown as Mock<any>).mockRejectedValue({ status: 409 });
       await prepareQueuedPrForMerge();
     });
 

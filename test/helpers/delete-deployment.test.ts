@@ -11,97 +11,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { beforeEach, describe, expect, it, mock } from 'bun:test';
-import type { Mocktokit } from '../types';
+import { describe, it, expect, beforeEach, mock, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-process.env.INPUT_GITHUB_TOKEN = 'mock-token';
-
-const mockOctokit = {
-  rest: {
-    actions: {
-      listWorkflowRunsForRepo: mock(() => ({})),
-      reRunWorkflow: mock(() => ({}))
-    },
-    checks: {
-      listForRef: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    git: {
-      deleteRef: mock(() => ({})),
-      getCommit: mock(() => ({}))
-    },
-    issues: {
-      addAssignees: mock(() => ({})),
-      addLabels: mock(() => ({})),
-      createComment: mock(() => ({})),
-      get: mock(() => ({})),
-      listComments: mock(() => ({})),
-      listForRepo: mock(() => ({})),
-      removeLabel: mock(() => ({})),
-      update: mock(() => ({})),
-      updateComment: mock(() => ({}))
-    },
-    pulls: {
-      create: mock(() => ({})),
-      createReview: mock(() => ({})),
-      get: mock(() => ({})),
-      list: mock(() => ({})),
-      listFiles: mock(() => ({})),
-      listReviews: mock(() => ({})),
-      merge: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    repos: {
-      compareCommitsWithBasehead: mock(() => ({})),
-      createCommitStatus: mock(() => ({})),
-      createDeployment: mock(() => ({})),
-      createDeploymentStatus: mock(() => ({})),
-      deleteAnEnvironment: mock(() => ({})),
-      deleteDeployment: mock(() => ({})),
-      get: mock(() => ({})),
-      getCombinedStatusForRef: mock(() => ({})),
-      listBranches: mock(() => ({})),
-      listBranchesForHeadCommit: mock(() => ({})),
-      listCommitStatusesForRef: mock(() => ({})),
-      listDeploymentStatuses: mock(() => ({})),
-      listDeployments: mock(() => ({})),
-      listPullRequestsAssociatedWithCommit: mock(() => ({})),
-      merge: mock(() => ({})),
-      mergeUpstream: mock(() => ({}))
-    },
-    teams: {
-      listMembersInOrg: mock(() => ({}))
-    },
-    users: {
-      getByUsername: mock(() => ({}))
-    }
-  },
-  graphql: mock(() => ({}))
-};
-
-mock.module('@actions/core', () => ({
-  getInput: () => 'mock-token',
-  setOutput: () => {},
-  setFailed: () => {},
-  info: () => {},
-  warning: () => {},
-  error: () => {}
-}));
-
-mock.module('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: mock(() => mockOctokit)
-}));
-
-mock.module('../../src/octokit', () => ({
-  octokit: mockOctokit.rest,
-  octokitGraphql: mockOctokit.graphql
-}));
+setupMocks();
 
 const { deleteDeployment } = await import('../../src/helpers/delete-deployment');
 const { octokit } = await import('../../src/octokit');
 const { context } = await import('@actions/github');
-
+const core = await import('@actions/core');
 
 function* getDeployments(requested: number) {
   const baseId = 123;
@@ -117,26 +35,30 @@ describe('deleteDeployment', () => {
   const environment = 'environment';
   const deployment_id = 123;
 
+  beforeEach(() => {
+    mock.clearAllMocks();
+  });
+
   describe('deployment exists', () => {
     const deployments = [...getDeployments(5)];
 
     beforeEach(async () => {
-      (octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.listDeployments as unknown as Mock<any>).mockImplementation(async () => ({
         data: deployments
       }));
 
-      (octokit.repos.createDeploymentStatus as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.createDeploymentStatus as unknown as Mock<any>).mockImplementation(async () => ({
         data: {
           state: 'success'
         }
       }));
 
-      (octokit.repos.deleteDeployment as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.deleteDeployment as unknown as Mock<any>).mockImplementation(async () => ({
         data: {},
         status: 204
       }));
 
-      (octokit.repos.deleteAnEnvironment as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.deleteAnEnvironment as unknown as Mock<any>).mockImplementation(async () => ({
         data: {},
         status: 204
       }));
@@ -184,7 +106,7 @@ describe('deleteDeployment', () => {
 
   describe('deployment does not exist', () => {
     beforeEach(() => {
-      (octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.listDeployments as unknown as Mock<any>).mockImplementation(async () => ({
         data: []
       }));
       deleteDeployment({
@@ -220,11 +142,11 @@ describe('deleteDeployment', () => {
     beforeEach(async () => {
       let callCount = 0;
 
-      (octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.listDeployments as unknown as Mock<any>).mockImplementation(async () => ({
         data: deployments
       }));
 
-      (octokit.repos.createDeploymentStatus as unknown as Mocktokit).mockImplementation(async () => {
+      (octokit.repos.createDeploymentStatus as unknown as Mock<any>).mockImplementation(async () => {
         const isEven = callCount % 2 === 0;
         callCount++;
         return {
@@ -234,12 +156,12 @@ describe('deleteDeployment', () => {
         };
       });
 
-      (octokit.repos.deleteDeployment as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.deleteDeployment as unknown as Mock<any>).mockImplementation(async () => ({
         data: {},
         status: 204
       }));
 
-      (octokit.repos.deleteAnEnvironment as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.deleteAnEnvironment as unknown as Mock<any>).mockImplementation(async () => ({
         data: {},
         status: 204
       }));
@@ -251,7 +173,7 @@ describe('deleteDeployment', () => {
     });
 
     it('should print a warning message', async () => {
-      expect(info).toHaveBeenCalledWith(`Not all deployments were successfully deactivated. Some may still be active.`);
+      expect(core.info).toHaveBeenCalledWith(`Not all deployments were successfully deactivated. Some may still be active.`);
     });
   });
 });

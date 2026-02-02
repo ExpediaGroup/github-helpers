@@ -11,96 +11,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mock, describe, expect, it, mock } from 'bun:test';
-import type { Mocktokit } from '../types';
+import { Mock, beforeEach, describe, expect, it, mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-process.env.INPUT_GITHUB_TOKEN = 'mock-token';
-
-const mockOctokit = {
-  rest: {
-    actions: {
-      listWorkflowRunsForRepo: mock(() => ({})),
-      reRunWorkflow: mock(() => ({}))
-    },
-    checks: {
-      listForRef: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    git: {
-      deleteRef: mock(() => ({})),
-      getCommit: mock(() => ({}))
-    },
-    issues: {
-      addAssignees: mock(() => ({})),
-      addLabels: mock(() => ({})),
-      createComment: mock(() => ({})),
-      get: mock(() => ({})),
-      listComments: mock(() => ({})),
-      listForRepo: mock(() => ({})),
-      removeLabel: mock(() => ({})),
-      update: mock(() => ({})),
-      updateComment: mock(() => ({}))
-    },
-    pulls: {
-      create: mock(() => ({})),
-      createReview: mock(() => ({})),
-      get: mock(() => ({})),
-      list: mock(() => ({})),
-      listFiles: mock(() => ({})),
-      listReviews: mock(() => ({})),
-      merge: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    repos: {
-      compareCommitsWithBasehead: mock(() => ({})),
-      createCommitStatus: mock(() => ({})),
-      createDeployment: mock(() => ({})),
-      createDeploymentStatus: mock(() => ({})),
-      deleteAnEnvironment: mock(() => ({})),
-      deleteDeployment: mock(() => ({})),
-      get: mock(() => ({})),
-      getCombinedStatusForRef: mock(() => ({})),
-      listBranches: mock(() => ({})),
-      listBranchesForHeadCommit: mock(() => ({})),
-      listCommitStatusesForRef: mock(() => ({})),
-      listDeploymentStatuses: mock(() => ({})),
-      listDeployments: mock(() => ({})),
-      listPullRequestsAssociatedWithCommit: mock(() => ({})),
-      merge: mock(() => ({})),
-      mergeUpstream: mock(() => ({}))
-    },
-    teams: {
-      listMembersInOrg: mock(() => ({}))
-    },
-    users: {
-      getByUsername: mock(() => ({}))
-    }
-  },
-  graphql: mock(() => ({}))
-};
-
-mock.module('@actions/core', () => ({
-  getInput: () => 'mock-token',
-  setOutput: () => {},
-  setFailed: () => {},
-  info: () => {},
-  warning: () => {},
-  error: () => {}
-}));
-
-mock.module('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: mock(() => mockOctokit)
-}));
-
-mock.module('../../src/octokit', () => ({
-  octokit: mockOctokit.rest,
-  octokitGraphql: mockOctokit.graphql
-}));
-
-const { approvalsSatisfied } = await import('../../src/helpers/approvals-satisfied');
-const { octokit } = await import('../../src/octokit');
-const { getRequiredCodeOwnersEntries } = await import('../../src/utils/get-core-member-logins');
+setupMocks();
 
 const ownerMap: { [key: string]: { data: { login: string }[] } } = {
   team1: { data: [{ login: 'user1' }] },
@@ -111,14 +25,37 @@ const ownerMap: { [key: string]: { data: { login: string }[] } } = {
   team6: { data: [{ login: 'user8' }, { login: 'user9' }] }
 };
 
+// Mock paginateMembersInOrg
+mock.module('../../src/utils/paginate-members-in-org', () => ({
+  paginateMembersInOrg: mock(async (team: string) => {
+    const teamSlug = team.replace('@ExpediaGroup/', '').replace('ExpediaGroup/', '').replace('owner/', '');
+    return ownerMap[teamSlug]?.data || [];
+  })
+}));
+
+// Mock getRequiredCodeOwnersEntries
+mock.module('../../src/utils/get-core-member-logins', () => ({
+  getRequiredCodeOwnersEntries: mock(() => Promise.resolve([])),
+  getCoreMemberLogins: mock(() => Promise.resolve([]))
+}));
+
+const { approvalsSatisfied } = await import('../../src/helpers/approvals-satisfied');
+const { octokit } = await import('../../src/octokit');
+const { getRequiredCodeOwnersEntries } = await import('../../src/utils/get-core-member-logins');
+const { paginateMembersInOrg } = await import('../../src/utils/paginate-members-in-org');
+const core = await import('@actions/core');
 
 const mockPagination = (result: unknown) => {
-  (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async ({ page }) => {
+  (octokit.pulls.listReviews as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => {
     return page === 1 ? result : { data: [] };
   });
 };
 
 describe('approvalsSatisfied', () => {
+  beforeEach(() => {
+    mock.clearAllMocks();
+  });
+
   it('should return false when passing teams override and required approvals are not met', async () => {
     mockPagination({
       data: [

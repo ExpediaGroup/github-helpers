@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { describe, it, expect, mock } from 'bun:test';
+import { describe, it, expect, beforeEach, mock } from 'bun:test';
 import type { Mock } from 'bun:test';
 
 process.env.INPUT_GITHUB_TOKEN = 'mock-token';
@@ -39,6 +39,7 @@ mock.module('fs', () => ({
   readFileSync: mock(() => ({
     toString: mock()
   }))
+}));
 
 const { getActionInputs } = await import('../../src/utils/get-action-inputs');
 const { getInput } = await import('@actions/core');
@@ -46,6 +47,10 @@ const { getInputsFromFile } = await import('../../src/utils/get-inputs-from-file
 
 describe('getActionInputs', () => {
   const requiredInputs = ['input1'];
+
+  beforeEach(() => {
+    mock.clearAllMocks()
+  });
 
   it('should call getInput with correct params and return expected inputs', () => {
     (getInputsFromFile as Mock<any>).mockReturnValue(['input1', 'input2', 'input3']);
