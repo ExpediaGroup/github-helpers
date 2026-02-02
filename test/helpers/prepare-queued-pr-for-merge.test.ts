@@ -11,31 +11,99 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import * as core from '@actions/core';
-import { FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
-import { Mocktokit } from '../types';
-import { context } from '@actions/github';
-import { octokit } from '../../src/octokit';
-import { prepareQueuedPrForMerge } from '../../src/helpers/prepare-queued-pr-for-merge';
-import { removePrFromQueue } from '../../src/helpers/manage-merge-queue';
+import { Mock, beforeEach, describe, expect, it, mock } from 'bun:test';
+import type { Mocktokit } from '../types';
 
-jest.mock('@actions/core');
-jest.mock('../../src/utils/update-merge-queue');
-jest.mock('../../src/helpers/manage-merge-queue');
-jest.mock('../../src/helpers/remove-label');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      pulls: { list: jest.fn() },
-      repos: { merge: jest.fn(), mergeUpstream: jest.fn(), createCommitStatus: jest.fn() },
-      issues: {
-        removeLabel: jest.fn(),
-        createComment: jest.fn()
-      }
+process.env.INPUT_GITHUB_TOKEN = 'mock-token';
+
+const mockOctokit = {
+  rest: {
+    actions: {
+      listWorkflowRunsForRepo: mock(() => ({})),
+      reRunWorkflow: mock(() => ({}))
+    },
+    checks: {
+      listForRef: mock(() => ({})),
+      update: mock(() => ({}))
+    },
+    git: {
+      deleteRef: mock(() => ({})),
+      getCommit: mock(() => ({}))
+    },
+    issues: {
+      addAssignees: mock(() => ({})),
+      addLabels: mock(() => ({})),
+      createComment: mock(() => ({})),
+      get: mock(() => ({})),
+      listComments: mock(() => ({})),
+      listForRepo: mock(() => ({})),
+      removeLabel: mock(() => ({})),
+      update: mock(() => ({})),
+      updateComment: mock(() => ({}))
+    },
+    pulls: {
+      create: mock(() => ({})),
+      createReview: mock(() => ({})),
+      get: mock(() => ({})),
+      list: mock(() => ({})),
+      listFiles: mock(() => ({})),
+      listReviews: mock(() => ({})),
+      merge: mock(() => ({})),
+      update: mock(() => ({}))
+    },
+    repos: {
+      compareCommitsWithBasehead: mock(() => ({})),
+      createCommitStatus: mock(() => ({})),
+      createDeployment: mock(() => ({})),
+      createDeploymentStatus: mock(() => ({})),
+      deleteAnEnvironment: mock(() => ({})),
+      deleteDeployment: mock(() => ({})),
+      get: mock(() => ({})),
+      getCombinedStatusForRef: mock(() => ({})),
+      listBranches: mock(() => ({})),
+      listBranchesForHeadCommit: mock(() => ({})),
+      listCommitStatusesForRef: mock(() => ({})),
+      listDeploymentStatuses: mock(() => ({})),
+      listDeployments: mock(() => ({})),
+      listPullRequestsAssociatedWithCommit: mock(() => ({})),
+      merge: mock(() => ({})),
+      mergeUpstream: mock(() => ({}))
+    },
+    teams: {
+      listMembersInOrg: mock(() => ({}))
+    },
+    users: {
+      getByUsername: mock(() => ({}))
     }
-  }))
+  },
+  graphql: mock(() => ({}))
+};
+
+mock.module('@actions/core', () => ({
+  getInput: () => 'mock-token',
+  setOutput: () => {},
+  setFailed: () => {},
+  info: () => {},
+  warning: () => {},
+  error: () => {}
 }));
+
+mock.module('@actions/github', () => ({
+  context: { repo: { repo: 'repo', owner: 'owner' } },
+  getOctokit: mock(() => mockOctokit)
+}));
+
+mock.module('../../src/octokit', () => ({
+  octokit: mockOctokit.rest,
+  octokitGraphql: mockOctokit.graphql
+}));
+
+const { FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } = await import('../../src/constants');
+const { octokit } = await import('../../src/octokit');
+const { prepareQueuedPrForMerge } = await import('../../src/helpers/prepare-queued-pr-for-merge');
+const { removePrFromQueue } = await import('../../src/helpers/manage-merge-queue');
+const { context } = await import('@actions/github');
+
 (octokit.repos.mergeUpstream as unknown as Mocktokit).mockImplementation(async () => ({ some: 'response' }));
 (octokit.repos.merge as unknown as Mocktokit).mockImplementation(async () => ({ some: 'response' }));
 
@@ -346,7 +414,7 @@ describe('prepareQueuedPrForMerge', () => {
           : { data: [] }
       );
       (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
-      (core.getInput as jest.Mock).mockReturnValue('true');
+      (core.getInput as Mock<any>).mockReturnValue('true');
       await prepareQueuedPrForMerge();
     });
 
@@ -394,7 +462,7 @@ describe('prepareQueuedPrForMerge', () => {
           : { data: [] }
       );
       (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
-      (core.getInput as jest.Mock).mockReturnValue('');
+      (core.getInput as Mock<any>).mockReturnValue('');
       await prepareQueuedPrForMerge();
     });
 

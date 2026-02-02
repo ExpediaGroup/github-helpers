@@ -11,48 +11,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { paginateMembersInOrg } from '../../src/utils/paginate-members-in-org';
-import { MembersInOrg, MembersInOrgParams } from '../../src/types/github';
+import { describe, it, expect, mock } from 'bun:test';
 
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      teams: {
-        listMembersInOrg: jest.fn(async (args: MembersInOrgParams) => {
-          let teamMembers: MembersInOrg = [];
-          switch (args.team_slug) {
-            case 'empty-team':
-              break;
-            case 'small-team':
-              teamMembers = [
-                generateMember({ login: 'user1', id: 1 }),
-                generateMember({ login: 'user2', id: 2 }),
-                generateMember({ login: 'user3', id: 3 })
-              ];
-              break;
-            case 'large-team':
-              const teamSize = 250;
-              const page = args.page || 1;
-              const pageOffset = (page - 1) * 100;
-              const pageSize = Math.min(teamSize - pageOffset, 100);
-              for (let i = 0; i < pageSize; i++) {
-                teamMembers.push(generateMember({ login: `user${i + pageOffset}`, id: i + pageOffset }));
-              }
-              break;
-          }
-          return { data: teamMembers };
-        })
-      }
-    }
-  }))
-}));
+process.env.INPUT_GITHUB_TOKEN = 'mock-token';
 
-jest.mock('@actions/core', () => ({
-  getInput: jest.fn(input => (input === 'input2' ? '' : input))
-}));
-
-const generateMember = (baseMember: object): MembersInOrg[number] => {
+const generateMember = (baseMember: object): any => {
   return {
     login: 'login',
     id: 0,
@@ -75,6 +38,115 @@ const generateMember = (baseMember: object): MembersInOrg[number] => {
     ...baseMember
   };
 };
+
+const mockListMembersInOrg = mock(async (args: any) => {
+  let teamMembers: any[] = [];
+  switch (args.team_slug) {
+    case 'empty-team':
+      break;
+    case 'small-team':
+      teamMembers = [
+        generateMember({ login: 'user1', id: 1 }),
+        generateMember({ login: 'user2', id: 2 }),
+        generateMember({ login: 'user3', id: 3 })
+      ];
+      break;
+    case 'large-team':
+      const teamSize = 250;
+      const page = args.page || 1;
+      const pageOffset = (page - 1) * 100;
+      const pageSize = Math.min(teamSize - pageOffset, 100);
+      for (let i = 0; i < pageSize; i++) {
+        teamMembers.push(generateMember({ login: `user${i + pageOffset}`, id: i + pageOffset }));
+      }
+      break;
+  }
+  return { data: teamMembers };
+});
+
+const mockOctokit = {
+  rest: {
+    actions: {
+      listWorkflowRunsForRepo: mock(() => ({})),
+      reRunWorkflow: mock(() => ({}))
+    },
+    checks: {
+      listForRef: mock(() => ({})),
+      update: mock(() => ({}))
+    },
+    git: {
+      deleteRef: mock(() => ({})),
+      getCommit: mock(() => ({}))
+    },
+    issues: {
+      addAssignees: mock(() => ({})),
+      addLabels: mock(() => ({})),
+      createComment: mock(() => ({})),
+      get: mock(() => ({})),
+      listComments: mock(() => ({})),
+      listForRepo: mock(() => ({})),
+      removeLabel: mock(() => ({})),
+      update: mock(() => ({})),
+      updateComment: mock(() => ({}))
+    },
+    pulls: {
+      create: mock(() => ({})),
+      createReview: mock(() => ({})),
+      get: mock(() => ({})),
+      list: mock(() => ({})),
+      listFiles: mock(() => ({})),
+      listReviews: mock(() => ({})),
+      merge: mock(() => ({})),
+      update: mock(() => ({}))
+    },
+    repos: {
+      compareCommitsWithBasehead: mock(() => ({})),
+      createCommitStatus: mock(() => ({})),
+      createDeployment: mock(() => ({})),
+      createDeploymentStatus: mock(() => ({})),
+      deleteAnEnvironment: mock(() => ({})),
+      deleteDeployment: mock(() => ({})),
+      get: mock(() => ({})),
+      getCombinedStatusForRef: mock(() => ({})),
+      listBranches: mock(() => ({})),
+      listBranchesForHeadCommit: mock(() => ({})),
+      listCommitStatusesForRef: mock(() => ({})),
+      listDeploymentStatuses: mock(() => ({})),
+      listDeployments: mock(() => ({})),
+      listPullRequestsAssociatedWithCommit: mock(() => ({})),
+      merge: mock(() => ({})),
+      mergeUpstream: mock(() => ({}))
+    },
+    teams: {
+      listMembersInOrg: mock(() => ({}))
+    },
+    users: {
+      getByUsername: mock(() => ({}))
+    }
+  },
+  graphql: mock(() => ({}))
+};
+
+mock.module('@actions/core', () => ({
+  getInput: (input: string) => (input === 'input2' ? '' : input),
+  setOutput: () => {},
+  setFailed: () => {},
+  info: () => {},
+  warning: () => {},
+  error: () => {}
+}));
+
+mock.module('@actions/github', () => ({
+  context: { repo: { repo: 'repo', owner: 'owner' } },
+  getOctokit: mock(() => mockOctokit)
+}));
+
+mock.module('../../src/octokit', () => ({
+  octokit: mockOctokit.rest,
+  octokitGraphql: mockOctokit.graphql
+}));
+
+const { paginateMembersInOrg } = await import('../../src/utils/paginate-members-in-org');
 
 describe('paginateMembersInOrg', () => {
   describe('return all team members', () => {

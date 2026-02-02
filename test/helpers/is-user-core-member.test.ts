@@ -11,16 +11,94 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { isUserCoreMember } from '../../src/helpers/is-user-core-member';
-import { getCoreMemberLogins } from '../../src/utils/get-core-member-logins';
+import { Mock, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 }, actor: 'admin' }
+process.env.INPUT_GITHUB_TOKEN = 'mock-token';
+
+const mockOctokit = {
+  rest: {
+    actions: {
+      listWorkflowRunsForRepo: mock(() => ({})),
+      reRunWorkflow: mock(() => ({}))
+    },
+    checks: {
+      listForRef: mock(() => ({})),
+      update: mock(() => ({}))
+    },
+    git: {
+      deleteRef: mock(() => ({})),
+      getCommit: mock(() => ({}))
+    },
+    issues: {
+      addAssignees: mock(() => ({})),
+      addLabels: mock(() => ({})),
+      createComment: mock(() => ({})),
+      get: mock(() => ({})),
+      listComments: mock(() => ({})),
+      listForRepo: mock(() => ({})),
+      removeLabel: mock(() => ({})),
+      update: mock(() => ({})),
+      updateComment: mock(() => ({}))
+    },
+    pulls: {
+      create: mock(() => ({})),
+      createReview: mock(() => ({})),
+      get: mock(() => ({})),
+      list: mock(() => ({})),
+      listFiles: mock(() => ({})),
+      listReviews: mock(() => ({})),
+      merge: mock(() => ({})),
+      update: mock(() => ({}))
+    },
+    repos: {
+      compareCommitsWithBasehead: mock(() => ({})),
+      createCommitStatus: mock(() => ({})),
+      createDeployment: mock(() => ({})),
+      createDeploymentStatus: mock(() => ({})),
+      deleteAnEnvironment: mock(() => ({})),
+      deleteDeployment: mock(() => ({})),
+      get: mock(() => ({})),
+      getCombinedStatusForRef: mock(() => ({})),
+      listBranches: mock(() => ({})),
+      listBranchesForHeadCommit: mock(() => ({})),
+      listCommitStatusesForRef: mock(() => ({})),
+      listDeploymentStatuses: mock(() => ({})),
+      listDeployments: mock(() => ({})),
+      listPullRequestsAssociatedWithCommit: mock(() => ({})),
+      merge: mock(() => ({})),
+      mergeUpstream: mock(() => ({}))
+    },
+    teams: {
+      listMembersInOrg: mock(() => ({}))
+    },
+    users: {
+      getByUsername: mock(() => ({}))
+    }
+  },
+  graphql: mock(() => ({}))
+};
+
+mock.module('@actions/core', () => ({
+  getInput: () => 'mock-token',
+  setOutput: () => {},
+  setFailed: () => {},
+  info: () => {},
+  warning: () => {},
+  error: () => {}
 }));
-jest.mock('../../src/utils/get-core-member-logins', () => ({
-  getCoreMemberLogins: jest.fn()
+
+mock.module('@actions/github', () => ({
+  context: { repo: { repo: 'repo', owner: 'owner' } },
+  getOctokit: mock(() => mockOctokit)
 }));
+
+mock.module('../../src/octokit', () => ({
+  octokit: mockOctokit.rest,
+  octokitGraphql: mockOctokit.graphql
+}));
+
+const { isUserCoreMember } = await import('../../src/helpers/is-user-core-member');
+const { getCoreMemberLogins } = await import('../../src/utils/get-core-member-logins');
 
 describe('isUserCoreMember', () => {
   const login = 'octocat';
@@ -31,7 +109,7 @@ describe('isUserCoreMember', () => {
   });
 
   it('should call isUserCoreMember with correct params and find user as core member', async () => {
-    (getCoreMemberLogins as jest.Mock).mockResolvedValue(['octocat', 'admin']);
+    (getCoreMemberLogins as Mock<any>).mockResolvedValue(['octocat', 'admin']);
 
     const response = await isUserCoreMember({ login, pull_number });
 
@@ -40,7 +118,7 @@ describe('isUserCoreMember', () => {
   });
 
   it('should call isUserCoreMember with correct params and find user as core member when CODEOWNERS overrides are specified', async () => {
-    (getCoreMemberLogins as jest.Mock).mockResolvedValue(['octocat', 'admin']);
+    (getCoreMemberLogins as Mock<any>).mockResolvedValue(['octocat', 'admin']);
 
     const response = await isUserCoreMember({ login, pull_number, codeowners_overrides: '/foo @octocat' });
 
@@ -49,7 +127,7 @@ describe('isUserCoreMember', () => {
   });
 
   it('should call isUserCoreMember with correct params and find user as core member for context actor', async () => {
-    (getCoreMemberLogins as jest.Mock).mockResolvedValue(['admin']);
+    (getCoreMemberLogins as Mock<any>).mockResolvedValue(['admin']);
 
     const response = await isUserCoreMember({ pull_number });
 
@@ -58,7 +136,7 @@ describe('isUserCoreMember', () => {
   });
 
   it('should call isUserCoreMember with correct params and find user not as core member', async () => {
-    (getCoreMemberLogins as jest.Mock).mockResolvedValue(['admin']);
+    (getCoreMemberLogins as Mock<any>).mockResolvedValue(['admin']);
 
     const response = await isUserCoreMember({ login, pull_number });
 

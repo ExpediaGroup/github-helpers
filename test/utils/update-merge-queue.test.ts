@@ -11,33 +11,102 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { JUMP_THE_QUEUE_PR_LABEL, MERGE_QUEUE_STATUS, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
-import { Mocktokit } from '../types';
-import { PullRequestList } from '../../src/types/github';
-import { context } from '@actions/github';
-import { octokit } from '../../src/octokit';
-import { removeLabelIfExists } from '../../src/helpers/remove-label';
-import { updateMergeQueue } from '../../src/utils/update-merge-queue';
-import { updatePrWithDefaultBranch } from '../../src/helpers/prepare-queued-pr-for-merge';
-import { setCommitStatus } from '../../src/helpers/set-commit-status';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
+import type { Mocktokit } from '../types';
 
-jest.mock('../../src/helpers/remove-label');
-jest.mock('../../src/helpers/prepare-queued-pr-for-merge');
-jest.mock('../../src/helpers/set-commit-status');
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      pulls: { get: jest.fn() },
-      issues: {
-        addLabels: jest.fn(),
-        listLabelsOnIssue: jest.fn()
-      },
-      search: { issuesAndPullRequests: jest.fn() }
+process.env.INPUT_GITHUB_TOKEN = 'mock-token';
+
+const mockOctokit = {
+  rest: {
+    actions: {
+      listWorkflowRunsForRepo: mock(() => ({})),
+      reRunWorkflow: mock(() => ({}))
+    },
+    checks: {
+      listForRef: mock(() => ({})),
+      update: mock(() => ({}))
+    },
+    git: {
+      deleteRef: mock(() => ({})),
+      getCommit: mock(() => ({}))
+    },
+    issues: {
+      addAssignees: mock(() => ({})),
+      addLabels: mock(() => ({})),
+      createComment: mock(() => ({})),
+      get: mock(() => ({})),
+      listComments: mock(() => ({})),
+      listForRepo: mock(() => ({})),
+      removeLabel: mock(() => ({})),
+      update: mock(() => ({})),
+      updateComment: mock(() => ({}))
+    },
+    pulls: {
+      create: mock(() => ({})),
+      createReview: mock(() => ({})),
+      get: mock(() => ({})),
+      list: mock(() => ({})),
+      listFiles: mock(() => ({})),
+      listReviews: mock(() => ({})),
+      merge: mock(() => ({})),
+      update: mock(() => ({}))
+    },
+    repos: {
+      compareCommitsWithBasehead: mock(() => ({})),
+      createCommitStatus: mock(() => ({})),
+      createDeployment: mock(() => ({})),
+      createDeploymentStatus: mock(() => ({})),
+      deleteAnEnvironment: mock(() => ({})),
+      deleteDeployment: mock(() => ({})),
+      get: mock(() => ({})),
+      getCombinedStatusForRef: mock(() => ({})),
+      listBranches: mock(() => ({})),
+      listBranchesForHeadCommit: mock(() => ({})),
+      listCommitStatusesForRef: mock(() => ({})),
+      listDeploymentStatuses: mock(() => ({})),
+      listDeployments: mock(() => ({})),
+      listPullRequestsAssociatedWithCommit: mock(() => ({})),
+      merge: mock(() => ({})),
+      mergeUpstream: mock(() => ({}))
+    },
+    teams: {
+      listMembersInOrg: mock(() => ({}))
+    },
+    users: {
+      getByUsername: mock(() => ({}))
     }
-  }))
+  },
+  graphql: mock(() => ({}))
+};
+
+mock.module('@actions/core', () => ({
+  getInput: () => 'mock-token',
+  setOutput: () => {},
+  setFailed: () => {},
+  info: () => {},
+  warning: () => {},
+  error: () => {}
 }));
+
+mock.module('@actions/github', () => ({
+  context: { repo: { repo: 'repo', owner: 'owner' } },
+  getOctokit: mock(() => mockOctokit)
+}));
+
+mock.module('../../src/octokit', () => ({
+  octokit: mockOctokit.rest,
+  octokitGraphql: mockOctokit.graphql
+}));
+
+const { JUMP_THE_QUEUE_PR_LABEL, MERGE_QUEUE_STATUS, READY_FOR_MERGE_PR_LABEL } = await import('../../src/constants');
+const { PullRequestList } = await import('../../src/types/github');
+const { octokit } = await import('../../src/octokit');
+const { removeLabelIfExists } = await import('../../src/helpers/remove-label');
+const { updateMergeQueue } = await import('../../src/utils/update-merge-queue');
+const { updatePrWithDefaultBranch } = await import('../../src/helpers/prepare-queued-pr-for-merge');
+const { setCommitStatus } = await import('../../src/helpers/set-commit-status');
+const { context } = await import('@actions/github');
+
 (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async input => ({
   data: {
     head: { sha: `sha${input.pull_number}` }

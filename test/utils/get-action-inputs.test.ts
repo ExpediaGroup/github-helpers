@@ -11,28 +11,44 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { getActionInputs } from '../../src/utils/get-action-inputs';
-import { getInput } from '@actions/core';
-import { getInputsFromFile } from '../../src/utils/get-inputs-from-file';
+import { describe, it, expect, mock } from 'bun:test';
+import type { Mock } from 'bun:test';
 
-jest.mock('../../src/utils/get-inputs-from-file');
-jest.mock('@actions/core', () => ({
-  getInput: jest.fn(input => (input === 'input2' ? '' : input))
+process.env.INPUT_GITHUB_TOKEN = 'mock-token';
+
+const mockGetInput = mock((input: string) => (input === 'input2' ? '' : input));
+const mockGetInputsFromFile = mock(() => []);
+
+mock.module('@actions/core', () => ({
+  getInput: mockGetInput,
+  setOutput: () => {},
+  setFailed: () => {},
+  info: () => {},
+  warning: () => {},
+  error: () => {}
 }));
-jest.mock('fs', () => ({
+
+mock.module('../../src/utils/get-inputs-from-file', () => ({
+  getInputsFromFile: mockGetInputsFromFile
+}));
+
+mock.module('fs', () => ({
   promises: {
-    access: jest.fn()
+    access: mock()
   },
-  readFileSync: jest.fn(() => ({
-    toString: jest.fn()
+  readFileSync: mock(() => ({
+    toString: mock()
   }))
-}));
+
+const { getActionInputs } = await import('../../src/utils/get-action-inputs');
+const { getInput } = await import('@actions/core');
+const { getInputsFromFile } = await import('../../src/utils/get-inputs-from-file');
 
 describe('getActionInputs', () => {
   const requiredInputs = ['input1'];
 
   it('should call getInput with correct params and return expected inputs', () => {
-    (getInputsFromFile as jest.Mock).mockReturnValue(['input1', 'input2', 'input3']);
+    (getInputsFromFile as Mock<any>).mockReturnValue(['input1', 'input2', 'input3']);
     const result = getActionInputs(requiredInputs);
 
     expect(getInput).toHaveBeenCalledWith('input1', { required: true });
@@ -45,7 +61,7 @@ describe('getActionInputs', () => {
   });
 
   it('should call getInput with trimWhiteSpace false for delimiter input', () => {
-    (getInputsFromFile as jest.Mock).mockReturnValue(['input1', 'input2', 'delimiter']);
+    (getInputsFromFile as Mock<any>).mockReturnValue(['input1', 'input2', 'delimiter']);
     const result = getActionInputs(requiredInputs);
 
     expect(getInput).toHaveBeenCalledWith('input1', { required: true });

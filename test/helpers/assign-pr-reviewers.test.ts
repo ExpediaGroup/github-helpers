@@ -11,30 +11,102 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { assignPrReviewers } from '../../src/helpers/assign-pr-reviewers';
-import { context } from '@actions/github';
-import { getCoreMemberLogins } from '../../src/utils/get-core-member-logins';
-import { notifyUser } from '../../src/utils/notify-user';
-import { octokit } from '../../src/octokit';
-import { sampleSize } from 'lodash';
-import { Mocktokit } from '../types';
-import { CORE_APPROVED_PR_LABEL, PEER_APPROVED_PR_LABEL } from '../../src/constants';
+import { Mock, beforeEach, describe, expect, it, mock } from 'bun:test';
+import type { Mocktokit } from '../types';
 
-jest.mock('../../src/utils/get-core-member-logins');
-jest.mock('../../src/utils/notify-user');
-jest.mock('@actions/core');
-jest.mock('lodash');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      issues: { addAssignees: jest.fn(async () => 'result') },
-      pulls: { get: jest.fn() }
+process.env.INPUT_GITHUB_TOKEN = 'mock-token';
+
+const mockOctokit = {
+  rest: {
+    actions: {
+      listWorkflowRunsForRepo: mock(() => ({})),
+      reRunWorkflow: mock(() => ({}))
+    },
+    checks: {
+      listForRef: mock(() => ({})),
+      update: mock(() => ({}))
+    },
+    git: {
+      deleteRef: mock(() => ({})),
+      getCommit: mock(() => ({}))
+    },
+    issues: {
+      addAssignees: mock(() => ({})),
+      addLabels: mock(() => ({})),
+      createComment: mock(() => ({})),
+      get: mock(() => ({})),
+      listComments: mock(() => ({})),
+      listForRepo: mock(() => ({})),
+      removeLabel: mock(() => ({})),
+      update: mock(() => ({})),
+      updateComment: mock(() => ({}))
+    },
+    pulls: {
+      create: mock(() => ({})),
+      createReview: mock(() => ({})),
+      get: mock(() => ({})),
+      list: mock(() => ({})),
+      listFiles: mock(() => ({})),
+      listReviews: mock(() => ({})),
+      merge: mock(() => ({})),
+      update: mock(() => ({}))
+    },
+    repos: {
+      compareCommitsWithBasehead: mock(() => ({})),
+      createCommitStatus: mock(() => ({})),
+      createDeployment: mock(() => ({})),
+      createDeploymentStatus: mock(() => ({})),
+      deleteAnEnvironment: mock(() => ({})),
+      deleteDeployment: mock(() => ({})),
+      get: mock(() => ({})),
+      getCombinedStatusForRef: mock(() => ({})),
+      listBranches: mock(() => ({})),
+      listBranchesForHeadCommit: mock(() => ({})),
+      listCommitStatusesForRef: mock(() => ({})),
+      listDeploymentStatuses: mock(() => ({})),
+      listDeployments: mock(() => ({})),
+      listPullRequestsAssociatedWithCommit: mock(() => ({})),
+      merge: mock(() => ({})),
+      mergeUpstream: mock(() => ({}))
+    },
+    teams: {
+      listMembersInOrg: mock(() => ({}))
+    },
+    users: {
+      getByUsername: mock(() => ({}))
     }
-  }))
+  },
+  graphql: mock(() => ({}))
+};
+
+mock.module('@actions/core', () => ({
+  getInput: () => 'mock-token',
+  setOutput: () => {},
+  setFailed: () => {},
+  info: () => {},
+  warning: () => {},
+  error: () => {}
 }));
-(getCoreMemberLogins as jest.Mock).mockResolvedValue(['user1', 'user2', 'user3']);
-(sampleSize as jest.Mock).mockReturnValue(['assignee']);
+
+mock.module('@actions/github', () => ({
+  context: { repo: { repo: 'repo', owner: 'owner' } },
+  getOctokit: mock(() => mockOctokit)
+}));
+
+mock.module('../../src/octokit', () => ({
+  octokit: mockOctokit.rest,
+  octokitGraphql: mockOctokit.graphql
+}));
+
+const { assignPrReviewers } = await import('../../src/helpers/assign-pr-reviewers');
+const { getCoreMemberLogins } = await import('../../src/utils/get-core-member-logins');
+const { notifyUser } = await import('../../src/utils/notify-user');
+const { octokit } = await import('../../src/octokit');
+const { CORE_APPROVED_PR_LABEL, PEER_APPROVED_PR_LABEL } = await import('../../src/constants');
+const { context } = await import('@actions/github');
+
+(getCoreMemberLogins as Mock<any>).mockResolvedValue(['user1', 'user2', 'user3']);
+(sampleSize as Mock<any>).mockReturnValue(['assignee']);
 
 describe('assignPrReviewer', () => {
   const teams = 'team1\nteam2';

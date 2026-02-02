@@ -11,14 +11,114 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mocktokit } from '../types';
-import { context } from '@actions/github';
-import * as core from '@actions/core';
-import { simpleGit } from 'simple-git';
-import { checkMergeSafety } from '../../src/helpers/check-merge-safety';
-import { octokit } from '../../src/octokit';
-import { setCommitStatus } from '../../src/helpers/set-commit-status';
-import { paginateAllOpenPullRequests } from '../../src/utils/paginate-open-pull-requests';
+import { Mock, beforeEach, describe, expect, it, mock } from 'bun:test';
+import type { Mocktokit } from '../types';
+
+process.env.INPUT_GITHUB_TOKEN = 'mock-token';
+
+const mockOctokit = {
+  rest: {
+    actions: {
+      listWorkflowRunsForRepo: mock(() => ({})),
+      reRunWorkflow: mock(() => ({}))
+    },
+    checks: {
+      listForRef: mock(() => ({})),
+      update: mock(() => ({}))
+    },
+    git: {
+      deleteRef: mock(() => ({})),
+      getCommit: mock(() => ({}))
+    },
+    issues: {
+      addAssignees: mock(() => ({})),
+      addLabels: mock(() => ({})),
+      createComment: mock(() => ({})),
+      get: mock(() => ({})),
+      listComments: mock(() => ({})),
+      listForRepo: mock(() => ({})),
+      removeLabel: mock(() => ({})),
+      update: mock(() => ({})),
+      updateComment: mock(() => ({}))
+    },
+    pulls: {
+      create: mock(() => ({})),
+      createReview: mock(() => ({})),
+      get: mock(() => ({})),
+      list: mock(() => ({})),
+      listFiles: mock(() => ({})),
+      listReviews: mock(() => ({})),
+      merge: mock(() => ({})),
+      update: mock(() => ({}))
+    },
+    repos: {
+      compareCommitsWithBasehead: mock(() => ({})),
+      createCommitStatus: mock(() => ({})),
+      createDeployment: mock(() => ({})),
+      createDeploymentStatus: mock(() => ({})),
+      deleteAnEnvironment: mock(() => ({})),
+      deleteDeployment: mock(() => ({})),
+      get: mock(() => ({})),
+      getCombinedStatusForRef: mock(() => ({})),
+      listBranches: mock(() => ({})),
+      listBranchesForHeadCommit: mock(() => ({})),
+      listCommitStatusesForRef: mock(() => ({})),
+      listDeploymentStatuses: mock(() => ({})),
+      listDeployments: mock(() => ({})),
+      listPullRequestsAssociatedWithCommit: mock(() => ({})),
+      merge: mock(() => ({})),
+      mergeUpstream: mock(() => ({}))
+    },
+    teams: {
+      listMembersInOrg: mock(() => ({}))
+    },
+    users: {
+      getByUsername: mock(() => ({}))
+    }
+  },
+  graphql: mock(() => ({}))
+};
+
+mock.module('@actions/core', () => ({
+  getInput: () => 'mock-token',
+  setOutput: () => {},
+  setFailed: () => {},
+  info: () => {},
+  warning: () => {},
+  error: () => {}
+}));
+
+mock.module('@actions/github', () => ({
+  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
+  getOctokit: mock(() => mockOctokit)
+}));
+
+mock.module('../../src/octokit', () => ({
+  octokit: mockOctokit.rest,
+  octokitGraphql: mockOctokit.graphql
+}));
+
+const mockGitInstance = {
+  checkoutLocalBranch: mock(() => mockGitInstance),
+  add: mock(() => mockGitInstance),
+  commit: mock(() => mockGitInstance),
+  push: mock(() => mockGitInstance),
+  addConfig: mock(() => mockGitInstance)
+};
+
+const mockSimpleGit = mock(() => mockGitInstance) as any;
+mockSimpleGit.__mockGitInstance = mockGitInstance;
+
+mock.module('simple-git', () => ({
+  simpleGit: mockSimpleGit,
+  default: mockSimpleGit
+}));
+
+const { checkMergeSafety } = await import('../../src/helpers/check-merge-safety');
+const { octokit } = await import('../../src/octokit');
+const { setCommitStatus } = await import('../../src/helpers/set-commit-status');
+const { paginateAllOpenPullRequests } = await import('../../src/utils/paginate-open-pull-requests');
+const { context } = await import('@actions/github');
 
 const branchName = 'some-branch-name';
 const username = 'username';
@@ -29,22 +129,9 @@ const headRepoHtmlUrl = 'headRepoHtmlUrl';
 const baseSha = 'baseSha';
 const sha = 'sha';
 
-jest.mock('simple-git', () => {
-  const mockSimpleGit = { diff: jest.fn(), fetch: jest.fn() };
   return { simpleGit: jest.fn(() => mockSimpleGit) };
 });
-jest.mock('../../src/utils/paginate-open-pull-requests');
-jest.mock('../../src/helpers/set-commit-status');
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      repos: {
-        compareCommitsWithBasehead: jest.fn(),
-        getCombinedStatusForRef: jest.fn(() => ({
-          data: { state: 'success', statuses: [] }
-        }))
+
       },
       pulls: {
         get: jest.fn(() => ({
@@ -56,7 +143,6 @@ jest.mock('@actions/github', () => ({
       }
     }
   }))
-}));
 
 type MockGithubRequests = (
   filesOutOfDate: string[],
@@ -84,7 +170,7 @@ const mockGitInteractions = (filesOutOfDate: string[], changedFilesOnPr: string[
     return changedFiles.join('\n');
   };
 
-  const diff = simpleGit().diff as jest.Mock;
+  const diff = simpleGit().diff as Mock<any>;
   diff.mockImplementation(diffHandler);
   if (typeof whichCallToFail.diff === 'number') {
     Array(whichCallToFail.diff)
@@ -94,7 +180,7 @@ const mockGitInteractions = (filesOutOfDate: string[], changedFilesOnPr: string[
       );
   }
 
-  const fetch = simpleGit().fetch as jest.Mock;
+  const fetch = simpleGit().fetch as Mock<any>;
   fetch.mockImplementation(() => 'new fetch value');
   if (typeof whichCallToFail.fetch === 'number') {
     Array(whichCallToFail.fetch)
@@ -112,7 +198,7 @@ const allProjectPaths = ['packages/package-1/', 'packages/package-2/', 'packages
 describe('checkMergeSafety', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
-    (octokit.repos.getCombinedStatusForRef as unknown as jest.Mock).mockResolvedValue({
+    (octokit.repos.getCombinedStatusForRef as unknown as Mock<any>).mockResolvedValue({
       data: { state: 'success', statuses: [] }
     });
   });
@@ -324,7 +410,7 @@ describe('checkMergeSafety', () => {
     const filesOutOfDate = ['packages/package-1/src/another-file.ts'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
-    (octokit.repos.getCombinedStatusForRef as unknown as jest.Mock).mockResolvedValue({
+    (octokit.repos.getCombinedStatusForRef as unknown as Mock<any>).mockResolvedValue({
       data: { state: 'failure', statuses: [{ context: 'Merge Safety' }] }
     });
     await checkMergeSafety({
@@ -339,7 +425,7 @@ describe('checkMergeSafety', () => {
     const filesOutOfDate = ['packages/package-1/src/another-file.ts'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
-    (octokit.repos.getCombinedStatusForRef as unknown as jest.Mock).mockResolvedValue({
+    (octokit.repos.getCombinedStatusForRef as unknown as Mock<any>).mockResolvedValue({
       data: { state: 'success', statuses: [{ context: 'Merge Safety' }] }
     });
     await checkMergeSafety({
@@ -464,7 +550,7 @@ describe('checkMergeSafety', () => {
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     context.issue.number = undefined as unknown as number; // couldn't figure out a way to mock out this issue number in a cleaner way ¯\_(ツ)_/¯
-    (paginateAllOpenPullRequests as jest.Mock).mockResolvedValue([
+    (paginateAllOpenPullRequests as Mock<any>).mockResolvedValue([
       {
         head: { sha: '123', ref: branchName, user: { login: username } },
         base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }

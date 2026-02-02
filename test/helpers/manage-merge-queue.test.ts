@@ -11,46 +11,110 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { JUMP_THE_QUEUE_PR_LABEL, MERGE_QUEUE_STATUS, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
-import { Mocktokit } from '../types';
-import { context } from '@actions/github';
-import { manageMergeQueue } from '../../src/helpers/manage-merge-queue';
-import { notifyUser } from '../../src/utils/notify-user';
-import { octokit, octokitGraphql } from '../../src/octokit';
-import { removeLabel, removeLabelIfExists } from '../../src/helpers/remove-label';
-import { setCommitStatus } from '../../src/helpers/set-commit-status';
-import { updateMergeQueue } from '../../src/utils/update-merge-queue';
-import { updatePrWithDefaultBranch } from '../../src/helpers/prepare-queued-pr-for-merge';
-import { approvalsSatisfied } from '../../src/helpers/approvals-satisfied';
-import { createPrComment } from '../../src/helpers/create-pr-comment';
-import { isUserInTeam } from '../../src/helpers/is-user-in-team';
+import { Mock, beforeEach, describe, expect, it, mock } from 'bun:test';
+import type { Mocktokit } from '../types';
 
-jest.mock('../../src/helpers/remove-label');
-jest.mock('../../src/helpers/set-commit-status');
-jest.mock('../../src/utils/notify-user');
-jest.mock('../../src/utils/update-merge-queue');
-jest.mock('../../src/helpers/is-user-in-team');
-jest.mock('../../src/helpers/approvals-satisfied');
-jest.mock('../../src/helpers/create-pr-comment');
-jest.mock('../../src/utils/../../src/helpers/prepare-queued-pr-for-merge');
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 }, serverUrl: 'sampleUrl' },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      pulls: { get: jest.fn(), list: jest.fn() },
-      issues: {
-        addLabels: jest.fn()
-      },
-      users: {
-        getByUsername: jest.fn()
-      }
+process.env.INPUT_GITHUB_TOKEN = 'mock-token';
+
+const mockOctokit = {
+  rest: {
+    actions: {
+      listWorkflowRunsForRepo: mock(() => ({})),
+      reRunWorkflow: mock(() => ({}))
     },
-    graphql: jest.fn(() => ({ catch: jest.fn() }))
-  }))
+    checks: {
+      listForRef: mock(() => ({})),
+      update: mock(() => ({}))
+    },
+    git: {
+      deleteRef: mock(() => ({})),
+      getCommit: mock(() => ({}))
+    },
+    issues: {
+      addAssignees: mock(() => ({})),
+      addLabels: mock(() => ({})),
+      createComment: mock(() => ({})),
+      get: mock(() => ({})),
+      listComments: mock(() => ({})),
+      listForRepo: mock(() => ({})),
+      removeLabel: mock(() => ({})),
+      update: mock(() => ({})),
+      updateComment: mock(() => ({}))
+    },
+    pulls: {
+      create: mock(() => ({})),
+      createReview: mock(() => ({})),
+      get: mock(() => ({})),
+      list: mock(() => ({})),
+      listFiles: mock(() => ({})),
+      listReviews: mock(() => ({})),
+      merge: mock(() => ({})),
+      update: mock(() => ({}))
+    },
+    repos: {
+      compareCommitsWithBasehead: mock(() => ({})),
+      createCommitStatus: mock(() => ({})),
+      createDeployment: mock(() => ({})),
+      createDeploymentStatus: mock(() => ({})),
+      deleteAnEnvironment: mock(() => ({})),
+      deleteDeployment: mock(() => ({})),
+      get: mock(() => ({})),
+      getCombinedStatusForRef: mock(() => ({})),
+      listBranches: mock(() => ({})),
+      listBranchesForHeadCommit: mock(() => ({})),
+      listCommitStatusesForRef: mock(() => ({})),
+      listDeploymentStatuses: mock(() => ({})),
+      listDeployments: mock(() => ({})),
+      listPullRequestsAssociatedWithCommit: mock(() => ({})),
+      merge: mock(() => ({})),
+      mergeUpstream: mock(() => ({}))
+    },
+    teams: {
+      listMembersInOrg: mock(() => ({}))
+    },
+    users: {
+      getByUsername: mock(() => ({}))
+    }
+  },
+  graphql: mock(() => ({}))
+};
+
+mock.module('@actions/core', () => ({
+  getInput: () => 'mock-token',
+  setOutput: () => {},
+  setFailed: () => {},
+  info: () => {},
+  warning: () => {},
+  error: () => {}
 }));
 
-(isUserInTeam as jest.Mock).mockImplementation(({ team }) => {
+mock.module('@actions/github', () => ({
+  context: { repo: { repo: 'repo', owner: 'owner' } },
+  getOctokit: mock(() => mockOctokit)
+}));
+
+mock.module('../../src/octokit', () => ({
+  octokit: mockOctokit.rest,
+  octokitGraphql: mockOctokit.graphql
+}));
+
+const { JUMP_THE_QUEUE_PR_LABEL, MERGE_QUEUE_STATUS, READY_FOR_MERGE_PR_LABEL } = await import('../../src/constants');
+const { manageMergeQueue } = await import('../../src/helpers/manage-merge-queue');
+const { notifyUser } = await import('../../src/utils/notify-user');
+const { octokit, octokitGraphql } = await import('../../src/octokit');
+const { removeLabel, removeLabelIfExists } = await import('../../src/helpers/remove-label');
+const { setCommitStatus } = await import('../../src/helpers/set-commit-status');
+const { updateMergeQueue } = await import('../../src/utils/update-merge-queue');
+const { updatePrWithDefaultBranch } = await import('../../src/helpers/prepare-queued-pr-for-merge');
+const { approvalsSatisfied } = await import('../../src/helpers/approvals-satisfied');
+const { createPrComment } = await import('../../src/helpers/create-pr-comment');
+const { isUserInTeam } = await import('../../src/helpers/is-user-in-team');
+const { context } = await import('@actions/github');
+const { octokit } = await import('../../src/octokit');
+
+  }))
+
+(isUserInTeam as Mock<any>).mockImplementation(({ team }) => {
   return team === 'team';
 });
 (octokit.users.getByUsername as unknown as Mocktokit).mockImplementation(async () => ({
@@ -109,7 +173,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(false);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(false);
       await manageMergeQueue();
     });
 
@@ -150,7 +214,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -192,7 +256,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -245,7 +309,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -290,7 +354,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -335,8 +399,8 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (octokitGraphql as unknown as jest.Mock).mockRejectedValue(new Error('Auto merge is not allowed for this repo'));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (octokitGraphql as unknown as Mock<any>).mockRejectedValue(new Error('Auto merge is not allowed for this repo'));
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -383,7 +447,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -410,7 +474,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
       await manageMergeQueue({ skip_auto_merge: 'true' });
       expect(octokitGraphql).not.toHaveBeenCalled();
     });
@@ -422,7 +486,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
       await manageMergeQueue({ skip_auto_merge: 'false' });
       expect(octokitGraphql).toHaveBeenCalled();
     });
@@ -449,7 +513,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
     });
 
     it('should call updateMergeQueue with correct params', async () => {
@@ -507,7 +571,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
       await manageMergeQueue({ login, slack_webhook_url });
 
       expect(notifyUser).toHaveBeenCalled();
@@ -527,7 +591,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
       await manageMergeQueue({ login, slack_webhook_url });
 
       expect(notifyUser).toHaveBeenCalled();
@@ -552,7 +616,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
       await manageMergeQueue({ login, slack_webhook_url });
 
       expect(notifyUser).not.toHaveBeenCalled();
@@ -570,7 +634,7 @@ describe('manageMergeQueue', () => {
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
         }
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
       await manageMergeQueue({ login });
 
       expect(notifyUser).not.toHaveBeenCalled();
@@ -588,7 +652,7 @@ describe('manageMergeQueue', () => {
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
         }
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
       await manageMergeQueue({ slack_webhook_url });
 
       expect(notifyUser).not.toHaveBeenCalled();
@@ -611,7 +675,7 @@ describe('manageMergeQueue', () => {
       (octokit.users.getByUsername as unknown as Mocktokit).mockImplementation(async () => ({
         data: { email: null }
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
       await manageMergeQueue({ login, slack_webhook_url });
 
       expect(removeLabelIfExists).toHaveBeenCalledWith(READY_FOR_MERGE_PR_LABEL, 123);
@@ -636,7 +700,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -697,7 +761,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
       await manageMergeQueue({
         max_queue_size: '3'
       });
@@ -730,7 +794,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
       await manageMergeQueue({
         max_queue_size: '3'
       });
@@ -766,7 +830,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as jest.Mock).mockResolvedValue(true);
+      (approvalsSatisfied as Mock<any>).mockResolvedValue(true);
       await manageMergeQueue({
         max_queue_size: '3'
       });

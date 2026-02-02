@@ -12,12 +12,15 @@ limitations under the License.
 */
 
 import { SimpleGit } from 'simple-git';
+import { Mock } from 'bun:test';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Mocktokit = jest.MockInstance<any, any[]>;
+export type Mocktokit = Mock<any>;
 
-export type MockSimpleGit = jest.MockedFunction<
-  () => jest.Mocked<Pick<SimpleGit, 'checkoutLocalBranch' | 'add' | 'commit' | 'push' | 'addConfig'>>
-> & {
-  __mockGitInstance: jest.Mocked<Pick<SimpleGit, 'checkoutLocalBranch' | 'add' | 'commit' | 'push' | 'addConfig'>>;
+export type MockSimpleGit = Mock<() => MockedSimpleGit> & {
+  __mockGitInstance: MockedSimpleGit;
+};
+
+type MockedSimpleGit = {
+  [K in 'checkoutLocalBranch' | 'add' | 'commit' | 'push' | 'addConfig']: Mock<any>;
 };
