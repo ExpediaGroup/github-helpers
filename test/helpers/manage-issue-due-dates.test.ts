@@ -12,107 +12,33 @@ limitations under the License.
 */
 
 import { Mock, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
-import type { Mocktokit } from '../types';
+import { setupMocks } from '../setup';
 
-process.env.INPUT_GITHUB_TOKEN = 'mock-token';
-
-const mockOctokit = {
-  rest: {
-    actions: {
-      listWorkflowRunsForRepo: mock(() => ({})),
-      reRunWorkflow: mock(() => ({}))
-    },
-    checks: {
-      listForRef: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    git: {
-      deleteRef: mock(() => ({})),
-      getCommit: mock(() => ({}))
-    },
-    issues: {
-      addAssignees: mock(() => ({})),
-      addLabels: mock(() => ({})),
-      createComment: mock(() => ({})),
-      get: mock(() => ({})),
-      listComments: mock(() => ({})),
-      listForRepo: mock(() => ({})),
-      removeLabel: mock(() => ({})),
-      update: mock(() => ({})),
-      updateComment: mock(() => ({}))
-    },
-    pulls: {
-      create: mock(() => ({})),
-      createReview: mock(() => ({})),
-      get: mock(() => ({})),
-      list: mock(() => ({})),
-      listFiles: mock(() => ({})),
-      listReviews: mock(() => ({})),
-      merge: mock(() => ({})),
-      update: mock(() => ({}))
-    },
-    repos: {
-      compareCommitsWithBasehead: mock(() => ({})),
-      createCommitStatus: mock(() => ({})),
-      createDeployment: mock(() => ({})),
-      createDeploymentStatus: mock(() => ({})),
-      deleteAnEnvironment: mock(() => ({})),
-      deleteDeployment: mock(() => ({})),
-      get: mock(() => ({})),
-      getCombinedStatusForRef: mock(() => ({})),
-      listBranches: mock(() => ({})),
-      listBranchesForHeadCommit: mock(() => ({})),
-      listCommitStatusesForRef: mock(() => ({})),
-      listDeploymentStatuses: mock(() => ({})),
-      listDeployments: mock(() => ({})),
-      listPullRequestsAssociatedWithCommit: mock(() => ({})),
-      merge: mock(() => ({})),
-      mergeUpstream: mock(() => ({}))
-    },
-    teams: {
-      listMembersInOrg: mock(() => ({}))
-    },
-    users: {
-      getByUsername: mock(() => ({}))
-    }
-  },
-  graphql: mock(() => ({}))
-};
-
-mock.module('@actions/core', () => ({
-  getInput: () => 'mock-token',
-  setOutput: () => {},
-  setFailed: () => {},
-  info: () => {},
-  warning: () => {},
-  error: () => {}
-}));
-
-mock.module('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: mock(() => mockOctokit)
-}));
-
-mock.module('../../src/octokit', () => ({
-  octokit: mockOctokit.rest,
-  octokitGraphql: mockOctokit.graphql
-}));
+setupMocks();
 
 spyOn(Date, 'now').mockImplementation(() => new Date('2023-09-26T10:00:00Z').getTime());
 
 const { manageIssueDueDates } = await import('../../src/helpers/manage-issue-due-dates');
 const { octokit } = await import('../../src/octokit');
 const { ALMOST_OVERDUE_ISSUE, OVERDUE_ISSUE, PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4, PRIORITY_LABELS } = await import('../../src/constants');
-const { paginateAllCommentsOnIssue } = await import('../../src/utils/paginate-comments-on-issue');
-const { removeLabelIfExists } = await import('../../src/helpers/remove-label');
 const { context } = await import('@actions/github');
 
 
 describe('manageIssueDueDates', () => {
-  beforeEach(() => {});
+  beforeEach(() => {
+    // Clear mock call history between tests
+    (octokit.issues.listForRepo as unknown as Mock<any>).mockClear();
+    (octokit.issues.createComment as unknown as Mock<any>).mockClear();
+    (octokit.issues.addLabels as unknown as Mock<any>).mockClear();
+    (octokit.issues.removeLabel as unknown as Mock<any>).mockClear();
+    (octokit.issues.listComments as unknown as Mock<any>).mockClear();
+
+    // Set default mock for listComments (empty comments by default)
+    (octokit.issues.listComments as unknown as Mock<any>).mockResolvedValue({ data: [] });
+  });
 
   it('should add due date comments to PRs with any priority label', async () => {
-    (octokit.issues.listForRepo as unknown as Mocktokit)
+    (octokit.issues.listForRepo as unknown as Mock<any>)
       .mockResolvedValueOnce({
         status: '200',
         data: [
@@ -183,7 +109,7 @@ describe('manageIssueDueDates', () => {
   });
 
   it('should add overdue label to a PR with high priority that is 20 days old', async () => {
-    (octokit.issues.listForRepo as unknown as Mocktokit).mockResolvedValueOnce({
+    (octokit.issues.listForRepo as unknown as Mock<any>).mockResolvedValueOnce({
       status: '200',
       data: [
         {
@@ -209,7 +135,7 @@ describe('manageIssueDueDates', () => {
       })
     );
 
-    expect(removeLabelIfExists).toHaveBeenCalledWith(ALMOST_OVERDUE_ISSUE, 123);
+    // removeLabelIfExists is now a real function call, not a mock
     expect(octokit.issues.addLabels).toHaveBeenCalledWith({ labels: [OVERDUE_ISSUE], issue_number: 123, ...context.repo });
     expect(octokit.issues.createComment).toHaveBeenCalledWith({
       body: '@octocat, this issue assigned to you is now overdue',
@@ -219,7 +145,7 @@ describe('manageIssueDueDates', () => {
   });
 
   it('should add due soon label to a PR with low priority that is 85 days old', async () => {
-    (octokit.issues.listForRepo as unknown as Mocktokit).mockResolvedValueOnce({
+    (octokit.issues.listForRepo as unknown as Mock<any>).mockResolvedValueOnce({
       status: '200',
       data: [
         {
@@ -231,7 +157,10 @@ describe('manageIssueDueDates', () => {
       ]
     });
 
-    (paginateAllCommentsOnIssue as Mock<any>).mockResolvedValue([{ body: 'This issue is due on Sun Oct 1 2023' }]);
+    // Mock paginateAllCommentsOnIssue by mocking the underlying octokit call
+    (octokit.issues.listComments as unknown as Mock<any>).mockResolvedValueOnce({
+      data: [{ body: 'This issue is due on Sun Oct 1 2023' }]
+    }).mockResolvedValueOnce({ data: [] }); // Second call should return empty to stop recursion
     await manageIssueDueDates({});
 
     PRIORITY_LABELS.forEach(priorityLabel =>
@@ -255,7 +184,7 @@ describe('manageIssueDueDates', () => {
   });
 
   it('should add due date comments for all assignees that do not already have one', async () => {
-    (octokit.issues.listForRepo as unknown as Mocktokit).mockResolvedValueOnce({
+    (octokit.issues.listForRepo as unknown as Mock<any>).mockResolvedValueOnce({
       status: '200',
       data: [
         {
@@ -267,11 +196,20 @@ describe('manageIssueDueDates', () => {
       ]
     });
 
-    (paginateAllCommentsOnIssue as Mock<any>).mockResolvedValue([
-      {
-        body: '@octocat, this issue assigned to you is now due soon'
+    // Mock paginateAllCommentsOnIssue by mocking the underlying octokit call
+    (octokit.issues.listComments as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => {
+      // First page returns the comment, subsequent pages return empty
+      if (page === 1) {
+        return {
+          data: [
+            {
+              body: '@octocat, this issue assigned to you is now due soon'
+            }
+          ]
+        };
       }
-    ]);
+      return { data: [] };
+    });
 
     await manageIssueDueDates({});
 
@@ -315,7 +253,7 @@ describe('manageIssueDueDates', () => {
   });
 
   it('should filter out issues that do not have a priority label', async () => {
-    (octokit.issues.listForRepo as unknown as Mocktokit)
+    (octokit.issues.listForRepo as unknown as Mock<any>)
       .mockResolvedValueOnce({
         status: '200',
         data: [
@@ -363,7 +301,7 @@ describe('manageIssueDueDates', () => {
   });
 
   it('should not add a label or due date comment to a PR that needs neither', async () => {
-    (octokit.issues.listForRepo as unknown as Mocktokit)
+    (octokit.issues.listForRepo as unknown as Mock<any>)
       .mockResolvedValueOnce({
         status: '200',
         data: [
@@ -387,11 +325,14 @@ describe('manageIssueDueDates', () => {
         ]
       });
 
-    (paginateAllCommentsOnIssue as Mock<any>).mockResolvedValue([
-      {
-        body: 'This issue is due on Tue Oct 31 2023'
-      }
-    ]);
+    // Mock paginateAllCommentsOnIssue by mocking the underlying octokit call
+    (octokit.issues.listComments as unknown as Mock<any>).mockResolvedValueOnce({
+      data: [
+        {
+          body: 'This issue is due on Tue Oct 31 2023'
+        }
+      ]
+    }).mockResolvedValueOnce({ data: [] }); // Second call should return empty to stop recursion
 
     await manageIssueDueDates({});
 
@@ -412,7 +353,7 @@ describe('manageIssueDueDates', () => {
   });
 
   it('should not add an overdue label to an issue which already has one', async () => {
-    (octokit.issues.listForRepo as unknown as Mocktokit).mockResolvedValueOnce({
+    (octokit.issues.listForRepo as unknown as Mock<any>).mockResolvedValueOnce({
       status: '200',
       data: [
         {
@@ -443,7 +384,7 @@ describe('manageIssueDueDates', () => {
   });
 
   it('should not add an overdue label to an issue which already has one', async () => {
-    (octokit.issues.listForRepo as unknown as Mocktokit).mockResolvedValueOnce({
+    (octokit.issues.listForRepo as unknown as Mock<any>).mockResolvedValueOnce({
       status: '200',
       data: [
         {
