@@ -11,58 +11,48 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { describe, it, expect, beforeEach, Mock, mock } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach, Mock, mock, spyOn } from 'bun:test';
 import { setupMocks } from '../setup';
 
 setupMocks();
 
-// Mock isUserInTeam - complex helper
-mock.module('../../src/helpers/is-user-in-team', () => ({
-  isUserInTeam: mock(({ team }: { team: string }) => {
-    return team === 'team';
-  })
-}));
-
-// Mock approvalsSatisfied - complex helper
-mock.module('../../src/helpers/approvals-satisfied', () => ({
-  approvalsSatisfied: mock(() => Promise.resolve(true))
-}));
-
-// Mock updateMergeQueue - utility function
-mock.module('../../src/utils/update-merge-queue', () => ({
-  updateMergeQueue: mock(() => Promise.resolve())
-}));
-
-// Mock updatePrWithDefaultBranch - complex helper
-mock.module('../../src/helpers/prepare-queued-pr-for-merge', () => ({
-  updatePrWithDefaultBranch: mock(() => Promise.resolve())
-}));
-
-// Mock notifyUser - complex helper
-mock.module('../../src/utils/notify-user', () => ({
-  notifyUser: mock(() => Promise.resolve())
-}));
-
 const { JUMP_THE_QUEUE_PR_LABEL, MERGE_QUEUE_STATUS, READY_FOR_MERGE_PR_LABEL } = await import('../../src/constants');
 const { manageMergeQueue } = await import('../../src/helpers/manage-merge-queue');
 const { octokit, octokitGraphql } = await import('../../src/octokit');
-const { updateMergeQueue } = await import('../../src/utils/update-merge-queue');
-const { updatePrWithDefaultBranch } = await import('../../src/helpers/prepare-queued-pr-for-merge');
-const { approvalsSatisfied } = await import('../../src/helpers/approvals-satisfied');
-const { isUserInTeam } = await import('../../src/helpers/is-user-in-team');
-const { notifyUser } = await import('../../src/utils/notify-user');
+const updateMergeQueueModule = await import('../../src/utils/update-merge-queue');
+const prepareQueuedPrForMergeModule = await import('../../src/helpers/prepare-queued-pr-for-merge');
+const approvalsSatisfiedModule = await import('../../src/helpers/approvals-satisfied');
+const isUserInTeamModule = await import('../../src/helpers/is-user-in-team');
+const notifyUserModule = await import('../../src/utils/notify-user');
 const { context } = await import('@actions/github');
 
-(isUserInTeam as unknown as Mock<any>).mockImplementation(({ team }: { team: string }) => {
-  return team === 'team';
-});
-(octokit.users.getByUsername as unknown as Mock<any>).mockImplementation(async () => ({
-  data: { email: 'user@github.com' }
-}));
-
 describe('manageMergeQueue', () => {
+  let isUserInTeamSpy: ReturnType<typeof spyOn>;
+  let approvalsSatisfiedSpy: ReturnType<typeof spyOn>;
+  let updateMergeQueueSpy: ReturnType<typeof spyOn>;
+  let updatePrWithDefaultBranchSpy: ReturnType<typeof spyOn>;
+  let notifyUserSpy: ReturnType<typeof spyOn>;
+
   beforeEach(() => {
     mock.clearAllMocks();
+    isUserInTeamSpy = spyOn(isUserInTeamModule, 'isUserInTeam').mockImplementation(async ({ team }: { team: string }) => {
+      return team === 'team';
+    });
+    approvalsSatisfiedSpy = spyOn(approvalsSatisfiedModule, 'approvalsSatisfied').mockResolvedValue(true);
+    updateMergeQueueSpy = spyOn(updateMergeQueueModule, 'updateMergeQueue').mockResolvedValue([] as any);
+    updatePrWithDefaultBranchSpy = spyOn(prepareQueuedPrForMergeModule, 'updatePrWithDefaultBranch').mockResolvedValue(undefined);
+    notifyUserSpy = spyOn(notifyUserModule, 'notifyUser').mockResolvedValue(undefined);
+    (octokit.users.getByUsername as unknown as Mock<any>).mockImplementation(async () => ({
+      data: { email: 'user@github.com' }
+    }));
+  });
+
+  afterEach(() => {
+    isUserInTeamSpy.mockRestore();
+    approvalsSatisfiedSpy.mockRestore();
+    updateMergeQueueSpy.mockRestore();
+    updatePrWithDefaultBranchSpy.mockRestore();
+    notifyUserSpy.mockRestore();
   });
 
   describe('pr merged case', () => {
@@ -93,7 +83,7 @@ describe('manageMergeQueue', () => {
     });
 
     it('should call updateMergeQueue with correct params', () => {
-      expect(updateMergeQueue).toHaveBeenCalledWith(openPrs);
+      expect(updateMergeQueueModule.updateMergeQueue).toHaveBeenCalledWith(openPrs);
     });
   });
 
@@ -116,7 +106,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(false);
+      approvalsSatisfiedSpy.mockResolvedValue(false);
       await manageMergeQueue();
     });
 
@@ -136,7 +126,7 @@ describe('manageMergeQueue', () => {
     });
 
     it('should call updateMergeQueue with correct params', () => {
-      expect(updateMergeQueue).toHaveBeenCalledWith([openPr]);
+      expect(updateMergeQueueModule.updateMergeQueue).toHaveBeenCalledWith([openPr]);
     });
   });
 
@@ -159,7 +149,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -180,7 +170,7 @@ describe('manageMergeQueue', () => {
     });
 
     it('should call updateMergeQueue with correct params', () => {
-      expect(updateMergeQueue).toHaveBeenCalledWith([openPr]);
+      expect(updateMergeQueueModule.updateMergeQueue).toHaveBeenCalledWith([openPr]);
     });
   });
 
@@ -203,7 +193,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -227,7 +217,7 @@ describe('manageMergeQueue', () => {
     });
 
     it('should not update PR with default branch', () => {
-      expect(updatePrWithDefaultBranch).not.toHaveBeenCalled();
+      expect(prepareQueuedPrForMergeModule.updatePrWithDefaultBranch).not.toHaveBeenCalled();
     });
 
     it('should enable auto-merge', () => {
@@ -258,7 +248,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -282,7 +272,7 @@ describe('manageMergeQueue', () => {
     });
 
     it('should not update PR with default branch', () => {
-      expect(updatePrWithDefaultBranch).not.toHaveBeenCalled();
+      expect(prepareQueuedPrForMergeModule.updatePrWithDefaultBranch).not.toHaveBeenCalled();
     });
 
     it('should enable auto-merge', () => {
@@ -305,7 +295,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -329,7 +319,7 @@ describe('manageMergeQueue', () => {
     });
 
     it('should update PR with default branch', () => {
-      expect(updatePrWithDefaultBranch).toHaveBeenCalledWith(prUnderTest);
+      expect(prepareQueuedPrForMergeModule.updatePrWithDefaultBranch).toHaveBeenCalledWith(prUnderTest);
     });
 
     it('should enable auto-merge', () => {
@@ -353,7 +343,7 @@ describe('manageMergeQueue', () => {
         data: prUnderTest
       }));
       (octokitGraphql as unknown as unknown as Mock<any>).mockRejectedValue(new Error('Auto merge is not allowed for this repo'));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -402,14 +392,14 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
       await manageMergeQueue();
     });
 
     it('should do nothing', () => {
       expect(octokit.issues.addLabels).not.toHaveBeenCalled();
       expect(octokitGraphql).not.toHaveBeenCalled();
-      expect(updateMergeQueue).not.toHaveBeenCalled();
+      expect(updateMergeQueueModule.updateMergeQueue).not.toHaveBeenCalled();
     });
   });
 
@@ -429,7 +419,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
       await manageMergeQueue({ skip_auto_merge: 'true' });
       expect(octokitGraphql).not.toHaveBeenCalled();
     });
@@ -441,7 +431,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
       await manageMergeQueue({ skip_auto_merge: 'false' });
       expect(octokitGraphql).toHaveBeenCalled();
     });
@@ -468,43 +458,43 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
     });
 
     it('should call updateMergeQueue with correct params', async () => {
       await manageMergeQueue();
 
-      expect(isUserInTeam).toHaveBeenCalledTimes(0);
+      expect(isUserInTeamModule.isUserInTeam).toHaveBeenCalledTimes(0);
       expect(octokit.issues.removeLabel).toHaveBeenCalledTimes(0);
       expect(octokit.issues.createComment).toHaveBeenCalledTimes(0);
-      expect(updateMergeQueue).toHaveBeenCalledWith(openPrs);
+      expect(updateMergeQueueModule.updateMergeQueue).toHaveBeenCalledWith(openPrs);
     });
 
     it('should call updateMergeQueue with correct params when not checking maintainers group', async () => {
       await manageMergeQueue({ allow_only_for_maintainers: 'false' });
 
-      expect(isUserInTeam).toHaveBeenCalledTimes(0);
+      expect(isUserInTeamModule.isUserInTeam).toHaveBeenCalledTimes(0);
       expect(octokit.issues.removeLabel).toHaveBeenCalledTimes(0);
       expect(octokit.issues.createComment).toHaveBeenCalledTimes(0);
-      expect(updateMergeQueue).toHaveBeenCalledWith(openPrs);
+      expect(updateMergeQueueModule.updateMergeQueue).toHaveBeenCalledWith(openPrs);
     });
 
     it('should call updateMergeQueue when user in maintainers group', async () => {
       await manageMergeQueue({ team: 'team', allow_only_for_maintainers: 'true' });
 
-      expect(isUserInTeam).toHaveBeenCalled();
+      expect(isUserInTeamModule.isUserInTeam).toHaveBeenCalled();
       expect(octokit.issues.removeLabel).toHaveBeenCalledTimes(0);
       expect(octokit.issues.createComment).toHaveBeenCalledTimes(0);
-      expect(updateMergeQueue).toHaveBeenCalledWith(openPrs);
+      expect(updateMergeQueueModule.updateMergeQueue).toHaveBeenCalledWith(openPrs);
     });
 
     it('should not call updateMergeQueue when user not in maintainers group', async () => {
       await manageMergeQueue({ team: 'not_team', allow_only_for_maintainers: 'true' });
 
-      expect(isUserInTeam).toHaveBeenCalled();
+      expect(isUserInTeamModule.isUserInTeam).toHaveBeenCalled();
       expect(octokit.issues.removeLabel).toHaveBeenCalled();
       expect(octokit.issues.createComment).toHaveBeenCalled();
-      expect(updateMergeQueue).toHaveBeenCalledTimes(0);
+      expect(updateMergeQueueModule.updateMergeQueue).toHaveBeenCalledTimes(0);
     });
   });
 
@@ -526,10 +516,10 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
       await manageMergeQueue({ login, slack_webhook_url });
 
-      expect(notifyUser).toHaveBeenCalled();
+      expect(notifyUserModule.notifyUser).toHaveBeenCalled();
     });
 
     it('should notify user if pr is already queue position 1', async () => {
@@ -546,10 +536,10 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
       await manageMergeQueue({ login, slack_webhook_url });
 
-      expect(notifyUser).toHaveBeenCalled();
+      expect(notifyUserModule.notifyUser).toHaveBeenCalled();
     });
 
     it('should not notify user if queue position greater than 2', async () => {
@@ -571,10 +561,10 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
       await manageMergeQueue({ login, slack_webhook_url });
 
-      expect(notifyUser).not.toHaveBeenCalled();
+      expect(notifyUserModule.notifyUser).not.toHaveBeenCalled();
     });
 
     it('should not notify user if slack_webhook_url not provided', async () => {
@@ -589,10 +579,10 @@ describe('manageMergeQueue', () => {
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
         }
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
       await manageMergeQueue({ login });
 
-      expect(notifyUser).not.toHaveBeenCalled();
+      expect(notifyUserModule.notifyUser).not.toHaveBeenCalled();
     });
 
     it('should not notify user if login not provided', async () => {
@@ -607,10 +597,10 @@ describe('manageMergeQueue', () => {
           labels: [{ name: READY_FOR_MERGE_PR_LABEL }]
         }
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
       await manageMergeQueue({ slack_webhook_url });
 
-      expect(notifyUser).not.toHaveBeenCalled();
+      expect(notifyUserModule.notifyUser).not.toHaveBeenCalled();
     });
 
     it('should remove user from the queue if email not set on user profile and slack_webhook_url/login are provided', async () => {
@@ -630,7 +620,7 @@ describe('manageMergeQueue', () => {
       (octokit.users.getByUsername as unknown as Mock<any>).mockImplementation(async () => ({
         data: { email: null }
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
       await manageMergeQueue({ login, slack_webhook_url });
 
       expect(octokit.issues.removeLabel).toHaveBeenCalledWith({ name: READY_FOR_MERGE_PR_LABEL, issue_number: 123, ...context.repo });
@@ -655,7 +645,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
       await manageMergeQueue();
     });
 
@@ -692,7 +682,7 @@ describe('manageMergeQueue', () => {
     });
 
     it('should call updateMergeQueue with correct params', () => {
-      expect(updateMergeQueue).toHaveBeenCalledWith([prUnderTest, queuedPr]);
+      expect(updateMergeQueueModule.updateMergeQueue).toHaveBeenCalledWith([prUnderTest, queuedPr]);
     });
   });
 
@@ -716,7 +706,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
       await manageMergeQueue({
         max_queue_size: '3'
       });
@@ -749,7 +739,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
       await manageMergeQueue({
         max_queue_size: '3'
       });
@@ -787,7 +777,7 @@ describe('manageMergeQueue', () => {
       (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
         data: prUnderTest
       }));
-      (approvalsSatisfied as unknown as Mock<any>).mockResolvedValue(true);
+      approvalsSatisfiedSpy.mockResolvedValue(true);
       await manageMergeQueue({
         max_queue_size: '3'
       });

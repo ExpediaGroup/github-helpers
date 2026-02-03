@@ -49,6 +49,16 @@ describe('notifyUser', () => {
   const slack_webhook_url = 'https://hooks.slack.com/workflows/1234567890';
   beforeEach(async () => {
     mock.clearAllMocks();
+    // Re-establish mock implementations
+    (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
+      data: { title, html_url }
+    }));
+    (axios.post as unknown as Mock<any>).mockResolvedValue({ data: 'request succeeded' });
+    (octokit.users.getByUsername as unknown as Mock<any>).mockImplementation(async () => ({
+      data: {
+        email: assigneeEmail
+      }
+    }));
     await notifyUser({ login, pull_number, slack_webhook_url });
   });
 
@@ -100,12 +110,7 @@ describe('notifyUser should fail if slack webhook input is invalid', () => {
   const slack_webhook_url = 'https://hooks.slack.com/workflows/1234567890';
 
   beforeEach(async () => {
-    mock.restore();
-    // Clear call history for mocked functions
-    (axios.post as unknown as Mock<any>).mockClear();
-    (octokit.users.getByUsername as unknown as Mock<any>).mockClear();
-    (octokit.pulls.get as unknown as Mock<any>).mockClear();
-    (core.setFailed as unknown as Mock<any>).mockClear();
+    mock.clearAllMocks();
     // Re-establish base mocks
     (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
       data: { title, html_url }

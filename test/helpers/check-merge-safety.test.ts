@@ -29,6 +29,7 @@ const mockGit = {
 
 const simpleGitMock = mock(() => mockGit) as unknown as Mock<any>;
 mock.module('simple-git', () => ({
+  default: simpleGitMock,
   simpleGit: simpleGitMock
 }));
 

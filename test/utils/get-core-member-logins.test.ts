@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { describe, it, expect, beforeEach, mock, Mock } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach, Mock, spyOn } from 'bun:test';
 import { setupMocks } from '../setup';
 
 setupMocks();
@@ -24,16 +24,9 @@ const ownerMap: { [key: string]: { data: { login: string }[] } } = {
   'github-helpers-committers': { data: [{ login: 'user4' }] }
 };
 
-// Mock paginateMembersInOrg
-mock.module('../../src/utils/paginate-members-in-org', () => ({
-  paginateMembersInOrg: mock(async (team: string) => {
-    const teamSlug = team.replace('@ExpediaGroup/', '').replace('ExpediaGroup/', '');
-    return ownerMap[teamSlug]?.data || [];
-  })
-}));
-
 const { getCoreMemberLogins, getRequiredCodeOwnersEntries } = await import('../../src/utils/get-core-member-logins');
 const { octokit } = await import('../../src/octokit');
+const paginateMembersInOrgModule = await import('../../src/utils/paginate-members-in-org');
 
 const file1 = 'file/path/1/file1.txt';
 const file2 = 'file/path/2/file2.ts';
@@ -45,6 +38,19 @@ const pull_number = 123;
 
 describe('getCoreMemberLogins', () => {
   describe('codeowners tests', () => {
+    let paginateMembersInOrgSpy: ReturnType<typeof spyOn>;
+
+    beforeEach(() => {
+      paginateMembersInOrgSpy = spyOn(paginateMembersInOrgModule, 'paginateMembersInOrg').mockImplementation(async (team: string) => {
+        const teamSlug = team.replace('@ExpediaGroup/', '').replace('ExpediaGroup/', '');
+        return (ownerMap[teamSlug]?.data || []) as any;
+      });
+    });
+
+    afterEach(() => {
+      paginateMembersInOrgSpy.mockRestore();
+    });
+
     describe('only some codeowners case', () => {
       beforeEach(() => {
         (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => ({
@@ -175,8 +181,13 @@ describe('getCoreMemberLogins', () => {
 
   describe('specified teams case', () => {
     const teams = ['test-owners-1', 'test-owners-2'];
+    let paginateMembersInOrgSpy: ReturnType<typeof spyOn>;
 
     beforeEach(() => {
+      paginateMembersInOrgSpy = spyOn(paginateMembersInOrgModule, 'paginateMembersInOrg').mockImplementation(async (team: string) => {
+        const teamSlug = team.replace('@ExpediaGroup/', '').replace('ExpediaGroup/', '');
+        return (ownerMap[teamSlug]?.data || []) as any;
+      });
       (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => ({
         data:
           page === 1
@@ -196,6 +207,10 @@ describe('getCoreMemberLogins', () => {
               ]
             : []
       }));
+    });
+
+    afterEach(() => {
+      paginateMembersInOrgSpy.mockRestore();
     });
 
     it('should return expected result', async () => {

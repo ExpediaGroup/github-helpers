@@ -38,7 +38,7 @@ mock.module('simple-git', () => ({
 const { createPr } = await import('../../src/helpers/create-pr');
 const { octokit } = await import('../../src/octokit');
 const { context } = await import('@actions/github');
-const simpleGit = (await import('simple-git')).default;
+const { simpleGit } = await import('simple-git');
 
 (octokit.repos.get as unknown as Mock<any>).mockImplementation(async () => ({
   data: {
