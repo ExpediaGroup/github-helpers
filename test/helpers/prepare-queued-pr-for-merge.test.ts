@@ -11,30 +11,32 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mock, beforeEach, describe, expect, it, mock } from 'bun:test';
+import { Mock, beforeEach, afterEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import { setupMocks } from '../setup';
 import * as core from '@actions/core';
 
 setupMocks();
 
-// Mock removePrFromQueue
-mock.module('../../src/helpers/manage-merge-queue', () => ({
-  removePrFromQueue: mock(() => Promise.resolve()),
-  manageMergeQueue: mock(() => Promise.resolve())
-}));
-
 const { FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } = await import('../../src/constants');
 const { octokit } = await import('../../src/octokit');
 const { prepareQueuedPrForMerge } = await import('../../src/helpers/prepare-queued-pr-for-merge');
-const { removePrFromQueue } = await import('../../src/helpers/manage-merge-queue');
+const manageMergeQueueModule = await import('../../src/helpers/manage-merge-queue');
 const { context } = await import('@actions/github');
 
 describe('prepareQueuedPrForMerge', () => {
+  let removePrFromQueueSpy: ReturnType<typeof spyOn>;
+
   beforeEach(() => {
     mock.clearAllMocks();
 
+    removePrFromQueueSpy = spyOn(manageMergeQueueModule, 'removePrFromQueue' as any).mockImplementation(async () => {});
+
     (octokit.repos.mergeUpstream as unknown as Mock<any>).mockImplementation(async () => ({ some: 'response' }));
     (octokit.repos.merge as unknown as Mock<any>).mockImplementation(async () => ({ some: 'response' }));
+  });
+
+  afterEach(() => {
+    removePrFromQueueSpy.mockRestore();
   });
   const ref = 'branch name';
 
@@ -299,7 +301,7 @@ describe('prepareQueuedPrForMerge', () => {
     });
 
     it('should remove PR from queue and call core.error', () => {
-      expect(removePrFromQueue).toHaveBeenCalledWith(firstInQueue);
+      expect(removePrFromQueueSpy).toHaveBeenCalledWith(firstInQueue);
       expect(core.setFailed).toHaveBeenCalled();
     });
   });
@@ -347,7 +349,7 @@ describe('prepareQueuedPrForMerge', () => {
     });
 
     it('should NOT remove PR from queue and call core.info', () => {
-      expect(removePrFromQueue).not.toHaveBeenCalled();
+      expect(removePrFromQueueSpy).not.toHaveBeenCalled();
       expect(core.info).toHaveBeenCalled();
     });
   });
@@ -395,7 +397,7 @@ describe('prepareQueuedPrForMerge', () => {
     });
 
     it('should remove PR from queue and call core.error', () => {
-      expect(removePrFromQueue).toHaveBeenCalled();
+      expect(removePrFromQueueSpy).toHaveBeenCalled();
       expect(core.setFailed).toHaveBeenCalled();
     });
   });
