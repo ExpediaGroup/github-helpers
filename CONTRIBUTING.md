@@ -23,18 +23,18 @@ where "my-new-feature" describes what you're working on.
 This script will install all dependencies for local development.
 
 ```shell
-npm run setup
+bun setup
 ```
 
 ### 4. If you are creating a new helper
 
 ```shell
-npm run create-helper
+bun create-helper
 ```
 
 ### 5. Add tests for any bug fixes or new functionality
 
-All functions must be tested with a unit test. Please follow the existing convention of one exported function per file with a corresponding file to test it. Run tests using `npm run test`, or using the [Jest CLI](https://jestjs.io/docs/cli).
+All functions must be tested with a unit test. Please follow the existing convention of one exported function per file with a corresponding file to test it. Run tests using `bun test`.
 
 There are also integration tests present in the [workflow](./.github/workflows) directory, which will actually run each Github Action using the code from this repository. This allows you to test your changes right within the pull request you make.
 
