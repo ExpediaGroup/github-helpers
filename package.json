@@ -9,7 +9,7 @@
     "@actions/github": "9.0.0",
     "@adobe/node-fetch-retry": "2.2.0",
     "@octokit/graphql-schema": "15.26.1",
-    "axios": "1.13.2",
+    "axios": "1.13.4",
     "bluebird": "3.7.2",
     "codeowners-utils": "1.0.2",
     "js-yaml": "4.1.1",
@@ -32,10 +32,10 @@
     "@vercel/ncc": "0.38.4",
     "eslint": "9.39.2",
     "husky": "9.1.7",
-    "plop": "4.0.4",
+    "plop": "4.0.5",
     "prettier": "3.8.1",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.53.1"
+    "typescript-eslint": "8.54.0"
   },
   "scripts": {
     "create-helper": "plop helper --force",
