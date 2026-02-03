@@ -11,28 +11,38 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { describe, it, expect, beforeEach, mock } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach, mock, spyOn } from 'bun:test';
 import { setupMocks } from '../setup';
 
 setupMocks();
 
-// Mock getCoreMemberLogins
-mock.module('../../src/utils/get-core-member-logins', () => ({
-  getCoreMemberLogins: mock(() => Promise.resolve(['user1', 'user2', 'user3', 'user4', 'user5'])),
-  getRequiredCodeOwnersEntries: mock(() => Promise.resolve([]))
-}));
-
 const { CORE_APPROVED_PR_LABEL, PEER_APPROVED_PR_LABEL } = await import('../../src/constants');
 const { addPrApprovalLabel } = await import('../../src/helpers/add-pr-approval-label');
 const { context } = await import('@actions/github');
-const { getCoreMemberLogins } = await import('../../src/utils/get-core-member-logins');
+const getCoreMemberLoginsModule = await import('../../src/utils/get-core-member-logins');
 const { octokit } = await import('../../src/octokit');
 
 const teams = 'team1\nteam2';
 
 describe('addPrApprovalLabel', () => {
+  let getCoreMemberLoginsSpy: ReturnType<typeof spyOn>;
+  let getRequiredCodeOwnersEntriesSpy: ReturnType<typeof spyOn>;
+
   beforeEach(() => {
     mock.clearAllMocks();
+    getCoreMemberLoginsSpy = spyOn(getCoreMemberLoginsModule, 'getCoreMemberLogins').mockResolvedValue([
+      'user1',
+      'user2',
+      'user3',
+      'user4',
+      'user5'
+    ]);
+    getRequiredCodeOwnersEntriesSpy = spyOn(getCoreMemberLoginsModule, 'getRequiredCodeOwnersEntries').mockResolvedValue([]);
+  });
+
+  afterEach(() => {
+    getCoreMemberLoginsSpy.mockRestore();
+    getRequiredCodeOwnersEntriesSpy.mockRestore();
   });
 
   describe('core approver case', () => {
@@ -46,7 +56,7 @@ describe('addPrApprovalLabel', () => {
     });
 
     it('should call getCoreMemberLogins with correct params', () => {
-      expect(getCoreMemberLogins).toHaveBeenCalledWith({ pull_number: 123, teams: ['team1', 'team2'] });
+      expect(getCoreMemberLoginsModule.getCoreMemberLogins).toHaveBeenCalledWith({ pull_number: 123, teams: ['team1', 'team2'] });
     });
 
     it('should add core approved label to the pr', () => {

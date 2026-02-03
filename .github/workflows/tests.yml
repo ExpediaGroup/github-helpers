@@ -47,8 +47,7 @@ jobs:
         run: bun lint
 
       - name: Run Unit Tests
-        run: |
-          SEED=${RANDOM} && echo "Running tests with seed: $SEED" && bun test --seed $SEED
+        run: bun test
 
       - name: Package
         run: bun package

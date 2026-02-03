@@ -11,23 +11,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { describe, it, expect, beforeEach, Mock, mock } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach, mock, spyOn } from 'bun:test';
 import { setupMocks } from '../setup';
 
 setupMocks();
 
-// Mock getRequiredCodeOwnersEntries
-mock.module('../../src/utils/get-core-member-logins', () => ({
-  getRequiredCodeOwnersEntries: mock(() => Promise.resolve([])),
-  getCoreMemberLogins: mock(() => Promise.resolve([]))
-}));
-
 const { areReviewersRequired } = await import('../../src/helpers/are-reviewers-required');
-const { getRequiredCodeOwnersEntries } = await import('../../src/utils/get-core-member-logins');
+const getCoreMemberLoginsModule = await import('../../src/utils/get-core-member-logins');
 
 describe('AreReviewersRequired', () => {
+  let getRequiredCodeOwnersEntriesSpy: ReturnType<typeof spyOn>;
+  let getCoreMemberLoginsSpy: ReturnType<typeof spyOn>;
+
   beforeEach(() => {
-    (getRequiredCodeOwnersEntries as unknown as Mock<any>).mockResolvedValue([{ owners: ['@ExpediaGroup/team1', '@ExpediaGroup/team2'] }]);
+    mock.clearAllMocks();
+    getRequiredCodeOwnersEntriesSpy = spyOn(getCoreMemberLoginsModule, 'getRequiredCodeOwnersEntries').mockResolvedValue([
+      { owners: ['@ExpediaGroup/team1', '@ExpediaGroup/team2'] }
+    ] as any);
+    getCoreMemberLoginsSpy = spyOn(getCoreMemberLoginsModule, 'getCoreMemberLogins').mockResolvedValue([]);
+  });
+
+  afterEach(() => {
+    getRequiredCodeOwnersEntriesSpy.mockRestore();
+    getCoreMemberLoginsSpy.mockRestore();
   });
 
   it('should return true when all teams are required reviewers', async () => {
