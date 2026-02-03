@@ -11,26 +11,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { describe, it, expect, mock } from 'bun:test';
-import type { Mock } from 'bun:test';
+import { afterEach, beforeEach, describe, it, expect, mock, spyOn } from 'bun:test';
+import { setupMocks } from '../setup';
 
-process.env.INPUT_GITHUB_TOKEN = 'mock-token';
-
-const mockGetInput = mock((input: string) => (input === 'input2' ? '' : input));
-const mockGetInputsFromFile = mock(() => []);
-
-mock.module('@actions/core', () => ({
-  getInput: mockGetInput,
-  setOutput: () => {},
-  setFailed: () => {},
-  info: () => {},
-  warning: () => {},
-  error: () => {}
-}));
-
-mock.module('../../src/utils/get-inputs-from-file', () => ({
-  getInputsFromFile: mockGetInputsFromFile
-}));
+setupMocks();
 
 mock.module('fs', () => ({
   promises: {
@@ -43,17 +27,21 @@ mock.module('fs', () => ({
 
 const { getActionInputs } = await import('../../src/utils/get-action-inputs');
 const { getInput } = await import('@actions/core');
-const { getInputsFromFile } = await import('../../src/utils/get-inputs-from-file');
+const getInputsFromFileModule = await import('../../src/utils/get-inputs-from-file');
 
 describe('getActionInputs', () => {
   const requiredInputs = ['input1'];
 
-  afterEach(() => {
+  beforeEach(() => {
     mock.clearAllMocks();
   });
 
+  afterEach(() => {
+    mock.restore();
+  });
+
   it('should call getInput with correct params and return expected inputs', () => {
-    (getInputsFromFile as Mock<any>).mockReturnValue(['input1', 'input2', 'input3']);
+    const spy = spyOn(getInputsFromFileModule, 'getInputsFromFile').mockReturnValue(['input1', 'input2', 'input3']);
     const result = getActionInputs(requiredInputs);
 
     expect(getInput).toHaveBeenCalledWith('input1', { required: true });
@@ -63,10 +51,11 @@ describe('getActionInputs', () => {
       input1: 'input1',
       input3: 'input3'
     });
+    spy.mockRestore();
   });
 
   it('should call getInput with trimWhiteSpace false for delimiter input', () => {
-    (getInputsFromFile as Mock<any>).mockReturnValue(['input1', 'input2', 'delimiter']);
+    const spy = spyOn(getInputsFromFileModule, 'getInputsFromFile').mockReturnValue(['input1', 'input2', 'delimiter']);
     const result = getActionInputs(requiredInputs);
 
     expect(getInput).toHaveBeenCalledWith('input1', { required: true });
@@ -76,5 +65,6 @@ describe('getActionInputs', () => {
       input1: 'input1',
       delimiter: 'delimiter'
     });
+    spy.mockRestore();
   });
 });
