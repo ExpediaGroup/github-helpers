@@ -33,7 +33,7 @@ describe('notify-pipeline-complete', () => {
   const description = 'Pipeline clear.';
 
   beforeEach(() => {
-    mock.clearAllMocks()
+    mock.clearAllMocks();
   });
 
   it('should notify that the pipeline is clear', async () => {

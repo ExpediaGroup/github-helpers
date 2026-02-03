@@ -26,7 +26,7 @@ const core = await import('@actions/core');
 
 describe('getEmailOnUserProfile', () => {
   beforeEach(() => {
-    mock.clearAllMocks()
+    mock.clearAllMocks();
   });
   it('should retrieve user email', async () => {
     const result = await getEmailOnUserProfile({ login: 'example' });

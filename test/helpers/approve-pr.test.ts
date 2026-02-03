@@ -20,7 +20,6 @@ const { approvePr } = await import('../../src/helpers/approve-pr');
 const { octokit } = await import('../../src/octokit');
 const { context } = await import('@actions/github');
 
-
 describe('approvePr', () => {
   beforeEach(() => {
     approvePr();

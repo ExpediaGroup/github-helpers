@@ -25,7 +25,6 @@ mock.module('../../src/utils/get-core-member-logins', () => ({
 const { areReviewersRequired } = await import('../../src/helpers/are-reviewers-required');
 const { getRequiredCodeOwnersEntries } = await import('../../src/utils/get-core-member-logins');
 
-
 describe('AreReviewersRequired', () => {
   beforeEach(() => {
     (getRequiredCodeOwnersEntries as unknown as Mock<any>).mockResolvedValue([{ owners: ['@ExpediaGroup/team1', '@ExpediaGroup/team2'] }]);

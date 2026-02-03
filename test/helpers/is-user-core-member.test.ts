@@ -29,7 +29,7 @@ describe('isUserCoreMember', () => {
   const pull_number = '123';
 
   beforeEach(() => {
-    mock.clearAllMocks()
+    mock.clearAllMocks();
   });
 
   it('should call isUserCoreMember with correct params and find user as core member', async () => {

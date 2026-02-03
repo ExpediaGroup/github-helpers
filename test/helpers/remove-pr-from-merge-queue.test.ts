@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { beforeEach, describe, expect, it, mock, spyOn, Mock } from 'bun:test';
+import { beforeEach, describe, expect, it, spyOn, Mock } from 'bun:test';
 import { setupMocks } from '../setup';
 
 setupMocks();
@@ -23,27 +23,31 @@ const { octokit } = await import('../../src/octokit');
 const { removePrFromMergeQueue } = await import('../../src/helpers/remove-pr-from-merge-queue');
 const { context } = await import('@actions/github');
 
-
-(octokit.pulls.list as unknown as Mock<any>).mockImplementation(async () => ({
-  data: [
-    {
-      head: { sha: 'wrong sha' },
-      number: 456,
-      labels: [{ name: 'test label' }]
-    },
-    {
-      number: 12345,
-      head: { sha: 'correct sha' },
-      labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: FIRST_QUEUED_PR_LABEL }]
-    }
-  ]
-}));
-
 describe('removePrFromMergeQueue', () => {
   const seconds = '3600';
 
   beforeEach(() => {
-    mock.clearAllMocks();
+    // Clear specific mocks instead of all mocks globally
+    (octokit.pulls.list as unknown as Mock<any>).mockClear();
+    (octokit.issues.removeLabel as unknown as Mock<any>).mockClear();
+    (octokit.issues.addLabels as unknown as Mock<any>).mockClear();
+    (octokit.repos.listCommitStatusesForRef as unknown as Mock<any>).mockClear();
+    (octokit.repos.createCommitStatus as unknown as Mock<any>).mockClear();
+    // Re-establish mock implementation for pulls.list
+    (octokit.pulls.list as unknown as Mock<any>).mockImplementation(async () => ({
+      data: [
+        {
+          head: { sha: 'wrong sha' },
+          number: 456,
+          labels: [{ name: 'test label' }]
+        },
+        {
+          number: 12345,
+          head: { sha: 'correct sha' },
+          labels: [{ name: READY_FOR_MERGE_PR_LABEL }, { name: FIRST_QUEUED_PR_LABEL }]
+        }
+      ]
+    }));
   });
 
   describe('should remove pr case', () => {

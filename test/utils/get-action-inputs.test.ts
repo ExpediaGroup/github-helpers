@@ -49,7 +49,7 @@ describe('getActionInputs', () => {
   const requiredInputs = ['input1'];
 
   beforeEach(() => {
-    mock.clearAllMocks()
+    mock.clearAllMocks();
   });
 
   it('should call getInput with correct params and return expected inputs', () => {

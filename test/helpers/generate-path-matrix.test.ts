@@ -20,7 +20,6 @@ const { generatePathMatrix } = await import('../../src/helpers/generate-path-mat
 const { octokit } = await import('../../src/octokit');
 const { context } = await import('@actions/github');
 
-
 const file1 = 'file/path/1/file1.txt';
 const file2 = 'packages/abc/file1.ts';
 const file3 = 'packages/def/file1.txt';

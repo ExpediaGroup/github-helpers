@@ -52,7 +52,7 @@ const sha = 'sha';
     base: { repo: { default_branch: defaultBranch, owner: { login: baseOwner }, html_url: baseRepoHtmlUrl }, sha: baseSha },
     head: { sha, ref: branchName, user: { login: username }, repo: { html_url: headRepoHtmlUrl } }
   }
-}))
+}));
 
 type MockGithubRequests = (
   filesOutOfDate: string[],
@@ -107,7 +107,7 @@ const allProjectPaths = ['packages/package-1/', 'packages/package-2/', 'packages
 
 describe('checkMergeSafety', () => {
   beforeEach(() => {
-    mock.clearAllMocks()
+    mock.clearAllMocks();
   });
 
   it('should prevent merge when branch is out of date for a changed project', async () => {
@@ -458,27 +458,29 @@ describe('checkMergeSafety', () => {
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     context.issue.number = undefined as unknown as number; // couldn't figure out a way to mock out this issue number in a cleaner way ¯\_(ツ)_/¯
     // Mock octokit.pulls.list for paginateAllOpenPullRequests
-    (octokit.pulls.list as unknown as Mock<any>).mockResolvedValueOnce({
-      data: [
-        {
-          head: { sha: '123', ref: branchName, user: { login: username } },
-          base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }
-        },
-        {
-          head: { sha: '456', ref: branchName, user: { login: username } },
-          base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }
-        },
-        {
-          head: { sha: '789', ref: branchName, user: { login: username } },
-          base: { ref: 'some-other-branch', repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }
-        },
-        {
-          head: { sha: '000', ref: branchName, user: { login: username } },
-          base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } },
-          draft: true
-        }
-      ]
-    }).mockResolvedValueOnce({ data: [] }); // Second call should return empty to stop recursion
+    (octokit.pulls.list as unknown as Mock<any>)
+      .mockResolvedValueOnce({
+        data: [
+          {
+            head: { sha: '123', ref: branchName, user: { login: username } },
+            base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }
+          },
+          {
+            head: { sha: '456', ref: branchName, user: { login: username } },
+            base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }
+          },
+          {
+            head: { sha: '789', ref: branchName, user: { login: username } },
+            base: { ref: 'some-other-branch', repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }
+          },
+          {
+            head: { sha: '000', ref: branchName, user: { login: username } },
+            base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } },
+            draft: true
+          }
+        ]
+      })
+      .mockResolvedValueOnce({ data: [] }); // Second call should return empty to stop recursion
     await checkMergeSafety({
       paths: allProjectPaths,
       ...context.repo

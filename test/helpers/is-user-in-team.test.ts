@@ -20,15 +20,16 @@ const { isUserInTeam } = await import('../../src/helpers/is-user-in-team');
 const { octokit } = await import('../../src/octokit');
 const { context } = await import('@actions/github');
 
-
-(octokit.teams.listMembersInOrg as unknown as Mock<any>).mockImplementation(async ({ page, team_slug }: { page: number; team_slug: string }) => {
-  if (page === 1) {
-    return {
-      data: team_slug === 'users' ? [{ login: 'octocat' }, { login: 'admin' }] : [{ login: 'admin' }]
-    };
+(octokit.teams.listMembersInOrg as unknown as Mock<any>).mockImplementation(
+  async ({ page, team_slug }: { page: number; team_slug: string }) => {
+    if (page === 1) {
+      return {
+        data: team_slug === 'users' ? [{ login: 'octocat' }, { login: 'admin' }] : [{ login: 'admin' }]
+      };
+    }
+    return { data: [] };
   }
-  return { data: [] };
-});
+);
 
 describe('isUserInTeam', () => {
   const login = 'octocat';

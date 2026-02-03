@@ -51,7 +51,7 @@ describe('assignPrReviewer', () => {
   const pull_number = 123;
 
   beforeEach(() => {
-    mock.clearAllMocks()
+    mock.clearAllMocks();
   });
 
   describe('login provided', () => {

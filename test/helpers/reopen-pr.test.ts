@@ -20,7 +20,6 @@ const { reopenPr } = await import('../../src/helpers/reopen-pr');
 const { octokit } = await import('../../src/octokit');
 const { context } = await import('@actions/github');
 
-
 describe('reopenPr', () => {
   beforeEach(() => {
     reopenPr();

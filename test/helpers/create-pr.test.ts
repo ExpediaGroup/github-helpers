@@ -54,7 +54,7 @@ const simpleGit = (await import('simple-git')).default;
 
 describe('createPr', () => {
   beforeEach(() => {
-    mock.clearAllMocks()
+    mock.clearAllMocks();
   });
   const title = 'title';
   const body = 'body';

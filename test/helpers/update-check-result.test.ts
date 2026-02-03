@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { describe, it, expect, beforeEach, mock, Mock } from 'bun:test';
+import { describe, it, expect, beforeEach, Mock } from 'bun:test';
 import { setupMocks } from '../setup';
 
 setupMocks();

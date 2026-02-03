@@ -21,7 +21,6 @@ const { getMergeQueuePosition } = await import('../../src/helpers/get-merge-queu
 const { octokitGraphql } = await import('../../src/octokit');
 const { context } = await import('@actions/github');
 
-
 type RecursivePartial<T> = {
   [P in keyof T]?: RecursivePartial<T[P]>;
 };

@@ -42,7 +42,6 @@ mock.module('../../src/utils/get-core-member-logins', () => ({
 const { approvalsSatisfied } = await import('../../src/helpers/approvals-satisfied');
 const { octokit } = await import('../../src/octokit');
 const { getRequiredCodeOwnersEntries } = await import('../../src/utils/get-core-member-logins');
-const { paginateMembersInOrg } = await import('../../src/utils/paginate-members-in-org');
 const core = await import('@actions/core');
 
 const mockPagination = (result: unknown) => {

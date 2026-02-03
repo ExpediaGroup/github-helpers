@@ -18,20 +18,21 @@ setupMocks();
 
 // Mock paginateAllOpenPullRequests
 mock.module('../../src/utils/paginate-open-pull-requests', () => ({
-  paginateAllOpenPullRequests: mock(() => Promise.resolve([
-    { head: { ref: 'branch-with-open-pr' } },
-    { head: { ref: 'some-other-branch' } }
-  ]))
+  paginateAllOpenPullRequests: mock(() =>
+    Promise.resolve([{ head: { ref: 'branch-with-open-pr' } }, { head: { ref: 'some-other-branch' } }])
+  )
 }));
 
 // Mock paginateAllBranches
 mock.module('../../src/utils/paginate-all-branches', () => ({
-  paginateAllBranches: mock(() => Promise.resolve([
-    { name: 'main', commit: { sha: 'sha1' } },
-    { name: 'new-branch-no-open-pr', commit: { sha: 'sha2' } },
-    { name: 'old-branch-with-no-open-pr', commit: { sha: 'sha3' } },
-    { name: 'branch-with-open-pr', commit: { sha: 'sha4' } }
-  ]))
+  paginateAllBranches: mock(() =>
+    Promise.resolve([
+      { name: 'main', commit: { sha: 'sha1' } },
+      { name: 'new-branch-no-open-pr', commit: { sha: 'sha2' } },
+      { name: 'old-branch-with-no-open-pr', commit: { sha: 'sha3' } },
+      { name: 'branch-with-open-pr', commit: { sha: 'sha4' } }
+    ])
+  )
 }));
 
 // Mock getDefaultBranch

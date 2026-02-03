@@ -157,9 +157,11 @@ describe('getChangedFiles', () => {
   it('should handle merge queue case', async () => {
     context.eventName = 'merge_group';
     context.ref = 'refs/heads/gh-readonly-queue/default-branch/pr-12345-f0d9a4cb862b13cdaab6522f72d6dc17e4336b7f';
-    (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async ({ page, pull_number }: { page: number; pull_number: number }) => ({
-      data: pull_number === 12345 && page === 1 ? mock_data4 : []
-    }));
+    (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(
+      async ({ page, pull_number }: { page: number; pull_number: number }) => ({
+        data: pull_number === 12345 && page === 1 ? mock_data4 : []
+      })
+    );
     const result = await getChangedFiles({});
 
     expect(result).toEqual([mock_data4[0].filename, mock_data4[1].filename, mock_data4[1].previous_filename].join(','));

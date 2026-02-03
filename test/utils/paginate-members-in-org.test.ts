@@ -22,35 +22,37 @@ const { octokit } = await import('../../src/octokit');
 describe('paginateMembersInOrg', () => {
   beforeEach(() => {
     // Set up mock implementation for listMembersInOrg
-    (octokit.teams.listMembersInOrg as unknown as Mock<any>).mockImplementation(async ({ team_slug, page = 1 }: { team_slug: string; page: number }) => {
-      if (team_slug === 'empty-team') {
+    (octokit.teams.listMembersInOrg as unknown as Mock<any>).mockImplementation(
+      async ({ team_slug, page = 1 }: { team_slug: string; page: number }) => {
+        if (team_slug === 'empty-team') {
+          return { data: [] };
+        }
+
+        if (team_slug === 'small-team') {
+          return {
+            data: [
+              { login: 'user1', id: 1 },
+              { login: 'user2', id: 2 },
+              { login: 'user3', id: 3 }
+            ]
+          };
+        }
+
+        if (team_slug === 'large-team') {
+          // Simulate pagination - return 100 items for first two pages, 50 for third
+          const startId = (page - 1) * 100;
+          const count = page <= 2 ? 100 : 50;
+          return {
+            data: Array.from({ length: count }, (_, i) => ({
+              login: `user${startId + i}`,
+              id: startId + i
+            }))
+          };
+        }
+
         return { data: [] };
       }
-
-      if (team_slug === 'small-team') {
-        return {
-          data: [
-            { login: 'user1', id: 1 },
-            { login: 'user2', id: 2 },
-            { login: 'user3', id: 3 }
-          ]
-        };
-      }
-
-      if (team_slug === 'large-team') {
-        // Simulate pagination - return 100 items for first two pages, 50 for third
-        const startId = (page - 1) * 100;
-        const count = page <= 2 ? 100 : 50;
-        return {
-          data: Array.from({ length: count }, (_, i) => ({
-            login: `user${startId + i}`,
-            id: startId + i
-          }))
-        };
-      }
-
-      return { data: [] };
-    });
+    );
   });
 
   describe('return all team members', () => {

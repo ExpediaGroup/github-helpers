@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { describe, it, expect, beforeEach, Mock, mock } from 'bun:test';
+import { describe, it, expect, beforeEach, mock } from 'bun:test';
 import { setupMocks } from '../setup';
 
 setupMocks();
@@ -20,10 +20,9 @@ const { closePr } = await import('../../src/helpers/close-pr');
 const { octokit } = await import('../../src/octokit');
 const { context } = await import('@actions/github');
 
-
 describe('closePr', () => {
   beforeEach(() => {
-    mock.clearAllMocks()
+    mock.clearAllMocks();
   });
   describe('without comment in the same PR', () => {
     beforeEach(() => {

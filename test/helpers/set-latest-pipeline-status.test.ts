@@ -21,7 +21,6 @@ const { octokit } = await import('../../src/octokit');
 const { setLatestPipelineStatus } = await import('../../src/helpers/set-latest-pipeline-status');
 const { context } = await import('@actions/github');
 
-
 const deployment_id = 123;
 (octokit.repos.listDeployments as unknown as Mock<any>).mockImplementation(async () => ({
   data: [

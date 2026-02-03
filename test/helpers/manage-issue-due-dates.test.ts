@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mock, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
+import { Mock, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import { setupMocks } from '../setup';
 
 setupMocks();
@@ -20,9 +20,9 @@ spyOn(Date, 'now').mockImplementation(() => new Date('2023-09-26T10:00:00Z').get
 
 const { manageIssueDueDates } = await import('../../src/helpers/manage-issue-due-dates');
 const { octokit } = await import('../../src/octokit');
-const { ALMOST_OVERDUE_ISSUE, OVERDUE_ISSUE, PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4, PRIORITY_LABELS } = await import('../../src/constants');
+const { ALMOST_OVERDUE_ISSUE, OVERDUE_ISSUE, PRIORITY_1, PRIORITY_2, PRIORITY_3, PRIORITY_4, PRIORITY_LABELS } =
+  await import('../../src/constants');
 const { context } = await import('@actions/github');
-
 
 describe('manageIssueDueDates', () => {
   beforeEach(() => {
@@ -158,9 +158,11 @@ describe('manageIssueDueDates', () => {
     });
 
     // Mock paginateAllCommentsOnIssue by mocking the underlying octokit call
-    (octokit.issues.listComments as unknown as Mock<any>).mockResolvedValueOnce({
-      data: [{ body: 'This issue is due on Sun Oct 1 2023' }]
-    }).mockResolvedValueOnce({ data: [] }); // Second call should return empty to stop recursion
+    (octokit.issues.listComments as unknown as Mock<any>)
+      .mockResolvedValueOnce({
+        data: [{ body: 'This issue is due on Sun Oct 1 2023' }]
+      })
+      .mockResolvedValueOnce({ data: [] }); // Second call should return empty to stop recursion
     await manageIssueDueDates({});
 
     PRIORITY_LABELS.forEach(priorityLabel =>
@@ -326,13 +328,15 @@ describe('manageIssueDueDates', () => {
       });
 
     // Mock paginateAllCommentsOnIssue by mocking the underlying octokit call
-    (octokit.issues.listComments as unknown as Mock<any>).mockResolvedValueOnce({
-      data: [
-        {
-          body: 'This issue is due on Tue Oct 31 2023'
-        }
-      ]
-    }).mockResolvedValueOnce({ data: [] }); // Second call should return empty to stop recursion
+    (octokit.issues.listComments as unknown as Mock<any>)
+      .mockResolvedValueOnce({
+        data: [
+          {
+            body: 'This issue is due on Tue Oct 31 2023'
+          }
+        ]
+      })
+      .mockResolvedValueOnce({ data: [] }); // Second call should return empty to stop recursion
 
     await manageIssueDueDates({});
 

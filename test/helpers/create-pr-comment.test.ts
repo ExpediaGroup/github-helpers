@@ -20,7 +20,6 @@ const { createPrComment } = await import('../../src/helpers/create-pr-comment');
 const { octokit } = await import('../../src/octokit');
 const { context } = await import('@actions/github');
 
-
 (octokit.issues.listComments as unknown as Mock<any>).mockImplementation(async () => ({
   data: [
     {
@@ -52,7 +51,7 @@ const { context } = await import('@actions/github');
 
 describe('createPrComment', () => {
   beforeEach(() => {
-    mock.clearAllMocks()
+    mock.clearAllMocks();
   });
 
   describe('create comment in same PR', () => {
