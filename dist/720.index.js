@@ -11,8 +11,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   closePr: () => (/* binding */ closePr)
 /* harmony export */ });
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8428);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6474);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6590);
 /* harmony import */ var _create_pr_comment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9280);
 /*
@@ -41,9 +40,9 @@ const closePr = async ({ body, pull_number, repo_name, repo_owner_name } = {}) =
         await (0,_create_pr_comment__WEBPACK_IMPORTED_MODULE_2__.createPrComment)({ body, pull_number, repo_name, repo_owner_name });
     }
     return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.pulls.update({
-        pull_number: pull_number ? Number(pull_number) : _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number,
-        repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo,
-        owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner,
+        pull_number: pull_number ? Number(pull_number) : _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.issue.number,
+        repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.repo,
+        owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.owner,
         state: 'closed'
     });
 };
@@ -60,8 +59,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   createPrComment: () => (/* binding */ createPrComment)
 /* harmony export */ });
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8428);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6474);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6590);
 /*
 Copyright 2021 Expedia, Inc.
@@ -86,8 +84,8 @@ const getFirstPrByCommit = async (sha, repo_name, repo_owner_name) => {
     const prs = (sha &&
         (await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.repos.listPullRequestsAssociatedWithCommit({
             commit_sha: sha,
-            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo,
-            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.owner
         }))) ||
         emptyResponse;
     return prs.data.find(Boolean)?.number;
@@ -95,21 +93,21 @@ const getFirstPrByCommit = async (sha, repo_name, repo_owner_name) => {
 const getCommentByUser = async (login, pull_number, repo_name, repo_owner_name) => {
     const comments = (login &&
         (await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.issues.listComments({
-            issue_number: pull_number ? Number(pull_number) : _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number,
-            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo,
-            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner
+            issue_number: pull_number ? Number(pull_number) : _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.issue.number,
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.owner
         }))) ||
         emptyResponse;
     return comments.data.find(comment => comment?.user?.login === login)?.id;
 };
 const createPrComment = async ({ body, sha, login, pull_number, repo_name, repo_owner_name }) => {
-    const defaultPrNumber = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number;
+    const defaultPrNumber = _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.issue.number;
     if (!sha && !login) {
         return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.issues.createComment({
             body,
             issue_number: pull_number ? Number(pull_number) : defaultPrNumber,
-            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo,
-            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.owner
         });
     }
     const prNumber = (await getFirstPrByCommit(sha, repo_name, repo_owner_name)) ?? (pull_number ? Number(pull_number) : defaultPrNumber);
@@ -118,16 +116,16 @@ const createPrComment = async ({ body, sha, login, pull_number, repo_name, repo_
         return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.issues.updateComment({
             comment_id: commentId,
             body,
-            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo,
-            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.owner
         });
     }
     else {
         return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.issues.createComment({
             body,
             issue_number: prNumber,
-            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo,
-            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.owner
         });
     }
 };
@@ -142,12 +140,10 @@ const createPrComment = async ({ body, sha, login, pull_number, repo_name, repo_
 /* harmony export */   A: () => (/* binding */ octokit),
 /* harmony export */   n: () => (/* binding */ octokitGraphql)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1806);
 /* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6474);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -163,8 +159,8 @@ limitations under the License.
 
 
 
-const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true });
-const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
+const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .getInput */ .V4('github_token', { required: true });
+const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__/* .getOctokit */ .Q)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
 
 
 /***/ }),

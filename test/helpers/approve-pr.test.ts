@@ -11,15 +11,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { approvePr } from '../../src/helpers/approve-pr';
-import { context } from '@actions/github';
-import { octokit } from '../../src/octokit';
+import { describe, it, expect, beforeEach } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({ rest: { pulls: { createReview: jest.fn() } } }))
-}));
+setupMocks();
+
+const { approvePr } = await import('../../src/helpers/approve-pr');
+const { octokit } = await import('../../src/octokit');
+const { context } = await import('@actions/github');
 
 describe('approvePr', () => {
   beforeEach(() => {

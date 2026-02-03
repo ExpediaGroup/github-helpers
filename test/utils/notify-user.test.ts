@@ -11,40 +11,50 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mocktokit } from '../types';
-import axios from 'axios';
-import { context } from '@actions/github';
-import { notifyUser } from '../../src/utils/notify-user';
-import { octokit } from '../../src/octokit';
-import { setFailed } from '@actions/core';
+import { describe, it, expect, beforeEach, Mock, mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('../../src/helpers/create-pr-comment');
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      pulls: { get: jest.fn() },
-      users: { getByUsername: jest.fn() }
-    }
-  }))
+setupMocks();
+
+// Mock axios
+const axiosPostMock = mock(() => Promise.resolve({ data: 'request succeeded' }));
+mock.module('axios', () => ({
+  default: {
+    post: axiosPostMock
+  }
 }));
-jest.mock('axios');
+
+const { notifyUser } = await import('../../src/utils/notify-user');
+const { octokit } = await import('../../src/octokit');
+const { context } = await import('@actions/github');
+const core = await import('@actions/core');
+const axios = (await import('axios')).default;
 
 const login = 'octocat';
 const assigneeEmail = 'assignee@github.com';
 const title = 'title';
 const html_url = 'url';
-(octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+(octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
   data: { title, html_url }
 }));
-(axios.post as jest.Mock).mockResolvedValue({ data: 'request succeeded' });
+(axios.post as unknown as Mock<any>).mockResolvedValue({ data: 'request succeeded' });
+(octokit.users.getByUsername as unknown as Mock<any>).mockImplementation(async () => ({
+  data: {
+    email: assigneeEmail
+  }
+}));
 
 describe('notifyUser', () => {
   const pull_number = 123;
   const slack_webhook_url = 'https://hooks.slack.com/workflows/1234567890';
   beforeEach(async () => {
-    (octokit.users.getByUsername as unknown as Mocktokit).mockImplementation(async () => ({
+    mock.clearAllMocks();
+    // Re-establish mock implementations
+    (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
+      data: { title, html_url }
+    }));
+    (axios.post as unknown as Mock<any>).mockResolvedValue({ data: 'request succeeded' });
+    (octokit.users.getByUsername as unknown as Mock<any>).mockImplementation(async () => ({
       data: {
         email: assigneeEmail
       }
@@ -75,7 +85,12 @@ describe('notifyUser with a PR comment', () => {
   const slack_webhook_url = 'https://hooks.slack.com/workflows/1234567890';
 
   beforeEach(async () => {
-    (octokit.users.getByUsername as unknown as Mocktokit).mockImplementation(async () => ({
+    mock.clearAllMocks();
+    (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
+      data: { title, html_url }
+    }));
+    (axios.post as unknown as Mock<any>).mockResolvedValue({ data: 'request succeeded' });
+    (octokit.users.getByUsername as unknown as Mock<any>).mockImplementation(async () => ({
       data: {
         email: null
       }
@@ -95,7 +110,13 @@ describe('notifyUser should fail if slack webhook input is invalid', () => {
   const slack_webhook_url = 'https://hooks.slack.com/workflows/1234567890';
 
   beforeEach(async () => {
-    (octokit.users.getByUsername as unknown as Mocktokit).mockImplementation(async () => ({
+    mock.clearAllMocks();
+    // Re-establish base mocks
+    (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
+      data: { title, html_url }
+    }));
+    (axios.post as unknown as Mock<any>).mockResolvedValue({ data: 'request succeeded' });
+    (octokit.users.getByUsername as unknown as Mock<any>).mockImplementation(async () => ({
       data: {
         email: null
       }
@@ -105,6 +126,6 @@ describe('notifyUser should fail if slack webhook input is invalid', () => {
   });
 
   it('should fail the job', () => {
-    expect(setFailed).toHaveBeenCalled();
+    expect(core.setFailed).toHaveBeenCalled();
   });
 });

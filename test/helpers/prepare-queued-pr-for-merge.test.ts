@@ -11,40 +11,38 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { Mock, beforeEach, afterEach, describe, expect, it, mock, spyOn } from 'bun:test';
+import { setupMocks } from '../setup';
 import * as core from '@actions/core';
-import { FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } from '../../src/constants';
-import { Mocktokit } from '../types';
-import { context } from '@actions/github';
-import { octokit } from '../../src/octokit';
-import { prepareQueuedPrForMerge } from '../../src/helpers/prepare-queued-pr-for-merge';
-import { removePrFromQueue } from '../../src/helpers/manage-merge-queue';
 
-jest.mock('@actions/core');
-jest.mock('../../src/utils/update-merge-queue');
-jest.mock('../../src/helpers/manage-merge-queue');
-jest.mock('../../src/helpers/remove-label');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      pulls: { list: jest.fn() },
-      repos: { merge: jest.fn(), mergeUpstream: jest.fn(), createCommitStatus: jest.fn() },
-      issues: {
-        removeLabel: jest.fn(),
-        createComment: jest.fn()
-      }
-    }
-  }))
-}));
-(octokit.repos.mergeUpstream as unknown as Mocktokit).mockImplementation(async () => ({ some: 'response' }));
-(octokit.repos.merge as unknown as Mocktokit).mockImplementation(async () => ({ some: 'response' }));
+setupMocks();
+
+const { FIRST_QUEUED_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL, READY_FOR_MERGE_PR_LABEL } = await import('../../src/constants');
+const { octokit } = await import('../../src/octokit');
+const { prepareQueuedPrForMerge } = await import('../../src/helpers/prepare-queued-pr-for-merge');
+const manageMergeQueueModule = await import('../../src/helpers/manage-merge-queue');
+const { context } = await import('@actions/github');
 
 describe('prepareQueuedPrForMerge', () => {
+  let removePrFromQueueSpy: ReturnType<typeof spyOn>;
+
+  beforeEach(() => {
+    mock.clearAllMocks();
+
+    removePrFromQueueSpy = spyOn(manageMergeQueueModule, 'removePrFromQueue' as any).mockImplementation(async () => {});
+
+    (octokit.repos.mergeUpstream as unknown as Mock<any>).mockImplementation(async () => ({ some: 'response' }));
+    (octokit.repos.merge as unknown as Mock<any>).mockImplementation(async () => ({ some: 'response' }));
+  });
+
+  afterEach(() => {
+    removePrFromQueueSpy.mockRestore();
+  });
   const ref = 'branch name';
 
   describe('top queued pr exists', () => {
     beforeEach(async () => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.pulls.list as unknown as Mock<any>).mockImplementation(async () => ({
         data: [
           {
             head: {
@@ -95,7 +93,7 @@ describe('prepareQueuedPrForMerge', () => {
 
   describe('top queued pr exists and head is fork branch', () => {
     beforeEach(async () => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.pulls.list as unknown as Mock<any>).mockImplementation(async () => ({
         data: [
           {
             head: {
@@ -165,7 +163,7 @@ describe('prepareQueuedPrForMerge', () => {
   describe('pr jumped the queue', () => {
     const jumpQueueBranch = 'jump queue';
     beforeEach(async () => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.pulls.list as unknown as Mock<any>).mockImplementation(async () => ({
         data: [
           {
             head: {
@@ -230,7 +228,7 @@ describe('prepareQueuedPrForMerge', () => {
 
   describe('no queued prs exist', () => {
     beforeEach(async () => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.pulls.list as unknown as Mock<any>).mockImplementation(async () => ({
         data: [
           {
             head: {
@@ -278,7 +276,7 @@ describe('prepareQueuedPrForMerge', () => {
       ]
     };
     beforeEach(async () => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) =>
+      (octokit.pulls.list as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) =>
         page === 1 || !page
           ? {
               data: [
@@ -298,12 +296,12 @@ describe('prepareQueuedPrForMerge', () => {
             }
           : { data: [] }
       );
-      (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
+      (octokit.repos.merge as unknown as Mock<any>).mockRejectedValue({ status: 409 });
       await prepareQueuedPrForMerge();
     });
 
     it('should remove PR from queue and call core.error', () => {
-      expect(removePrFromQueue).toHaveBeenCalledWith(firstInQueue);
+      expect(removePrFromQueueSpy).toHaveBeenCalledWith(firstInQueue);
       expect(core.setFailed).toHaveBeenCalled();
     });
   });
@@ -325,7 +323,7 @@ describe('prepareQueuedPrForMerge', () => {
       ]
     };
     beforeEach(async () => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) =>
+      (octokit.pulls.list as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) =>
         page === 1 || !page
           ? {
               data: [
@@ -345,13 +343,13 @@ describe('prepareQueuedPrForMerge', () => {
             }
           : { data: [] }
       );
-      (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
-      (core.getInput as jest.Mock).mockReturnValue('true');
+      (octokit.repos.merge as unknown as Mock<any>).mockRejectedValue({ status: 409 });
+      (core.getInput as Mock<any>).mockReturnValue('true');
       await prepareQueuedPrForMerge();
     });
 
     it('should NOT remove PR from queue and call core.info', () => {
-      expect(removePrFromQueue).not.toHaveBeenCalled();
+      expect(removePrFromQueueSpy).not.toHaveBeenCalled();
       expect(core.info).toHaveBeenCalled();
     });
   });
@@ -373,7 +371,7 @@ describe('prepareQueuedPrForMerge', () => {
       ]
     };
     beforeEach(async () => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) =>
+      (octokit.pulls.list as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) =>
         page === 1 || !page
           ? {
               data: [
@@ -393,13 +391,13 @@ describe('prepareQueuedPrForMerge', () => {
             }
           : { data: [] }
       );
-      (octokit.repos.merge as unknown as Mocktokit).mockRejectedValue({ status: 409 });
-      (core.getInput as jest.Mock).mockReturnValue('');
+      (octokit.repos.merge as unknown as Mock<any>).mockRejectedValue({ status: 409 });
+      (core.getInput as Mock<any>).mockReturnValue('');
       await prepareQueuedPrForMerge();
     });
 
     it('should remove PR from queue and call core.error', () => {
-      expect(removePrFromQueue).toHaveBeenCalled();
+      expect(removePrFromQueueSpy).toHaveBeenCalled();
       expect(core.setFailed).toHaveBeenCalled();
     });
   });
@@ -431,7 +429,7 @@ describe('prepareQueuedPrForMerge', () => {
       ]
     };
     beforeEach(async () => {
-      (octokit.pulls.list as unknown as Mocktokit).mockImplementation(async ({ page }) =>
+      (octokit.pulls.list as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) =>
         page === 1 || !page
           ? {
               data: [
@@ -451,7 +449,7 @@ describe('prepareQueuedPrForMerge', () => {
             }
           : { data: [] }
       );
-      (octokit.repos.mergeUpstream as unknown as Mocktokit).mockRejectedValue({ status: 409 });
+      (octokit.repos.mergeUpstream as unknown as Mock<any>).mockRejectedValue({ status: 409 });
       await prepareQueuedPrForMerge();
     });
 

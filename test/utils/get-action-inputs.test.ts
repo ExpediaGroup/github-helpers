@@ -11,49 +11,68 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { getActionInputs } from '../../src/utils/get-action-inputs';
-import { getInput } from '@actions/core';
-import { getInputsFromFile } from '../../src/utils/get-inputs-from-file';
+import { describe, it, expect, beforeEach, afterEach, mock, spyOn } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('../../src/utils/get-inputs-from-file');
-jest.mock('@actions/core', () => ({
-  getInput: jest.fn(input => (input === 'input2' ? '' : input))
-}));
-jest.mock('fs', () => ({
+setupMocks();
+
+mock.module('fs', () => ({
   promises: {
-    access: jest.fn()
+    access: mock()
   },
-  readFileSync: jest.fn(() => ({
-    toString: jest.fn()
+  readFileSync: mock(() => ({
+    toString: mock()
   }))
 }));
+
+const { getActionInputs } = await import('../../src/utils/get-action-inputs');
+const coreModule = await import('@actions/core');
+const getInputsFromFileModule = await import('../../src/utils/get-inputs-from-file');
 
 describe('getActionInputs', () => {
   const requiredInputs = ['input1'];
 
+  beforeEach(() => {
+    mock.clearAllMocks();
+  });
+
+  afterEach(() => {
+    mock.restore();
+  });
+
   it('should call getInput with correct params and return expected inputs', () => {
-    (getInputsFromFile as jest.Mock).mockReturnValue(['input1', 'input2', 'input3']);
+    const getInputSpy = spyOn(coreModule, 'getInput').mockImplementation((input: string) => (input === 'input2' ? '' : input));
+    const getInputsFromFileSpy = spyOn(getInputsFromFileModule, 'getInputsFromFile').mockReturnValue(['input1', 'input2', 'input3']);
+
     const result = getActionInputs(requiredInputs);
 
-    expect(getInput).toHaveBeenCalledWith('input1', { required: true });
-    expect(getInput).toHaveBeenCalledWith('input2', { required: false });
-    expect(getInput).toHaveBeenCalledWith('input3', { required: false });
+    expect(getInputSpy).toHaveBeenCalledWith('input1', { required: true });
+    expect(getInputSpy).toHaveBeenCalledWith('input2', { required: false });
+    expect(getInputSpy).toHaveBeenCalledWith('input3', { required: false });
     expect(result).toEqual({
       input1: 'input1',
       input3: 'input3'
     });
+
+    getInputSpy.mockRestore();
+    getInputsFromFileSpy.mockRestore();
   });
 
   it('should call getInput with trimWhiteSpace false for delimiter input', () => {
-    (getInputsFromFile as jest.Mock).mockReturnValue(['input1', 'input2', 'delimiter']);
+    const getInputSpy = spyOn(coreModule, 'getInput').mockImplementation((input: string) => (input === 'input2' ? '' : input));
+    const getInputsFromFileSpy = spyOn(getInputsFromFileModule, 'getInputsFromFile').mockReturnValue(['input1', 'input2', 'delimiter']);
+
     const result = getActionInputs(requiredInputs);
 
-    expect(getInput).toHaveBeenCalledWith('input1', { required: true });
-    expect(getInput).toHaveBeenCalledWith('input2', { required: false });
-    expect(getInput).toHaveBeenCalledWith('delimiter', { required: false, trimWhitespace: false });
+    expect(getInputSpy).toHaveBeenCalledWith('input1', { required: true });
+    expect(getInputSpy).toHaveBeenCalledWith('input2', { required: false });
+    expect(getInputSpy).toHaveBeenCalledWith('delimiter', { required: false, trimWhitespace: false });
     expect(result).toEqual({
       input1: 'input1',
       delimiter: 'delimiter'
     });
+
+    getInputSpy.mockRestore();
+    getInputsFromFileSpy.mockRestore();
   });
 });

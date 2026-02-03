@@ -11,21 +11,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { context } from '@actions/github';
-import { updateCheckResult } from '../../src/helpers/update-check-result';
-import { octokit } from '../../src/octokit';
+import { describe, it, expect, beforeEach, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      checks: {
-        listForRef: jest.fn(() => ({ data: { check_runs: [{ id: 123 }] } })),
-        update: jest.fn()
-      }
-    }
-  }))
+setupMocks();
+
+const { updateCheckResult } = await import('../../src/helpers/update-check-result');
+const { octokit } = await import('../../src/octokit');
+const { context } = await import('@actions/github');
+
+// Mock checks.listForRef to return check run with id 123
+(octokit.checks.listForRef as unknown as Mock<any>).mockImplementation(async () => ({
+  data: {
+    check_runs: [{ id: 123, name: 'My PR Check' }]
+  }
 }));
 
 describe('updateCheckResult', () => {

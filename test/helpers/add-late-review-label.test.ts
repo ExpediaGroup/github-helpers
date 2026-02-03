@@ -11,24 +11,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { LATE_REVIEW } from '../../src/constants';
-import { addLateReviewLabel } from '../../src/helpers/add-late-review-label';
-import { context } from '@actions/github';
-import { octokit } from '../../src/octokit';
-import { Mocktokit } from '../types';
+import { describe, it, expect, beforeEach, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: jest.fn(() => ({ rest: { issues: { addLabels: jest.fn() }, pulls: { list: jest.fn() } } }))
-}));
+setupMocks();
 
-jest.spyOn(Date, 'now').mockImplementation(() => new Date('2022-08-04T10:00:00Z').getTime());
+const { LATE_REVIEW } = await import('../../src/constants');
+const { addLateReviewLabel } = await import('../../src/helpers/add-late-review-label');
+const { context } = await import('@actions/github');
+const { octokit } = await import('../../src/octokit');
 
 describe('addLateReviewLabel', () => {
   describe('Late Review', () => {
     beforeEach(() => {
-      (octokit.pulls.list as unknown as Mocktokit)
+      (octokit.pulls.list as unknown as Mock<any>)
         .mockResolvedValueOnce({
           status: '200',
           data: [

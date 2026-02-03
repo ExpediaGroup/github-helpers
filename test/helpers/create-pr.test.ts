@@ -11,48 +11,41 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mocktokit, MockSimpleGit } from '../types';
-import { context } from '@actions/github';
-import { createPr } from '../../src/helpers/create-pr';
-import { octokit } from '../../src/octokit';
-import simpleGit from 'simple-git';
+import { describe, it, expect, beforeEach, mock, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, ref: 'refs/heads/source' },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      repos: { get: jest.fn(), merge: jest.fn() },
-      pulls: { create: jest.fn() }
-    }
-  }))
+setupMocks({ ref: 'refs/heads/source' });
+
+// Create mocks for simpleGit
+const mockGit = {
+  diff: mock(() => ''),
+  fetch: mock(() => 'new fetch value'),
+  checkoutLocalBranch: mock(() => {}),
+  add: mock(() => {}),
+  commit: mock(() => {}),
+  push: mock(() => {}),
+  addConfig: mock(() => {})
+};
+
+const simpleGitMock = mock(() => mockGit) as any;
+simpleGitMock.__mockGitInstance = mockGit;
+
+mock.module('simple-git', () => ({
+  default: simpleGitMock,
+  simpleGit: simpleGitMock
 }));
 
-jest.mock('simple-git', () => {
-  const mockGit = {
-    checkoutLocalBranch: jest.fn(),
-    add: jest.fn(),
-    commit: jest.fn(),
-    push: jest.fn(),
-    addConfig: jest.fn()
-  };
+const { createPr } = await import('../../src/helpers/create-pr');
+const { octokit } = await import('../../src/octokit');
+const { context } = await import('@actions/github');
+const { simpleGit } = await import('simple-git');
 
-  const simpleGitMock = jest.fn(() => mockGit);
-
-  (simpleGitMock as unknown as MockSimpleGit).__mockGitInstance = mockGit;
-
-  return {
-    __esModule: true,
-    default: simpleGitMock
-  };
-});
-
-(octokit.repos.get as unknown as Mocktokit).mockImplementation(async () => ({
+(octokit.repos.get as unknown as Mock<any>).mockImplementation(async () => ({
   data: {
     default_branch: 'default branch'
   }
 }));
-(octokit.pulls.create as unknown as Mocktokit).mockImplementation(async () => ({
+(octokit.pulls.create as unknown as Mock<any>).mockImplementation(async () => ({
   data: {
     title: 'title',
     number: 100
@@ -60,6 +53,9 @@ jest.mock('simple-git', () => {
 }));
 
 describe('createPr', () => {
+  beforeEach(() => {
+    mock.clearAllMocks();
+  });
   const title = 'title';
   const body = 'body';
   const commit_message = 'commit message';
@@ -176,7 +172,7 @@ describe('createPr', () => {
       branch_name
     });
 
-    const git = (simpleGit as unknown as MockSimpleGit).__mockGitInstance;
+    const git = (simpleGit as any).__mockGitInstance;
 
     expect(git.addConfig).toHaveBeenCalledWith('user.name', 'github-actions[bot]');
     expect(git.addConfig).toHaveBeenCalledWith('user.email', 'github-actions[bot]@users.noreply.github.com');

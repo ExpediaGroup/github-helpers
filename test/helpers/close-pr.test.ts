@@ -11,30 +11,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { context } from '@actions/github';
-import { closePr } from '../../src/helpers/close-pr';
-import { octokit } from '../../src/octokit';
-import { createPrComment } from '../../src/helpers/create-pr-comment';
+import { describe, it, expect, beforeEach, mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('../../src/helpers/create-pr-comment');
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      pulls: { update: jest.fn() }
-    }
-  }))
-}));
+setupMocks();
+
+const { closePr } = await import('../../src/helpers/close-pr');
+const { octokit } = await import('../../src/octokit');
+const { context } = await import('@actions/github');
 
 describe('closePr', () => {
+  beforeEach(() => {
+    mock.clearAllMocks();
+  });
   describe('without comment in the same PR', () => {
     beforeEach(() => {
       closePr();
     });
 
     it('should not call createPrComment', () => {
-      expect(createPrComment).not.toHaveBeenCalled();
+      expect(octokit.issues.createComment).not.toHaveBeenCalled();
     });
 
     it('should call pulls.update with correct params', () => {
@@ -52,7 +48,7 @@ describe('closePr', () => {
     });
 
     it('should not call createPrComment', () => {
-      expect(createPrComment).not.toHaveBeenCalled();
+      expect(octokit.issues.createComment).not.toHaveBeenCalled();
     });
 
     it('should call pulls.update with correct params', () => {
@@ -70,7 +66,7 @@ describe('closePr', () => {
     });
 
     it('should not call createPrComment', () => {
-      expect(createPrComment).not.toHaveBeenCalled();
+      expect(octokit.issues.createComment).not.toHaveBeenCalled();
     });
 
     it('should call pulls.update with correct params', () => {
@@ -91,7 +87,13 @@ describe('closePr', () => {
     });
 
     it('should call createPrComment with correct params', () => {
-      expect(createPrComment).toHaveBeenCalledWith({ body });
+      // createPrComment is now a real function call
+      // Verify the underlying octokit call happened instead
+      expect(octokit.issues.createComment).toHaveBeenCalledWith({
+        body,
+        issue_number: 123,
+        ...context.repo
+      });
     });
 
     it('should call pulls.update with correct params', () => {
@@ -111,7 +113,13 @@ describe('closePr', () => {
     });
 
     it('should call createPrComment', () => {
-      expect(createPrComment).toHaveBeenCalledWith({ body, pull_number: '456' });
+      // createPrComment is now a real function call
+      // Verify the underlying octokit call happened instead
+      expect(octokit.issues.createComment).toHaveBeenCalledWith({
+        body,
+        issue_number: 456,
+        ...context.repo
+      });
     });
 
     it('should call pulls.update with correct params', () => {
@@ -131,11 +139,13 @@ describe('closePr', () => {
     });
 
     it('should call createPrComment', () => {
-      expect(createPrComment).toHaveBeenCalledWith({
+      // createPrComment is now a real function call
+      // Verify the underlying octokit call happened instead
+      expect(octokit.issues.createComment).toHaveBeenCalledWith({
         body,
-        repo_name: 'another-repo',
-        repo_owner_name: 'another-owner',
-        pull_number: '456'
+        issue_number: 456,
+        repo: 'another-repo',
+        owner: 'another-owner'
       });
     });
 

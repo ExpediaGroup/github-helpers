@@ -11,11 +11,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mocktokit } from '../types';
-import { approvalsSatisfied } from '../../src/helpers/approvals-satisfied';
-import { octokit } from '../../src/octokit';
-import { getRequiredCodeOwnersEntries } from '../../src/utils/get-core-member-logins';
-import * as core from '@actions/core';
+import { Mock, beforeEach, afterEach, describe, expect, it, mock, spyOn } from 'bun:test';
+import { setupMocks } from '../setup';
+
+setupMocks();
 
 const ownerMap: { [key: string]: { data: { login: string }[] } } = {
   team1: { data: [{ login: 'user1' }] },
@@ -25,31 +24,40 @@ const ownerMap: { [key: string]: { data: { login: string }[] } } = {
   team5: { data: [{ login: 'user4' }, { login: 'user6' }, { login: 'user7' }] },
   team6: { data: [{ login: 'user8' }, { login: 'user9' }] }
 };
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      pulls: {
-        listReviews: jest.fn()
-      },
-      teams: {
-        listMembersInOrg: jest.fn(async input => ownerMap[input.team_slug])
-      },
-      issues: {
-        createComment: jest.fn()
-      }
-    }
-  }))
-}));
-jest.mock('../../src/utils/get-core-member-logins');
+
+const { approvalsSatisfied } = await import('../../src/helpers/approvals-satisfied');
+const { octokit } = await import('../../src/octokit');
+const getCoreMemberLoginsModule = await import('../../src/utils/get-core-member-logins');
+const paginateMembersInOrgModule = await import('../../src/utils/paginate-members-in-org');
+const core = await import('@actions/core');
+
 const mockPagination = (result: unknown) => {
-  (octokit.pulls.listReviews as unknown as Mocktokit).mockImplementation(async ({ page }) => {
+  (octokit.pulls.listReviews as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => {
     return page === 1 ? result : { data: [] };
   });
 };
 
 describe('approvalsSatisfied', () => {
+  let paginateMembersInOrgSpy: ReturnType<typeof spyOn>;
+  let getRequiredCodeOwnersEntriesSpy: ReturnType<typeof spyOn>;
+  let getCoreMemberLoginsSpy: ReturnType<typeof spyOn>;
+
+  beforeEach(() => {
+    mock.clearAllMocks();
+    paginateMembersInOrgSpy = spyOn(paginateMembersInOrgModule, 'paginateMembersInOrg').mockImplementation(async (team: string) => {
+      const teamSlug = team.replace('@ExpediaGroup/', '').replace('ExpediaGroup/', '').replace('owner/', '');
+      return (ownerMap[teamSlug]?.data || []) as any;
+    });
+    getRequiredCodeOwnersEntriesSpy = spyOn(getCoreMemberLoginsModule, 'getRequiredCodeOwnersEntries').mockResolvedValue([]);
+    getCoreMemberLoginsSpy = spyOn(getCoreMemberLoginsModule, 'getCoreMemberLogins').mockResolvedValue([]);
+  });
+
+  afterEach(() => {
+    paginateMembersInOrgSpy.mockRestore();
+    getRequiredCodeOwnersEntriesSpy.mockRestore();
+    getCoreMemberLoginsSpy.mockRestore();
+  });
+
   it('should return false when passing teams override and required approvals are not met', async () => {
     mockPagination({
       data: [
@@ -62,7 +70,7 @@ describe('approvalsSatisfied', () => {
 
     const result = await approvalsSatisfied({ teams: 'team1', pull_number: '12345' });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
-    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(getCoreMemberLoginsModule.getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(false);
   });
 
@@ -77,13 +85,13 @@ describe('approvalsSatisfied', () => {
     });
     const result = await approvalsSatisfied({ teams: 'team1', pull_number: '12345' });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
-    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(getCoreMemberLoginsModule.getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(true);
   });
 
   it('should throw an error when passing teams override with full name and org is different than repo org', async () => {
     const result = await approvalsSatisfied({ teams: 'owner/team2\nsomeOtherOrg/team1', pull_number: '12345' });
-    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(getCoreMemberLoginsModule.getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(core.setFailed).toHaveBeenCalled();
     expect(result).toBe(false);
   });
@@ -103,7 +111,7 @@ describe('approvalsSatisfied', () => {
     });
     const result = await approvalsSatisfied({ teams: 'team1\nteam2', pull_number: '12345', number_of_reviewers: '2' });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
-    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(getCoreMemberLoginsModule.getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(true);
   });
 
@@ -119,7 +127,7 @@ describe('approvalsSatisfied', () => {
 
     const result = await approvalsSatisfied({ users: 'user1', pull_number: '12345' });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
-    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(getCoreMemberLoginsModule.getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(false);
   });
 
@@ -134,7 +142,7 @@ describe('approvalsSatisfied', () => {
     });
     const result = await approvalsSatisfied({ users: 'user1', pull_number: '12345' });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
-    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(getCoreMemberLoginsModule.getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(true);
   });
 
@@ -157,7 +165,7 @@ describe('approvalsSatisfied', () => {
     });
     const result = await approvalsSatisfied({ users: 'user1\nuser2\nuser3', pull_number: '12345', number_of_reviewers: '2' });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
-    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(getCoreMemberLoginsModule.getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(true);
   });
 
@@ -185,12 +193,12 @@ describe('approvalsSatisfied', () => {
       number_of_reviewers: '2'
     });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
-    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(getCoreMemberLoginsModule.getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(true);
   });
 
   it('should return false when a core member has not approved', async () => {
-    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@ExpediaGroup/team1'] }]);
+    getRequiredCodeOwnersEntriesSpy.mockResolvedValue([{ owners: ['@ExpediaGroup/team1'] }]);
     mockPagination({
       data: [
         {
@@ -201,12 +209,12 @@ describe('approvalsSatisfied', () => {
     });
     const result = await approvalsSatisfied({ pull_number: '12345' });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
-    expect(getRequiredCodeOwnersEntries).toHaveBeenCalledWith(12345, undefined);
+    expect(getCoreMemberLoginsModule.getRequiredCodeOwnersEntries).toHaveBeenCalledWith(12345, undefined);
     expect(result).toBe(false);
   });
 
   it('should return true when a member from the team specified in codeowners_overrides has approved', async () => {
-    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@ExpediaGroup/team6'] }]);
+    getRequiredCodeOwnersEntriesSpy.mockResolvedValue([{ owners: ['@ExpediaGroup/team6'] }]);
     mockPagination({
       data: [
         {
@@ -218,12 +226,12 @@ describe('approvalsSatisfied', () => {
     const codeOwnersOverrides = '* @ExpediaGroup/team6';
     const result = await approvalsSatisfied({ pull_number: '12345', codeowners_overrides: codeOwnersOverrides });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
-    expect(getRequiredCodeOwnersEntries).toHaveBeenCalledWith(12345, codeOwnersOverrides);
+    expect(getCoreMemberLoginsModule.getRequiredCodeOwnersEntries).toHaveBeenCalledWith(12345, codeOwnersOverrides);
     expect(result).toBe(true);
   });
 
   it('should return true when a core member has approved', async () => {
-    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@ExpediaGroup/team1'] }]);
+    getRequiredCodeOwnersEntriesSpy.mockResolvedValue([{ owners: ['@ExpediaGroup/team1'] }]);
     mockPagination({
       data: [
         {
@@ -241,7 +249,7 @@ describe('approvalsSatisfied', () => {
   });
 
   it('should return false when not all core teams have approved', async () => {
-    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
+    getRequiredCodeOwnersEntriesSpy.mockResolvedValue([
       { owners: ['@ExpediaGroup/team1'] },
       { owners: ['@ExpediaGroup/team2'] },
       { owners: ['@ExpediaGroup/team3'] }
@@ -263,7 +271,7 @@ describe('approvalsSatisfied', () => {
   });
 
   it('should return true when a member from each core team has approved', async () => {
-    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
+    getRequiredCodeOwnersEntriesSpy.mockResolvedValue([
       { owners: ['@ExpediaGroup/team1'] },
       { owners: ['@ExpediaGroup/team2'] },
       { owners: ['@ExpediaGroup/team3'] }
@@ -289,7 +297,7 @@ describe('approvalsSatisfied', () => {
   });
 
   it('should return true when a member from each owner group (teams and users) has approved', async () => {
-    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
+    getRequiredCodeOwnersEntriesSpy.mockResolvedValue([
       { owners: ['@ExpediaGroup/team1'] },
       { owners: ['@ExpediaGroup/team2'] },
       { owners: ['@ExpediaGroup/team4', 'user10'] }
@@ -319,10 +327,7 @@ describe('approvalsSatisfied', () => {
   });
 
   it('should return false when not enough members from core teams have approved', async () => {
-    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
-      { owners: ['@ExpediaGroup/team2'] },
-      { owners: ['@ExpediaGroup/team4'] }
-    ]);
+    getRequiredCodeOwnersEntriesSpy.mockResolvedValue([{ owners: ['@ExpediaGroup/team2'] }, { owners: ['@ExpediaGroup/team4'] }]);
     mockPagination({
       data: [
         {
@@ -344,10 +349,7 @@ describe('approvalsSatisfied', () => {
   });
 
   it('should return true when enough members from core teams have approved', async () => {
-    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
-      { owners: ['@ExpediaGroup/team2'] },
-      { owners: ['@ExpediaGroup/team4'] }
-    ]);
+    getRequiredCodeOwnersEntriesSpy.mockResolvedValue([{ owners: ['@ExpediaGroup/team2'] }, { owners: ['@ExpediaGroup/team4'] }]);
     mockPagination({
       data: [
         {
@@ -373,7 +375,7 @@ describe('approvalsSatisfied', () => {
   });
 
   it('should return false when not enough collective approvals from shared owners are met', async () => {
-    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@ExpediaGroup/team4', '@ExpediaGroup/team5'] }]);
+    getRequiredCodeOwnersEntriesSpy.mockResolvedValue([{ owners: ['@ExpediaGroup/team4', '@ExpediaGroup/team5'] }]);
     mockPagination({
       data: [
         {
@@ -387,7 +389,7 @@ describe('approvalsSatisfied', () => {
   });
 
   it('should return false when not enough collective approvals from shared owners are met even if user is in both groups', async () => {
-    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@ExpediaGroup/team4', '@ExpediaGroup/team5'] }]);
+    getRequiredCodeOwnersEntriesSpy.mockResolvedValue([{ owners: ['@ExpediaGroup/team4', '@ExpediaGroup/team5'] }]);
     mockPagination({
       data: [
         {
@@ -401,7 +403,7 @@ describe('approvalsSatisfied', () => {
   });
 
   it('should return true when enough collective approvals from shared owners are met', async () => {
-    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@ExpediaGroup/team4', '@ExpediaGroup/team5'] }]);
+    getRequiredCodeOwnersEntriesSpy.mockResolvedValue([{ owners: ['@ExpediaGroup/team4', '@ExpediaGroup/team5'] }]);
     mockPagination({
       data: [
         {
@@ -419,7 +421,7 @@ describe('approvalsSatisfied', () => {
   });
 
   it('should return false when collective approvals are met but not standalone approvals', async () => {
-    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
+    getRequiredCodeOwnersEntriesSpy.mockResolvedValue([
       { owners: ['@ExpediaGroup/team4'] },
       { owners: ['@ExpediaGroup/team5', '@ExpediaGroup/team6'] }
     ]);
@@ -440,7 +442,7 @@ describe('approvalsSatisfied', () => {
   });
 
   it('should return true when both collective and standalone approvals are met', async () => {
-    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
+    getRequiredCodeOwnersEntriesSpy.mockResolvedValue([
       { owners: ['@ExpediaGroup/team4'] },
       { owners: ['@ExpediaGroup/team5', '@ExpediaGroup/team6'] }
     ]);
@@ -465,10 +467,7 @@ describe('approvalsSatisfied', () => {
   });
 
   it('should return true when there are no code owners for one file and the other file is satisfied', async () => {
-    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
-      { owners: [] },
-      { owners: ['@ExpediaGroup/team5', '@ExpediaGroup/team6'] }
-    ]);
+    getRequiredCodeOwnersEntriesSpy.mockResolvedValue([{ owners: [] }, { owners: ['@ExpediaGroup/team5', '@ExpediaGroup/team6'] }]);
     mockPagination({
       data: [
         {
@@ -490,10 +489,7 @@ describe('approvalsSatisfied', () => {
   });
 
   it('should return false when there are no code owners for one file and the other file is not satisfied', async () => {
-    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
-      { owners: [] },
-      { owners: ['@ExpediaGroup/team5', '@ExpediaGroup/team6'] }
-    ]);
+    getRequiredCodeOwnersEntriesSpy.mockResolvedValue([{ owners: [] }, { owners: ['@ExpediaGroup/team5', '@ExpediaGroup/team6'] }]);
     mockPagination({
       data: [
         {
@@ -507,7 +503,7 @@ describe('approvalsSatisfied', () => {
   });
 
   it('should return true when the overridden team config is satisfied', async () => {
-    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([
+    getRequiredCodeOwnersEntriesSpy.mockResolvedValue([
       { owners: ['@ExpediaGroup/team1'] },
       { owners: ['@ExpediaGroup/team2'] },
       { owners: ['@ExpediaGroup/team3'] }
@@ -549,7 +545,7 @@ describe('approvalsSatisfied', () => {
       pull_number: '12345'
     });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
-    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(getCoreMemberLoginsModule.getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(true);
   });
 
@@ -567,12 +563,12 @@ describe('approvalsSatisfied', () => {
       pull_number: '12345'
     });
     expect(octokit.pulls.listReviews).toHaveBeenCalledWith({ pull_number: 12345, repo: 'repo', owner: 'owner', page: 1, per_page: 100 });
-    expect(getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
+    expect(getCoreMemberLoginsModule.getRequiredCodeOwnersEntries).not.toHaveBeenCalled();
     expect(result).toBe(false);
   });
 
   it('should return true when approvals are satisfied and users are explicitly defined in CODEOWNERS', async () => {
-    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@user1', '@user2'] }]);
+    getRequiredCodeOwnersEntriesSpy.mockResolvedValue([{ owners: ['@user1', '@user2'] }]);
     mockPagination({
       data: [
         {

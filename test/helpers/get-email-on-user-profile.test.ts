@@ -11,31 +11,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { getEmailOnUserProfile } from '../../src/helpers/get-email-on-user-profile';
-import * as core from '@actions/core';
-import { octokit } from '../../src/octokit';
-import { Mocktokit } from '../types';
+import { describe, it, expect, beforeEach, Mock, mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      users: {
-        getByUsername: jest.fn(() => ({ data: { email: 'example@github.com' } }))
-      }
-    }
-  }))
+setupMocks();
+
+const { getEmailOnUserProfile } = await import('../../src/helpers/get-email-on-user-profile');
+const { octokit } = await import('../../src/octokit');
+const core = await import('@actions/core');
+
+(octokit.users.getByUsername as unknown as Mock<any>).mockImplementation(async () => ({
+  data: { email: 'example@github.com' }
 }));
 
 describe('getEmailOnUserProfile', () => {
+  beforeEach(() => {
+    mock.clearAllMocks();
+  });
   it('should retrieve user email', async () => {
     const result = await getEmailOnUserProfile({ login: 'example' });
     expect(result).toBe('example@github.com');
   });
 
   it('should fail if user has no email on their profile', async () => {
-    (octokit.users.getByUsername as unknown as Mocktokit).mockImplementationOnce(() => ({ data: { email: null } }));
+    (octokit.users.getByUsername as unknown as Mock<any>).mockImplementationOnce(() => ({ data: { email: null } }));
     const result = await getEmailOnUserProfile({ login: 'example' });
     expect(core.setFailed).toHaveBeenCalled();
     expect(result).toBeUndefined();

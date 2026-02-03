@@ -11,29 +11,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { info } from '@actions/core';
-import { Mocktokit } from '../types';
-import { context } from '@actions/github';
-import { deleteDeployment } from '../../src/helpers/delete-deployment';
-import { octokit } from '../../src/octokit';
+import { describe, it, expect, beforeEach, mock, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core', () => ({
-  getInput: jest.fn(),
-  info: jest.fn()
-}));
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      repos: {
-        createDeploymentStatus: jest.fn(),
-        deleteDeployment: jest.fn(),
-        deleteAnEnvironment: jest.fn(),
-        listDeployments: jest.fn()
-      }
-    }
-  }))
-}));
+setupMocks();
+
+const { deleteDeployment } = await import('../../src/helpers/delete-deployment');
+const { octokit } = await import('../../src/octokit');
+const { context } = await import('@actions/github');
+const core = await import('@actions/core');
 
 function* getDeployments(requested: number) {
   const baseId = 123;
@@ -49,26 +35,30 @@ describe('deleteDeployment', () => {
   const environment = 'environment';
   const deployment_id = 123;
 
+  beforeEach(() => {
+    mock.clearAllMocks();
+  });
+
   describe('deployment exists', () => {
     const deployments = [...getDeployments(5)];
 
     beforeEach(async () => {
-      (octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.listDeployments as unknown as Mock<any>).mockImplementation(async () => ({
         data: deployments
       }));
 
-      (octokit.repos.createDeploymentStatus as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.createDeploymentStatus as unknown as Mock<any>).mockImplementation(async () => ({
         data: {
           state: 'success'
         }
       }));
 
-      (octokit.repos.deleteDeployment as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.deleteDeployment as unknown as Mock<any>).mockImplementation(async () => ({
         data: {},
         status: 204
       }));
 
-      (octokit.repos.deleteAnEnvironment as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.deleteAnEnvironment as unknown as Mock<any>).mockImplementation(async () => ({
         data: {},
         status: 204
       }));
@@ -116,7 +106,7 @@ describe('deleteDeployment', () => {
 
   describe('deployment does not exist', () => {
     beforeEach(() => {
-      (octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.listDeployments as unknown as Mock<any>).mockImplementation(async () => ({
         data: []
       }));
       deleteDeployment({
@@ -152,11 +142,11 @@ describe('deleteDeployment', () => {
     beforeEach(async () => {
       let callCount = 0;
 
-      (octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.listDeployments as unknown as Mock<any>).mockImplementation(async () => ({
         data: deployments
       }));
 
-      (octokit.repos.createDeploymentStatus as unknown as Mocktokit).mockImplementation(async () => {
+      (octokit.repos.createDeploymentStatus as unknown as Mock<any>).mockImplementation(async () => {
         const isEven = callCount % 2 === 0;
         callCount++;
         return {
@@ -166,12 +156,12 @@ describe('deleteDeployment', () => {
         };
       });
 
-      (octokit.repos.deleteDeployment as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.deleteDeployment as unknown as Mock<any>).mockImplementation(async () => ({
         data: {},
         status: 204
       }));
 
-      (octokit.repos.deleteAnEnvironment as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.deleteAnEnvironment as unknown as Mock<any>).mockImplementation(async () => ({
         data: {},
         status: 204
       }));
@@ -183,7 +173,7 @@ describe('deleteDeployment', () => {
     });
 
     it('should print a warning message', async () => {
-      expect(info).toHaveBeenCalledWith(`Not all deployments were successfully deactivated. Some may still be active.`);
+      expect(core.info).toHaveBeenCalledWith(`Not all deployments were successfully deactivated. Some may still be active.`);
     });
   });
 });

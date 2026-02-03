@@ -11,19 +11,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { context } from '@actions/github';
-import { reopenPr } from '../../src/helpers/reopen-pr';
-import { octokit } from '../../src/octokit';
+import { describe, it, expect, beforeEach } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      pulls: { update: jest.fn() }
-    }
-  }))
-}));
+setupMocks();
+
+const { reopenPr } = await import('../../src/helpers/reopen-pr');
+const { octokit } = await import('../../src/octokit');
+const { context } = await import('@actions/github');
 
 describe('reopenPr', () => {
   beforeEach(() => {

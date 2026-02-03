@@ -11,25 +11,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mocktokit } from '../types';
-import { getMergeQueuePosition } from '../../src/helpers/get-merge-queue-position';
-import { octokitGraphql } from '../../src/octokit';
+import { describe, it, expect, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
 import { MergeQueueEntry } from '@octokit/graphql-schema';
-import { context } from '@actions/github';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: jest.fn(() => ({
-    graphql: jest.fn()
-  }))
-}));
+setupMocks();
+
+const { getMergeQueuePosition } = await import('../../src/helpers/get-merge-queue-position');
+const { octokitGraphql } = await import('../../src/octokit');
+const { context } = await import('@actions/github');
 
 type RecursivePartial<T> = {
   [P in keyof T]?: RecursivePartial<T[P]>;
 };
 function mockGraphQLResponse(mergeQueueEntries: RecursivePartial<MergeQueueEntry>[]) {
-  (octokitGraphql as unknown as Mocktokit).mockImplementation(async () => ({
+  (octokitGraphql as unknown as Mock<any>).mockImplementation(async () => ({
     repository: {
       mergeQueue: {
         entries: {

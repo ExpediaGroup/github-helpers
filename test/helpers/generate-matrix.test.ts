@@ -11,13 +11,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { generateMatrix } from '../../src/helpers/generate-matrix';
+import { describe, it, expect } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn()
-}));
+setupMocks();
+
+const { generateMatrix } = await import('../../src/helpers/generate-matrix');
 
 describe('generateMatrix', () => {
   it('should generate matrix json with appropriate batching', () => {

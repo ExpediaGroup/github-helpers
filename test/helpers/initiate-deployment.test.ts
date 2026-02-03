@@ -11,29 +11,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { DEFAULT_PIPELINE_STATUS } from '../../src/constants';
-import { Mocktokit } from '../types';
-import { context } from '@actions/github';
-import { initiateDeployment } from '../../src/helpers/initiate-deployment';
-import { octokit } from '../../src/octokit';
+import { describe, it, expect, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      repos: {
-        createDeployment: jest.fn(),
-        createDeploymentStatus: jest.fn(),
-        createCommitStatus: jest.fn(),
-        listBranches: jest.fn(() => ({ data: [] }))
-      }
-    }
-  }))
-}));
+setupMocks();
+
+const { DEFAULT_PIPELINE_STATUS } = await import('../../src/constants');
+const { initiateDeployment } = await import('../../src/helpers/initiate-deployment');
+const { octokit } = await import('../../src/octokit');
+const { context } = await import('@actions/github');
 
 const deployment_id = 123;
-(octokit.repos.createDeployment as unknown as Mocktokit).mockImplementation(async () => ({
+(octokit.repos.createDeployment as unknown as Mock<any>).mockImplementation(async () => ({
   data: {
     id: deployment_id,
     ref: 'some-ref'
@@ -73,7 +62,7 @@ describe('initiateDeployment', () => {
   });
 
   it('should handle merge queue case', async () => {
-    (octokit.repos.listBranches as unknown as Mocktokit).mockImplementation(async ({ page }) =>
+    (octokit.repos.listBranches as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) =>
       page > 1
         ? { data: [] }
         : {

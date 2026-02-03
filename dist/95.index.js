@@ -88,10 +88,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   deleteStaleBranches: () => (/* binding */ deleteStaleBranches)
 /* harmony export */ });
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(8428);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6474);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4116);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6590);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4366);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_3__);
@@ -131,7 +129,7 @@ const deleteStaleBranches = async ({ days = '30' } = {}) => {
     const branchesWithUpdatedDates = await (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(featureBranchesWithNoOpenPullRequest, async ({ name, commit: { sha } }) => {
         const { data: { committer: { date } } } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.git.getCommit({
             commit_sha: sha,
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo
         });
         return {
             name,
@@ -140,10 +138,10 @@ const deleteStaleBranches = async ({ days = '30' } = {}) => {
     }, { concurrency: 5 });
     const branchesToDelete = branchesWithUpdatedDates.filter(({ date }) => branchIsTooOld(date, days)).map(({ name }) => name);
     await (0,bluebird__WEBPACK_IMPORTED_MODULE_3__.map)(branchesToDelete, async (branch) => {
-        _actions_core__WEBPACK_IMPORTED_MODULE_1__.info(`Deleting branch ${branch}...`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .info */ .pq(`Deleting branch ${branch}...`);
         await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.git.deleteRef({
             ref: `heads/${branch}`,
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo
         });
     }, { concurrency: 5 });
 };
@@ -165,12 +163,10 @@ const branchIsTooOld = (dateLastUpdated, daysThreshold) => {
 /* harmony export */   A: () => (/* binding */ octokit),
 /* harmony export */   n: () => (/* binding */ octokitGraphql)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1806);
 /* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6474);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -186,8 +182,8 @@ limitations under the License.
 
 
 
-const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true });
-const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
+const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .getInput */ .V4('github_token', { required: true });
+const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__/* .getOctokit */ .Q)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
 
 
 /***/ }),
@@ -223,8 +219,7 @@ class HelperInputs {
 /* harmony export */   Q: () => (/* binding */ getDefaultBranch)
 /* harmony export */ });
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6590);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -240,7 +235,7 @@ limitations under the License.
 
 
 const getDefaultBranch = async () => {
-    const { data: { default_branch } } = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit */ .A.repos.get({ ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo });
+    const { data: { default_branch } } = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit */ .A.repos.get({ ..._actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo });
     return default_branch;
 };
 
@@ -254,8 +249,7 @@ const getDefaultBranch = async () => {
 /* harmony export */   h: () => (/* binding */ paginateAllBranches)
 /* harmony export */ });
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6590);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
 /*
 Copyright 2022 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -275,7 +269,7 @@ const paginateAllBranches = async ({ protectedBranches, page = 1 } = {}) => {
         protected: protectedBranches,
         per_page: 100,
         page,
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo
     });
     if (!response.data.length) {
         return [];
@@ -293,8 +287,7 @@ const paginateAllBranches = async ({ protectedBranches, page = 1 } = {}) => {
 /* harmony export */   U: () => (/* binding */ paginateAllOpenPullRequests)
 /* harmony export */ });
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6590);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
 /*
 Copyright 2022 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -316,7 +309,7 @@ const paginateAllOpenPullRequests = async (page = 1) => {
         direction: 'desc',
         per_page: 100,
         page,
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo
     });
     if (!response.data.length) {
         return [];

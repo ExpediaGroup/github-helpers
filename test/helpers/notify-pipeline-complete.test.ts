@@ -11,35 +11,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { DEFAULT_PIPELINE_STATUS, PRODUCTION_ENVIRONMENT } from '../../src/constants';
-import { Mocktokit } from '../types';
-import { context } from '@actions/github';
-import { notifyPipelineComplete } from '../../src/helpers/notify-pipeline-complete';
-import { octokit } from '../../src/octokit';
+import { describe, it, expect, Mock, beforeEach, mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      pulls: { list: jest.fn() },
-      repos: {
-        createCommitStatus: jest.fn(),
-        createDeploymentStatus: jest.fn(),
-        listDeployments: jest.fn(() => ({ data: [{ id: 123 }] })),
-        listBranches: jest.fn(() => ({ data: [] }))
-      }
-    }
-  }))
-}));
-jest.mock('../../src/helpers/set-deployment-status');
+setupMocks();
 
-(octokit.pulls.list as unknown as Mocktokit).mockImplementation(async () => ({
+const { DEFAULT_PIPELINE_STATUS, PRODUCTION_ENVIRONMENT } = await import('../../src/constants');
+const { notifyPipelineComplete } = await import('../../src/helpers/notify-pipeline-complete');
+const { octokit } = await import('../../src/octokit');
+const { context } = await import('@actions/github');
+
+(octokit.pulls.list as unknown as Mock<any>).mockImplementation(async () => ({
   data: [{ head: { sha: 'sha 1' } }, { head: { sha: 'sha 2' } }, { head: { sha: 'sha 3' } }]
+}));
+
+(octokit.repos.listDeployments as unknown as Mock<any>).mockImplementation(async () => ({
+  data: [{ id: 123, environment: 'production' }]
 }));
 
 describe('notify-pipeline-complete', () => {
   const description = 'Pipeline clear.';
+
+  beforeEach(() => {
+    mock.clearAllMocks();
+  });
 
   it('should notify that the pipeline is clear', async () => {
     await notifyPipelineComplete({});
@@ -103,7 +98,7 @@ describe('notify-pipeline-complete', () => {
   });
 
   it('should notify that the pipeline is clear when merge queue is enabled', async () => {
-    (octokit.repos.listBranches as unknown as Mocktokit).mockImplementation(async ({ page }) =>
+    (octokit.repos.listBranches as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) =>
       page > 1
         ? { data: [] }
         : {

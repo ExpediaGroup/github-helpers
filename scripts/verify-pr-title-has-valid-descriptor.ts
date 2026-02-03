@@ -1,10 +1,11 @@
-import { sync } from 'glob';
+import { Glob } from 'bun';
 
 const title = process.env.TITLE;
 if (!title) throw new Error('process.env.TITLE is required');
 
-const helpers = sync('src/helpers/**/*.ts')
-  .map(file => file.match(/(?<=src\/helpers\/)(.*)(?=.ts)/)?.find(Boolean));
+const glob = new Glob('src/helpers/**/*.ts');
+const helpers = Array.from(glob.scanSync('.'))
+  .map(file => file.match(/(?<=src\/helpers\/)(.*)(?=\.ts)/)?.find(Boolean));
 const validDescriptors = helpers.concat(['repo', 'deps', 'deps-dev']);
 
 const prTitleHasValidDescriptor = title.match(new RegExp(`\((${validDescriptors.join('|')})\)`, 'g'));

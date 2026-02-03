@@ -11,15 +11,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { addLabels } from '../../src/helpers/add-labels';
-import { context } from '@actions/github';
-import { octokit } from '../../src/octokit';
+import { describe, it, expect, beforeEach } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({ rest: { issues: { addLabels: jest.fn() } } }))
-}));
+setupMocks();
+
+const { addLabels } = await import('../../src/helpers/add-labels');
+const { context } = await import('@actions/github');
+const { octokit } = await import('../../src/octokit');
 
 describe('addLabels', () => {
   const labels = 'Needs a11y review\nExempt 👻';

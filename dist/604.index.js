@@ -11,8 +11,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getMergeQueuePosition: () => (/* binding */ getMergeQueuePosition)
 /* harmony export */ });
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8428);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6474);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6590);
 /* harmony import */ var _utils_merge_queue__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5323);
 /*
@@ -36,7 +35,7 @@ class GetMergeQueuePosition extends _types_generated__WEBPACK_IMPORTED_MODULE_3_
 const getMergeQueuePosition = async ({ max_queue_size = '10' }) => {
     const { repository } = await (0,_octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokitGraphql */ .n)(`
 query {
-  repository(owner: "${_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner}", name: "${_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo}") {
+  repository(owner: "${_actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.owner}", name: "${_actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.repo}") {
     mergeQueue {
       entries(first: ${max_queue_size}) {
         nodes {
@@ -65,12 +64,10 @@ query {
 /* harmony export */   A: () => (/* binding */ octokit),
 /* harmony export */   n: () => (/* binding */ octokitGraphql)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1806);
 /* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6474);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -86,8 +83,8 @@ limitations under the License.
 
 
 
-const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true });
-const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
+const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .getInput */ .V4('github_token', { required: true });
+const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__/* .getOctokit */ .Q)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
 
 
 /***/ }),
@@ -124,8 +121,7 @@ class HelperInputs {
 /* harmony export */   T: () => (/* binding */ getMergeQueueCommitHashes)
 /* harmony export */ });
 /* harmony import */ var _paginate_all_branches__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9615);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
 /*
 Copyright 2022 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -145,7 +141,7 @@ const getMergeQueueCommitHashes = async () => {
     const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/'));
     return mergeQueueBranches.map(branch => branch.commit.sha);
 };
-const getPrNumberFromMergeQueueRef = (ref = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref) => {
+const getPrNumberFromMergeQueueRef = (ref = _actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.ref) => {
     const prNumber = Number(ref
         .split('/')
         .find(part => part.includes('pr-'))
@@ -166,8 +162,7 @@ const getPrNumberFromMergeQueueRef = (ref = _actions_github__WEBPACK_IMPORTED_MO
 /* harmony export */   h: () => (/* binding */ paginateAllBranches)
 /* harmony export */ });
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6590);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
 /*
 Copyright 2022 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -187,7 +182,7 @@ const paginateAllBranches = async ({ protectedBranches, page = 1 } = {}) => {
         protected: protectedBranches,
         per_page: 100,
         page,
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo
     });
     if (!response.data.length) {
         return [];

@@ -11,14 +11,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mocktokit } from '../types';
-import { context } from '@actions/github';
-import * as core from '@actions/core';
-import { simpleGit } from 'simple-git';
-import { checkMergeSafety } from '../../src/helpers/check-merge-safety';
-import { octokit } from '../../src/octokit';
-import { setCommitStatus } from '../../src/helpers/set-commit-status';
-import { paginateAllOpenPullRequests } from '../../src/utils/paginate-open-pull-requests';
+import { describe, it, expect, beforeEach, mock, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
+
+setupMocks();
+
+// Create mocks for simpleGit
+const mockGit = {
+  diff: mock(() => ''),
+  fetch: mock(() => 'new fetch value'),
+  checkoutLocalBranch: mock(() => {}),
+  add: mock(() => {}),
+  commit: mock(() => {}),
+  push: mock(() => {}),
+  addConfig: mock(() => {})
+};
+
+const simpleGitMock = mock(() => mockGit) as unknown as Mock<any>;
+mock.module('simple-git', () => ({
+  default: simpleGitMock,
+  simpleGit: simpleGitMock
+}));
+
+const { checkMergeSafety } = await import('../../src/helpers/check-merge-safety');
+const { octokit } = await import('../../src/octokit');
+const { context } = await import('@actions/github');
+const core = await import('@actions/core');
+const { simpleGit } = await import('simple-git');
 
 const branchName = 'some-branch-name';
 const username = 'username';
@@ -29,33 +48,11 @@ const headRepoHtmlUrl = 'headRepoHtmlUrl';
 const baseSha = 'baseSha';
 const sha = 'sha';
 
-jest.mock('simple-git', () => {
-  const mockSimpleGit = { diff: jest.fn(), fetch: jest.fn() };
-  return { simpleGit: jest.fn(() => mockSimpleGit) };
-});
-jest.mock('../../src/utils/paginate-open-pull-requests');
-jest.mock('../../src/helpers/set-commit-status');
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      repos: {
-        compareCommitsWithBasehead: jest.fn(),
-        getCombinedStatusForRef: jest.fn(() => ({
-          data: { state: 'success', statuses: [] }
-        }))
-      },
-      pulls: {
-        get: jest.fn(() => ({
-          data: {
-            base: { repo: { default_branch: defaultBranch, owner: { login: baseOwner }, html_url: baseRepoHtmlUrl }, sha: baseSha },
-            head: { sha, ref: branchName, user: { login: username }, repo: { html_url: headRepoHtmlUrl } }
-          }
-        }))
-      }
-    }
-  }))
+(octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
+  data: {
+    base: { repo: { default_branch: defaultBranch, owner: { login: baseOwner }, html_url: baseRepoHtmlUrl }, sha: baseSha },
+    head: { sha, ref: branchName, user: { login: username }, repo: { html_url: headRepoHtmlUrl } }
+  }
 }));
 
 type MockGithubRequests = (
@@ -65,7 +62,7 @@ type MockGithubRequests = (
   error?: { status: number | string; message?: string } | null
 ) => void;
 const mockGithubRequests: MockGithubRequests = (filesOutOfDate, changedFilesOnPr, branch = branchName, error = null) => {
-  (octokit.repos.compareCommitsWithBasehead as unknown as Mocktokit).mockImplementation(async ({ basehead }) => {
+  (octokit.repos.compareCommitsWithBasehead as unknown as Mock<any>).mockImplementation(async ({ basehead }: { basehead: string }) => {
     const changedFiles = basehead === `${username}:${branch}...${baseOwner}:${defaultBranch}` ? filesOutOfDate : changedFilesOnPr;
     return error
       ? error
@@ -84,7 +81,7 @@ const mockGitInteractions = (filesOutOfDate: string[], changedFilesOnPr: string[
     return changedFiles.join('\n');
   };
 
-  const diff = simpleGit().diff as jest.Mock;
+  const diff = simpleGit().diff as unknown as Mock<any>;
   diff.mockImplementation(diffHandler);
   if (typeof whichCallToFail.diff === 'number') {
     Array(whichCallToFail.diff)
@@ -94,7 +91,7 @@ const mockGitInteractions = (filesOutOfDate: string[], changedFilesOnPr: string[
       );
   }
 
-  const fetch = simpleGit().fetch as jest.Mock;
+  const fetch = simpleGit().fetch as unknown as Mock<any>;
   fetch.mockImplementation(() => 'new fetch value');
   if (typeof whichCallToFail.fetch === 'number') {
     Array(whichCallToFail.fetch)
@@ -110,11 +107,8 @@ const mockGitInteractions = (filesOutOfDate: string[], changedFilesOnPr: string[
 const allProjectPaths = ['packages/package-1/', 'packages/package-2/', 'packages/package-3/'].join('\n');
 
 describe('checkMergeSafety', () => {
-  beforeEach(async () => {
-    jest.clearAllMocks();
-    (octokit.repos.getCombinedStatusForRef as unknown as jest.Mock).mockResolvedValue({
-      data: { state: 'success', statuses: [] }
-    });
+  beforeEach(() => {
+    mock.clearAllMocks();
   });
 
   it('should prevent merge when branch is out of date for a changed project', async () => {
@@ -125,7 +119,7 @@ describe('checkMergeSafety', () => {
       paths: allProjectPaths,
       ...context.repo
     });
-    expect(setCommitStatus).toHaveBeenCalledWith({
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha,
       state: 'failure',
       context: 'Merge Safety',
@@ -146,7 +140,7 @@ describe('checkMergeSafety', () => {
       paths: allProjectPaths,
       ...context.repo
     });
-    expect(setCommitStatus).toHaveBeenCalledWith({
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha,
       state: 'success',
       context: 'Merge Safety',
@@ -170,7 +164,7 @@ describe('checkMergeSafety', () => {
       paths: allProjectPaths,
       ...context.repo
     });
-    expect(setCommitStatus).toHaveBeenCalledWith({
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha,
       state: 'success',
       context: 'Merge Safety',
@@ -191,7 +185,7 @@ describe('checkMergeSafety', () => {
       paths: allProjectPaths,
       ...context.repo
     });
-    expect(setCommitStatus).toHaveBeenCalledWith({
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha,
       state: 'failure',
       context: 'Merge Safety',
@@ -224,7 +218,7 @@ describe('checkMergeSafety', () => {
       paths: allProjectPaths,
       ...context.repo
     });
-    expect(setCommitStatus).toHaveBeenCalledWith({
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha,
       state: 'failure',
       context: 'Merge Safety',
@@ -271,7 +265,7 @@ describe('checkMergeSafety', () => {
       paths: allProjectPaths,
       ...context.repo
     });
-    expect(setCommitStatus).toHaveBeenCalledWith({
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha,
       state: 'failure',
       context: 'Merge Safety',
@@ -290,7 +284,7 @@ describe('checkMergeSafety', () => {
       paths: allProjectPaths,
       ...context.repo
     });
-    expect(setCommitStatus).toHaveBeenCalledWith({
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha,
       state: 'success',
       context: 'Merge Safety',
@@ -310,7 +304,7 @@ describe('checkMergeSafety', () => {
       paths: allProjectPaths,
       ...context.repo
     });
-    expect(setCommitStatus).toHaveBeenCalledWith({
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha,
       state: 'success',
       context: 'Merge Safety',
@@ -324,14 +318,14 @@ describe('checkMergeSafety', () => {
     const filesOutOfDate = ['packages/package-1/src/another-file.ts'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
-    (octokit.repos.getCombinedStatusForRef as unknown as jest.Mock).mockResolvedValue({
+    (octokit.repos.getCombinedStatusForRef as unknown as Mock<any>).mockResolvedValue({
       data: { state: 'failure', statuses: [{ context: 'Merge Safety' }] }
     });
     await checkMergeSafety({
       paths: allProjectPaths,
       ...context.repo
     });
-    expect(setCommitStatus).not.toHaveBeenCalled();
+    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalled();
     expect(core.setFailed).toHaveBeenCalledWith('This branch has one or more outdated projects. Please update with main.');
   });
 
@@ -339,14 +333,14 @@ describe('checkMergeSafety', () => {
     const filesOutOfDate = ['packages/package-1/src/another-file.ts'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
-    (octokit.repos.getCombinedStatusForRef as unknown as jest.Mock).mockResolvedValue({
+    (octokit.repos.getCombinedStatusForRef as unknown as Mock<any>).mockResolvedValue({
       data: { state: 'success', statuses: [{ context: 'Merge Safety' }] }
     });
     await checkMergeSafety({
       paths: allProjectPaths,
       ...context.repo
     });
-    expect(setCommitStatus).toHaveBeenCalledWith({
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha,
       state: 'failure',
       context: 'Merge Safety',
@@ -366,7 +360,7 @@ describe('checkMergeSafety', () => {
       override_filter_paths: 'package.json\npackage-lock.json',
       ...context.repo
     });
-    expect(setCommitStatus).toHaveBeenCalledWith({
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha,
       state: 'failure',
       context: 'Merge Safety',
@@ -385,7 +379,7 @@ describe('checkMergeSafety', () => {
       override_filter_globs: '**.md',
       ...context.repo
     });
-    expect(setCommitStatus).toHaveBeenCalledWith({
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha,
       state: 'failure',
       context: 'Merge Safety',
@@ -404,7 +398,7 @@ describe('checkMergeSafety', () => {
       override_filter_globs: '!packages/**',
       ...context.repo
     });
-    expect(setCommitStatus).toHaveBeenCalledWith({
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha,
       state: 'failure',
       context: 'Merge Safety',
@@ -423,7 +417,7 @@ describe('checkMergeSafety', () => {
       ignore_globs: 'packages/**/package.json',
       ...context.repo
     });
-    expect(setCommitStatus).toHaveBeenCalledWith({
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha,
       state: 'success',
       context: 'Merge Safety',
@@ -435,7 +429,7 @@ describe('checkMergeSafety', () => {
 
   it('should set merge safety status with truncated description length if branch name is too long', async () => {
     const reallyLongBranchName = 'x'.repeat(200);
-    (octokit.pulls.get as unknown as Mocktokit).mockImplementation(() => ({
+    (octokit.pulls.get as unknown as Mock<any>).mockImplementation(() => ({
       data: {
         base: { repo: { default_branch: defaultBranch, owner: { login: baseOwner } } },
         head: { sha, ref: reallyLongBranchName, user: { login: username } }
@@ -449,7 +443,7 @@ describe('checkMergeSafety', () => {
       ignore_globs: 'packages/**/package.json',
       ...context.repo
     });
-    expect(setCommitStatus).toHaveBeenCalledWith({
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha,
       state: 'success',
       context: 'Merge Safety',
@@ -464,51 +458,56 @@ describe('checkMergeSafety', () => {
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     context.issue.number = undefined as unknown as number; // couldn't figure out a way to mock out this issue number in a cleaner way ¯\_(ツ)_/¯
-    (paginateAllOpenPullRequests as jest.Mock).mockResolvedValue([
-      {
-        head: { sha: '123', ref: branchName, user: { login: username } },
-        base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }
-      },
-      {
-        head: { sha: '456', ref: branchName, user: { login: username } },
-        base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }
-      },
-      {
-        head: { sha: '789', ref: branchName, user: { login: username } },
-        base: { ref: 'some-other-branch', repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }
-      },
-      {
-        head: { sha: '000', ref: branchName, user: { login: username } },
-        base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } },
-        draft: true
-      }
-    ]);
+    // Mock octokit.pulls.list for paginateAllOpenPullRequests
+    (octokit.pulls.list as unknown as Mock<any>)
+      .mockResolvedValueOnce({
+        data: [
+          {
+            head: { sha: '123', ref: branchName, user: { login: username } },
+            base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }
+          },
+          {
+            head: { sha: '456', ref: branchName, user: { login: username } },
+            base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }
+          },
+          {
+            head: { sha: '789', ref: branchName, user: { login: username } },
+            base: { ref: 'some-other-branch', repo: { default_branch: defaultBranch, owner: { login: baseOwner } } }
+          },
+          {
+            head: { sha: '000', ref: branchName, user: { login: username } },
+            base: { ref: defaultBranch, repo: { default_branch: defaultBranch, owner: { login: baseOwner } } },
+            draft: true
+          }
+        ]
+      })
+      .mockResolvedValueOnce({ data: [] }); // Second call should return empty to stop recursion
     await checkMergeSafety({
       paths: allProjectPaths,
       ...context.repo
     });
-    expect(setCommitStatus).toHaveBeenCalledWith({
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha: '123',
       state: 'success',
       context: 'Merge Safety',
       description: 'Branch username:some-branch-name is safe to merge!',
       ...context.repo
     });
-    expect(setCommitStatus).toHaveBeenCalledWith({
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
       sha: '456',
       state: 'success',
       context: 'Merge Safety',
       description: 'Branch username:some-branch-name is safe to merge!',
       ...context.repo
     });
-    expect(setCommitStatus).not.toHaveBeenCalledWith({
+    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
       sha: '789',
       state: 'success',
       context: 'Merge Safety',
       description: 'Branch username:some-branch-name is safe to merge!',
       ...context.repo
     });
-    expect(setCommitStatus).not.toHaveBeenCalledWith({
+    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
       sha: '000',
       state: 'success',
       context: 'Merge Safety',

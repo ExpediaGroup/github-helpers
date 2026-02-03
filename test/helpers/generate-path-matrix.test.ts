@@ -11,16 +11,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mocktokit } from '../types';
-import { context } from '@actions/github';
-import { generatePathMatrix } from '../../src/helpers/generate-path-matrix';
-import { octokit } from '../../src/octokit';
+import { describe, it, expect, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({ rest: { pulls: { listFiles: jest.fn() } } }))
-}));
+setupMocks();
+
+const { generatePathMatrix } = await import('../../src/helpers/generate-path-matrix');
+const { octokit } = await import('../../src/octokit');
+const { context } = await import('@actions/github');
 
 const file1 = 'file/path/1/file1.txt';
 const file2 = 'packages/abc/file1.ts';
@@ -28,7 +26,7 @@ const file3 = 'packages/def/file1.txt';
 const file4 = 'packages/ghi/more/dirs/file1.md';
 const file5 = 'docs/xyz/file1.js';
 const pkg = 'package.json';
-(octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+(octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => ({
   data:
     page === 1
       ? [

@@ -11,8 +11,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   checkMergeSafety: () => (/* binding */ checkMergeSafety)
 /* harmony export */ });
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(8428);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6474);
 /* harmony import */ var simple_git__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9070);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6590);
 /* harmony import */ var micromatch__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8785);
@@ -21,8 +20,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(4366);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _set_commit_status__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(9250);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(4116);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,14 +47,14 @@ const maxBranchNameLength = 50;
 class CheckMergeSafety extends _types_generated__WEBPACK_IMPORTED_MODULE_8__/* .HelperInputs */ .m {
 }
 const checkMergeSafety = async (inputs) => {
-    const isPrWorkflow = Boolean(_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number);
+    const isPrWorkflow = Boolean(_actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.issue.number);
     if (!isPrWorkflow) {
         return handlePushWorkflow(inputs);
     }
-    const { data: pullRequest } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.pulls.get({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number, ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo });
+    const { data: pullRequest } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.pulls.get({ pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.issue.number, ..._actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo });
     const { state, message } = await setMergeSafetyStatus(pullRequest, inputs);
     if (state === 'failure') {
-        _actions_core__WEBPACK_IMPORTED_MODULE_7__.setFailed(message);
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__/* .setFailed */ .C1(message);
     }
 };
 const setMergeSafetyStatus = async (pullRequest, { context = 'Merge Safety', ...inputs }) => {
@@ -66,7 +64,7 @@ const setMergeSafetyStatus = async (pullRequest, { context = 'Merge Safety', ...
         const { head: { ref, user: { login: username } } } = pullRequest;
         const truncatedRef = ref.length > maxBranchNameLength ? `${ref.substring(0, maxBranchNameLength)}...` : ref;
         const truncatedBranchName = `${username}:${truncatedRef}`;
-        _actions_core__WEBPACK_IMPORTED_MODULE_7__.info(`Found existing failure status for ${truncatedBranchName}, skipping setting new status`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__/* .info */ .pq(`Found existing failure status for ${truncatedBranchName}, skipping setting new status`);
     }
     else {
         await (0,_set_commit_status__WEBPACK_IMPORTED_MODULE_6__.setCommitStatus)({
@@ -74,7 +72,7 @@ const setMergeSafetyStatus = async (pullRequest, { context = 'Merge Safety', ...
             state,
             context,
             description: message,
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo
         });
     }
     return { state, message };
@@ -86,7 +84,7 @@ const handlePushWorkflow = async (inputs) => {
 };
 const checkForExistingFailureStatus = async (pullRequest, context) => {
     const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.getCombinedStatusForRef({
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo,
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo,
         ref: pullRequest.head.sha
     });
     if (data.state === 'failure') {
@@ -98,10 +96,10 @@ const checkForExistingFailureStatus = async (pullRequest, context) => {
 const fetchSha = async (repoUrl, sha) => {
     try {
         await git.fetch(repoUrl, sha, { '--depth': 1 });
-        _actions_core__WEBPACK_IMPORTED_MODULE_7__.info(`Fetched ${sha} from ${repoUrl}`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__/* .info */ .pq(`Fetched ${sha} from ${repoUrl}`);
     }
     catch (err) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_7__.info(`Failed to fetch ${sha} from ${repoUrl}: ${err.message}`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__/* .info */ .pq(`Failed to fetch ${sha} from ${repoUrl}: ${err.message}`);
         throw new Error(`Failed to fetch ${sha} from ${repoUrl}: ${err.message}`);
     }
 };
@@ -114,7 +112,7 @@ const getDiffUsingGitCommand = async (repoUrl, baseSha, headSha) => {
         return (diff ?? '').split('\n').filter(Boolean);
     }
     catch (err) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_7__.error(`Failed to run local git diff for ${repoUrl}: ${err.message}`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__/* .error */ .z3(`Failed to run local git diff for ${repoUrl}: ${err.message}`);
         throw new Error(`Failed to run local git diff for ${repoUrl}: ${err.message}`);
     }
 };
@@ -122,7 +120,7 @@ const getDiff = async (compareBase, compareHead, basehead) => {
     let changedFileNames = [];
     try {
         const { data: { files: changedFiles } = {}, status } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.repos.compareCommitsWithBasehead({
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo,
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo,
             basehead
         });
         if (status > 400) {
@@ -131,15 +129,15 @@ const getDiff = async (compareBase, compareHead, basehead) => {
         changedFileNames = changedFiles?.map(file => file.filename) ?? [];
     }
     catch (err) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_7__.info(`Failed to fetch diff: ${err.message} Status: ${err.status}`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__/* .info */ .pq(`Failed to fetch diff: ${err.message} Status: ${err.status}`);
         // diff too large error
         if (err?.status === 406 || err?.message.includes('diff is taking too long to generate')) {
-            _actions_core__WEBPACK_IMPORTED_MODULE_7__.info(`Attempting to generate diff using local git command`);
+            _actions_core__WEBPACK_IMPORTED_MODULE_7__/* .info */ .pq(`Attempting to generate diff using local git command`);
             if (compareBase.repo?.html_url) {
                 changedFileNames = await getDiffUsingGitCommand(compareBase.repo?.html_url, compareBase.sha, compareHead.sha);
             }
             else {
-                _actions_core__WEBPACK_IMPORTED_MODULE_7__.error(`Could not fetch repo url to run local git diff`);
+                _actions_core__WEBPACK_IMPORTED_MODULE_7__/* .error */ .z3(`Could not fetch repo url to run local git diff`);
                 throw err;
             }
         }
@@ -159,7 +157,7 @@ const getMergeSafetyStateAndMessage = async (pullRequest, { paths, ignore_globs,
     }
     catch (err) {
         const message = diffErrorMessage(diffAgainstUserBranch, err.message);
-        _actions_core__WEBPACK_IMPORTED_MODULE_7__.error(message);
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__/* .error */ .z3(message);
         return { state: 'failure', message };
     }
     const truncatedRef = ref.length > maxBranchNameLength ? `${ref.substring(0, maxBranchNameLength)}...` : ref;
@@ -170,7 +168,7 @@ const getMergeSafetyStateAndMessage = async (pullRequest, { paths, ignore_globs,
             ? fileNamesWhichBranchIsBehindOn.filter(changedFile => override_filter_paths.split(/[\n,]/).includes(changedFile))
             : [];
     if (globalFilesOutdatedOnBranch.length) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_7__.error(buildErrorMessage(globalFilesOutdatedOnBranch, 'global files', truncatedBranchName));
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__/* .error */ .z3(buildErrorMessage(globalFilesOutdatedOnBranch, 'global files', truncatedBranchName));
         return {
             state: 'failure',
             message: `This branch has one or more outdated global files. Please update with ${default_branch}.`
@@ -183,7 +181,7 @@ const getMergeSafetyStateAndMessage = async (pullRequest, { paths, ignore_globs,
     }
     catch (err) {
         const message = diffErrorMessage(diffAgainstDefaultBranch, err.message);
-        _actions_core__WEBPACK_IMPORTED_MODULE_7__.error(message);
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__/* .error */ .z3(message);
         return { state: 'failure', message };
     }
     const changedFilesToIgnore = changedFileNames && ignore_globs ? micromatch__WEBPACK_IMPORTED_MODULE_3___default()(changedFileNames, ignore_globs.split(/[\n,]/)) : [];
@@ -191,14 +189,14 @@ const getMergeSafetyStateAndMessage = async (pullRequest, { paths, ignore_globs,
     const allProjectDirectories = paths?.split(/[\n,]/);
     const changedProjectsOutdatedOnBranch = allProjectDirectories?.filter(dir => fileNamesWhichBranchIsBehindOn.some(file => file.includes(dir)) && filteredFileNames?.some(file => file.includes(dir)));
     if (changedProjectsOutdatedOnBranch?.length) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_7__.error(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects', truncatedBranchName));
+        _actions_core__WEBPACK_IMPORTED_MODULE_7__/* .error */ .z3(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects', truncatedBranchName));
         return {
             state: 'failure',
             message: `This branch has one or more outdated projects. Please update with ${default_branch}.`
         };
     }
     const safeMessage = buildSuccessMessage(truncatedBranchName);
-    _actions_core__WEBPACK_IMPORTED_MODULE_7__.info(safeMessage);
+    _actions_core__WEBPACK_IMPORTED_MODULE_7__/* .info */ .pq(safeMessage);
     return {
         state: 'success',
         message: safeMessage
@@ -223,11 +221,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   SetCommitStatus: () => (/* binding */ SetCommitStatus),
 /* harmony export */   setCommitStatus: () => (/* binding */ setCommitStatus)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(8428);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(4366);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6590);
@@ -257,13 +253,13 @@ const setCommitStatus = async ({ sha, context, state, description, target_url, s
     await (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(context.split('\n').filter(Boolean), async (context) => {
         if (skip_if_already_set === 'true') {
             const check_runs = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.checks.listForRef({
-                ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+                ..._actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo,
                 ref: sha
             });
             const run = check_runs.data.check_runs.find(({ name }) => name === context);
             const runCompletedAndIsValid = run?.status === 'completed' && (run?.conclusion === 'failure' || run?.conclusion === 'success');
             if (runCompletedAndIsValid) {
-                _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`${context} already completed with a ${run.conclusion} conclusion.`);
+                _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`${context} already completed with a ${run.conclusion} conclusion.`);
                 return;
             }
         }
@@ -273,7 +269,7 @@ const setCommitStatus = async ({ sha, context, state, description, target_url, s
             state: state,
             description,
             target_url,
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo
         });
     });
 };
@@ -288,12 +284,10 @@ const setCommitStatus = async ({ sha, context, state, description, target_url, s
 /* harmony export */   A: () => (/* binding */ octokit),
 /* harmony export */   n: () => (/* binding */ octokitGraphql)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1806);
 /* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6474);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -309,8 +303,8 @@ limitations under the License.
 
 
 
-const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true });
-const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
+const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .getInput */ .V4('github_token', { required: true });
+const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__/* .getOctokit */ .Q)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
 
 
 /***/ }),
@@ -346,8 +340,7 @@ class HelperInputs {
 /* harmony export */   U: () => (/* binding */ paginateAllOpenPullRequests)
 /* harmony export */ });
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6590);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
 /*
 Copyright 2022 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -369,7 +362,7 @@ const paginateAllOpenPullRequests = async (page = 1) => {
         direction: 'desc',
         per_page: 100,
         page,
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo
     });
     if (!response.data.length) {
         return [];

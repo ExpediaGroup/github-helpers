@@ -11,22 +11,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mocktokit } from '../types';
-import { context } from '@actions/github';
-import { octokit } from '../../src/octokit';
-import { removeLabel } from '../../src/helpers/remove-label';
+import { describe, it, expect, beforeEach, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({ rest: { issues: { removeLabel: jest.fn() } } }))
-}));
-(octokit.issues.removeLabel as unknown as Mocktokit).mockImplementation(async () => 'label removed!');
+setupMocks();
+
+const { context } = await import('@actions/github');
+const { octokit } = await import('../../src/octokit');
+const { removeLabel } = await import('../../src/helpers/remove-label');
 
 describe('removeLabel', () => {
   const label = 'Needs a11y review';
 
   beforeEach(() => {
+    (octokit.issues.removeLabel as unknown as Mock<any>).mockImplementation(async () => ({ data: 'label removed!' }));
     removeLabel({ label });
   });
 

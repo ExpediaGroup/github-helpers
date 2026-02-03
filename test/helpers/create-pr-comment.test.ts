@@ -11,29 +11,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mocktokit } from '../types';
-import { context } from '@actions/github';
-import { createPrComment } from '../../src/helpers/create-pr-comment';
-import { octokit } from '../../src/octokit';
+import { describe, it, expect, beforeEach, Mock, mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      repos: {
-        listPullRequestsAssociatedWithCommit: jest.fn()
-      },
-      issues: {
-        createComment: jest.fn(),
-        listComments: jest.fn(),
-        updateComment: jest.fn()
-      }
-    }
-  }))
-}));
+setupMocks();
 
-(octokit.issues.listComments as unknown as Mocktokit).mockImplementation(async () => ({
+const { createPrComment } = await import('../../src/helpers/create-pr-comment');
+const { octokit } = await import('../../src/octokit');
+const { context } = await import('@actions/github');
+
+(octokit.issues.listComments as unknown as Mock<any>).mockImplementation(async () => ({
   data: [
     {
       id: 12345,
@@ -51,7 +38,7 @@ jest.mock('@actions/github', () => ({
     }
   ]
 }));
-(octokit.repos.listPullRequestsAssociatedWithCommit as unknown as Mocktokit).mockImplementation(async () => ({
+(octokit.repos.listPullRequestsAssociatedWithCommit as unknown as Mock<any>).mockImplementation(async () => ({
   data: [
     {
       number: 112233
@@ -63,6 +50,10 @@ jest.mock('@actions/github', () => ({
 }));
 
 describe('createPrComment', () => {
+  beforeEach(() => {
+    mock.clearAllMocks();
+  });
+
   describe('create comment in same PR', () => {
     const body = 'body';
 

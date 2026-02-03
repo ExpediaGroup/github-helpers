@@ -11,32 +11,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { context as githubContext } from '@actions/github';
-import { octokit } from '../../src/octokit';
-import { setCommitStatus } from '../../src/helpers/set-commit-status';
+import { describe, it, expect, beforeEach, Mock, mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      repos: { createCommitStatus: jest.fn() },
-      checks: {
-        listForRef: jest.fn(() => ({
-          data: {
-            check_runs: [
-              { name: 'context1', status: 'completed', conclusion: 'success' },
-              { name: 'context2', status: 'completed', conclusion: 'skipped' },
-              { name: 'context3', status: 'completed', conclusion: 'failure' }
-            ]
-          }
-        }))
-      }
-    }
-  }))
+setupMocks();
+
+const { octokit } = await import('../../src/octokit');
+const { setCommitStatus } = await import('../../src/helpers/set-commit-status');
+const { context: githubContext } = await import('@actions/github');
+
+// Setup mock for checks.listForRef with default check runs
+(octokit.checks.listForRef as unknown as Mock<any>).mockImplementation(async () => ({
+  data: {
+    check_runs: [
+      { name: 'context1', status: 'completed', conclusion: 'success' },
+      { name: 'context3', status: 'completed', conclusion: 'success' }
+    ]
+  }
 }));
 
 describe('setCommitStatus', () => {
+  beforeEach(() => {
+    mock.clearAllMocks();
+  });
   const sha = 'sha';
   const state = 'success';
   const description = 'desc';

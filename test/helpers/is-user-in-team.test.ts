@@ -11,25 +11,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { isUserInTeam } from '../../src/helpers/is-user-in-team';
-import { context } from '@actions/github';
-import { octokit } from '../../src/octokit';
-import { Mocktokit } from '../types';
+import { describe, it, expect, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 }, actor: 'admin' },
-  getOctokit: jest.fn(() => ({ rest: { teams: { listMembersInOrg: jest.fn() } } }))
-}));
+setupMocks();
 
-(octokit.teams.listMembersInOrg as unknown as Mocktokit).mockImplementation(async ({ page, team_slug }) => {
-  if (page === 1) {
-    return {
-      data: team_slug === 'users' ? [{ login: 'octocat' }, { login: 'admin' }] : [{ login: 'admin' }]
-    };
+const { isUserInTeam } = await import('../../src/helpers/is-user-in-team');
+const { octokit } = await import('../../src/octokit');
+const { context } = await import('@actions/github');
+
+(octokit.teams.listMembersInOrg as unknown as Mock<any>).mockImplementation(
+  async ({ page, team_slug }: { page: number; team_slug: string }) => {
+    if (page === 1) {
+      return {
+        data: team_slug === 'users' ? [{ login: 'octocat' }, { login: 'admin' }] : [{ login: 'admin' }]
+      };
+    }
+    return { data: [] };
   }
-  return { data: [] };
-});
+);
 
 describe('isUserInTeam', () => {
   const login = 'octocat';

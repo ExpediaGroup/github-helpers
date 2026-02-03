@@ -11,28 +11,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { DEFAULT_PIPELINE_STATUS, PRODUCTION_ENVIRONMENT } from '../../src/constants';
-import { Mocktokit } from '../types';
-import { context } from '@actions/github';
-import { octokit } from '../../src/octokit';
-import { setLatestPipelineStatus } from '../../src/helpers/set-latest-pipeline-status';
+import { describe, it, expect, beforeEach, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      repos: {
-        createCommitStatus: jest.fn(),
-        listDeployments: jest.fn(),
-        listDeploymentStatuses: jest.fn()
-      }
-    }
-  }))
-}));
+setupMocks();
+
+const { DEFAULT_PIPELINE_STATUS, PRODUCTION_ENVIRONMENT } = await import('../../src/constants');
+const { octokit } = await import('../../src/octokit');
+const { setLatestPipelineStatus } = await import('../../src/helpers/set-latest-pipeline-status');
+const { context } = await import('@actions/github');
 
 const deployment_id = 123;
-(octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
+(octokit.repos.listDeployments as unknown as Mock<any>).mockImplementation(async () => ({
   data: [
     {
       id: deployment_id
@@ -47,7 +37,7 @@ describe('setLatestDeploymentStatus', () => {
   const sha = 'sha';
   describe('deployment status found', () => {
     beforeEach(() => {
-      (octokit.repos.listDeploymentStatuses as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.listDeploymentStatuses as unknown as Mock<any>).mockImplementation(async () => ({
         data: [
           {
             state: 'success',
@@ -91,7 +81,7 @@ describe('setLatestDeploymentStatus', () => {
 
   describe('deployment status not found', () => {
     beforeEach(() => {
-      (octokit.repos.listDeploymentStatuses as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.listDeploymentStatuses as unknown as Mock<any>).mockImplementation(async () => ({
         data: []
       }));
       setLatestPipelineStatus({ sha });

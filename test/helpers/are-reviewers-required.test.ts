@@ -11,21 +11,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { areReviewersRequired } from '../../src/helpers/are-reviewers-required';
-import { getRequiredCodeOwnersEntries } from '../../src/utils/get-core-member-logins';
+import { describe, it, expect, beforeEach, afterEach, mock, spyOn } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({
-    rest: {}
-  }))
-}));
-jest.mock('../../src/utils/get-core-member-logins');
+setupMocks();
+
+const { areReviewersRequired } = await import('../../src/helpers/are-reviewers-required');
+const getCoreMemberLoginsModule = await import('../../src/utils/get-core-member-logins');
 
 describe('AreReviewersRequired', () => {
+  let getRequiredCodeOwnersEntriesSpy: ReturnType<typeof spyOn>;
+  let getCoreMemberLoginsSpy: ReturnType<typeof spyOn>;
+
   beforeEach(() => {
-    (getRequiredCodeOwnersEntries as jest.Mock).mockResolvedValue([{ owners: ['@ExpediaGroup/team1', '@ExpediaGroup/team2'] }]);
+    mock.clearAllMocks();
+    getRequiredCodeOwnersEntriesSpy = spyOn(getCoreMemberLoginsModule, 'getRequiredCodeOwnersEntries').mockResolvedValue([
+      { owners: ['@ExpediaGroup/team1', '@ExpediaGroup/team2'] }
+    ] as any);
+    getCoreMemberLoginsSpy = spyOn(getCoreMemberLoginsModule, 'getCoreMemberLogins').mockResolvedValue([]);
+  });
+
+  afterEach(() => {
+    getRequiredCodeOwnersEntriesSpy.mockRestore();
+    getCoreMemberLoginsSpy.mockRestore();
   });
 
   it('should return true when all teams are required reviewers', async () => {

@@ -11,58 +11,64 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { isUserCoreMember } from '../../src/helpers/is-user-core-member';
-import { getCoreMemberLogins } from '../../src/utils/get-core-member-logins';
+import { describe, it, expect, beforeEach, afterEach, mock, spyOn } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 }, actor: 'admin' }
-}));
-jest.mock('../../src/utils/get-core-member-logins', () => ({
-  getCoreMemberLogins: jest.fn()
-}));
+setupMocks();
+
+const { isUserCoreMember } = await import('../../src/helpers/is-user-core-member');
+const getCoreMemberLoginsModule = await import('../../src/utils/get-core-member-logins');
 
 describe('isUserCoreMember', () => {
   const login = 'octocat';
   const pull_number = '123';
+  let getCoreMemberLoginsSpy: ReturnType<typeof spyOn>;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    mock.clearAllMocks();
+    getCoreMemberLoginsSpy = spyOn(getCoreMemberLoginsModule, 'getCoreMemberLogins').mockResolvedValue([]);
+  });
+
+  afterEach(() => {
+    getCoreMemberLoginsSpy.mockRestore();
   });
 
   it('should call isUserCoreMember with correct params and find user as core member', async () => {
-    (getCoreMemberLogins as jest.Mock).mockResolvedValue(['octocat', 'admin']);
+    getCoreMemberLoginsSpy.mockResolvedValue(['octocat', 'admin']);
 
     const response = await isUserCoreMember({ login, pull_number });
 
-    expect(getCoreMemberLogins).toHaveBeenCalledWith({ pull_number: Number(pull_number) });
+    expect(getCoreMemberLoginsModule.getCoreMemberLogins).toHaveBeenCalledWith({ pull_number: Number(pull_number) });
     expect(response).toBe(true);
   });
 
   it('should call isUserCoreMember with correct params and find user as core member when CODEOWNERS overrides are specified', async () => {
-    (getCoreMemberLogins as jest.Mock).mockResolvedValue(['octocat', 'admin']);
+    getCoreMemberLoginsSpy.mockResolvedValue(['octocat', 'admin']);
 
     const response = await isUserCoreMember({ login, pull_number, codeowners_overrides: '/foo @octocat' });
 
-    expect(getCoreMemberLogins).toHaveBeenCalledWith({ pull_number: Number(pull_number), codeowners_overrides: '/foo @octocat' });
+    expect(getCoreMemberLoginsModule.getCoreMemberLogins).toHaveBeenCalledWith({
+      pull_number: Number(pull_number),
+      codeowners_overrides: '/foo @octocat'
+    });
     expect(response).toBe(true);
   });
 
   it('should call isUserCoreMember with correct params and find user as core member for context actor', async () => {
-    (getCoreMemberLogins as jest.Mock).mockResolvedValue(['admin']);
+    getCoreMemberLoginsSpy.mockResolvedValue(['admin']);
 
     const response = await isUserCoreMember({ pull_number });
 
-    expect(getCoreMemberLogins).toHaveBeenCalledWith({ pull_number: Number(pull_number) });
+    expect(getCoreMemberLoginsModule.getCoreMemberLogins).toHaveBeenCalledWith({ pull_number: Number(pull_number) });
     expect(response).toBe(true);
   });
 
   it('should call isUserCoreMember with correct params and find user not as core member', async () => {
-    (getCoreMemberLogins as jest.Mock).mockResolvedValue(['admin']);
+    getCoreMemberLoginsSpy.mockResolvedValue(['admin']);
 
     const response = await isUserCoreMember({ login, pull_number });
 
-    expect(getCoreMemberLogins).toHaveBeenCalledWith({ pull_number: Number(pull_number) });
+    expect(getCoreMemberLoginsModule.getCoreMemberLogins).toHaveBeenCalledWith({ pull_number: Number(pull_number) });
     expect(response).toBe(false);
   });
 });

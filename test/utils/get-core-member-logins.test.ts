@@ -11,11 +11,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mocktokit } from '../types';
-import { getCoreMemberLogins, getRequiredCodeOwnersEntries } from '../../src/utils/get-core-member-logins';
-import { octokit } from '../../src/octokit';
+import { describe, it, expect, beforeEach, afterEach, Mock, spyOn } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
+setupMocks();
+
 const ownerMap: { [key: string]: { data: { login: string }[] } } = {
   'test-owners-1': { data: [{ login: 'user1' }, { login: 'user2' }] },
   'test-owners-2': { data: [{ login: 'user2' }, { login: 'user3' }] },
@@ -23,17 +23,11 @@ const ownerMap: { [key: string]: { data: { login: string }[] } } = {
   'test-shared-owners-2': { data: [{ login: 'user5' }, { login: 'user6' }] },
   'github-helpers-committers': { data: [{ login: 'user4' }] }
 };
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      pulls: { listFiles: jest.fn() },
-      teams: {
-        listMembersInOrg: jest.fn(async input => ownerMap[input.team_slug])
-      }
-    }
-  }))
-}));
+
+const { getCoreMemberLogins, getRequiredCodeOwnersEntries } = await import('../../src/utils/get-core-member-logins');
+const { octokit } = await import('../../src/octokit');
+const paginateMembersInOrgModule = await import('../../src/utils/paginate-members-in-org');
+
 const file1 = 'file/path/1/file1.txt';
 const file2 = 'file/path/2/file2.ts';
 const sharedFile = 'file/path/shared/file.ts';
@@ -44,9 +38,22 @@ const pull_number = 123;
 
 describe('getCoreMemberLogins', () => {
   describe('codeowners tests', () => {
+    let paginateMembersInOrgSpy: ReturnType<typeof spyOn>;
+
+    beforeEach(() => {
+      paginateMembersInOrgSpy = spyOn(paginateMembersInOrgModule, 'paginateMembersInOrg').mockImplementation(async (team: string) => {
+        const teamSlug = team.replace('@ExpediaGroup/', '').replace('ExpediaGroup/', '');
+        return (ownerMap[teamSlug]?.data || []) as any;
+      });
+    });
+
+    afterEach(() => {
+      paginateMembersInOrgSpy.mockRestore();
+    });
+
     describe('only some codeowners case', () => {
       beforeEach(() => {
-        (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+        (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => ({
           data:
             page === 1
               ? [
@@ -70,7 +77,7 @@ describe('getCoreMemberLogins', () => {
 
     describe('all codeowners case', () => {
       beforeEach(() => {
-        (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+        (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => ({
           data:
             page === 1
               ? [
@@ -100,7 +107,7 @@ describe('getCoreMemberLogins', () => {
 
     describe('getRequiredCodeOwnersEntries', () => {
       beforeEach(() => {
-        (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+        (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => ({
           data:
             page === 1
               ? [
@@ -174,9 +181,14 @@ describe('getCoreMemberLogins', () => {
 
   describe('specified teams case', () => {
     const teams = ['test-owners-1', 'test-owners-2'];
+    let paginateMembersInOrgSpy: ReturnType<typeof spyOn>;
 
     beforeEach(() => {
-      (octokit.pulls.listFiles as unknown as Mocktokit).mockImplementation(async ({ page }) => ({
+      paginateMembersInOrgSpy = spyOn(paginateMembersInOrgModule, 'paginateMembersInOrg').mockImplementation(async (team: string) => {
+        const teamSlug = team.replace('@ExpediaGroup/', '').replace('ExpediaGroup/', '');
+        return (ownerMap[teamSlug]?.data || []) as any;
+      });
+      (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => ({
         data:
           page === 1
             ? [
@@ -195,6 +207,10 @@ describe('getCoreMemberLogins', () => {
               ]
             : []
       }));
+    });
+
+    afterEach(() => {
+      paginateMembersInOrgSpy.mockRestore();
     });
 
     it('should return expected result', async () => {

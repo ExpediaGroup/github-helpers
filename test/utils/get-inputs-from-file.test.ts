@@ -11,7 +11,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { getInputsFromFile } from '../../src/utils/get-inputs-from-file';
+import { describe, it, expect } from 'bun:test';
+
+const { getInputsFromFile } = await import('../../src/utils/get-inputs-from-file');
 
 describe('getInputsFromFile', () => {
   const yamlContents = `

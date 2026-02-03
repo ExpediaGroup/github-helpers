@@ -11,59 +11,49 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { assignPrReviewers } from '../../src/helpers/assign-pr-reviewers';
-import { context } from '@actions/github';
-import { getCoreMemberLogins } from '../../src/utils/get-core-member-logins';
-import { notifyUser } from '../../src/utils/notify-user';
-import { octokit } from '../../src/octokit';
-import { sampleSize } from 'lodash';
-import { Mocktokit } from '../types';
-import { CORE_APPROVED_PR_LABEL, PEER_APPROVED_PR_LABEL } from '../../src/constants';
+import { describe, it, expect, beforeEach, afterEach, Mock, mock, spyOn } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('../../src/utils/get-core-member-logins');
-jest.mock('../../src/utils/notify-user');
-jest.mock('@actions/core');
-jest.mock('lodash');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      issues: { addAssignees: jest.fn(async () => 'result') },
-      pulls: { get: jest.fn() }
-    }
-  }))
-}));
-(getCoreMemberLogins as jest.Mock).mockResolvedValue(['user1', 'user2', 'user3']);
-(sampleSize as jest.Mock).mockReturnValue(['assignee']);
+setupMocks();
+
+const { assignPrReviewers } = await import('../../src/helpers/assign-pr-reviewers');
+const getCoreMemberLoginsModule = await import('../../src/utils/get-core-member-logins');
+const notifyUserModule = await import('../../src/utils/notify-user');
+const { octokit } = await import('../../src/octokit');
+const { CORE_APPROVED_PR_LABEL, PEER_APPROVED_PR_LABEL } = await import('../../src/constants');
+const { context } = await import('@actions/github');
+const lodashModule = await import('lodash');
 
 describe('assignPrReviewer', () => {
   const teams = 'team1\nteam2';
   const pull_number = 123;
+  let getCoreMemberLoginsSpy: ReturnType<typeof spyOn>;
+  let sampleSizeSpy: ReturnType<typeof spyOn>;
+  let notifyUserSpy: ReturnType<typeof spyOn>;
 
   beforeEach(() => {
-    (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
-      data: {
-        id: 1,
-        number: 123,
-        state: 'open',
-        title: 'feat: added feature to project',
-        user: {
-          login: 'author'
-        }
-      }
-    }));
+    mock.clearAllMocks();
+    getCoreMemberLoginsSpy = spyOn(getCoreMemberLoginsModule, 'getCoreMemberLogins').mockResolvedValue(['user1', 'user2', 'user3']);
+    sampleSizeSpy = spyOn(lodashModule, 'sampleSize').mockReturnValue(['assignee'] as any);
+    notifyUserSpy = spyOn(notifyUserModule, 'notifyUser').mockResolvedValue(undefined);
+  });
+
+  afterEach(() => {
+    getCoreMemberLoginsSpy.mockRestore();
+    sampleSizeSpy.mockRestore();
+    notifyUserSpy.mockRestore();
   });
 
   describe('login provided', () => {
     describe('core member case', () => {
       const login = 'user1';
 
-      beforeEach(() => {
-        assignPrReviewers({ login, teams });
+      beforeEach(async () => {
+        await assignPrReviewers({ login, teams });
       });
 
       it('should call getCoreMemberLogins with correct params', () => {
-        expect(getCoreMemberLogins).toHaveBeenCalledWith({ pull_number, teams: ['team1', 'team2'] });
+        expect(getCoreMemberLoginsModule.getCoreMemberLogins).toHaveBeenCalledWith({ pull_number, teams: ['team1', 'team2'] });
       });
 
       it('should not call addAssignees', () => {
@@ -74,8 +64,8 @@ describe('assignPrReviewer', () => {
     describe('not core member case', () => {
       const login = 'user4';
 
-      beforeEach(() => {
-        assignPrReviewers({ login, teams });
+      beforeEach(async () => {
+        await assignPrReviewers({ login, teams });
       });
 
       it('should call addAssignees with correct params', () => {
@@ -89,8 +79,8 @@ describe('assignPrReviewer', () => {
 
     describe('author is a core member', () => {
       const login = 'user6';
-      beforeEach(() => {
-        (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+      beforeEach(async () => {
+        (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
           data: {
             id: 1,
             number: 123,
@@ -101,18 +91,18 @@ describe('assignPrReviewer', () => {
             }
           }
         }));
-        assignPrReviewers({ login, teams });
+        await assignPrReviewers({ login, teams });
       });
 
       it('should not include author in the assignees list', () => {
-        expect(sampleSize).toHaveBeenCalledWith(['user2', 'user3'], 1);
+        expect(lodashModule.sampleSize).toHaveBeenCalledWith(['user2', 'user3'], 1);
       });
     });
 
     describe('already core approved', () => {
       const login = 'user6';
-      beforeEach(() => {
-        (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+      beforeEach(async () => {
+        (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
           data: {
             id: 1,
             number: 123,
@@ -128,7 +118,7 @@ describe('assignPrReviewer', () => {
             ]
           }
         }));
-        assignPrReviewers({ login, teams });
+        await assignPrReviewers({ login, teams });
       });
 
       it('should not call addAssignees', () => {
@@ -138,8 +128,8 @@ describe('assignPrReviewer', () => {
 
     describe('not core approved', () => {
       const login = 'user6';
-      beforeEach(() => {
-        (octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({
+      beforeEach(async () => {
+        (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
           data: {
             id: 1,
             number: 123,
@@ -155,11 +145,11 @@ describe('assignPrReviewer', () => {
             ]
           }
         }));
-        assignPrReviewers({ login, teams });
+        await assignPrReviewers({ login, teams });
       });
 
       it('should call addAssignee', () => {
-        expect(sampleSize).toHaveBeenCalledWith(['user2', 'user3'], 1);
+        expect(lodashModule.sampleSize).toHaveBeenCalledWith(['user2', 'user3'], 1);
       });
     });
 
@@ -167,8 +157,8 @@ describe('assignPrReviewer', () => {
       const login = 'user4';
       const pull_number_2 = '456';
 
-      beforeEach(() => {
-        assignPrReviewers({ login, teams, pull_number: pull_number_2 });
+      beforeEach(async () => {
+        await assignPrReviewers({ login, teams, pull_number: pull_number_2 });
       });
 
       it('pull_number should come from the argument', () => {
@@ -182,8 +172,8 @@ describe('assignPrReviewer', () => {
   });
 
   describe('login not provided', () => {
-    beforeEach(() => {
-      assignPrReviewers({ teams });
+    beforeEach(async () => {
+      await assignPrReviewers({ teams });
     });
 
     it('should call addAssignees with correct params', () => {
@@ -203,7 +193,7 @@ describe('assignPrReviewer', () => {
     });
 
     it('should call notifyUser with correct params', () => {
-      expect(notifyUser).toHaveBeenCalledWith({
+      expect(notifyUserModule.notifyUser).toHaveBeenCalledWith({
         login: 'assignee',
         pull_number,
         slack_webhook_url

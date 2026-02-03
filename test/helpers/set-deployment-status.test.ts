@@ -11,22 +11,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mocktokit } from '../types';
-import { context } from '@actions/github';
-import { octokit } from '../../src/octokit';
-import { setDeploymentStatus } from '../../src/helpers/set-deployment-status';
+import { describe, it, expect, beforeEach, Mock, mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      repos: {
-        createDeploymentStatus: jest.fn(),
-        listDeployments: jest.fn()
-      }
+setupMocks();
+
+const { octokit } = await import('../../src/octokit');
+const { setDeploymentStatus } = await import('../../src/helpers/set-deployment-status');
+const { context } = await import('@actions/github');
+
+const deployment_id = 123;
+(octokit.repos.listDeployments as unknown as Mock<any>).mockImplementation(async () => ({
+  data: [
+    {
+      id: deployment_id
+    },
+    {
+      id: 456
     }
-  }))
+  ]
 }));
 
 describe('setDeploymentStatus', () => {
@@ -36,21 +39,11 @@ describe('setDeploymentStatus', () => {
   const description = 'desc';
   const target_url = 'target_url';
   const environment_url = 'environment_url';
-  const deployment_id = 123;
 
   describe('deployment exists', () => {
-    beforeEach(() => {
-      (octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
-        data: [
-          {
-            id: deployment_id
-          },
-          {
-            id: 456
-          }
-        ]
-      }));
-      setDeploymentStatus({
+    beforeEach(async () => {
+      mock.clearAllMocks();
+      await setDeploymentStatus({
         sha,
         state,
         environment,
@@ -81,11 +74,12 @@ describe('setDeploymentStatus', () => {
   });
 
   describe('deployment does not exist', () => {
-    beforeEach(() => {
-      (octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
+    beforeEach(async () => {
+      mock.clearAllMocks();
+      (octokit.repos.listDeployments as unknown as Mock<any>).mockImplementation(async () => ({
         data: []
       }));
-      setDeploymentStatus({
+      await setDeploymentStatus({
         sha,
         state,
         environment,
@@ -110,7 +104,7 @@ describe('setDeploymentStatus', () => {
 
   describe('update production deployment', () => {
     beforeEach(() => {
-      (octokit.repos.listDeployments as unknown as Mocktokit).mockImplementation(async () => ({
+      (octokit.repos.listDeployments as unknown as Mock<any>).mockImplementation(async () => ({
         data: [
           {
             id: deployment_id

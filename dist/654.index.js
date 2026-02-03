@@ -10,11 +10,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   FilterPaths: () => (/* binding */ FilterPaths),
 /* harmony export */   filterPaths: () => (/* binding */ filterPaths)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(8428);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
 /* harmony import */ var micromatch__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8785);
 /* harmony import */ var micromatch__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(micromatch__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6590);
@@ -41,18 +39,18 @@ class FilterPaths extends _types_generated__WEBPACK_IMPORTED_MODULE_5__/* .Helpe
 }
 const filterPaths = async ({ paths, globs, sha, packages, merge_queue_enabled }) => {
     if (!paths && !globs && !packages) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error('Must pass `globs` or `paths` or `packages` for filtering');
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .error */ .z3('Must pass `globs` or `paths` or `packages` for filtering');
         return false;
     }
     let pull_number;
-    if (_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.eventName === 'merge_group') {
+    if (_actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.eventName === 'merge_group') {
         pull_number = (0,_utils_merge_queue__WEBPACK_IMPORTED_MODULE_4__/* .getPrNumberFromMergeQueueRef */ .M)();
     }
     else if (sha && merge_queue_enabled === 'true') {
         const branchesResult = sha
             ? await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.listBranchesForHeadCommit({
                 commit_sha: sha,
-                ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+                ..._actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo
             })
             : undefined;
         const branchName = branchesResult?.data[0]?.name;
@@ -61,7 +59,7 @@ const filterPaths = async ({ paths, globs, sha, packages, merge_queue_enabled })
     else if (sha) {
         const listPrsResult = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.listPullRequestsAssociatedWithCommit({
             commit_sha: sha,
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo
         });
         const prFromSha = listPrsResult?.data.find(Boolean);
         if (!prFromSha)
@@ -69,12 +67,12 @@ const filterPaths = async ({ paths, globs, sha, packages, merge_queue_enabled })
         pull_number = prFromSha.number;
     }
     else {
-        pull_number = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number;
+        pull_number = _actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.issue.number;
     }
     const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.pulls.listFiles({
         per_page: 100,
         pull_number,
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo
     });
     if (packages && hasRelevantPackageChanged(data, packages)) {
         return true;
@@ -82,7 +80,7 @@ const filterPaths = async ({ paths, globs, sha, packages, merge_queue_enabled })
     const fileNames = data.map(file => file.filename);
     if (globs) {
         if (paths)
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('`paths` and `globs` inputs found, defaulting to use `globs` for filtering');
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq('`paths` and `globs` inputs found, defaulting to use `globs` for filtering');
         return micromatch__WEBPACK_IMPORTED_MODULE_2___default()(fileNames, globs.split('\n')).length > 0;
     }
     else if (paths) {
@@ -108,12 +106,10 @@ const hasRelevantPackageChanged = (files, packages) => {
 /* harmony export */   A: () => (/* binding */ octokit),
 /* harmony export */   n: () => (/* binding */ octokitGraphql)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1806);
 /* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6474);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -129,8 +125,8 @@ limitations under the License.
 
 
 
-const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true });
-const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
+const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .getInput */ .V4('github_token', { required: true });
+const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__/* .getOctokit */ .Q)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
 
 
 /***/ }),
@@ -167,8 +163,7 @@ class HelperInputs {
 /* harmony export */   T: () => (/* binding */ getMergeQueueCommitHashes)
 /* harmony export */ });
 /* harmony import */ var _paginate_all_branches__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9615);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
 /*
 Copyright 2022 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -188,7 +183,7 @@ const getMergeQueueCommitHashes = async () => {
     const mergeQueueBranches = branches.filter(branch => branch.name.startsWith('gh-readonly-queue/'));
     return mergeQueueBranches.map(branch => branch.commit.sha);
 };
-const getPrNumberFromMergeQueueRef = (ref = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref) => {
+const getPrNumberFromMergeQueueRef = (ref = _actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.ref) => {
     const prNumber = Number(ref
         .split('/')
         .find(part => part.includes('pr-'))
@@ -209,8 +204,7 @@ const getPrNumberFromMergeQueueRef = (ref = _actions_github__WEBPACK_IMPORTED_MO
 /* harmony export */   h: () => (/* binding */ paginateAllBranches)
 /* harmony export */ });
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6590);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
 /*
 Copyright 2022 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -230,7 +224,7 @@ const paginateAllBranches = async ({ protectedBranches, page = 1 } = {}) => {
         protected: protectedBranches,
         per_page: 100,
         page,
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo
     });
     if (!response.data.length) {
         return [];

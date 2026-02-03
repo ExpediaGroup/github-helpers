@@ -11,13 +11,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { createBatchedCommitMessage } from '../../src/helpers/create-batched-commit-message';
-import { context } from '@actions/github';
+import { describe, it, expect, beforeEach } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { payload: {} }
-}));
+setupMocks();
+
+const { createBatchedCommitMessage } = await import('../../src/helpers/create-batched-commit-message');
+const { context } = await import('@actions/github');
 
 describe('createBatchedCommitMessage', () => {
   beforeEach(() => {

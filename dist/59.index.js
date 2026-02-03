@@ -16,14 +16,14 @@ __webpack_require__.d(__webpack_exports__, {
 
 // EXTERNAL MODULE: ./src/types/generated.ts
 var generated = __webpack_require__(8428);
-// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
-var github = __webpack_require__(3228);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js + 20 modules
+var github = __webpack_require__(6474);
 // EXTERNAL MODULE: ./src/utils/get-core-member-logins.ts
 var get_core_member_logins = __webpack_require__(5587);
 // EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
 var bluebird = __webpack_require__(4366);
-// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
-var core = __webpack_require__(7484);
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js + 15 modules
+var core = __webpack_require__(4116);
 // EXTERNAL MODULE: ./src/octokit.ts
 var octokit = __webpack_require__(6590);
 ;// CONCATENATED MODULE: ./src/utils/paginate-all-reviews.ts
@@ -46,7 +46,7 @@ const paginateAllReviews = async (prNumber, page = 1) => {
         pull_number: prNumber,
         per_page: 100,
         page,
-        ...github.context.repo
+        ...github/* context */._.repo
     });
     if (!response.data.length) {
         return [];
@@ -85,14 +85,14 @@ limitations under the License.
 class ApprovalsSatisfied extends generated/* HelperInputs */.m {
 }
 const approvalsSatisfied = async ({ teams, users, codeowners_overrides, number_of_reviewers = '1', required_review_overrides, pull_number, body } = {}) => {
-    const prNumber = pull_number ? Number(pull_number) : github.context.issue.number;
+    const prNumber = pull_number ? Number(pull_number) : github/* context */._.issue.number;
     const teamOverrides = required_review_overrides?.split(',').map(overrideString => {
         const [team, numberOfRequiredReviews] = overrideString.split(':');
         return { team, numberOfRequiredReviews };
     });
     const teamsList = updateTeamsList(teams?.split('\n'));
     if (!validateTeamsList(teamsList)) {
-        core.setFailed('If teams input is in the format "org/team", then the org must be the same as the repository org');
+        core/* setFailed */.C1('If teams input is in the format "org/team", then the org must be the same as the repository org');
         return false;
     }
     const usersList = users?.split('\n');
@@ -138,7 +138,7 @@ const approvalsSatisfied = async ({ teams, users, codeowners_overrides, number_o
             });
         }
     }
-    core.info(logs.join('\n'));
+    core/* info */.pq(logs.join('\n'));
     return approvalsSatisfied;
 };
 const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }) => [
@@ -148,7 +148,7 @@ const isTeam = (teamOrUsers) => teamOrUsers.includes('/');
 const updateTeamsList = (teamsList) => {
     return teamsList?.map(team => {
         if (!team.includes('/')) {
-            return `${github.context.repo.owner}/${team}`;
+            return `${github/* context */._.repo.owner}/${team}`;
         }
         else {
             return team;
@@ -158,7 +158,7 @@ const updateTeamsList = (teamsList) => {
 const validateTeamsList = (teamsList) => {
     return (teamsList?.every(team => {
         const inputOrg = team.split('/')[0];
-        return inputOrg === github.context.repo.owner;
+        return inputOrg === github/* context */._.repo.owner;
     }) ?? true);
 };
 
@@ -174,8 +174,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   createPrComment: () => (/* binding */ createPrComment)
 /* harmony export */ });
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8428);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6474);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6590);
 /*
 Copyright 2021 Expedia, Inc.
@@ -200,8 +199,8 @@ const getFirstPrByCommit = async (sha, repo_name, repo_owner_name) => {
     const prs = (sha &&
         (await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.repos.listPullRequestsAssociatedWithCommit({
             commit_sha: sha,
-            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo,
-            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.owner
         }))) ||
         emptyResponse;
     return prs.data.find(Boolean)?.number;
@@ -209,21 +208,21 @@ const getFirstPrByCommit = async (sha, repo_name, repo_owner_name) => {
 const getCommentByUser = async (login, pull_number, repo_name, repo_owner_name) => {
     const comments = (login &&
         (await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.issues.listComments({
-            issue_number: pull_number ? Number(pull_number) : _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number,
-            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo,
-            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner
+            issue_number: pull_number ? Number(pull_number) : _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.issue.number,
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.owner
         }))) ||
         emptyResponse;
     return comments.data.find(comment => comment?.user?.login === login)?.id;
 };
 const createPrComment = async ({ body, sha, login, pull_number, repo_name, repo_owner_name }) => {
-    const defaultPrNumber = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number;
+    const defaultPrNumber = _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.issue.number;
     if (!sha && !login) {
         return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.issues.createComment({
             body,
             issue_number: pull_number ? Number(pull_number) : defaultPrNumber,
-            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo,
-            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.owner
         });
     }
     const prNumber = (await getFirstPrByCommit(sha, repo_name, repo_owner_name)) ?? (pull_number ? Number(pull_number) : defaultPrNumber);
@@ -232,16 +231,16 @@ const createPrComment = async ({ body, sha, login, pull_number, repo_name, repo_
         return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.issues.updateComment({
             comment_id: commentId,
             body,
-            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo,
-            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.owner
         });
     }
     else {
         return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.issues.createComment({
             body,
             issue_number: prNumber,
-            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo,
-            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.owner
         });
     }
 };
@@ -256,12 +255,10 @@ const createPrComment = async ({ body, sha, login, pull_number, repo_name, repo_
 /* harmony export */   A: () => (/* binding */ octokit),
 /* harmony export */   n: () => (/* binding */ octokitGraphql)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1806);
 /* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6474);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -277,8 +274,8 @@ limitations under the License.
 
 
 
-const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true });
-const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
+const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .getInput */ .V4('github_token', { required: true });
+const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__/* .getOctokit */ .Q)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
 
 
 /***/ }),
@@ -336,8 +333,7 @@ const convertToTeamSlug = (codeOwner) => codeOwner.substring(codeOwner.indexOf('
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   t: () => (/* binding */ getChangedFilepaths)
 /* harmony export */ });
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6474);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6590);
 /*
 Copyright 2021 Expedia, Inc.
@@ -367,7 +363,7 @@ const paginateAllChangedFilepaths = async (pull_number, page = 1) => {
         pull_number,
         per_page: 100,
         page,
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo
     });
     if (!response.data.length) {
         return [];
@@ -385,8 +381,7 @@ const paginateAllChangedFilepaths = async (pull_number, page = 1) => {
 /* harmony export */   D: () => (/* binding */ getRequiredCodeOwnersEntries),
 /* harmony export */   u: () => (/* binding */ getCoreMemberLogins)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var codeowners_utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9409);
 /* harmony import */ var codeowners_utils__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(codeowners_utils__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(2356);
@@ -428,7 +423,7 @@ const getRequiredCodeOwnersEntries = async (pull_number, codeowners_overrides) =
         codeowners_overrides.split(',').forEach(overrideString => {
             const [pattern, ...owners] = overrideString.split(/\s+/);
             if (!pattern) {
-                _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('Invalid code_owners_override format. Please provide a comma-separated list of lines in GitHub CODEOWNERS format. For example, "/foo @owner1 @owner2,/bar @owner3".');
+                _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .setFailed */ .C1('Invalid code_owners_override format. Please provide a comma-separated list of lines in GitHub CODEOWNERS format. For example, "/foo @owner1 @owner2,/bar @owner3".');
                 throw new Error();
             }
             // Replace exact pattern matches with overrides
@@ -453,7 +448,7 @@ const getRequiredCodeOwnersEntries = async (pull_number, codeowners_overrides) =
 };
 const getCoreTeamsAndLogins = async (codeOwners) => {
     if (!codeOwners?.length) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No code owners found. Please provide a "teams" input or set up a CODEOWNERS file in your repo.');
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .setFailed */ .C1('No code owners found. Please provide a "teams" input or set up a CODEOWNERS file in your repo.');
         throw new Error();
     }
     const teamsAndLogins = await (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(codeOwners, async (team) => (0,_paginate_members_in_org__WEBPACK_IMPORTED_MODULE_5__/* .paginateMembersInOrg */ .c)(team).then(members => members.map(({ login }) => ({ team, login }))));
@@ -478,8 +473,7 @@ const getCodeOwnersFromEntries = (codeOwnersEntries) => {
 /* harmony export */ });
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6590);
 /* harmony import */ var _convert_to_team_slug__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6668);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
 /*
 Copyright 2025 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -497,7 +491,7 @@ limitations under the License.
 
 const paginateMembersInOrg = async (team, page = 1) => {
     const response = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit */ .A.teams.listMembersInOrg({
-        org: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner,
+        org: _actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo.owner,
         team_slug: (0,_convert_to_team_slug__WEBPACK_IMPORTED_MODULE_2__/* .convertToTeamSlug */ .j)(team),
         per_page: 100,
         page

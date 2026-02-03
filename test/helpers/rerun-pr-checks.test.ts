@@ -11,25 +11,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Mocktokit } from '../types';
-import { context } from '@actions/github';
-import { octokit } from '../../src/octokit';
-import { rerunPrChecks } from '../../src/helpers/rerun-pr-checks';
+import { describe, it, expect, beforeEach, Mock } from 'bun:test';
+import { setupMocks } from '../setup';
 
-jest.mock('@actions/core');
-jest.mock('@actions/github', () => ({
-  context: { repo: { repo: 'repo', owner: 'owner' }, issue: { number: 123 } },
-  getOctokit: jest.fn(() => ({
-    rest: {
-      pulls: { get: jest.fn() },
-      actions: {
-        listWorkflowRunsForRepo: jest.fn(),
-        reRunWorkflow: jest.fn()
-      },
-      request: jest.fn()
-    }
-  }))
-}));
+setupMocks();
+
+const { octokit } = await import('../../src/octokit');
+const { rerunPrChecks } = await import('../../src/helpers/rerun-pr-checks');
+const { context } = await import('@actions/github');
+
 const prWorkflowRuns = {
   total_count: 5,
   workflow_runs: [
@@ -70,7 +60,7 @@ const prTargetWorkflowRuns = {
     }
   ]
 };
-(octokit.actions.listWorkflowRunsForRepo as unknown as Mocktokit).mockImplementation(async ({ event }) =>
+(octokit.actions.listWorkflowRunsForRepo as unknown as Mock<any>).mockImplementation(async ({ event }: { event: string }) =>
   event === 'pull_request' ? { data: prWorkflowRuns } : { data: prTargetWorkflowRuns }
 );
 const branch = 'branch';
@@ -85,7 +75,7 @@ const pullsMockData = {
     ref: branch
   }
 };
-(octokit.pulls.get as unknown as Mocktokit).mockImplementation(async () => ({ data: pullsMockData }));
+(octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({ data: pullsMockData }));
 
 describe('rerunPrChecks', () => {
   beforeEach(async () => {
