@@ -11,40 +11,55 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { describe, it, expect, mock } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach, spyOn } from 'bun:test';
 import { setupMocks } from '../setup';
 
 setupMocks();
 
-// Mock paginateAllOpenPullRequests
-mock.module('../../src/utils/paginate-open-pull-requests', () => ({
-  paginateAllOpenPullRequests: mock(() =>
-    Promise.resolve([{ head: { ref: 'branch-with-open-pr' } }, { head: { ref: 'some-other-branch' } }])
-  )
-}));
+const { deleteStaleBranches } = await import('../../src/helpers/delete-stale-branches');
+const { octokit } = await import('../../src/octokit');
+const { context } = await import('@actions/github');
+const paginateOpenPullRequestsModule = await import('../../src/utils/paginate-open-pull-requests');
+const paginateAllBranchesModule = await import('../../src/utils/paginate-all-branches');
+const getDefaultBranchModule = await import('../../src/utils/get-default-branch');
 
-// Mock paginateAllBranches
-mock.module('../../src/utils/paginate-all-branches', () => ({
-  paginateAllBranches: mock(() =>
-    Promise.resolve([
+describe('deleteStaleBranches', () => {
+  let paginateAllOpenPullRequestsSpy: ReturnType<typeof spyOn>;
+  let paginateAllBranchesSpy: ReturnType<typeof spyOn>;
+  let getDefaultBranchSpy: ReturnType<typeof spyOn>;
+
+  beforeEach(() => {
+    paginateAllOpenPullRequestsSpy = spyOn(paginateOpenPullRequestsModule, 'paginateAllOpenPullRequests').mockResolvedValue([
+      {
+        head: { ref: 'branch-with-open-pr', sha: 'sha-pr-1' },
+        base: { ref: 'main', repo: { default_branch: 'main', owner: { login: 'owner' } } },
+        number: 1,
+        labels: []
+      },
+      {
+        head: { ref: 'some-other-branch', sha: 'sha-pr-2' },
+        base: { ref: 'main', repo: { default_branch: 'main', owner: { login: 'owner' } } },
+        number: 2,
+        labels: []
+      }
+    ] as any);
+
+    paginateAllBranchesSpy = spyOn(paginateAllBranchesModule, 'paginateAllBranches').mockResolvedValue([
       { name: 'main', commit: { sha: 'sha1' } },
       { name: 'new-branch-no-open-pr', commit: { sha: 'sha2' } },
       { name: 'old-branch-with-no-open-pr', commit: { sha: 'sha3' } },
       { name: 'branch-with-open-pr', commit: { sha: 'sha4' } }
-    ])
-  )
-}));
+    ] as any);
 
-// Mock getDefaultBranch
-mock.module('../../src/utils/get-default-branch', () => ({
-  getDefaultBranch: mock(() => Promise.resolve('main'))
-}));
+    getDefaultBranchSpy = spyOn(getDefaultBranchModule, 'getDefaultBranch').mockResolvedValue('main');
+  });
 
-const { deleteStaleBranches } = await import('../../src/helpers/delete-stale-branches');
-const { octokit } = await import('../../src/octokit');
-const { context } = await import('@actions/github');
+  afterEach(() => {
+    paginateAllOpenPullRequestsSpy.mockRestore();
+    paginateAllBranchesSpy.mockRestore();
+    getDefaultBranchSpy.mockRestore();
+  });
 
-describe('deleteStaleBranches', () => {
   it('should call octokit deleteRef with correct branch names', async () => {
     // Mock octokit.git.getCommit to return dates
     (octokit.git.getCommit as any).mockImplementation(async ({ commit_sha }: { commit_sha: string }) => {
