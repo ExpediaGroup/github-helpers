@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { describe, it, expect, beforeEach, mock } from 'bun:test';
+import { describe, it, expect, mock } from 'bun:test';
 import type { Mock } from 'bun:test';
 
 process.env.INPUT_GITHUB_TOKEN = 'mock-token';
@@ -48,7 +48,7 @@ const { getInputsFromFile } = await import('../../src/utils/get-inputs-from-file
 describe('getActionInputs', () => {
   const requiredInputs = ['input1'];
 
-  beforeEach(() => {
+  afterEach(() => {
     mock.clearAllMocks();
   });
 
