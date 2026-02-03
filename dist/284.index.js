@@ -93,14 +93,14 @@ __webpack_require__.d(__webpack_exports__, {
 
 // EXTERNAL MODULE: ./src/types/generated.ts
 var generated = __webpack_require__(8428);
-// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
-var github = __webpack_require__(3228);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js + 20 modules
+var github = __webpack_require__(6474);
 // EXTERNAL MODULE: ./src/utils/get-core-member-logins.ts
 var get_core_member_logins = __webpack_require__(5587);
 // EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
 var bluebird = __webpack_require__(4366);
-// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
-var core = __webpack_require__(7484);
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js + 15 modules
+var core = __webpack_require__(4116);
 // EXTERNAL MODULE: ./src/octokit.ts
 var octokit = __webpack_require__(6590);
 ;// CONCATENATED MODULE: ./src/utils/paginate-all-reviews.ts
@@ -123,7 +123,7 @@ const paginateAllReviews = async (prNumber, page = 1) => {
         pull_number: prNumber,
         per_page: 100,
         page,
-        ...github.context.repo
+        ...github/* context */._.repo
     });
     if (!response.data.length) {
         return [];
@@ -162,14 +162,14 @@ limitations under the License.
 class ApprovalsSatisfied extends generated/* HelperInputs */.m {
 }
 const approvalsSatisfied = async ({ teams, users, codeowners_overrides, number_of_reviewers = '1', required_review_overrides, pull_number, body } = {}) => {
-    const prNumber = pull_number ? Number(pull_number) : github.context.issue.number;
+    const prNumber = pull_number ? Number(pull_number) : github/* context */._.issue.number;
     const teamOverrides = required_review_overrides?.split(',').map(overrideString => {
         const [team, numberOfRequiredReviews] = overrideString.split(':');
         return { team, numberOfRequiredReviews };
     });
     const teamsList = updateTeamsList(teams?.split('\n'));
     if (!validateTeamsList(teamsList)) {
-        core.setFailed('If teams input is in the format "org/team", then the org must be the same as the repository org');
+        core/* setFailed */.C1('If teams input is in the format "org/team", then the org must be the same as the repository org');
         return false;
     }
     const usersList = users?.split('\n');
@@ -215,7 +215,7 @@ const approvalsSatisfied = async ({ teams, users, codeowners_overrides, number_o
             });
         }
     }
-    core.info(logs.join('\n'));
+    core/* info */.pq(logs.join('\n'));
     return approvalsSatisfied;
 };
 const createArtificialCodeOwnersEntry = ({ teams = [], users = [] }) => [
@@ -225,7 +225,7 @@ const isTeam = (teamOrUsers) => teamOrUsers.includes('/');
 const updateTeamsList = (teamsList) => {
     return teamsList?.map(team => {
         if (!team.includes('/')) {
-            return `${github.context.repo.owner}/${team}`;
+            return `${github/* context */._.repo.owner}/${team}`;
         }
         else {
             return team;
@@ -235,7 +235,7 @@ const updateTeamsList = (teamsList) => {
 const validateTeamsList = (teamsList) => {
     return (teamsList?.every(team => {
         const inputOrg = team.split('/')[0];
-        return inputOrg === github.context.repo.owner;
+        return inputOrg === github/* context */._.repo.owner;
     }) ?? true);
 };
 
@@ -251,8 +251,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   createPrComment: () => (/* binding */ createPrComment)
 /* harmony export */ });
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8428);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6474);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6590);
 /*
 Copyright 2021 Expedia, Inc.
@@ -277,8 +276,8 @@ const getFirstPrByCommit = async (sha, repo_name, repo_owner_name) => {
     const prs = (sha &&
         (await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.repos.listPullRequestsAssociatedWithCommit({
             commit_sha: sha,
-            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo,
-            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.owner
         }))) ||
         emptyResponse;
     return prs.data.find(Boolean)?.number;
@@ -286,21 +285,21 @@ const getFirstPrByCommit = async (sha, repo_name, repo_owner_name) => {
 const getCommentByUser = async (login, pull_number, repo_name, repo_owner_name) => {
     const comments = (login &&
         (await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.issues.listComments({
-            issue_number: pull_number ? Number(pull_number) : _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number,
-            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo,
-            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner
+            issue_number: pull_number ? Number(pull_number) : _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.issue.number,
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.owner
         }))) ||
         emptyResponse;
     return comments.data.find(comment => comment?.user?.login === login)?.id;
 };
 const createPrComment = async ({ body, sha, login, pull_number, repo_name, repo_owner_name }) => {
-    const defaultPrNumber = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.issue.number;
+    const defaultPrNumber = _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.issue.number;
     if (!sha && !login) {
         return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.issues.createComment({
             body,
             issue_number: pull_number ? Number(pull_number) : defaultPrNumber,
-            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo,
-            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.owner
         });
     }
     const prNumber = (await getFirstPrByCommit(sha, repo_name, repo_owner_name)) ?? (pull_number ? Number(pull_number) : defaultPrNumber);
@@ -309,16 +308,16 @@ const createPrComment = async ({ body, sha, login, pull_number, repo_name, repo_
         return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.issues.updateComment({
             comment_id: commentId,
             body,
-            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo,
-            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.owner
         });
     }
     else {
         return _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.issues.createComment({
             body,
             issue_number: prNumber,
-            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo,
-            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner
+            repo: repo_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.repo,
+            owner: repo_owner_name ?? _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.owner
         });
     }
 };
@@ -336,8 +335,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8428);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6590);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4116);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -359,11 +357,11 @@ class GetEmailOnUserProfile extends _types_generated__WEBPACK_IMPORTED_MODULE_2_
 const getEmailOnUserProfile = async ({ login, pattern }) => {
     const { data: { email } } = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit */ .A.users.getByUsername({ username: login });
     if (!email) {
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_1__.setFailed)(`User ${login} does not have an email address on their GitHub profile!`);
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_1__/* .setFailed */ .C1)(`User ${login} does not have an email address on their GitHub profile!`);
         return;
     }
     if (pattern && !new RegExp(pattern).test(email)) {
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_1__.setFailed)(`Email ${email} does not match regex pattern ${pattern}. Please update the email on your GitHub profile to match this pattern!`);
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_1__/* .setFailed */ .C1)(`Email ${email} does not match regex pattern ${pattern}. Please update the email on your GitHub profile to match this pattern!`);
         return;
     }
     return email;
@@ -381,11 +379,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   isUserInTeam: () => (/* binding */ isUserInTeam)
 /* harmony export */ });
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8428);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6474);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6590);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(4116);
 /*
 Copyright 2023 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -405,15 +401,15 @@ limitations under the License.
 class IsUserInTeam extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .m {
     team = '';
 }
-const isUserInTeam = async ({ login = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.actor, team }) => {
+const isUserInTeam = async ({ login = _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.actor, team }) => {
     const members = await paginateAllMembersInOrg(team);
-    _actions_core__WEBPACK_IMPORTED_MODULE_2__.info(`Checking if ${login} is in team ${team}`);
-    _actions_core__WEBPACK_IMPORTED_MODULE_2__.info(`Team members: ${members.map(({ login }) => login).join(', ')}`);
+    _actions_core__WEBPACK_IMPORTED_MODULE_2__/* .info */ .pq(`Checking if ${login} is in team ${team}`);
+    _actions_core__WEBPACK_IMPORTED_MODULE_2__/* .info */ .pq(`Team members: ${members.map(({ login }) => login).join(', ')}`);
     return members.some(({ login: memberLogin }) => memberLogin === login);
 };
 async function paginateAllMembersInOrg(team, page = 1) {
     const response = await _octokit__WEBPACK_IMPORTED_MODULE_1__/* .octokit */ .A.teams.listMembersInOrg({
-        org: _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner,
+        org: _actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo.owner,
         team_slug: team,
         page,
         per_page: 100
@@ -441,14 +437,14 @@ __webpack_require__.d(__webpack_exports__, {
   removePrFromQueue: () => (/* binding */ removePrFromQueue)
 });
 
-// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
-var core = __webpack_require__(7484);
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js + 15 modules
+var core = __webpack_require__(4116);
 // EXTERNAL MODULE: ./src/constants.ts
 var constants = __webpack_require__(7242);
 // EXTERNAL MODULE: ./src/types/generated.ts
 var generated = __webpack_require__(8428);
-// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
-var github = __webpack_require__(3228);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js + 20 modules
+var github = __webpack_require__(6474);
 // EXTERNAL MODULE: ./src/utils/notify-user.ts
 var notify_user = __webpack_require__(9190);
 // EXTERNAL MODULE: ./src/octokit.ts
@@ -518,14 +514,14 @@ const updateQueuePosition = async (pr, index) => {
     }
     const prIsNowFirstInQueue = newQueuePosition === 1;
     if (prIsNowFirstInQueue) {
-        const { data: firstPrInQueue } = await octokit/* octokit */.A.pulls.get({ pull_number: number, ...github.context.repo });
+        const { data: firstPrInQueue } = await octokit/* octokit */.A.pulls.get({ pull_number: number, ...github/* context */._.repo });
         await (0,prepare_queued_pr_for_merge.updatePrWithDefaultBranch)(firstPrInQueue);
-        const { data: { head: { sha: updatedHeadSha } } } = await octokit/* octokit */.A.pulls.get({ pull_number: number, ...github.context.repo });
+        const { data: { head: { sha: updatedHeadSha } } } = await octokit/* octokit */.A.pulls.get({ pull_number: number, ...github/* context */._.repo });
         return Promise.all([
             octokit/* octokit */.A.issues.addLabels({
                 labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.KE} #${newQueuePosition}`],
                 issue_number: number,
-                ...github.context.repo
+                ...github/* context */._.repo
             }),
             (0,remove_label.removeLabelIfExists)(label, number),
             (0,set_commit_status.setCommitStatus)({
@@ -540,7 +536,7 @@ const updateQueuePosition = async (pr, index) => {
         octokit/* octokit */.A.issues.addLabels({
             labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.KE} #${newQueuePosition}`],
             issue_number: number,
-            ...github.context.repo
+            ...github/* context */._.repo
         }),
         (0,remove_label.removeLabelIfExists)(label, number),
         (0,set_commit_status.setCommitStatus)({
@@ -593,9 +589,9 @@ limitations under the License.
 class ManageMergeQueue extends generated/* HelperInputs */.m {
 }
 const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip_auto_merge, team = '', allow_only_for_maintainers, pattern } = {}) => {
-    const { data: pullRequest } = await octokit/* octokit */.A.pulls.get({ pull_number: github.context.issue.number, ...github.context.repo });
+    const { data: pullRequest } = await octokit/* octokit */.A.pulls.get({ pull_number: github/* context */._.issue.number, ...github/* context */._.repo });
     if (pullRequest.merged || !pullRequest.labels.find(label => label.name === constants/* READY_FOR_MERGE_PR_LABEL */.ZV)) {
-        core.info('This PR is not in the merge queue.');
+        core/* info */.pq('This PR is not in the merge queue.');
         return removePrFromQueue(pullRequest);
     }
     const prMeetsRequiredApprovals = await (0,approvals_satisfied.approvalsSatisfied)({
@@ -609,7 +605,7 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
         if (!email) {
             const patternText = pattern ? `, and it must match the regex pattern \`${pattern}\`` : '';
             await (0,create_pr_comment.createPrComment)({
-                body: `@${login} Your PR cannot be added to the queue because your email must be set on your GitHub profile${patternText}. Follow the instructions [here](${githubEmailDocsLink}) to add or fix your email on ${github.context.serverUrl}!`
+                body: `@${login} Your PR cannot be added to the queue because your email must be set on your GitHub profile${patternText}. Follow the instructions [here](${githubEmailDocsLink}) to add or fix your email on ${github/* context */._.serverUrl}!`
             });
             return removePrFromQueue(pullRequest);
         }
@@ -625,12 +621,12 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
     }
     if (pullRequest.labels.find(label => label.name === constants/* JUMP_THE_QUEUE_PR_LABEL */.hU)) {
         if (allow_only_for_maintainers === 'true') {
-            core.info(`Checking if user ${login} is a maintainer...`);
-            const isMaintainer = await (0,is_user_in_team.isUserInTeam)({ login: github.context.actor, team: team });
+            core/* info */.pq(`Checking if user ${login} is a maintainer...`);
+            const isMaintainer = await (0,is_user_in_team.isUserInTeam)({ login: github/* context */._.actor, team: team });
             if (!isMaintainer) {
                 await (0,remove_label.removeLabelIfExists)(constants/* JUMP_THE_QUEUE_PR_LABEL */.hU, pullRequest.number);
                 return await (0,create_pr_comment.createPrComment)({
-                    body: `@${github.context.actor} Only core maintainers can jump the queue. Please have a core maintainer jump the queue for you.`
+                    body: `@${github/* context */._.actor} Only core maintainers can jump the queue. Please have a core maintainer jump the queue for you.`
                 });
             }
         }
@@ -652,7 +648,7 @@ const manageMergeQueue = async ({ max_queue_size, login, slack_webhook_url, skip
     if (isFirstQueuePosition && slack_webhook_url && login) {
         await (0,notify_user/* notifyUser */.l)({
             login,
-            pull_number: github.context.issue.number,
+            pull_number: github/* context */._.issue.number,
             slack_webhook_url
         });
     }
@@ -675,11 +671,11 @@ const removePrFromQueue = async (pullRequest) => {
 const addPrToQueue = async (pullRequest, queuePosition, skip_auto_merge) => {
     await octokit/* octokit */.A.issues.addLabels({
         labels: [`${constants/* QUEUED_FOR_MERGE_PREFIX */.KE} #${queuePosition}`],
-        issue_number: github.context.issue.number,
-        ...github.context.repo
+        issue_number: github/* context */._.issue.number,
+        ...github/* context */._.repo
     });
     if (skip_auto_merge == 'true') {
-        core.info('Skipping auto merge per configuration.');
+        core/* info */.pq('Skipping auto merge per configuration.');
         return;
     }
     await enableAutoMerge(pullRequest.node_id);
@@ -700,8 +696,8 @@ const enableAutoMerge = async (pullRequestId, mergeMethod = 'SQUASH') => {
   `);
     }
     catch (error) {
-        core.warning('Auto merge could not be enabled. Perhaps you need to enable auto-merge on your repo?');
-        core.warning(error);
+        core/* warning */.$e('Auto merge could not be enabled. Perhaps you need to enable auto-merge on your repo?');
+        core/* warning */.$e(error);
     }
 };
 const githubEmailDocsLink = 'https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/changing-your-primary-email-address';
@@ -717,11 +713,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   prepareQueuedPrForMerge: () => (/* binding */ prepareQueuedPrForMerge),
 /* harmony export */   updatePrWithDefaultBranch: () => (/* binding */ updatePrWithDefaultBranch)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(7242);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6474);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6590);
 /* harmony import */ var _manage_merge_queue__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(4703);
 /*
@@ -745,7 +739,7 @@ const prepareQueuedPrForMerge = async () => {
     const { data } = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.pulls.list({
         state: 'open',
         per_page: 100,
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_2__/* .context */ ._.repo
     });
     const pullRequest = findNextPrToMerge(data);
     if (pullRequest) {
@@ -760,38 +754,38 @@ const updatePrWithDefaultBranch = async (pullRequest) => {
         try {
             // update fork default branch with upstream
             await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.mergeUpstream({
-                ..._actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo,
+                ..._actions_github__WEBPACK_IMPORTED_MODULE_2__/* .context */ ._.repo,
                 branch: pullRequest.base.repo.default_branch
             });
         }
         catch (error) {
             if (error.status === 409) {
-                _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('Attempt to update fork branch with upstream failed; conflict on default branch between fork and upstream.');
+                _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .setFailed */ .C1('Attempt to update fork branch with upstream failed; conflict on default branch between fork and upstream.');
             }
             else
-                _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
+                _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .setFailed */ .C1(error.message);
         }
     }
     try {
         await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.merge({
             base: pullRequest.head.ref,
             head: 'HEAD',
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_2__/* .context */ ._.repo
         });
     }
     catch (error) {
-        const noEvictUponConflict = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('no_evict_upon_conflict');
+        const noEvictUponConflict = _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .getInput */ .V4('no_evict_upon_conflict');
         const githubError = error;
         if (githubError.status !== 409) {
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(githubError.message);
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .setFailed */ .C1(githubError.message);
             return;
         }
         if (noEvictUponConflict === 'true') {
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('The first PR in the queue has a merge conflict. PR was not removed from the queue due to no_evict_upon_conflict input.');
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq('The first PR in the queue has a merge conflict. PR was not removed from the queue due to no_evict_upon_conflict input.');
             return;
         }
         await (0,_manage_merge_queue__WEBPACK_IMPORTED_MODULE_4__.removePrFromQueue)(pullRequest);
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('The first PR in the queue has a merge conflict, and it was removed from the queue.');
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .setFailed */ .C1('The first PR in the queue has a merge conflict, and it was removed from the queue.');
     }
 };
 
@@ -807,11 +801,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   removeLabel: () => (/* binding */ removeLabel),
 /* harmony export */   removeLabelIfExists: () => (/* binding */ removeLabelIfExists)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8428);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6590);
 /*
 Copyright 2021 Expedia, Inc.
@@ -832,18 +824,18 @@ limitations under the License.
 class RemoveLabel extends _types_generated__WEBPACK_IMPORTED_MODULE_3__/* .HelperInputs */ .m {
     label = '';
 }
-const removeLabel = async ({ label }) => removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number);
+const removeLabel = async ({ label }) => removeLabelIfExists(label, _actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.issue.number);
 const removeLabelIfExists = async (labelName, issue_number) => {
     try {
         await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.issues.removeLabel({
             name: labelName,
             issue_number,
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo
         });
     }
     catch (error) {
         if (error.status === 404) {
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Label is not present on PR.');
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq('Label is not present on PR.');
         }
     }
 };
@@ -859,11 +851,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   SetCommitStatus: () => (/* binding */ SetCommitStatus),
 /* harmony export */   setCommitStatus: () => (/* binding */ setCommitStatus)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(8428);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(4366);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6590);
@@ -893,13 +883,13 @@ const setCommitStatus = async ({ sha, context, state, description, target_url, s
     await (0,bluebird__WEBPACK_IMPORTED_MODULE_2__.map)(context.split('\n').filter(Boolean), async (context) => {
         if (skip_if_already_set === 'true') {
             const check_runs = await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.checks.listForRef({
-                ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+                ..._actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo,
                 ref: sha
             });
             const run = check_runs.data.check_runs.find(({ name }) => name === context);
             const runCompletedAndIsValid = run?.status === 'completed' && (run?.conclusion === 'failure' || run?.conclusion === 'success');
             if (runCompletedAndIsValid) {
-                _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`${context} already completed with a ${run.conclusion} conclusion.`);
+                _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`${context} already completed with a ${run.conclusion} conclusion.`);
                 return;
             }
         }
@@ -909,7 +899,7 @@ const setCommitStatus = async ({ sha, context, state, description, target_url, s
             state: state,
             description,
             target_url,
-            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo
         });
     });
 };
@@ -924,12 +914,10 @@ const setCommitStatus = async ({ sha, context, state, description, target_url, s
 /* harmony export */   A: () => (/* binding */ octokit),
 /* harmony export */   n: () => (/* binding */ octokitGraphql)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1806);
 /* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6474);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -945,8 +933,8 @@ limitations under the License.
 
 
 
-const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token', { required: true });
-const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
+const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .getInput */ .V4('github_token', { required: true });
+const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__/* .getOctokit */ .Q)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
 
 
 /***/ }),
@@ -1004,8 +992,7 @@ const convertToTeamSlug = (codeOwner) => codeOwner.substring(codeOwner.indexOf('
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   t: () => (/* binding */ getChangedFilepaths)
 /* harmony export */ });
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6474);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6590);
 /*
 Copyright 2021 Expedia, Inc.
@@ -1035,7 +1022,7 @@ const paginateAllChangedFilepaths = async (pull_number, page = 1) => {
         pull_number,
         per_page: 100,
         page,
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_0__/* .context */ ._.repo
     });
     if (!response.data.length) {
         return [];
@@ -1053,8 +1040,7 @@ const paginateAllChangedFilepaths = async (pull_number, page = 1) => {
 /* harmony export */   D: () => (/* binding */ getRequiredCodeOwnersEntries),
 /* harmony export */   u: () => (/* binding */ getCoreMemberLogins)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var codeowners_utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9409);
 /* harmony import */ var codeowners_utils__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(codeowners_utils__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(2356);
@@ -1096,7 +1082,7 @@ const getRequiredCodeOwnersEntries = async (pull_number, codeowners_overrides) =
         codeowners_overrides.split(',').forEach(overrideString => {
             const [pattern, ...owners] = overrideString.split(/\s+/);
             if (!pattern) {
-                _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('Invalid code_owners_override format. Please provide a comma-separated list of lines in GitHub CODEOWNERS format. For example, "/foo @owner1 @owner2,/bar @owner3".');
+                _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .setFailed */ .C1('Invalid code_owners_override format. Please provide a comma-separated list of lines in GitHub CODEOWNERS format. For example, "/foo @owner1 @owner2,/bar @owner3".');
                 throw new Error();
             }
             // Replace exact pattern matches with overrides
@@ -1121,7 +1107,7 @@ const getRequiredCodeOwnersEntries = async (pull_number, codeowners_overrides) =
 };
 const getCoreTeamsAndLogins = async (codeOwners) => {
     if (!codeOwners?.length) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('No code owners found. Please provide a "teams" input or set up a CODEOWNERS file in your repo.');
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .setFailed */ .C1('No code owners found. Please provide a "teams" input or set up a CODEOWNERS file in your repo.');
         throw new Error();
     }
     const teamsAndLogins = await (0,bluebird__WEBPACK_IMPORTED_MODULE_4__.map)(codeOwners, async (team) => (0,_paginate_members_in_org__WEBPACK_IMPORTED_MODULE_5__/* .paginateMembersInOrg */ .c)(team).then(members => members.map(({ login }) => ({ team, login }))));
@@ -1144,11 +1130,9 @@ const getCodeOwnersFromEntries = (codeOwnersEntries) => {
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   l: () => (/* binding */ notifyUser)
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(7568);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6590);
 /* harmony import */ var _helpers_get_email_on_user_profile__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4862);
 /*
@@ -1173,20 +1157,20 @@ const notifyUser = async ({ login, pull_number, slack_webhook_url }) => {
     if (!email) {
         return;
     }
-    const { data: { title, html_url } } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.pulls.get({ pull_number, ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo });
+    const { data: { title, html_url } } = await _octokit__WEBPACK_IMPORTED_MODULE_2__/* .octokit */ .A.pulls.get({ pull_number, ..._actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo });
     if (!title || !html_url) {
         return;
     }
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Notifying user ${login}...`);
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`Notifying user ${login}...`);
     const result = await axios__WEBPACK_IMPORTED_MODULE_4__/* ["default"] */ .A.post(slack_webhook_url, {
         assignee: email,
         title,
         html_url,
-        repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo
+        repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo.repo
     });
     if (result.status !== 200) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(result.statusText);
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(`User notification failed for login: ${login} and email: ${email}`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .error */ .z3(result.statusText);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .setFailed */ .C1(`User notification failed for login: ${login} and email: ${email}`);
     }
     return result;
 };
@@ -1202,8 +1186,7 @@ const notifyUser = async ({ login, pull_number, slack_webhook_url }) => {
 /* harmony export */ });
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6590);
 /* harmony import */ var _convert_to_team_slug__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6668);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
 /*
 Copyright 2025 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -1221,7 +1204,7 @@ limitations under the License.
 
 const paginateMembersInOrg = async (team, page = 1) => {
     const response = await _octokit__WEBPACK_IMPORTED_MODULE_0__/* .octokit */ .A.teams.listMembersInOrg({
-        org: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner,
+        org: _actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo.owner,
         team_slug: (0,_convert_to_team_slug__WEBPACK_IMPORTED_MODULE_2__/* .convertToTeamSlug */ .j)(team),
         per_page: 100,
         page
@@ -1246,8 +1229,7 @@ const paginateMembersInOrg = async (team, page = 1) => {
 /* harmony export */   U: () => (/* binding */ paginateAllOpenPullRequests)
 /* harmony export */ });
 /* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6590);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3228);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
 /*
 Copyright 2022 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -1269,7 +1251,7 @@ const paginateAllOpenPullRequests = async (page = 1) => {
         direction: 'desc',
         per_page: 100,
         page,
-        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo
+        ..._actions_github__WEBPACK_IMPORTED_MODULE_1__/* .context */ ._.repo
     });
     if (!response.data.length) {
         return [];
