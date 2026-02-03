@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { afterEach, beforeEach, describe, it, expect, mock, spyOn } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach, mock, spyOn } from 'bun:test';
 import { setupMocks } from '../setup';
 
 setupMocks();
@@ -26,7 +26,7 @@ mock.module('fs', () => ({
 }));
 
 const { getActionInputs } = await import('../../src/utils/get-action-inputs');
-const { getInput } = await import('@actions/core');
+const coreModule = await import('@actions/core');
 const getInputsFromFileModule = await import('../../src/utils/get-inputs-from-file');
 
 describe('getActionInputs', () => {
@@ -41,30 +41,38 @@ describe('getActionInputs', () => {
   });
 
   it('should call getInput with correct params and return expected inputs', () => {
-    const spy = spyOn(getInputsFromFileModule, 'getInputsFromFile').mockReturnValue(['input1', 'input2', 'input3']);
+    const getInputSpy = spyOn(coreModule, 'getInput').mockImplementation((input: string) => (input === 'input2' ? '' : input));
+    const getInputsFromFileSpy = spyOn(getInputsFromFileModule, 'getInputsFromFile').mockReturnValue(['input1', 'input2', 'input3']);
+
     const result = getActionInputs(requiredInputs);
 
-    expect(getInput).toHaveBeenCalledWith('input1', { required: true });
-    expect(getInput).toHaveBeenCalledWith('input2', { required: false });
-    expect(getInput).toHaveBeenCalledWith('input3', { required: false });
+    expect(getInputSpy).toHaveBeenCalledWith('input1', { required: true });
+    expect(getInputSpy).toHaveBeenCalledWith('input2', { required: false });
+    expect(getInputSpy).toHaveBeenCalledWith('input3', { required: false });
     expect(result).toEqual({
       input1: 'input1',
       input3: 'input3'
     });
-    spy.mockRestore();
+
+    getInputSpy.mockRestore();
+    getInputsFromFileSpy.mockRestore();
   });
 
   it('should call getInput with trimWhiteSpace false for delimiter input', () => {
-    const spy = spyOn(getInputsFromFileModule, 'getInputsFromFile').mockReturnValue(['input1', 'input2', 'delimiter']);
+    const getInputSpy = spyOn(coreModule, 'getInput').mockImplementation((input: string) => (input === 'input2' ? '' : input));
+    const getInputsFromFileSpy = spyOn(getInputsFromFileModule, 'getInputsFromFile').mockReturnValue(['input1', 'input2', 'delimiter']);
+
     const result = getActionInputs(requiredInputs);
 
-    expect(getInput).toHaveBeenCalledWith('input1', { required: true });
-    expect(getInput).toHaveBeenCalledWith('input2', { required: false });
-    expect(getInput).toHaveBeenCalledWith('delimiter', { required: false, trimWhitespace: false });
+    expect(getInputSpy).toHaveBeenCalledWith('input1', { required: true });
+    expect(getInputSpy).toHaveBeenCalledWith('input2', { required: false });
+    expect(getInputSpy).toHaveBeenCalledWith('delimiter', { required: false, trimWhitespace: false });
     expect(result).toEqual({
       input1: 'input1',
       delimiter: 'delimiter'
     });
-    spy.mockRestore();
+
+    getInputSpy.mockRestore();
+    getInputsFromFileSpy.mockRestore();
   });
 });

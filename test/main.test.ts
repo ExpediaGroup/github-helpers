@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { describe, it, expect, beforeEach, spyOn } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach, spyOn } from 'bun:test';
 import { setupMocks } from './setup';
 
 setupMocks();
@@ -20,12 +20,6 @@ const coreModule = await import('@actions/core');
 const getActionInputsModule = await import('../src/utils/get-action-inputs');
 const helperModule = await import('../src/helpers/create-pr-comment');
 
-const getInputSpy = spyOn(coreModule, 'getInput');
-const getActionInputsSpy = spyOn(getActionInputsModule, 'getActionInputs');
-const helperSpy = spyOn(helperModule, 'createPrComment');
-const setOutputSpy = spyOn(coreModule, 'setOutput');
-
-// Import after setting up spies
 const { run } = await import('../src/main');
 
 const helper = 'create-pr-comment';
@@ -34,13 +28,28 @@ const otherInputs = {
   another: 'input'
 };
 const output = { data: {} } as any;
-getInputSpy.mockReturnValue(helper);
-getActionInputsSpy.mockReturnValue(otherInputs);
-helperSpy.mockResolvedValue(output);
 
 describe('main', () => {
+  let getInputSpy: ReturnType<typeof spyOn>;
+  let getActionInputsSpy: ReturnType<typeof spyOn>;
+  let helperSpy: ReturnType<typeof spyOn>;
+  let setOutputSpy: ReturnType<typeof spyOn>;
+
   beforeEach(async () => {
+    // Set up spies for each test
+    getInputSpy = spyOn(coreModule, 'getInput').mockReturnValue(helper);
+    getActionInputsSpy = spyOn(getActionInputsModule, 'getActionInputs').mockReturnValue(otherInputs);
+    helperSpy = spyOn(helperModule, 'createPrComment').mockResolvedValue(output);
+    setOutputSpy = spyOn(coreModule, 'setOutput');
+
     await run();
+  });
+
+  afterEach(() => {
+    getInputSpy.mockRestore();
+    getActionInputsSpy.mockRestore();
+    helperSpy.mockRestore();
+    setOutputSpy.mockRestore();
   });
 
   it('should call getActionInputs with correct params', () => {
