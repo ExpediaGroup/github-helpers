@@ -15,7 +15,7 @@ import * as core from '@actions/core';
 import { Octokit } from '@octokit/core';
 import type { RequestError } from '@octokit/request-error';
 
-export function logging(octokit: Octokit) {
+export const logging = (octokit: Octokit) => {
   core.info('Logging plugin initialized');
 
   octokit.hook.wrap('request', async (request, options) => {
@@ -42,4 +42,6 @@ export function logging(octokit: Octokit) {
       throw error;
     }
   });
-}
+
+  return {};
+};

@@ -85,7 +85,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-function logging(octokit) {
+const logging = (octokit) => {
     core/* info */.pq('Logging plugin initialized');
     octokit.hook.wrap('request', async (request, options) => {
         const endpoint = `${options.method} ${options.url}`;
@@ -108,7 +108,8 @@ function logging(octokit) {
             throw error;
         }
     });
-}
+    return {};
+};
 
 ;// CONCATENATED MODULE: ./src/octokit.ts
 /*
