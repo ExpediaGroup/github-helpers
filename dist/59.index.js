@@ -90,19 +90,19 @@ const approvalsSatisfied = async ({ teams, users, codeowners_overrides, number_o
         const [team, numberOfRequiredReviews] = overrideString.split(':');
         return { team, numberOfRequiredReviews };
     });
-    const teamsList = updateTeamsList(teams?.split('\n'));
+    const teamsList = updateTeamsList(teams?.split(/[\n,]/).map(t => t.trim()));
     if (!validateTeamsList(teamsList)) {
         core/* setFailed */.C1('If teams input is in the format "org/team", then the org must be the same as the repository org');
         return false;
     }
-    const usersList = users?.split('\n');
+    const usersList = users?.split(/[\n,]/).map(u => u.replaceAll('@', '').trim());
     const logs = [];
     const reviews = await paginateAllReviews(prNumber);
     const approverLogins = reviews
         .filter(({ state }) => state === 'APPROVED')
         .map(({ user }) => user?.login)
         .filter(Boolean);
-    logs.push(`PR already approved by: ${approverLogins.toString()}`);
+    logs.push(`PR already approved by: ${approverLogins.map(login => `\`${login}\``).join(', ')}`);
     const requiredCodeOwnersEntries = teamsList || usersList
         ? createArtificialCodeOwnersEntry({ teams: teamsList, users: usersList })
         : await (0,get_core_member_logins/* getRequiredCodeOwnersEntries */.D)(prNumber, codeowners_overrides);
@@ -120,12 +120,15 @@ const approvalsSatisfied = async ({ teams, users, codeowners_overrides, number_o
         const codeOwnerLogins = (0,lodash.uniq)(loginsLists.flat());
         const numberOfApprovals = approverLogins.filter(login => codeOwnerLogins.includes(login)).length;
         const numberOfRequiredReviews = teamOverrides?.find(({ team }) => team && entry.owners.includes(team))?.numberOfRequiredReviews ?? number_of_reviewers;
-        logs.push(`Current number of approvals satisfied for ${entry.owners}: ${numberOfApprovals}`);
+        logs.push(`Current number of approvals satisfied for ${entry.owners.map(o => `\`${o.replaceAll('@', '')}\``).join(',')}: ${numberOfApprovals}`);
         logs.push(`Number of required reviews: ${numberOfRequiredReviews}`);
         return numberOfApprovals >= Number(numberOfRequiredReviews);
     };
     if (requiredCodeOwnersEntriesWithOwners.length) {
-        logs.push(`Required code owners: ${requiredCodeOwnersEntriesWithOwners.map(({ owners }) => owners).toString()}`);
+        logs.push(`Required code owners: ${requiredCodeOwnersEntriesWithOwners
+            .flatMap(({ owners }) => owners.map(o => o.replaceAll('@', '')))
+            .map(o => `\`${o}\``)
+            .join(', ')}`);
     }
     const booleans = await Promise.all(requiredCodeOwnersEntriesWithOwners.map(codeOwnersEntrySatisfiesApprovals));
     const approvalsSatisfied = booleans.every(Boolean);
