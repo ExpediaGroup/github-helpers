@@ -14,27 +14,30 @@ limitations under the License.
 import * as core from '@actions/core';
 import { Octokit } from '@octokit/core';
 import type { RequestError } from '@octokit/request-error';
-import type { EndpointOptions } from '@octokit/types';
 
 export function logging(octokit: Octokit) {
-  octokit.hook.before('request', async (options: EndpointOptions) => {
+  octokit.hook.wrap('request', async (request, options) => {
     const endpoint = `${options.method} ${options.url}`;
     core.info(`GitHub API call: ${endpoint}`);
-  });
 
-  octokit.hook.error('request', async (error: RequestError | Error, options: EndpointOptions) => {
-    const endpoint = `${options.method} ${options.url}`;
-    core.error(`GitHub API Error: ${endpoint}`);
-    core.error(`Message: ${error.message}`);
+    try {
+      return await request(options);
+    } catch (error) {
+      core.error(`GitHub API Error: ${endpoint}`);
+      core.error(`Message: ${(error as Error).message}`);
 
-    if ('status' in error && error.status) {
-      core.error(`Status: ${error.status}`);
+      if (error && typeof error === 'object' && 'status' in error) {
+        core.error(`Status: ${(error as RequestError).status}`);
+      }
+
+      if (error && typeof error === 'object' && 'response' in error) {
+        const requestError = error as RequestError;
+        if (requestError.response?.data) {
+          core.error(`Response: ${JSON.stringify(requestError.response.data, null, 2)}`);
+        }
+      }
+
+      throw error;
     }
-
-    if ('response' in error && error.response?.data) {
-      core.error(`Response: ${JSON.stringify(error.response.data, null, 2)}`);
-    }
-
-    throw error;
   });
 }

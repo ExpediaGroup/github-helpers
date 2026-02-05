@@ -76,21 +76,26 @@ limitations under the License.
 */
 
 function logging(octokit) {
-    octokit.hook.before('request', async (options) => {
+    octokit.hook.wrap('request', async (request, options) => {
         const endpoint = `${options.method} ${options.url}`;
         core/* info */.pq(`GitHub API call: ${endpoint}`);
-    });
-    octokit.hook.error('request', async (error, options) => {
-        const endpoint = `${options.method} ${options.url}`;
-        core/* error */.z3(`GitHub API Error: ${endpoint}`);
-        core/* error */.z3(`Message: ${error.message}`);
-        if ('status' in error && error.status) {
-            core/* error */.z3(`Status: ${error.status}`);
+        try {
+            return await request(options);
         }
-        if ('response' in error && error.response?.data) {
-            core/* error */.z3(`Response: ${JSON.stringify(error.response.data, null, 2)}`);
+        catch (error) {
+            core/* error */.z3(`GitHub API Error: ${endpoint}`);
+            core/* error */.z3(`Message: ${error.message}`);
+            if (error && typeof error === 'object' && 'status' in error) {
+                core/* error */.z3(`Status: ${error.status}`);
+            }
+            if (error && typeof error === 'object' && 'response' in error) {
+                const requestError = error;
+                if (requestError.response?.data) {
+                    core/* error */.z3(`Response: ${JSON.stringify(requestError.response.data, null, 2)}`);
+                }
+            }
+            throw error;
         }
-        throw error;
     });
 }
 
