@@ -107,6 +107,7 @@ export const approvalsSatisfied = async ({
       logs.unshift(body + '\n');
 
       await createPrComment({
+        pull_number,
         body: logs.join('\n')
       });
     }

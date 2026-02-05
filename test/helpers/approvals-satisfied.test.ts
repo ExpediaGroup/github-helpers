@@ -624,6 +624,7 @@ describe('approvalsSatisfied', () => {
       });
       expect(octokit.issues.createComment).toHaveBeenCalledWith(
         expect.objectContaining({
+          issue_number: 12345,
           body: `PRs must meet all required approvals before entering the merge queue.
 
 Required approvals not satisfied:
