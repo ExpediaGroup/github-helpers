@@ -13,7 +13,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(8428);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6474);
 /* harmony import */ var simple_git__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9070);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6590);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(1015);
 /* harmony import */ var micromatch__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8785);
 /* harmony import */ var micromatch__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(micromatch__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _utils_paginate_open_pull_requests__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(3332);
@@ -226,7 +226,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(4366);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6590);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(1015);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -277,17 +277,56 @@ const setCommitStatus = async ({ sha, context, state, description, target_url, s
 
 /***/ }),
 
-/***/ 6590:
+/***/ 1015:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   A: () => (/* binding */ octokit),
-/* harmony export */   n: () => (/* binding */ octokitGraphql)
-/* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
-/* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1806);
-/* harmony import */ var _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6474);
+
+// EXPORTS
+__webpack_require__.d(__webpack_exports__, {
+  A: () => (/* binding */ octokit),
+  n: () => (/* binding */ octokitGraphql)
+});
+
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js + 15 modules
+var core = __webpack_require__(4116);
+// EXTERNAL MODULE: ./node_modules/@adobe/node-fetch-retry/index.js
+var node_fetch_retry = __webpack_require__(1806);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js + 20 modules
+var github = __webpack_require__(6474);
+;// CONCATENATED MODULE: ./src/logging.ts
+/*
+Copyright 2021 Expedia, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    https://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+function logging(octokit) {
+    octokit.hook.before('request', async (options) => {
+        const endpoint = `${options.method} ${options.url}`;
+        core/* info */.pq(`GitHub API call: ${endpoint}`);
+    });
+    octokit.hook.error('request', async (error, options) => {
+        const endpoint = `${options.method} ${options.url}`;
+        core/* error */.z3(`GitHub API Error: ${endpoint}`);
+        core/* error */.z3(`Message: ${error.message}`);
+        if ('status' in error && error.status) {
+            core/* error */.z3(`Status: ${error.status}`);
+        }
+        if ('response' in error && error.response?.data) {
+            core/* error */.z3(`Response: ${JSON.stringify(error.response.data, null, 2)}`);
+        }
+        throw error;
+    });
+}
+
+;// CONCATENATED MODULE: ./src/octokit.ts
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -303,29 +342,12 @@ limitations under the License.
 
 
 
-const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .getInput */ .V4('github_token', { required: true });
-const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__/* .getOctokit */ .Q)(githubToken, {
-    request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ },
-    plugins: [errorLoggingPlugin]
+
+const githubToken = core/* getInput */.V4('github_token', { required: true });
+const { rest: octokit, graphql: octokitGraphql } = (0,github/* getOctokit */.Q)(githubToken, {
+    request: { fetch: node_fetch_retry },
+    plugins: [logging]
 });
-function errorLoggingPlugin(octokit) {
-    octokit.hook.error('request', async (error, options) => {
-        const endpoint = `${options.method} ${options.url}`;
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .error */ .z3(`GitHub API Error: ${endpoint}`);
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .error */ .z3(`Message: ${error.message}`);
-        if ('status' in error && error.status) {
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .error */ .z3(`Status: ${error.status}`);
-        }
-        if ('response' in error && error.response?.data) {
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .error */ .z3(`Response: ${JSON.stringify(error.response.data, null, 2)}`);
-        }
-        throw error;
-    });
-    octokit.hook.before('request', async (options) => {
-        const endpoint = `${options.method} ${options.url}`;
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`GitHub API call: ${endpoint}`);
-    });
-}
 
 
 /***/ }),
@@ -360,7 +382,7 @@ class HelperInputs {
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   U: () => (/* binding */ paginateAllOpenPullRequests)
 /* harmony export */ });
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6590);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1015);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
 /*
 Copyright 2022 Expedia, Inc.
