@@ -78,7 +78,7 @@ limitations under the License.
 function logging(octokit) {
     octokit.hook.before('request', async (options) => {
         const endpoint = `${options.method} ${options.url}`;
-        core/* notice */.lm(`GitHub API call: ${endpoint}`);
+        core/* info */.pq(`GitHub API call: ${endpoint}`);
     });
     octokit.hook.error('request', async (error, options) => {
         const endpoint = `${options.method} ${options.url}`;

@@ -45729,13 +45729,12 @@ __nccwpck_require__.d(__webpack_exports__, {
   z3: () => (/* binding */ error),
   V4: () => (/* binding */ getInput),
   pq: () => (/* binding */ info),
-  lm: () => (/* binding */ notice),
   C1: () => (/* binding */ setFailed),
   uH: () => (/* binding */ setOutput),
   $e: () => (/* binding */ warning)
 });
 
-// UNUSED EXPORTS: ExitCode, addPath, debug, endGroup, exportVariable, getBooleanInput, getIDToken, getMultilineInput, getState, group, isDebug, markdownSummary, platform, saveState, setCommandEcho, setSecret, startGroup, summary, toPlatformPath, toPosixPath, toWin32Path
+// UNUSED EXPORTS: ExitCode, addPath, debug, endGroup, exportVariable, getBooleanInput, getIDToken, getMultilineInput, getState, group, isDebug, markdownSummary, notice, platform, saveState, setCommandEcho, setSecret, startGroup, summary, toPlatformPath, toPosixPath, toWin32Path
 
 // EXTERNAL MODULE: external "os"
 var external_os_ = __nccwpck_require__(857);
@@ -45761,7 +45760,7 @@ function utils_toCommandValue(input) {
  * @returns The command properties to send with the actual annotation command
  * See IssueCommandProperties: https://github.com/actions/runner/blob/main/src/Runner.Worker/ActionCommandManager.cs#L646
  */
-function toCommandProperties(annotationProperties) {
+function utils_toCommandProperties(annotationProperties) {
     if (!Object.keys(annotationProperties).length) {
         return {};
     }
@@ -48572,7 +48571,7 @@ function core_debug(message) {
  * @param properties optional properties to add to the annotation.
  */
 function error(message, properties = {}) {
-    command_issueCommand('error', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+    command_issueCommand('error', utils_toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 /**
  * Adds a warning issue
@@ -48580,7 +48579,7 @@ function error(message, properties = {}) {
  * @param properties optional properties to add to the annotation.
  */
 function warning(message, properties = {}) {
-    command_issueCommand('warning', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+    command_issueCommand('warning', utils_toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 /**
  * Adds a notice issue
@@ -48588,7 +48587,7 @@ function warning(message, properties = {}) {
  * @param properties optional properties to add to the annotation.
  */
 function notice(message, properties = {}) {
-    command_issueCommand('notice', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+    issueCommand('notice', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 /**
  * Writes info to log with console.log.
