@@ -152,7 +152,30 @@ limitations under the License.
 
 
 const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .getInput */ .V4('github_token', { required: true });
-const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__/* .getOctokit */ .Q)(githubToken, { request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ } });
+const { rest: octokit, graphql: octokitGraphql } = (0,_actions_github__WEBPACK_IMPORTED_MODULE_2__/* .getOctokit */ .Q)(githubToken, {
+    request: { fetch: _adobe_node_fetch_retry__WEBPACK_IMPORTED_MODULE_1__ },
+    plugins: [errorLoggingPlugin]
+});
+function errorLoggingPlugin(octokit) {
+    octokit.hook.error('request', async (error, options) => {
+        const endpoint = `${options.method} ${options.url}`;
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .error */ .z3(`GitHub API Error: ${endpoint}`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .error */ .z3(`Message: ${error.message}`);
+        if ('status' in error && error.status) {
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .error */ .z3(`Status: ${error.status}`);
+        }
+        if ('response' in error && error.response?.data) {
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .error */ .z3(`Response: ${JSON.stringify(error.response.data, null, 2)}`);
+        }
+        // Log request details for debugging
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .debug */ .Yz(`Request options: ${JSON.stringify(options, null, 2)}`);
+        throw error;
+    });
+    octokit.hook.before('request', async (options) => {
+        const endpoint = `${options.method} ${options.url}`;
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .debug */ .Yz(`GitHub API call: ${endpoint}`);
+    });
+}
 
 
 /***/ }),
