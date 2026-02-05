@@ -198,13 +198,12 @@ function errorLoggingPlugin(octokit) {
         if ('response' in error && error.response?.data) {
             _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .error */ .z3(`Response: ${JSON.stringify(error.response.data, null, 2)}`);
         }
-        // Log request details for debugging
         _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .debug */ .Yz(`Request options: ${JSON.stringify(options, null, 2)}`);
         throw error;
     });
     octokit.hook.before('request', async (options) => {
         const endpoint = `${options.method} ${options.url}`;
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .debug */ .Yz(`GitHub API call: ${endpoint}`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`GitHub API call: ${endpoint}`);
     });
 }
 
