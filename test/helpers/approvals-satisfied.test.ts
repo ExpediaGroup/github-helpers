@@ -614,6 +614,10 @@ describe('approvalsSatisfied', () => {
           {
             state: 'APPROVED',
             user: { login: 'user3' }
+          },
+          {
+            state: 'APPROVED',
+            user: { login: 'user4' }
           }
         ]
       });
@@ -629,9 +633,9 @@ describe('approvalsSatisfied', () => {
 
 Required approvals not satisfied:
 
-PR already approved by: user3
-Required code owners: @user1,@user2
-Current number of approvals satisfied for @user1,@user2: 0
+PR already approved by: \`user3\`, \`user4\`
+Required code owners: \`user1\`, \`user2\`
+Current number of approvals satisfied for \`user1\`,\`user2\`: 0
 Number of required reviews: 1`
         })
       );
