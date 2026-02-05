@@ -187,6 +187,7 @@ limitations under the License.
 */
 
 function logging(octokit) {
+    core/* info */.pq('Logging plugin initialized');
     octokit.hook.wrap('request', async (request, options) => {
         const endpoint = `${options.method} ${options.url}`;
         core/* info */.pq(`GitHub API call: ${endpoint}`);

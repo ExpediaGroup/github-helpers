@@ -42,7 +42,6 @@ export const setCommitStatus = async ({ sha, context, state, description, target
       }
     }
 
-    core.info('hey there');
     await octokit.repos.createCommitStatus({
       sha,
       context,
