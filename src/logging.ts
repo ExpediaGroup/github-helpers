@@ -17,11 +17,9 @@ import type { RequestError } from '@octokit/request-error';
 import type { EndpointOptions } from '@octokit/types';
 
 export function logging(octokit: Octokit) {
-  core.info('Logging plugin initialized');
-
   octokit.hook.before('request', async (options: EndpointOptions) => {
     const endpoint = `${options.method} ${options.url}`;
-    core.info(`GitHub API call: ${endpoint}`);
+    core.notice(`GitHub API call: ${endpoint}`);
   });
 
   octokit.hook.error('request', async (error: RequestError | Error, options: EndpointOptions) => {

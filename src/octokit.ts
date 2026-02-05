@@ -19,11 +19,5 @@ import { logging } from './logging';
 
 const githubToken = core.getInput('github_token', { required: true });
 
-const MyOctokit = Octokit.plugin(restEndpointMethods, retry, logging);
-
-const octokitInstance = new MyOctokit({
-  auth: githubToken
-});
-
-export const octokit = octokitInstance.rest;
-export const octokitGraphql = octokitInstance.graphql;
+const OctokitWithPlugins = Octokit.plugin(restEndpointMethods, retry, logging);
+export const { rest: octokit, graphql: octokitGraphql } = new OctokitWithPlugins({ auth: githubToken });

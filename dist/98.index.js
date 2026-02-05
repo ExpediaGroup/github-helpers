@@ -81,10 +81,9 @@ limitations under the License.
 */
 
 function logging(octokit) {
-    core/* info */.pq('Logging plugin initialized');
     octokit.hook.before('request', async (options) => {
         const endpoint = `${options.method} ${options.url}`;
-        core/* info */.pq(`GitHub API call: ${endpoint}`);
+        core/* notice */.lm(`GitHub API call: ${endpoint}`);
     });
     octokit.hook.error('request', async (error, options) => {
         const endpoint = `${options.method} ${options.url}`;
@@ -119,12 +118,8 @@ limitations under the License.
 
 
 const githubToken = core/* getInput */.V4('github_token', { required: true });
-const MyOctokit = dist_src/* Octokit */.E.plugin(plugin_rest_endpoint_methods_dist_src/* restEndpointMethods */._, dist_bundle/* retry */.L, logging);
-const octokitInstance = new MyOctokit({
-    auth: githubToken
-});
-const octokit = octokitInstance.rest;
-const octokitGraphql = octokitInstance.graphql;
+const OctokitWithPlugins = dist_src/* Octokit */.E.plugin(plugin_rest_endpoint_methods_dist_src/* restEndpointMethods */._, dist_bundle/* retry */.L, logging);
+const { rest: octokit, graphql: octokitGraphql } = new OctokitWithPlugins({ auth: githubToken });
 
 
 /***/ }),
