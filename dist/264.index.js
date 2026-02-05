@@ -89,8 +89,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7242);
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(8428);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(1015);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4387);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3396);
 /* harmony import */ var _utils_merge_queue__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5323);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(4366);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_4__);
@@ -151,7 +151,7 @@ const initiateDeployment = async ({ sha, state = 'in_progress', environment, env
 
 /***/ }),
 
-/***/ 1015:
+/***/ 3396:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 
@@ -163,10 +163,12 @@ __webpack_require__.d(__webpack_exports__, {
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js + 15 modules
 var core = __webpack_require__(4116);
-// EXTERNAL MODULE: ./node_modules/@adobe/node-fetch-retry/index.js
-var node_fetch_retry = __webpack_require__(1806);
-// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js + 20 modules
-var github = __webpack_require__(6474);
+// EXTERNAL MODULE: ./node_modules/@octokit/core/dist-src/index.js + 10 modules
+var dist_src = __webpack_require__(708);
+// EXTERNAL MODULE: ./node_modules/@octokit/plugin-rest-endpoint-methods/dist-src/index.js + 3 modules
+var plugin_rest_endpoint_methods_dist_src = __webpack_require__(9210);
+// EXTERNAL MODULE: ./node_modules/@octokit/plugin-retry/dist-bundle/index.js
+var dist_bundle = __webpack_require__(9735);
 ;// CONCATENATED MODULE: ./src/logging.ts
 /*
 Copyright 2021 Expedia, Inc.
@@ -181,31 +183,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const logging = (octokit) => {
+function logging(octokit) {
     core/* info */.pq('Logging plugin initialized');
-    octokit.hook.wrap('request', async (request, options) => {
+    octokit.hook.before('request', async (options) => {
         const endpoint = `${options.method} ${options.url}`;
         core/* info */.pq(`GitHub API call: ${endpoint}`);
-        try {
-            return await request(options);
-        }
-        catch (error) {
-            core/* error */.z3(`GitHub API Error: ${endpoint}`);
-            core/* error */.z3(`Message: ${error.message}`);
-            if (error && typeof error === 'object' && 'status' in error) {
-                core/* error */.z3(`Status: ${error.status}`);
-            }
-            if (error && typeof error === 'object' && 'response' in error) {
-                const requestError = error;
-                if (requestError.response?.data) {
-                    core/* error */.z3(`Response: ${JSON.stringify(requestError.response.data, null, 2)}`);
-                }
-            }
-            throw error;
-        }
     });
-    return {};
-};
+    octokit.hook.error('request', async (error, options) => {
+        const endpoint = `${options.method} ${options.url}`;
+        core/* error */.z3(`GitHub API Error: ${endpoint}`);
+        core/* error */.z3(`Message: ${error.message}`);
+        if ('status' in error && error.status) {
+            core/* error */.z3(`Status: ${error.status}`);
+        }
+        if ('response' in error && error.response?.data) {
+            core/* error */.z3(`Response: ${JSON.stringify(error.response.data, null, 2)}`);
+        }
+        throw error;
+    });
+}
 
 ;// CONCATENATED MODULE: ./src/octokit.ts
 /*
@@ -224,11 +220,14 @@ limitations under the License.
 
 
 
+
 const githubToken = core/* getInput */.V4('github_token', { required: true });
-const { rest: octokit, graphql: octokitGraphql } = (0,github/* getOctokit */.Q)(githubToken, {
-    request: { fetch: node_fetch_retry },
-    plugins: [logging]
+const MyOctokit = dist_src/* Octokit */.E.plugin(plugin_rest_endpoint_methods_dist_src/* restEndpointMethods */._, dist_bundle/* retry */.L, logging);
+const octokitInstance = new MyOctokit({
+    auth: githubToken
 });
+const octokit = octokitInstance.rest;
+const octokitGraphql = octokitInstance.graphql;
 
 
 /***/ }),
@@ -265,7 +264,7 @@ class HelperInputs {
 /* harmony export */   T: () => (/* binding */ getMergeQueueCommitHashes)
 /* harmony export */ });
 /* harmony import */ var _paginate_all_branches__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9615);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4387);
 /*
 Copyright 2022 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -305,8 +304,8 @@ const getPrNumberFromMergeQueueRef = (ref = _actions_github__WEBPACK_IMPORTED_MO
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   h: () => (/* binding */ paginateAllBranches)
 /* harmony export */ });
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1015);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3396);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4387);
 /*
 Copyright 2022 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");

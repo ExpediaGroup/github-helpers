@@ -93,8 +93,8 @@ __webpack_require__.d(__webpack_exports__, {
 
 // EXTERNAL MODULE: ./src/types/generated.ts
 var generated = __webpack_require__(8428);
-// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js + 20 modules
-var github = __webpack_require__(6474);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js + 4 modules
+var github = __webpack_require__(4387);
 // EXTERNAL MODULE: ./src/utils/get-core-member-logins.ts
 var get_core_member_logins = __webpack_require__(5587);
 // EXTERNAL MODULE: ./node_modules/bluebird/js/release/bluebird.js
@@ -102,7 +102,7 @@ var bluebird = __webpack_require__(4366);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js + 15 modules
 var core = __webpack_require__(4116);
 // EXTERNAL MODULE: ./src/octokit.ts + 1 modules
-var octokit = __webpack_require__(1015);
+var octokit = __webpack_require__(3396);
 ;// CONCATENATED MODULE: ./src/utils/paginate-all-reviews.ts
 /*
 Copyright 2022 Expedia, Inc.
@@ -251,8 +251,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   createPrComment: () => (/* binding */ createPrComment)
 /* harmony export */ });
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8428);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6474);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1015);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4387);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3396);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -334,7 +334,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getEmailOnUserProfile: () => (/* binding */ getEmailOnUserProfile)
 /* harmony export */ });
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8428);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1015);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3396);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4116);
 /*
 Copyright 2021 Expedia, Inc.
@@ -379,8 +379,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   isUserInTeam: () => (/* binding */ isUserInTeam)
 /* harmony export */ });
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8428);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6474);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1015);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4387);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3396);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(4116);
 /*
 Copyright 2023 Expedia, Inc.
@@ -443,12 +443,12 @@ var core = __webpack_require__(4116);
 var constants = __webpack_require__(7242);
 // EXTERNAL MODULE: ./src/types/generated.ts
 var generated = __webpack_require__(8428);
-// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js + 20 modules
-var github = __webpack_require__(6474);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js + 4 modules
+var github = __webpack_require__(4387);
 // EXTERNAL MODULE: ./src/utils/notify-user.ts
 var notify_user = __webpack_require__(9190);
 // EXTERNAL MODULE: ./src/octokit.ts + 1 modules
-var octokit = __webpack_require__(1015);
+var octokit = __webpack_require__(3396);
 // EXTERNAL MODULE: ./src/helpers/remove-label.ts
 var remove_label = __webpack_require__(5598);
 // EXTERNAL MODULE: ./src/helpers/set-commit-status.ts
@@ -715,8 +715,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(7242);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6474);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(1015);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(4387);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3396);
 /* harmony import */ var _manage_merge_queue__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(4703);
 /*
 Copyright 2021 Expedia, Inc.
@@ -803,8 +803,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8428);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(1015);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4387);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3396);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -853,10 +853,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var _types_generated__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(8428);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4387);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(4366);
 /* harmony import */ var bluebird__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(bluebird__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(1015);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3396);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -907,7 +907,7 @@ const setCommitStatus = async ({ sha, context, state, description, target_url, s
 
 /***/ }),
 
-/***/ 1015:
+/***/ 3396:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 
@@ -919,10 +919,12 @@ __webpack_require__.d(__webpack_exports__, {
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js + 15 modules
 var core = __webpack_require__(4116);
-// EXTERNAL MODULE: ./node_modules/@adobe/node-fetch-retry/index.js
-var node_fetch_retry = __webpack_require__(1806);
-// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js + 20 modules
-var github = __webpack_require__(6474);
+// EXTERNAL MODULE: ./node_modules/@octokit/core/dist-src/index.js + 10 modules
+var dist_src = __webpack_require__(708);
+// EXTERNAL MODULE: ./node_modules/@octokit/plugin-rest-endpoint-methods/dist-src/index.js + 3 modules
+var plugin_rest_endpoint_methods_dist_src = __webpack_require__(9210);
+// EXTERNAL MODULE: ./node_modules/@octokit/plugin-retry/dist-bundle/index.js
+var dist_bundle = __webpack_require__(9735);
 ;// CONCATENATED MODULE: ./src/logging.ts
 /*
 Copyright 2021 Expedia, Inc.
@@ -937,31 +939,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const logging = (octokit) => {
+function logging(octokit) {
     core/* info */.pq('Logging plugin initialized');
-    octokit.hook.wrap('request', async (request, options) => {
+    octokit.hook.before('request', async (options) => {
         const endpoint = `${options.method} ${options.url}`;
         core/* info */.pq(`GitHub API call: ${endpoint}`);
-        try {
-            return await request(options);
-        }
-        catch (error) {
-            core/* error */.z3(`GitHub API Error: ${endpoint}`);
-            core/* error */.z3(`Message: ${error.message}`);
-            if (error && typeof error === 'object' && 'status' in error) {
-                core/* error */.z3(`Status: ${error.status}`);
-            }
-            if (error && typeof error === 'object' && 'response' in error) {
-                const requestError = error;
-                if (requestError.response?.data) {
-                    core/* error */.z3(`Response: ${JSON.stringify(requestError.response.data, null, 2)}`);
-                }
-            }
-            throw error;
-        }
     });
-    return {};
-};
+    octokit.hook.error('request', async (error, options) => {
+        const endpoint = `${options.method} ${options.url}`;
+        core/* error */.z3(`GitHub API Error: ${endpoint}`);
+        core/* error */.z3(`Message: ${error.message}`);
+        if ('status' in error && error.status) {
+            core/* error */.z3(`Status: ${error.status}`);
+        }
+        if ('response' in error && error.response?.data) {
+            core/* error */.z3(`Response: ${JSON.stringify(error.response.data, null, 2)}`);
+        }
+        throw error;
+    });
+}
 
 ;// CONCATENATED MODULE: ./src/octokit.ts
 /*
@@ -980,11 +976,14 @@ limitations under the License.
 
 
 
+
 const githubToken = core/* getInput */.V4('github_token', { required: true });
-const { rest: octokit, graphql: octokitGraphql } = (0,github/* getOctokit */.Q)(githubToken, {
-    request: { fetch: node_fetch_retry },
-    plugins: [logging]
+const MyOctokit = dist_src/* Octokit */.E.plugin(plugin_rest_endpoint_methods_dist_src/* restEndpointMethods */._, dist_bundle/* retry */.L, logging);
+const octokitInstance = new MyOctokit({
+    auth: githubToken
 });
+const octokit = octokitInstance.rest;
+const octokitGraphql = octokitInstance.graphql;
 
 
 /***/ }),
@@ -1042,8 +1041,8 @@ const convertToTeamSlug = (codeOwner) => codeOwner.substring(codeOwner.indexOf('
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   t: () => (/* binding */ getChangedFilepaths)
 /* harmony export */ });
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6474);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1015);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4387);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3396);
 /*
 Copyright 2021 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -1182,8 +1181,8 @@ const getCodeOwnersFromEntries = (codeOwnersEntries) => {
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4116);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(7568);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(1015);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4387);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3396);
 /* harmony import */ var _helpers_get_email_on_user_profile__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4862);
 /*
 Copyright 2021 Expedia, Inc.
@@ -1234,9 +1233,9 @@ const notifyUser = async ({ login, pull_number, slack_webhook_url }) => {
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   c: () => (/* binding */ paginateMembersInOrg)
 /* harmony export */ });
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1015);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3396);
 /* harmony import */ var _convert_to_team_slug__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6668);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4387);
 /*
 Copyright 2025 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -1278,8 +1277,8 @@ const paginateMembersInOrg = async (team, page = 1) => {
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   U: () => (/* binding */ paginateAllOpenPullRequests)
 /* harmony export */ });
-/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1015);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6474);
+/* harmony import */ var _octokit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3396);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4387);
 /*
 Copyright 2022 Expedia, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");

@@ -12,36 +12,31 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { Octokit } from '@octokit/core';
+import type { Octokit } from '@octokit/core';
 import type { RequestError } from '@octokit/request-error';
+import type { EndpointOptions } from '@octokit/types';
 
-export const logging = (octokit: Octokit) => {
+export function logging(octokit: Octokit) {
   core.info('Logging plugin initialized');
 
-  octokit.hook.wrap('request', async (request, options) => {
+  octokit.hook.before('request', async (options: EndpointOptions) => {
     const endpoint = `${options.method} ${options.url}`;
     core.info(`GitHub API call: ${endpoint}`);
-
-    try {
-      return await request(options);
-    } catch (error) {
-      core.error(`GitHub API Error: ${endpoint}`);
-      core.error(`Message: ${(error as Error).message}`);
-
-      if (error && typeof error === 'object' && 'status' in error) {
-        core.error(`Status: ${(error as RequestError).status}`);
-      }
-
-      if (error && typeof error === 'object' && 'response' in error) {
-        const requestError = error as RequestError;
-        if (requestError.response?.data) {
-          core.error(`Response: ${JSON.stringify(requestError.response.data, null, 2)}`);
-        }
-      }
-
-      throw error;
-    }
   });
 
-  return {};
-};
+  octokit.hook.error('request', async (error: RequestError | Error, options: EndpointOptions) => {
+    const endpoint = `${options.method} ${options.url}`;
+    core.error(`GitHub API Error: ${endpoint}`);
+    core.error(`Message: ${error.message}`);
+
+    if ('status' in error && error.status) {
+      core.error(`Status: ${error.status}`);
+    }
+
+    if ('response' in error && error.response?.data) {
+      core.error(`Response: ${JSON.stringify(error.response.data, null, 2)}`);
+    }
+
+    throw error;
+  });
+}
