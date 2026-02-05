@@ -893,6 +893,7 @@ const setCommitStatus = async ({ sha, context, state, description, target_url, s
                 return;
             }
         }
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq('hey there');
         await _octokit__WEBPACK_IMPORTED_MODULE_3__/* .octokit */ .A.repos.createCommitStatus({
             sha,
             context,
