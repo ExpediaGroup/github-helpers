@@ -115,8 +115,7 @@ export const createMockActionsGithub = (mockOctokit: ReturnType<typeof createMoc
     sha: 'test-sha',
     runId: 123,
     ...contextOverrides
-  },
-  getOctokit: mock(() => mockOctokit)
+  }
 });
 
 /**
@@ -142,9 +141,16 @@ export const setupMocks = (contextOverrides = {}) => {
 
   mock.module('@actions/github', () => createMockActionsGithub(mockOctokit, contextOverrides));
 
-  mock.module('../../src/octokit', () => ({
-    octokit: mockOctokit.rest,
-    octokitGraphql: mockOctokit.graphql
+  mock.module('@octokit/core', () => ({
+    Octokit: class {
+      static plugin() {
+        return class {
+          constructor() {
+            return mockOctokit;
+          }
+        };
+      }
+    }
   }));
 
   return mockOctokit;
