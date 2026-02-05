@@ -198,7 +198,6 @@ function errorLoggingPlugin(octokit) {
         if ('response' in error && error.response?.data) {
             _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .error */ .z3(`Response: ${JSON.stringify(error.response.data, null, 2)}`);
         }
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .debug */ .Yz(`Request options: ${JSON.stringify(options, null, 2)}`);
         throw error;
     });
     octokit.hook.before('request', async (options) => {

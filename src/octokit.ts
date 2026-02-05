@@ -38,8 +38,6 @@ function errorLoggingPlugin(octokit: Octokit) {
       core.error(`Response: ${JSON.stringify(error.response.data, null, 2)}`);
     }
 
-    core.debug(`Request options: ${JSON.stringify(options, null, 2)}`);
-
     throw error;
   });
 

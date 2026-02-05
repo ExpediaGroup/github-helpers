@@ -45665,7 +45665,6 @@ module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("zlib");
 
 // EXPORTS
 __nccwpck_require__.d(__webpack_exports__, {
-  Yz: () => (/* binding */ core_debug),
   z3: () => (/* binding */ error),
   V4: () => (/* binding */ getInput),
   pq: () => (/* binding */ info),
@@ -45674,7 +45673,7 @@ __nccwpck_require__.d(__webpack_exports__, {
   $e: () => (/* binding */ warning)
 });
 
-// UNUSED EXPORTS: ExitCode, addPath, endGroup, exportVariable, getBooleanInput, getIDToken, getMultilineInput, getState, group, isDebug, markdownSummary, notice, platform, saveState, setCommandEcho, setSecret, startGroup, summary, toPlatformPath, toPosixPath, toWin32Path
+// UNUSED EXPORTS: ExitCode, addPath, debug, endGroup, exportVariable, getBooleanInput, getIDToken, getMultilineInput, getState, group, isDebug, markdownSummary, notice, platform, saveState, setCommandEcho, setSecret, startGroup, summary, toPlatformPath, toPosixPath, toWin32Path
 
 // EXTERNAL MODULE: external "os"
 var external_os_ = __nccwpck_require__(857);
@@ -48503,7 +48502,7 @@ function isDebug() {
  * @param message debug message
  */
 function core_debug(message) {
-    command_issueCommand('debug', {}, message);
+    issueCommand('debug', {}, message);
 }
 /**
  * Adds an error issue
