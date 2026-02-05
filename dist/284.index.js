@@ -214,6 +214,7 @@ const approvalsSatisfied = async ({ teams, users, codeowners_overrides, number_o
         if (body) {
             logs.unshift(body + '\n');
             await (0,create_pr_comment.createPrComment)({
+                pull_number,
                 body: logs.join('\n')
             });
         }
