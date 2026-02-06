@@ -9,7 +9,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "moduleResolution": "node"
+    "moduleResolution": "bundler"
   },
   "exclude": ["node_modules"]
 }
