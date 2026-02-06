@@ -7,8 +7,8 @@
   "dependencies": {
     "@actions/core": "3.0.0",
     "@actions/github": "9.0.0",
+    "@adobe/node-fetch-retry": "2.2.0",
     "@octokit/graphql-schema": "15.26.1",
-    "@octokit/plugin-retry": "8.0.3",
     "axios": "1.13.4",
     "bluebird": "3.7.2",
     "codeowners-utils": "1.0.2",

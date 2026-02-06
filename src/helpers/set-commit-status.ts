@@ -42,7 +42,7 @@ export const setCommitStatus = async ({ sha, context, state, description, target
       }
     }
 
-    await octokit.repos.createCommitStatus({
+    octokit.repos.createCommitStatus({
       sha,
       context,
       state: state as PipelineState,
