@@ -18,6 +18,7 @@ import { retry } from '@octokit/plugin-retry';
 import { logging } from './logging';
 
 const githubToken = core.getInput('github_token', { required: true });
+const baseUrl = process.env.GITHUB_API_URL || 'https://api.github.com';
 
 const OctokitWithPlugins = Octokit.plugin(restEndpointMethods, retry, logging);
-export const { rest: octokit, graphql: octokitGraphql } = new OctokitWithPlugins({ auth: githubToken });
+export const { rest: octokit, graphql: octokitGraphql } = new OctokitWithPlugins({ auth: githubToken, baseUrl });

@@ -142,8 +142,9 @@ limitations under the License.
 
 
 const githubToken = core/* getInput */.V4('github_token', { required: true });
+const baseUrl = process.env.GITHUB_API_URL || 'https://api.github.com';
 const OctokitWithPlugins = dist_src/* Octokit */.E.plugin(plugin_rest_endpoint_methods_dist_src/* restEndpointMethods */._, dist_bundle/* retry */.L, logging);
-const { rest: octokit, graphql: octokitGraphql } = new OctokitWithPlugins({ auth: githubToken });
+const { rest: octokit, graphql: octokitGraphql } = new OctokitWithPlugins({ auth: githubToken, baseUrl });
 
 
 /***/ }),
