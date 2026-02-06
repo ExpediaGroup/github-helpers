@@ -12,12 +12,8 @@ limitations under the License.
 */
 
 import * as core from '@actions/core';
-import { Octokit } from '@octokit/core';
-import { restEndpointMethods } from '@octokit/plugin-rest-endpoint-methods';
-import { retry } from '@octokit/plugin-retry';
-import { logging } from './logging';
+import * as fetch from '@adobe/node-fetch-retry';
+import { getOctokit } from '@actions/github';
 
 const githubToken = core.getInput('github_token', { required: true });
-
-const OctokitWithPlugins = Octokit.plugin(restEndpointMethods, retry, logging);
-export const { rest: octokit, graphql: octokitGraphql } = new OctokitWithPlugins({ auth: githubToken });
+export const { rest: octokit, graphql: octokitGraphql } = getOctokit(githubToken, { request: { fetch } });

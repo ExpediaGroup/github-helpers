@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods';
+import { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods/dist-types';
 import { octokit } from '../octokit';
 
 export type PipelineState = RestEndpointMethodTypes['repos']['createCommitStatus']['parameters']['state'];

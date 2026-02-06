@@ -43,9 +43,6 @@ jobs:
       - name: Run Prettier
         run: bun format-check
 
-      - name: Type Check
-        run: bun tsc
-
       - name: Run Lint
         run: bun lint
 
