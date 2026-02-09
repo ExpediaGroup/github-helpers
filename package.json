@@ -30,7 +30,7 @@
     "@types/lodash.uniq": "4.5.9",
     "@types/micromatch": "4.0.10",
     "@vercel/ncc": "0.38.4",
-    "eslint": "9.39.2",
+    "eslint": "10.0.0",
     "husky": "9.1.7",
     "plop": "4.0.5",
     "prettier": "3.8.1",
