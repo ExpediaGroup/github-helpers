@@ -171,8 +171,8 @@ outputs:
   output:
     description: 'The output of the helper'
 runs:
-  using: 'node20'
-  main: 'dist/index.js'
+  using: 'node24'
+  main: 'dist/src/main.js'
 branding:
   icon: user-check
   color: purple

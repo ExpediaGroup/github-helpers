@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "sources": ["../src/helpers/are-reviewers-required.ts"],
+  "sourcesContent": [
+    "/*\nCopyright 2021 Expedia, Inc.\nLicensed under the Apache License, Version 2.0 (the \"License\");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\n    https://www.apache.org/licenses/LICENSE-2.0\nUnless required by applicable law or agreed to in writing, software\ndistributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\nSee the License for the specific language governing permissions and\nlimitations under the License.\n*/\n\nimport * as core from '@actions/core';\nimport { HelperInputs } from '../types/generated';\nimport { getRequiredCodeOwnersEntries } from '../utils/get-core-member-logins';\nimport { context } from '@actions/github';\n\nexport class AreReviewersRequired extends HelperInputs {\n  teams = '';\n}\n\nexport const areReviewersRequired = async ({ teams }: AreReviewersRequired) => {\n  const prNumber = context.issue.number;\n  const teamsList = teams?.split('\\n');\n  const requiredCodeOwnersEntries = (await getRequiredCodeOwnersEntries(prNumber)).map(({ owners }) => owners).flat();\n  const notRequiredTeams = teamsList.filter(team => !requiredCodeOwnersEntries.includes(team));\n  if (notRequiredTeams.length) {\n    core.info(`${notRequiredTeams.join(', ')} not in list of required reviewers (${requiredCodeOwnersEntries.join(', ')})`);\n    return false;\n  }\n  return true;\n};\n"
+  ],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;AAkBO,MAAM,6BAA6B,aAAa;AAAA,EACrD,QAAQ;AACV;AAEO,IAAM,uBAAuB,SAAS,YAAkC;AAAA,EAC7E,MAAM,WAAW,QAAQ,MAAM;AAAA,EAC/B,MAAM,YAAY,OAAO,MAAM;AAAA,CAAI;AAAA,EACnC,MAAM,6BAA6B,MAAM,6BAA6B,QAAQ,GAAG,IAAI,GAAG,aAAa,MAAM,EAAE,KAAK;AAAA,EAClH,MAAM,mBAAmB,UAAU,OAAO,UAAQ,CAAC,0BAA0B,SAAS,IAAI,CAAC;AAAA,EAC3F,IAAI,iBAAiB,QAAQ;AAAA,IACtB,KAAK,GAAG,iBAAiB,KAAK,IAAI,wCAAwC,0BAA0B,KAAK,IAAI,IAAI;AAAA,IACtH,OAAO;AAAA,EACT;AAAA,EACA,OAAO;AAAA;",
+  "debugId": "6E227A7F737A4F8364756E2164756E21",
+  "names": []
+}
