@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "sources": ["../src/helpers/close-pr.ts"],
+  "sourcesContent": [
+    "/*\nCopyright 2021 Expedia, Inc.\nLicensed under the Apache License, Version 2.0 (the \"License\");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\n    https://www.apache.org/licenses/LICENSE-2.0\nUnless required by applicable law or agreed to in writing, software\ndistributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\nSee the License for the specific language governing permissions and\nlimitations under the License.\n*/\n\nimport { HelperInputs } from '../types/generated';\nimport { context } from '@actions/github';\nimport { octokit } from '../octokit';\nimport { createPrComment } from './create-pr-comment';\n\nexport class ClosePr extends HelperInputs {\n  declare body?: string;\n  declare pull_number?: string;\n  declare repo_name?: string;\n  declare repo_owner_name?: string;\n}\n\nexport const closePr = async ({ body, pull_number, repo_name, repo_owner_name }: ClosePr = {}) => {\n  if ((repo_name || repo_owner_name) && !pull_number) {\n    throw new Error('pull_number is required when repo_name or repo_owner_name is provided');\n  }\n  if (body) {\n    await createPrComment({ body, pull_number, repo_name, repo_owner_name });\n  }\n\n  return octokit.pulls.update({\n    pull_number: pull_number ? Number(pull_number) : context.issue.number,\n    repo: repo_name ?? context.repo.repo,\n    owner: repo_owner_name ?? context.repo.owner,\n    state: 'closed'\n  });\n};\n"
+  ],
+  "mappings": ";;;;;;;;;;;;;;;;;AAkBO,MAAM,gBAAgB,aAAa;AAK1C;AAEO,IAAM,UAAU,SAAS,MAAM,aAAa,WAAW,oBAA6B,CAAC,MAAM;AAAA,EAChG,KAAK,aAAa,oBAAoB,CAAC,aAAa;AAAA,IAClD,MAAM,IAAI,MAAM,uEAAuE;AAAA,EACzF;AAAA,EACA,IAAI,MAAM;AAAA,IACR,MAAM,gBAAgB,EAAE,MAAM,aAAa,WAAW,gBAAgB,CAAC;AAAA,EACzE;AAAA,EAEA,OAAO,QAAQ,MAAM,OAAO;AAAA,IAC1B,aAAa,cAAc,OAAO,WAAW,IAAI,QAAQ,MAAM;AAAA,IAC/D,MAAM,aAAa,QAAQ,KAAK;AAAA,IAChC,OAAO,mBAAmB,QAAQ,KAAK;AAAA,IACvC,OAAO;AAAA,EACT,CAAC;AAAA;",
+  "debugId": "10A40351AA5951D964756E2164756E21",
+  "names": []
+}
