@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "sources": ["../src/helpers/is-user-core-member.ts"],
+  "sourcesContent": [
+    "/*\nCopyright 2021 Expedia, Inc.\nLicensed under the Apache License, Version 2.0 (the \"License\");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\nhttps://www.apache.org/licenses/LICENSE-2.0\nUnless required by applicable law or agreed to in writing, software\ndistributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\nSee the License for the specific language governing permissions and\nlimitations under the License.\n*/\n\nimport { HelperInputs } from '../types/generated';\nimport { context } from '@actions/github';\nimport * as core from '@actions/core';\nimport { getCoreMemberLogins } from '../utils/get-core-member-logins';\n\nexport class IsUserCoreMember extends HelperInputs {}\n\nexport const isUserCoreMember = async ({ pull_number, login = context.actor, codeowners_overrides }: IsUserCoreMember) => {\n  const pullNumber = Number(pull_number);\n  const coreMembers = await getCoreMemberLogins({ pull_number: pullNumber, codeowners_overrides });\n  core.info(`Checking if ${login} is a core member for pull request ${pullNumber}`);\n  core.info(`Core members: ${coreMembers.join(', ')}`);\n  return coreMembers.includes(login);\n};\n"
+  ],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;AAkBO,MAAM,yBAAyB,aAAa;AAAC;AAE7C,IAAM,mBAAmB,SAAS,aAAa,QAAQ,QAAQ,OAAO,2BAA6C;AAAA,EACxH,MAAM,aAAa,OAAO,WAAW;AAAA,EACrC,MAAM,cAAc,MAAM,oBAAoB,EAAE,aAAa,YAAY,qBAAqB,CAAC;AAAA,EAC1F,KAAK,eAAe,2CAA2C,YAAY;AAAA,EAC3E,KAAK,iBAAiB,YAAY,KAAK,IAAI,GAAG;AAAA,EACnD,OAAO,YAAY,SAAS,KAAK;AAAA;",
+  "debugId": "69C3812FFA74CCCC64756E2164756E21",
+  "names": []
+}
