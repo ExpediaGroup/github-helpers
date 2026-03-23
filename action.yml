@@ -172,7 +172,7 @@ outputs:
     description: 'The output of the helper'
 runs:
   using: 'node24'
-  main: 'dist/main.js'
+  main: 'dist/src/main.js'
 branding:
   icon: user-check
   color: purple
