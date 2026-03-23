@@ -2668,7 +2668,7 @@ var import_lodash = __toESM(require_lodash(), 1);
 import { readFileSync } from "fs";
 import { join } from "path";
 var getActionInputs = (requiredInputs = []) => {
-  const yamlContents = readFileSync(join(process.env.GITHUB_ACTION_PATH ?? process.cwd(), "action.yml")).toString();
+  const yamlContents = readFileSync(join(import.meta.dirname, "..", "action.yml")).toString();
   const inputsFromFile = getInputsFromFile(yamlContents).reduce((acc, current) => {
     const trimWhitespaceOptions = current === "delimiter" ? { trimWhitespace: false } : {};
     return {
@@ -2697,4 +2697,4 @@ export {
   run
 };
 
-//# debugId=F821403002801FDC64756E2164756E21
+//# debugId=2F304580B0879B0E64756E2164756E21
