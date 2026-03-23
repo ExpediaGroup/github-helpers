@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "sources": ["../src/helpers/add-pr-approval-label.ts"],
+  "sourcesContent": [
+    "/*\nCopyright 2021 Expedia, Inc.\nLicensed under the Apache License, Version 2.0 (the \"License\");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\n    https://www.apache.org/licenses/LICENSE-2.0\nUnless required by applicable law or agreed to in writing, software\ndistributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\nSee the License for the specific language governing permissions and\nlimitations under the License.\n*/\n\nimport { CORE_APPROVED_PR_LABEL, PEER_APPROVED_PR_LABEL } from '../constants';\nimport { HelperInputs } from '../types/generated';\nimport { context } from '@actions/github';\nimport { getCoreMemberLogins } from '../utils/get-core-member-logins';\nimport { octokit } from '../octokit';\n\nexport class AddPrApprovalLabel extends HelperInputs {\n  login = '';\n  declare teams?: string;\n}\n\nexport const addPrApprovalLabel = async ({ teams, login }: AddPrApprovalLabel) => {\n  const coreMemberLogins = await getCoreMemberLogins({ pull_number: context.issue.number, teams: teams?.split('\\n') });\n  const approvalLabel = coreMemberLogins.includes(login) ? CORE_APPROVED_PR_LABEL : PEER_APPROVED_PR_LABEL;\n  return octokit.issues.addLabels({\n    labels: [approvalLabel],\n    issue_number: context.issue.number,\n    ...context.repo\n  });\n};\n"
+  ],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;AAmBO,MAAM,2BAA2B,aAAa;AAAA,EACnD,QAAQ;AAEV;AAEO,IAAM,qBAAqB,SAAS,OAAO,YAAgC;AAAA,EAChF,MAAM,mBAAmB,MAAM,oBAAoB,EAAE,aAAa,QAAQ,MAAM,QAAQ,OAAO,OAAO,MAAM;AAAA,CAAI,EAAE,CAAC;AAAA,EACnH,MAAM,gBAAgB,iBAAiB,SAAS,KAAK,IAAI,yBAAyB;AAAA,EAClF,OAAO,QAAQ,OAAO,UAAU;AAAA,IAC9B,QAAQ,CAAC,aAAa;AAAA,IACtB,cAAc,QAAQ,MAAM;AAAA,OACzB,QAAQ;AAAA,EACb,CAAC;AAAA;",
+  "debugId": "08014975F5D4540664756E2164756E21",
+  "names": []
+}

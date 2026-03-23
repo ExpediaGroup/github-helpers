@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'src/**'
+      - 'dist/**'
+      - 'package.json'
 
 jobs:
   test:

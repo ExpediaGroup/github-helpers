@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "sources": ["../src/helpers/get-email-on-user-profile.ts"],
+  "sourcesContent": [
+    "/*\nCopyright 2021 Expedia, Inc.\nLicensed under the Apache License, Version 2.0 (the \"License\");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\nhttps://www.apache.org/licenses/LICENSE-2.0\nUnless required by applicable law or agreed to in writing, software\ndistributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\nSee the License for the specific language governing permissions and\nlimitations under the License.\n*/\n\nimport { HelperInputs } from '../types/generated';\nimport { octokit } from '../octokit';\nimport { setFailed } from '@actions/core';\n\nexport class GetEmailOnUserProfile extends HelperInputs {\n  login = '';\n  declare pattern?: string;\n}\n\nexport const getEmailOnUserProfile = async ({ login, pattern }: GetEmailOnUserProfile) => {\n  const {\n    data: { email }\n  } = await octokit.users.getByUsername({ username: login });\n\n  if (!email) {\n    setFailed(`User ${login} does not have an email address on their GitHub profile!`);\n    return;\n  }\n\n  if (pattern && !new RegExp(pattern).test(email)) {\n    setFailed(\n      `Email ${email} does not match regex pattern ${pattern}. Please update the email on your GitHub profile to match this pattern!`\n    );\n    return;\n  }\n\n  return email;\n};\n"
+  ],
+  "mappings": ";;;;;;;;;;;AAiBO,MAAM,8BAA8B,aAAa;AAAA,EACtD,QAAQ;AAEV;AAEO,IAAM,wBAAwB,SAAS,OAAO,cAAqC;AAAA,EACxF;AAAA,IACE,QAAQ;AAAA,MACN,MAAM,QAAQ,MAAM,cAAc,EAAE,UAAU,MAAM,CAAC;AAAA,EAEzD,IAAI,CAAC,OAAO;AAAA,IACV,UAAU,QAAQ,+DAA+D;AAAA,IACjF;AAAA,EACF;AAAA,EAEA,IAAI,WAAW,CAAC,IAAI,OAAO,OAAO,EAAE,KAAK,KAAK,GAAG;AAAA,IAC/C,UACE,SAAS,sCAAsC,gFACjD;AAAA,IACA;AAAA,EACF;AAAA,EAEA,OAAO;AAAA;",
+  "debugId": "C314A9EBBFCF3E1A64756E2164756E21",
+  "names": []
+}
