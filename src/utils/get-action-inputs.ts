@@ -18,7 +18,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 export const getActionInputs = (requiredInputs: string[] = []) => {
-  const yamlContents = readFileSync(join(process.cwd(), 'action.yml')).toString();
+  const yamlContents = readFileSync(join(process.env.GITHUB_ACTION_PATH ?? process.cwd(), 'action.yml')).toString();
   const inputsFromFile = getInputsFromFile(yamlContents).reduce((acc, current) => {
     const trimWhitespaceOptions = current === 'delimiter' ? { trimWhitespace: false } : {};
     return {
