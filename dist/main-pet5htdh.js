@@ -6,9 +6,9 @@ import {
 var require_lodash = __commonJS((exports, module) => {
   (function() {
     var undefined;
-    var VERSION = "4.17.23";
+    var VERSION = "4.18.1";
     var LARGE_ARRAY_SIZE = 200;
-    var CORE_ERROR_TEXT = "Unsupported core-js use. Try https://npms.io/search?q=ponyfill.", FUNC_ERROR_TEXT = "Expected a function", INVALID_TEMPL_VAR_ERROR_TEXT = "Invalid `variable` option passed into `_.template`";
+    var CORE_ERROR_TEXT = "Unsupported core-js use. Try https://npms.io/search?q=ponyfill.", FUNC_ERROR_TEXT = "Expected a function", INVALID_TEMPL_VAR_ERROR_TEXT = "Invalid `variable` option passed into `_.template`", INVALID_TEMPL_IMPORTS_ERROR_TEXT = "Invalid `imports` option passed into `_.template`";
     var HASH_UNDEFINED = "__lodash_hash_undefined__";
     var MAX_MEMOIZE_SIZE = 500;
     var PLACEHOLDER = "__lodash_placeholder__";
@@ -1887,19 +1887,12 @@ var require_lodash = __commonJS((exports, module) => {
         if (!length) {
           return true;
         }
-        var isRootPrimitive = object == null || typeof object !== "object" && typeof object !== "function";
         while (++index < length) {
-          var key = path[index];
-          if (typeof key !== "string") {
-            continue;
-          }
+          var key = toKey(path[index]);
           if (key === "__proto__" && !hasOwnProperty.call(object, "__proto__")) {
             return false;
           }
-          if (key === "constructor" && index + 1 < length && typeof path[index + 1] === "string" && path[index + 1] === "prototype") {
-            if (isRootPrimitive && index === 0) {
-              continue;
-            }
+          if ((key === "constructor" || key === "prototype") && index < length - 1) {
             return false;
           }
         }
@@ -3207,7 +3200,7 @@ var require_lodash = __commonJS((exports, module) => {
         var index = -1, length = pairs == null ? 0 : pairs.length, result2 = {};
         while (++index < length) {
           var pair = pairs[index];
-          result2[pair[0]] = pair[1];
+          baseAssignValue(result2, pair[0], pair[1]);
         }
         return result2;
       }
@@ -4591,8 +4584,13 @@ var require_lodash = __commonJS((exports, module) => {
           options = undefined;
         }
         string = toString(string);
-        options = assignInWith({}, options, settings, customDefaultsAssignIn);
-        var imports = assignInWith({}, options.imports, settings.imports, customDefaultsAssignIn), importsKeys = keys(imports), importsValues = baseValues(imports, importsKeys);
+        options = assignWith({}, options, settings, customDefaultsAssignIn);
+        var imports = assignWith({}, options.imports, settings.imports, customDefaultsAssignIn), importsKeys = keys(imports), importsValues = baseValues(imports, importsKeys);
+        arrayEach(importsKeys, function(key) {
+          if (reForbiddenIdentifierChars.test(key)) {
+            throw new Error(INVALID_TEMPL_IMPORTS_ERROR_TEXT);
+          }
+        });
         var isEscaping, isEvaluating, index = 0, interpolate = options.interpolate || reNoMatch, source = "__p += '";
         var reDelimiters = RegExp2((options.escape || reNoMatch).source + "|" + interpolate.source + "|" + (interpolate === reInterpolate ? reEsTemplate : reNoMatch).source + "|" + (options.evaluate || reNoMatch).source + "|$", "g");
         var sourceURL = "//# sourceURL=" + (hasOwnProperty.call(options, "sourceURL") ? (options.sourceURL + "").replace(/\s/g, " ") : "lodash.templateSources[" + ++templateCounter + "]") + `
@@ -5440,4 +5438,4 @@ __p += '`;
 
 export { require_lodash };
 
-//# debugId=0975C78A6817753364756E2164756E21
+//# debugId=0AB204E126F7B28264756E2164756E21
