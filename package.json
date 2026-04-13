@@ -1,26 +1,26 @@
 {
   "name": "github-helpers",
-  "packageManager": "bun@1.3.11",
+  "packageManager": "bun@1.3.12",
   "type": "module",
   "private": true,
   "dependencies": {
     "@actions/core": "3.0.0",
-    "@actions/github": "9.0.0",
+    "@actions/github": "9.1.0",
     "@octokit/graphql-schema": "15.26.1",
     "@octokit/plugin-retry": "8.1.0",
-    "axios": "1.14.0",
+    "axios": "1.15.0",
     "bluebird": "3.7.2",
     "codeowners-utils": "1.0.2",
     "js-yaml": "4.1.1",
     "lodash": "4.18.1",
     "micromatch": "4.0.8",
-    "simple-git": "3.35.2"
+    "simple-git": "3.36.0"
   },
   "devDependencies": {
     "@octokit/webhooks-types": "7.6.1",
     "@total-typescript/ts-reset": "0.6.1",
     "@types/bluebird": "3.5.42",
-    "@types/bun": "1.3.11",
+    "@types/bun": "1.3.12",
     "@types/js-yaml": "4.0.9",
     "@types/lodash.camelcase": "4.3.9",
     "@types/lodash.chunk": "4.2.9",
@@ -31,9 +31,9 @@
     "eslint": "10.2.0",
     "husky": "9.1.7",
     "plop": "4.0.5",
-    "prettier": "3.8.1",
+    "prettier": "3.8.2",
     "typescript": "6.0.2",
-    "typescript-eslint": "8.58.0"
+    "typescript-eslint": "8.58.1"
   },
   "scripts": {
     "create-helper": "plop helper --force",
