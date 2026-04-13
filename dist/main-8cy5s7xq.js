@@ -617,7 +617,6 @@ var require_dist2 = __commonJS((exports) => {
 
 // node_modules/simple-git/dist/esm/index.js
 var import_file_exists = __toESM(require_dist(), 1);
-import { Buffer as Buffer2 } from "node:buffer";
 
 // node_modules/@simple-git/args-pathspec/dist/index.mjs
 var t = /* @__PURE__ */ new WeakMap;
@@ -639,12 +638,12 @@ var import_promise_deferred = __toESM(require_dist2(), 1);
 import { normalize } from "node:path";
 
 // node_modules/@simple-git/argv-parser/dist/index.mjs
-function* w(e, t2) {
+function* U(e, t2) {
   const n = t2 === "global";
   for (const o2 of e)
     o2.isGlobal === n && (yield o2);
 }
-var x = /* @__PURE__ */ new Set([
+var y = /* @__PURE__ */ new Set([
   "--add",
   "--edit",
   "--remove-section",
@@ -664,25 +663,25 @@ var S = /* @__PURE__ */ new Set([
   "--list",
   "-l"
 ]);
-var k = /* @__PURE__ */ new Set([
+var P = /* @__PURE__ */ new Set([
   "edit",
   "remove-section",
   "rename-section",
   "set",
   "unset"
 ]);
-var y = /* @__PURE__ */ new Set(["get", "get-color", "get-colorbool", "list"]);
-function C(e, t2) {
-  for (const { name: o2 } of w(e, "task")) {
-    if (x.has(o2))
-      return f(true, t2);
+var E = /* @__PURE__ */ new Set(["get", "get-color", "get-colorbool", "list"]);
+function F(e, t2) {
+  for (const { name: o2 } of U(e, "task")) {
+    if (y.has(o2))
+      return p(true, t2);
     if (S.has(o2))
-      return f(false, t2);
+      return p(false, t2);
   }
   const n = t2.at(0)?.toLowerCase();
-  return n === undefined ? null : k.has(n) ? f(true, t2.slice(1)) : y.has(n) ? f(false, t2.slice(1)) : t2.length === 1 ? f(false, t2) : f(true, t2);
+  return n === undefined ? null : P.has(n) ? p(true, t2.slice(1)) : E.has(n) ? p(false, t2.slice(1)) : t2.length === 1 ? p(false, t2) : p(true, t2);
 }
-function f(e = false, t2 = []) {
+function p(e = false, t2 = []) {
   const n = t2.at(0)?.toLowerCase();
   return n === undefined ? null : {
     isWrite: e,
@@ -691,18 +690,18 @@ function f(e = false, t2 = []) {
     value: t2.at(1)
   };
 }
-function N(e, t2) {
+function A(e, t2) {
   return t2.isWrite && t2.value !== undefined ? { key: t2.key, value: t2.value, scope: e } : { key: t2.key, scope: e };
 }
-function P(e) {
+function M(e) {
   const t2 = e?.indexOf("=") || -1;
   return !e || t2 < 0 ? null : {
     key: e.slice(0, t2).trim().toLowerCase(),
     value: e.slice(t2 + 1)
   };
 }
-function U(e) {
-  for (const { name: t2 } of w(e, "task"))
+function N(e) {
+  for (const { name: t2 } of U(e, "task"))
     switch (t2) {
       case "--global":
         return "global";
@@ -718,47 +717,47 @@ function U(e) {
     }
   return "local";
 }
-function A({ name: e }) {
+function G({ name: e }) {
   if (e === "-c" || e === "--config")
     return "inline";
   if (e === "--config-env")
     return "env";
 }
-function* F(e) {
+function* O(e) {
   for (const t2 of e) {
-    const n = A(t2), o2 = n && P(t2.value);
+    const n = G(t2), o2 = n && M(t2.value);
     o2 && (yield {
       ...o2,
       scope: n
     });
   }
 }
-function M(e, t2, n) {
+function $(e, t2, n) {
   const o2 = {
     read: [],
-    write: [...F(t2)]
+    write: [...O(t2)]
   };
-  return e === "config" && G(o2, U(t2), C(t2, n)), o2;
+  return e === "config" && D(o2, N(t2), F(t2, n)), o2;
 }
-function G(e, t2, n) {
+function D(e, t2, n) {
   if (n === null)
     return;
-  const o2 = N(t2, n);
+  const o2 = A(t2, n);
   n.isWrite ? e.write.push(o2) : e.read.push(o2);
 }
-var v = {
+var x = {
   short: /* @__PURE__ */ new Map([
     ["c", true]
   ])
 };
-var O = {
+var L = {
   short: new Map([
     ["C", true],
     ["P", false],
     ["h", false],
     ["p", false],
     ["v", false],
-    ...v.short.entries()
+    ...x.short.entries()
   ]),
   long: /* @__PURE__ */ new Set([
     "attr-source",
@@ -771,7 +770,7 @@ var O = {
     "work-tree"
   ])
 };
-var E = {
+var R = {
   clone: {
     short: /* @__PURE__ */ new Map([
       ["b", true],
@@ -783,7 +782,7 @@ var E = {
       ["s", false],
       ["u", true]
     ]),
-    long: /* @__PURE__ */ new Set(["branch", "config", "jobs", "origin", "upload-pack", "u"])
+    long: /* @__PURE__ */ new Set(["branch", "config", "jobs", "origin", "upload-pack", "u", "template"])
   },
   commit: {
     short: /* @__PURE__ */ new Map([
@@ -807,6 +806,10 @@ var E = {
     short: /* @__PURE__ */ new Map,
     long: /* @__PURE__ */ new Set(["upload-pack"])
   },
+  init: {
+    short: /* @__PURE__ */ new Map,
+    long: /* @__PURE__ */ new Set(["template"])
+  },
   pull: {
     short: /* @__PURE__ */ new Map,
     long: /* @__PURE__ */ new Set(["upload-pack"])
@@ -816,15 +819,15 @@ var E = {
     long: /* @__PURE__ */ new Set(["exec", "receive-pack"])
   }
 };
-var I = { short: /* @__PURE__ */ new Map, long: /* @__PURE__ */ new Set };
-function L(e) {
-  const t2 = E[e ?? ""] ?? I;
+var T = { short: /* @__PURE__ */ new Map, long: /* @__PURE__ */ new Set };
+function I(e) {
+  const t2 = R[e ?? ""] ?? T;
   return {
-    short: new Map([...v.short.entries(), ...t2.short.entries()]),
+    short: new Map([...x.short.entries(), ...t2.short.entries()]),
     long: t2.long
   };
 }
-function b(e, t2 = O) {
+function C(e, t2 = L) {
   if (e.startsWith("--")) {
     const n = e.indexOf("=");
     if (n > 2)
@@ -836,140 +839,231 @@ function b(e, t2 = O) {
     const n = e.charAt(1), o2 = t2.short.get(n);
     return [{ name: e, needsNext: o2 === true }];
   }
-  return R(e, t2.short);
+  return W(e, t2.short);
 }
-function R(e, t2) {
+function W(e, t2) {
   const n = e.slice(1).split(""), o2 = [];
-  for (let a = 0;a < n.length; a++) {
-    const s = n[a], r2 = t2.get(s);
+  for (let s = 0;s < n.length; s++) {
+    const l = n[s], r2 = t2.get(l);
     if (r2 === undefined)
       return [{ name: e, needsNext: false }];
     if (r2) {
-      const l = n.slice(a + 1).join("");
-      if (l && ![...l].every((h) => t2.has(h)))
-        return o2.push({ name: `-${s}`, value: l, needsNext: false }), o2;
+      const a = n.slice(s + 1).join("");
+      if (a && ![...a].every((w) => t2.has(w)))
+        return o2.push({ name: `-${l}`, value: a, needsNext: false }), o2;
     }
-    o2.push({ name: `-${s}`, needsNext: r2 });
+    o2.push({ name: `-${l}`, needsNext: r2 });
   }
   return o2;
 }
-function W(e, t2 = []) {
+function j(e, t2 = []) {
   let n = 0;
   for (;n < e.length; ) {
     const o2 = String(e[n]);
     if (!o2.startsWith("-") || o2.length < 2)
       break;
-    const a = b(o2);
-    let s = n + 1;
-    for (const r2 of a) {
-      const l = {
+    const s = C(o2);
+    let l = n + 1;
+    for (const r2 of s) {
+      const a = {
         name: r2.name,
         value: r2.value,
         absorbedNext: false,
         isGlobal: true
       };
-      r2.needsNext && l.value === undefined && s < e.length && (l.value = String(e[s]), l.absorbedNext = true, s++), t2.push(l);
+      r2.needsNext && a.value === undefined && l < e.length && (a.value = String(e[l]), a.absorbedNext = true, l++), t2.push(a);
     }
-    n = s;
+    n = l;
   }
   return { flags: t2, taskIndex: n };
 }
-function _(e, t2, n = []) {
-  const o2 = L(t2), a = [], s = [];
+function B(e, t2, n = []) {
+  const o2 = I(t2), s = [], l = [];
   let r2 = 0;
   for (;r2 < e.length; ) {
-    const l = e[r2];
-    if (r(l)) {
-      s.push(...o(l)), r2++;
+    const a = e[r2];
+    if (r(a)) {
+      l.push(...o(a)), r2++;
       continue;
     }
-    const u = String(l);
-    if (u === "--") {
-      for (let c2 = r2 + 1;c2 < e.length; c2++) {
-        const i = e[c2];
-        r(i) ? s.push(...o(i)) : s.push(String(i));
+    const f = String(a);
+    if (f === "--") {
+      for (let g = r2 + 1;g < e.length; g++) {
+        const u = e[g];
+        r(u) ? l.push(...o(u)) : l.push(String(u));
       }
       break;
     }
-    if (!u.startsWith("-") || u.length < 2) {
-      a.push(u), r2++;
+    if (!f.startsWith("-") || f.length < 2) {
+      s.push(f), r2++;
       continue;
     }
-    const h = b(u, o2);
+    const w = C(f, o2);
     let d = r2 + 1;
-    for (const c2 of h) {
-      const i = {
-        name: c2.name,
-        value: c2.value,
+    for (const g of w) {
+      const u = {
+        name: g.name,
+        value: g.value,
         absorbedNext: false,
         isGlobal: false
       };
-      c2.needsNext && i.value === undefined && d < e.length && !r(e[d]) && (i.value = String(e[d]), i.absorbedNext = true, d++), n.push(i);
+      g.needsNext && u.value === undefined && d < e.length && !r(e[d]) && (u.value = String(e[d]), u.absorbedNext = true, d++), n.push(u);
     }
     r2 = d;
   }
-  return { flags: n, positionals: a, pathspecs: s };
+  return { flags: n, positionals: s, pathspecs: l };
 }
-function* T({ write: e }) {
+function* V({
+  write: e
+}) {
   for (const t2 of e)
-    for (const n of $) {
+    for (const n of q) {
       const o2 = n(t2.key);
       o2 && (yield o2);
     }
 }
-function g(e, t2, n = String(e)) {
-  const o2 = typeof e == "string" ? new RegExp(`\\s*${e}`, "i") : e;
-  return function(s) {
-    if (o2.test(s))
+function c2(e, t2, n = String(e)) {
+  const o2 = typeof e == "string" ? new RegExp(`\\s*${e.toLowerCase()}`) : e;
+  return function(l) {
+    if (o2.test(l))
       return {
         category: t2,
         message: `Configuring ${n} is not permitted without enabling ${t2}`
       };
   };
 }
-var $ = [
-  g(/^\s*protocol(.[a-z]+)?.allow/i, "allowUnsafeProtocolOverride", "protocol.allow"),
-  g("core.sshCommand", "allowUnsafeSshCommand"),
-  g("core.fsmonitor", "allowUnsafeFsMonitor"),
-  g("core.gitProxy", "allowUnsafeGitProxy"),
-  g("core.hooksPath", "allowUnsafeHooksPath"),
-  g("diff.external", "allowUnsafeDiffExternal")
-];
-function* j(e, t2) {
-  for (const n of t2)
-    /^--(upload|receive)-pack/.test(n.name) && (yield {
-      category: "allowUnsafePack",
-      message: "Use of --upload-pack or --receive-pack is not permitted without enabling allowUnsafePack"
-    }), e === "clone" && (/^-\w*u/.test(n.name) || n.name === "--u") && (yield {
-      category: "allowUnsafePack",
-      message: "Use of clone with option -u is not permitted without enabling allowUnsafePack"
-    }), e === "push" && /^--exec/.test(n.name) && (yield {
-      category: "allowUnsafePack",
-      message: "Use of push with option --exec is not permitted without enabling allowUnsafePack"
-    });
+function i(e, t2) {
+  const n = new RegExp(`\\s*${e.toLowerCase().replace(/\./g, "(..+)?.")}`);
+  return c2(n, t2, e);
 }
-function B(e, t2, n) {
-  const o2 = [
-    ...j(e, t2),
-    ...T(n)
+var q = [
+  c2("alias", "allowUnsafeAlias"),
+  c2("core.askPass", "allowUnsafeAskPass"),
+  c2("core.editor", "allowUnsafeEditor"),
+  c2("core.fsmonitor", "allowUnsafeFsMonitor"),
+  c2("core.gitProxy", "allowUnsafeGitProxy"),
+  c2("core.hooksPath", "allowUnsafeHooksPath"),
+  c2("core.pager", "allowUnsafePager"),
+  c2("core.sshCommand", "allowUnsafeSshCommand"),
+  i("credential.helper", "allowUnsafeCredentialHelper"),
+  i("diff.command", "allowUnsafeDiffExternal"),
+  c2("diff.external", "allowUnsafeDiffExternal"),
+  i("diff.textconv", "allowUnsafeDiffTextConv"),
+  i("filter.clean", "allowUnsafeFilter"),
+  i("filter.smudge", "allowUnsafeFilter"),
+  i("gpg.program", "allowUnsafeGpgProgram"),
+  c2("init.templateDir", "allowUnsafeTemplateDir"),
+  i("merge.driver", "allowUnsafeMergeDriver"),
+  i("mergetool.path", "allowUnsafeMergeDriver"),
+  i("mergetool.cmd", "allowUnsafeMergeDriver"),
+  i("protocol.allow", "allowUnsafeProtocolOverride"),
+  i("remote.receivepack", "allowUnsafePack"),
+  i("remote.uploadpack", "allowUnsafePack"),
+  c2("sequence.editor", "allowUnsafeEditor")
+];
+function* K(e, t2) {
+  for (const n of t2)
+    for (const o2 of H) {
+      const s = o2(e, n.name);
+      s && (yield s);
+    }
+}
+function h(e, t2, n, o2 = String(t2)) {
+  const s = typeof t2 == "string" ? new RegExp(`\\s*${t2.toLowerCase()}`) : t2, l = `Use of ${e ? `${e} with option ` : ""}${o2} is not permitted without enabling ${n}`;
+  return function(a, f) {
+    if ((!e || a === e) && s.test(f))
+      return {
+        category: n,
+        message: l
+      };
+  };
+}
+var H = [
+  h(null, /--(upload|receive)-pack/, "allowUnsafePack", "--upload-pack or --receive-pack"),
+  h("clone", /^-\w*u/, "allowUnsafePack"),
+  h("clone", "--u", "allowUnsafePack"),
+  h("push", "--exec", "allowUnsafePack"),
+  h(null, "--template", "allowUnsafeTemplateDir")
+];
+function b(e, t2, n) {
+  return [...K(e, t2), ...V(n)];
+}
+function Y(...e) {
+  const { flags: t2, taskIndex: n } = j(e), o2 = n < e.length ? String(e[n]).toLowerCase() : null, s = o2 !== null ? e.slice(n + 1) : [], { positionals: l, pathspecs: r2 } = B(s, o2, t2), a = $(o2, t2, l);
+  return {
+    task: o2,
+    flags: t2.map(z),
+    paths: r2,
+    config: a,
+    vulnerabilities: b(o2, t2, a)
+  };
+}
+function z({ value: e, name: t2 }) {
+  return e !== undefined ? { name: t2, value: e } : { name: t2 };
+}
+var _ = {
+  editor: "allowUnsafeEditor",
+  git_askpass: "allowUnsafeAskPass",
+  git_config_global: "allowUnsafeConfigPaths",
+  git_config_system: "allowUnsafeConfigPaths",
+  git_config_count: "allowUnsafeConfigEnvCount",
+  git_config: "allowUnsafeConfigPaths",
+  git_editor: "allowUnsafeEditor",
+  git_exec_path: "allowUnsafeConfigPaths",
+  git_external_diff: "allowUnsafeDiffExternal",
+  git_pager: "allowUnsafePager",
+  git_proxy_command: "allowUnsafeGitProxy",
+  git_template_dir: "allowUnsafeTemplateDir",
+  git_sequence_editor: "allowUnsafeEditor",
+  git_ssh: "allowUnsafeSshCommand",
+  git_ssh_command: "allowUnsafeSshCommand",
+  pager: "allowUnsafePager",
+  prefix: "allowUnsafeConfigPaths",
+  ssh_askpass: "allowUnsafeAskPass"
+};
+function* J(e) {
+  const t2 = parseInt(e.git_config_count ?? "0", 10);
+  for (let n = 0;n < t2; n++) {
+    const o2 = e[`git_config_key_${n}`], s = e[`git_config_value_${n}`];
+    o2 !== undefined && (yield { key: o2.toLowerCase().trim(), value: s, scope: "env" });
+  }
+}
+function* Q(e) {
+  for (const t2 of Object.keys(e))
+    if (k(t2)) {
+      const n = _[t2];
+      yield {
+        category: n,
+        message: `Use of "${t2.toUpperCase()}" is not permitted without enabling ${n}`
+      };
+    }
+}
+function k(e) {
+  return Object.hasOwn(_, e);
+}
+function X(e) {
+  const t2 = {};
+  for (const [n, o2] of Object.entries(e)) {
+    const s = n.toLowerCase().trim();
+    (k(s) || s.startsWith("git")) && (t2[s] = String(o2));
+  }
+  return t2;
+}
+function Z(e) {
+  const t2 = X(e), n = {
+    read: [],
+    write: [...J(t2)]
+  }, o2 = [
+    ...Q(t2),
+    ...b(null, [], n)
   ];
   return {
-    categories: o2.reduce((s, r2) => s.add(r2.category), /* @__PURE__ */ new Set),
+    config: n,
     vulnerabilities: o2
   };
 }
-function V(...e) {
-  const { flags: t2, taskIndex: n } = W(e), o2 = n < e.length ? String(e[n]).toLowerCase() : null, a = o2 !== null ? e.slice(n + 1) : [], { positionals: s, pathspecs: r2 } = _(a, o2, t2), l = M(o2, t2, s);
-  return {
-    task: o2,
-    flags: t2.map(D),
-    paths: r2,
-    config: l,
-    vulnerabilities: B(o2, t2, l)
-  };
-}
-function D({ value: e, name: t2 }) {
-  return e !== undefined ? { name: t2, value: e } : { name: t2 };
+function te(e, t2) {
+  return [...Y(...e).vulnerabilities, ...Z(t2).vulnerabilities];
 }
 
 // node_modules/simple-git/dist/esm/index.js
@@ -1125,13 +1219,13 @@ function asNumber(source, onNaN = 0) {
 }
 function prefixedArray(input, prefix) {
   const output = [];
-  for (let i = 0, max = input.length;i < max; i++) {
-    output.push(prefix, input[i]);
+  for (let i2 = 0, max = input.length;i2 < max; i2++) {
+    output.push(prefix, input[i2]);
   }
   return output;
 }
 function bufferToString(input) {
-  return (Array.isArray(input) ? Buffer2.concat(input) : input).toString("utf-8");
+  return (Array.isArray(input) ? Buffer.concat(input) : input).toString("utf-8");
 }
 function pick(source, properties) {
   const out = {};
@@ -1313,9 +1407,9 @@ function appendTaskOptions(options, commands = []) {
     } else if (filterPrimitives(value, ["boolean"])) {
       commands2.push(key + "=" + value);
     } else if (Array.isArray(value)) {
-      for (const v2 of value) {
-        if (!filterPrimitives(v2, ["string", "number"])) {
-          commands2.push(key + "=" + v2);
+      for (const v of value) {
+        if (!filterPrimitives(v, ["string", "number"])) {
+          commands2.push(key + "=" + v);
         }
       }
     } else {
@@ -1326,9 +1420,9 @@ function appendTaskOptions(options, commands = []) {
 }
 function getTrailingOptions(args, initialPrimitive = 0, objectOnly = false) {
   const command = [];
-  for (let i = 0, max = initialPrimitive < 0 ? args.length : initialPrimitive;i < max; i++) {
-    if ("string|number".includes(typeof args[i])) {
-      command.push(String(args[i]));
+  for (let i2 = 0, max = initialPrimitive < 0 ? args.length : initialPrimitive;i2 < max; i2++) {
+    if ("string|number".includes(typeof args[i2])) {
+      command.push(String(args[i2]));
     }
   }
   appendTaskOptions(trailingOptionsArgument(args), command);
@@ -1360,12 +1454,12 @@ function callTaskParser(parser4, streams) {
 }
 function parseStringResponse(result, parsers12, texts, trim = true) {
   asArray(texts).forEach((text) => {
-    for (let lines = toLinesWithContent(text, trim), i = 0, max = lines.length;i < max; i++) {
+    for (let lines = toLinesWithContent(text, trim), i2 = 0, max = lines.length;i2 < max; i2++) {
       const line = (offset = 0) => {
-        if (i + offset >= max) {
+        if (i2 + offset >= max) {
           return;
         }
-        return lines[i + offset];
+        return lines[i2 + offset];
       };
       parsers12.some(({ parse }) => parse(line, result));
     }
@@ -1720,9 +1814,9 @@ function configFilePath(filePath) {
 }
 function* configParser(text, requestedKey = null) {
   const lines = text.split("\x00");
-  for (let i = 0, max = lines.length - 1;i < max; ) {
-    const file = configFilePath(lines[i++]);
-    let value = lines[i++];
+  for (let i2 = 0, max = lines.length - 1;i2 < max; ) {
+    const file = configFilePath(lines[i2++]);
+    let value = lines[i2++];
     let key = requestedKey;
     if (value.includes(`
 `)) {
@@ -2186,7 +2280,10 @@ var init_git_executor_chain = __esm({
       }
       async attemptRemoteTask(task, logger) {
         const binary = this._plugins.exec("spawn.binary", "", pluginContext(task, task.commands));
-        const args = this._plugins.exec("spawn.args", [...task.commands], pluginContext(task, task.commands));
+        const args = this._plugins.exec("spawn.args", [...task.commands], {
+          ...pluginContext(task, task.commands),
+          env: { ...this.env }
+        });
         const raw = await this.gitResponse(task, binary, args, this.outputHandler, logger.step("SPAWN"));
         const outputStreams = await this.handleTaskData(task, args, raw, logger.step("HANDLE"));
         logger(`passing response to task's parser as a %s`, task.format);
@@ -2606,8 +2703,8 @@ var init_init = __esm({
   }
 });
 function logFormatFromCommand(customArgs) {
-  for (let i = 0;i < customArgs.length; i++) {
-    const format = logFormatRegex.exec(customArgs[i]);
+  for (let i2 = 0;i2 < customArgs.length; i2++) {
+    const format = logFormatRegex.exec(customArgs[i2]);
     if (format) {
       return `--${format[1]}`;
     }
@@ -3450,13 +3547,13 @@ var init_StatusSummary = __esm({
     parseStatusSummary = function(text) {
       const lines = text.split(NULL);
       const status = new StatusSummary;
-      for (let i = 0, l = lines.length;i < l; ) {
-        let line = lines[i++].trim();
+      for (let i2 = 0, l = lines.length;i2 < l; ) {
+        let line = lines[i2++].trim();
         if (!line) {
           continue;
         }
         if (line.charAt(0) === "R") {
-          line += NULL + (lines[i++] || "");
+          line += NULL + (lines[i2++] || "");
         }
         splitLine(status, line);
       }
@@ -4255,8 +4352,8 @@ var init_TagList = __esm({
           if (partsA.length === 1 || partsB.length === 1) {
             return singleSorted(toNumber(partsA[0]), toNumber(partsB[0]));
           }
-          for (let i = 0, l = Math.max(partsA.length, partsB.length);i < l; i++) {
-            const diff = sorted(toNumber(partsA[i]), toNumber(partsB[i]));
+          for (let i2 = 0, l = Math.max(partsA.length, partsB.length);i2 < l; i2++) {
+            const diff = sorted(toNumber(partsA[i2]), toNumber(partsB[i2]));
             if (diff) {
               return diff;
             }
@@ -4436,9 +4533,9 @@ var require_git = __commonJS2({
     Git2.prototype.raw = function(commands) {
       const createRestCommands = !Array.isArray(commands);
       const command = [].slice.call(createRestCommands ? arguments : commands, 0);
-      for (let i = 0;i < command.length && createRestCommands; i++) {
-        if (!filterPrimitives2(command[i])) {
-          command.splice(i, command.length - i);
+      for (let i2 = 0;i2 < command.length && createRestCommands; i2++) {
+        if (!filterPrimitives2(command[i2])) {
+          command.splice(i2, command.length - i2);
           break;
         }
       }
@@ -4612,9 +4709,8 @@ function abortPlugin(signal) {
 function blockUnsafeOperationsPlugin(options = {}) {
   return {
     type: "spawn.args",
-    action(args) {
-      const parsed = V(...args);
-      for (const vulnerability of parsed.vulnerabilities.vulnerabilities) {
+    action(args, { env }) {
+      for (const vulnerability of te(args, env)) {
         if (options[vulnerability.category] !== true) {
           throw new GitPluginError(undefined, "unsafe", vulnerability.message);
         }
@@ -4892,14 +4988,14 @@ function suffixPathsPlugin() {
       function append2(args) {
         (suffix = suffix || []).push(...args);
       }
-      for (let i = 0;i < data.length; i++) {
-        const param = data[i];
+      for (let i2 = 0;i2 < data.length; i2++) {
+        const param = data[i2];
         if (r(param)) {
           append2(o(param));
           continue;
         }
         if (param === "--") {
-          append2(data.slice(i + 1).flatMap((item) => r(item) && o(item) || item));
+          append2(data.slice(i2 + 1).flatMap((item) => r(item) && o(item) || item));
           break;
         }
         prefix.push(param);
@@ -4937,4 +5033,4 @@ var esm_default = gitInstanceFactory;
 
 export { simpleGit, esm_default };
 
-//# debugId=BB05AB0AB315ED5464756E2164756E21
+//# debugId=56A9CCFB6700008B64756E2164756E21
