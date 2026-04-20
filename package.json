@@ -8,7 +8,7 @@
     "@actions/github": "9.1.0",
     "@octokit/graphql-schema": "15.26.1",
     "@octokit/plugin-retry": "8.1.0",
-    "axios": "1.15.0",
+    "axios": "1.15.1",
     "bluebird": "3.7.2",
     "codeowners-utils": "1.0.2",
     "js-yaml": "4.1.1",
@@ -28,12 +28,12 @@
     "@types/lodash.union": "4.6.9",
     "@types/lodash.uniq": "4.5.9",
     "@types/micromatch": "4.0.10",
-    "eslint": "10.2.0",
+    "eslint": "10.2.1",
     "husky": "9.1.7",
     "plop": "4.0.5",
-    "prettier": "3.8.2",
-    "typescript": "6.0.2",
-    "typescript-eslint": "8.58.1"
+    "prettier": "3.8.3",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.58.2"
   },
   "scripts": {
     "create-helper": "plop helper --force",
