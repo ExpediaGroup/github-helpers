@@ -136,6 +136,65 @@ The following parameters can be used for additional control over when it is safe
 - `override_filter_paths`: These are the file paths that, if out of date on a PR, will prevent merge no matter what files the PR is changing
     - example: `override_filter_paths: package.json,package-lock.json`
 - `override_filter_globs`: These are glob patterns for `override_filter_paths`
+- `match_comment_paths`: When set to `'true'`, enables comment path matching. This reads paths from a specially formatted PR comment and checks if the branch is behind on any of those paths. This is useful when a PR's scope extends beyond the files it directly modifies (e.g., due to transitive dependencies in a monorepo triggering tests in other packages).
+
+#### Comment Path Matching
+
+When `match_comment_paths` is enabled, the helper looks for a PR comment containing the marker `<!-- check-merge-safety-paths -->` followed by a JSON array of paths in a fenced code block:
+
+```markdown
+<!-- check-merge-safety-paths -->
+```json
+["path/to/package1", "path/to/package2"]
+```
+```
+
+This is useful for monorepos with selective testing, where changing one package (e.g., a shared data model) triggers tests for dependent packages. Without this feature, merging could introduce bugs if the dependent packages were updated on main after the PR's tests ran.
+
+Example workflow integration:
+
+```yaml
+# After determining affected paths, post them as a comment
+- name: Post affected paths
+  uses: actions/github-script@v7
+  with:
+    script: |
+      const marker = '<!-- check-merge-safety-paths -->';
+      const paths = ${{ steps.get-affected-paths.outputs.paths }};
+      const body = `${marker}\n\`\`\`json\n${JSON.stringify(paths)}\n\`\`\``;
+      
+      const { data: comments } = await github.rest.issues.listComments({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        issue_number: context.issue.number
+      });
+      const existing = comments.find(c => c.body.includes(marker));
+      
+      if (existing) {
+        await github.rest.issues.updateComment({
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          comment_id: existing.id,
+          body
+        });
+      } else {
+        await github.rest.issues.createComment({
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          issue_number: context.issue.number,
+          body
+        });
+      }
+
+# Then run check-merge-safety with comment path matching enabled
+- uses: ExpediaGroup/github-helpers@v1
+  with:
+    helper: check-merge-safety
+    paths: |
+      packages/package-1
+      packages/package-2
+    match_comment_paths: 'true'
+```
 
 ### [close-pr](.github/workflows/close-pr.yml)
 

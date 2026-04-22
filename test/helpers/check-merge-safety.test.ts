@@ -515,4 +515,201 @@ describe('checkMergeSafety', () => {
       ...context.repo
     });
   });
+
+  describe('comment path matching', () => {
+    const mockListCommentsWithPaths = (paths: string[]) => {
+      const commentBody = `<!-- check-merge-safety-paths -->\n\`\`\`json\n${JSON.stringify(paths)}\n\`\`\``;
+      (octokit.issues.listComments as unknown as Mock<any>).mockResolvedValue({
+        data: [{ body: commentBody }]
+      });
+    };
+
+    const mockListCommentsEmpty = () => {
+      (octokit.issues.listComments as unknown as Mock<any>).mockResolvedValue({
+        data: []
+      });
+    };
+
+    const mockListCommentsNoMarker = () => {
+      (octokit.issues.listComments as unknown as Mock<any>).mockResolvedValue({
+        data: [{ body: 'Some other comment' }]
+      });
+    };
+
+    it('should prevent merge when branch is behind on comment paths', async () => {
+      const filesOutOfDate = ['Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout/src/file.swift'];
+      const changedFilesOnPr = ['Modules/EGSharedUI/EGSharedUI_DataModel/src/schema.swift'];
+      mockGithubRequests(filesOutOfDate, changedFilesOnPr);
+      mockListCommentsWithPaths([
+        'Modules/EGSharedUI/EGSharedUI_DataModel',
+        'Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout'
+      ]);
+
+      await checkMergeSafety({
+        paths: allProjectPaths,
+        match_comment_paths: 'true',
+        ...context.repo
+      });
+
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+        sha,
+        state: 'failure',
+        context: 'Merge Safety',
+        description: 'Branch is behind on paths from comment: Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout. Please update with main.',
+        repo: 'repo',
+        owner: 'owner'
+      });
+      expect(core.setFailed).toHaveBeenCalled();
+    });
+
+    it('should allow merge when branch is up to date on all comment paths', async () => {
+      const filesOutOfDate = ['Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Trips/src/file.swift'];
+      const changedFilesOnPr = ['Modules/EGSharedUI/EGSharedUI_DataModel/src/schema.swift'];
+      mockGithubRequests(filesOutOfDate, changedFilesOnPr);
+      mockListCommentsWithPaths([
+        'Modules/EGSharedUI/EGSharedUI_DataModel',
+        'Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout'
+      ]);
+
+      await checkMergeSafety({
+        paths: allProjectPaths,
+        match_comment_paths: 'true',
+        ...context.repo
+      });
+
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+        sha,
+        state: 'success',
+        context: 'Merge Safety',
+        description: 'Branch username:some-branch-name is safe to merge!',
+        repo: 'repo',
+        owner: 'owner'
+      });
+      expect(core.setFailed).not.toHaveBeenCalled();
+    });
+
+    it('should skip comment path check when no comment with marker is found', async () => {
+      const filesOutOfDate = ['Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout/src/file.swift'];
+      const changedFilesOnPr = ['Modules/EGSharedUI/EGSharedUI_DataModel/src/schema.swift'];
+      mockGithubRequests(filesOutOfDate, changedFilesOnPr);
+      mockListCommentsNoMarker();
+
+      await checkMergeSafety({
+        paths: allProjectPaths,
+        match_comment_paths: 'true',
+        ...context.repo
+      });
+
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+        sha,
+        state: 'success',
+        context: 'Merge Safety',
+        description: 'Branch username:some-branch-name is safe to merge!',
+        repo: 'repo',
+        owner: 'owner'
+      });
+    });
+
+    it('should skip comment path check when no comments exist', async () => {
+      const filesOutOfDate = ['Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout/src/file.swift'];
+      const changedFilesOnPr = ['Modules/EGSharedUI/EGSharedUI_DataModel/src/schema.swift'];
+      mockGithubRequests(filesOutOfDate, changedFilesOnPr);
+      mockListCommentsEmpty();
+
+      await checkMergeSafety({
+        paths: allProjectPaths,
+        match_comment_paths: 'true',
+        ...context.repo
+      });
+
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+        sha,
+        state: 'success',
+        context: 'Merge Safety',
+        description: 'Branch username:some-branch-name is safe to merge!',
+        repo: 'repo',
+        owner: 'owner'
+      });
+    });
+
+    it('should not perform comment path check when match_comment_paths is not set', async () => {
+      const filesOutOfDate = ['Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout/src/file.swift'];
+      const changedFilesOnPr = ['Modules/EGSharedUI/EGSharedUI_DataModel/src/schema.swift'];
+      mockGithubRequests(filesOutOfDate, changedFilesOnPr);
+      mockListCommentsWithPaths([
+        'Modules/EGSharedUI/EGSharedUI_DataModel',
+        'Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout'
+      ]);
+
+      await checkMergeSafety({
+        paths: allProjectPaths,
+        ...context.repo
+      });
+
+      expect(octokit.issues.listComments).not.toHaveBeenCalled();
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+        sha,
+        state: 'success',
+        context: 'Merge Safety',
+        description: 'Branch username:some-branch-name is safe to merge!',
+        repo: 'repo',
+        owner: 'owner'
+      });
+    });
+
+    it('should still check existing path overlap when comment path matching passes', async () => {
+      const filesOutOfDate = ['packages/package-1/src/another-file.ts'];
+      const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+      mockGithubRequests(filesOutOfDate, changedFilesOnPr);
+      mockListCommentsWithPaths(['Modules/EGSharedUI/EGSharedUI_DataModel']);
+
+      await checkMergeSafety({
+        paths: allProjectPaths,
+        match_comment_paths: 'true',
+        ...context.repo
+      });
+
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+        sha,
+        state: 'failure',
+        context: 'Merge Safety',
+        description: 'This branch has one or more outdated projects. Please update with main.',
+        repo: 'repo',
+        owner: 'owner'
+      });
+    });
+
+    it('should truncate long list of outdated comment paths in status message', async () => {
+      const filesOutOfDate = [
+        'Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout/src/file.swift',
+        'Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Trips/src/file.swift',
+        'Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Shopping/src/file.swift',
+        'Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Deals/src/file.swift'
+      ];
+      const changedFilesOnPr = ['Modules/EGSharedUI/EGSharedUI_DataModel/src/schema.swift'];
+      mockGithubRequests(filesOutOfDate, changedFilesOnPr);
+      mockListCommentsWithPaths([
+        'Modules/EGSharedUI/EGSharedUI_DataModel',
+        'Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout',
+        'Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Trips',
+        'Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Shopping',
+        'Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Deals'
+      ]);
+
+      await checkMergeSafety({
+        paths: allProjectPaths,
+        match_comment_paths: 'true',
+        ...context.repo
+      });
+
+      expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+        sha,
+        state: 'failure',
+        context: 'Merge Safety',
+        description: expect.stringContaining('...'),
+        repo: 'repo',
+        owner: 'owner'
+      });
+    });
+  });
 });

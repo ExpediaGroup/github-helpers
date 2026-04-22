@@ -67,4 +67,5 @@ export class HelperInputs {
   declare packages?: string;
   declare branch_name?: string;
   declare commit_message?: string;
+  declare match_comment_paths?: string;
 }

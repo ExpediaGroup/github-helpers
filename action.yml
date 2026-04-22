@@ -167,6 +167,9 @@ inputs:
     description: 'The commit message to use'
     required: false
     default: 'Automated PR creation'
+  match_comment_paths:
+    description: 'Enable comment path matching for check-merge-safety. When enabled, reads paths from a specially formatted PR comment to determine if the branch needs rebasing.'
+    required: false
 outputs:
   output:
     description: 'The output of the helper'
