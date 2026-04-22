@@ -27,7 +27,8 @@ import"../main-9m3k9gt0.js";
 import {
   error,
   info,
-  setFailed
+  setFailed,
+  warning
 } from "../main-q70tmm6g.js";
 import {
   __toESM
@@ -38,6 +39,7 @@ var import_micromatch = __toESM(require_micromatch(), 1);
 var import_bluebird = __toESM(require_bluebird(), 1);
 var git = simpleGit();
 var maxBranchNameLength = 50;
+var COMMENT_PATHS_MARKER = "<!-- check-merge-safety-paths -->";
 
 class CheckMergeSafety extends HelperInputs {
 }
@@ -140,7 +142,7 @@ var getDiff = async (compareBase, compareHead, basehead) => {
   }
   return changedFileNames;
 };
-var getMergeSafetyStateAndMessage = async (pullRequest, { paths, ignore_globs, override_filter_paths, override_filter_globs }) => {
+var getMergeSafetyStateAndMessage = async (pullRequest, { paths, ignore_globs, override_filter_paths, override_filter_globs, match_comment_paths }) => {
   const {
     base: {
       repo: {
@@ -165,6 +167,24 @@ var getMergeSafetyStateAndMessage = async (pullRequest, { paths, ignore_globs, o
   }
   const truncatedRef = ref.length > maxBranchNameLength ? `${ref.substring(0, maxBranchNameLength)}...` : ref;
   const truncatedBranchName = `${username}:${truncatedRef}`;
+  if (match_comment_paths === "true") {
+    const commentPaths = await getPathsFromComment(pullRequest.number);
+    if (commentPaths.length) {
+      info(`Found ${commentPaths.length} paths from PR comment`);
+      const outdatedCommentPaths = commentPaths.filter((commentPath) => fileNamesWhichBranchIsBehindOn.some((file) => file.startsWith(commentPath + "/") || file === commentPath));
+      if (outdatedCommentPaths.length) {
+        error(buildErrorMessage(outdatedCommentPaths, "comment paths", truncatedBranchName));
+        const displayPaths = outdatedCommentPaths.slice(0, 3).join(", ");
+        const suffix = outdatedCommentPaths.length > 3 ? "..." : "";
+        return {
+          state: "failure",
+          message: `Branch is behind on paths from comment: ${displayPaths}${suffix}. Please update with ${default_branch}.`
+        };
+      }
+    } else {
+      info("No paths found in PR comment, skipping comment path matching check");
+    }
+  }
   const globalFilesOutdatedOnBranch = override_filter_globs ? import_micromatch.default(fileNamesWhichBranchIsBehindOn, override_filter_globs.split(/[\n,]/)) : override_filter_paths ? fileNamesWhichBranchIsBehindOn.filter((changedFile) => override_filter_paths.split(/[\n,]/).includes(changedFile)) : [];
   if (globalFilesOutdatedOnBranch.length) {
     error(buildErrorMessage(globalFilesOutdatedOnBranch, "global files", truncatedBranchName));
@@ -209,9 +229,33 @@ ${paths.map((path) => `* ${path}`).join(`
 var diffErrorMessage = (basehead, message = "") => `Failed to generate diff for ${basehead}. Please verify SHAs are valid and try again.${message ? `
 Error: ${message}` : ""}`;
 var buildSuccessMessage = (branchName) => `Branch ${branchName} is safe to merge!`;
+var getPathsFromComment = async (pullNumber) => {
+  const { data: comments } = await octokit.issues.listComments({
+    ...context.repo,
+    issue_number: pullNumber
+  });
+  const pathsComment = comments.find((c) => c.body?.includes(COMMENT_PATHS_MARKER));
+  if (!pathsComment?.body) {
+    return [];
+  }
+  const jsonMatch = pathsComment.body.match(/```json\n([\s\S]*?)\n```/);
+  if (!jsonMatch?.[1]) {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(jsonMatch[1]);
+    if (Array.isArray(parsed) && parsed.every((item) => typeof item === "string")) {
+      return parsed;
+    }
+    return [];
+  } catch {
+    warning(`Failed to parse paths from PR #${pullNumber} comment`);
+    return [];
+  }
+};
 export {
   checkMergeSafety,
   CheckMergeSafety
 };
 
-//# debugId=852D8F69D0103B1E64756E2164756E21
+//# debugId=8CCB3211353B88AF64756E2164756E21

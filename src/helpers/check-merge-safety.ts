@@ -275,12 +275,16 @@ const getPathsFromComment = async (pullNumber: number): Promise<string[]> => {
   }
 
   const jsonMatch = pathsComment.body.match(/```json\n([\s\S]*?)\n```/);
-  if (!jsonMatch) {
+  if (!jsonMatch?.[1]) {
     return [];
   }
 
   try {
-    return JSON.parse(jsonMatch[1]);
+    const parsed: unknown = JSON.parse(jsonMatch[1]);
+    if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
+      return parsed;
+    }
+    return [];
   } catch {
     core.warning(`Failed to parse paths from PR #${pullNumber} comment`);
     return [];
