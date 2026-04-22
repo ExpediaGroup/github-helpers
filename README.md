@@ -142,12 +142,15 @@ The following parameters can be used for additional control over when it is safe
 
 When `match_comment_paths` is enabled, the helper looks for a PR comment containing the marker `<!-- check-merge-safety-paths -->` followed by a JSON array of paths in a fenced code block:
 
-```markdown
+````markdown
 <!-- check-merge-safety-paths -->
+
 ```json
 ["path/to/package1", "path/to/package2"]
 ```
-```
+````
+
+````
 
 This is useful for monorepos with selective testing, where changing one package (e.g., a shared data model) triggers tests for dependent packages. Without this feature, merging could introduce bugs if the dependent packages were updated on main after the PR's tests ran.
 
@@ -162,14 +165,14 @@ Example workflow integration:
       const marker = '<!-- check-merge-safety-paths -->';
       const paths = ${{ steps.get-affected-paths.outputs.paths }};
       const body = `${marker}\n\`\`\`json\n${JSON.stringify(paths)}\n\`\`\``;
-      
+
       const { data: comments } = await github.rest.issues.listComments({
         owner: context.repo.owner,
         repo: context.repo.repo,
         issue_number: context.issue.number
       });
       const existing = comments.find(c => c.body.includes(marker));
-      
+
       if (existing) {
         await github.rest.issues.updateComment({
           owner: context.repo.owner,
@@ -194,7 +197,7 @@ Example workflow integration:
       packages/package-1
       packages/package-2
     match_comment_paths: 'true'
-```
+````
 
 ### [close-pr](.github/workflows/close-pr.yml)
 

@@ -540,10 +540,7 @@ describe('checkMergeSafety', () => {
       const filesOutOfDate = ['Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout/src/file.swift'];
       const changedFilesOnPr = ['Modules/EGSharedUI/EGSharedUI_DataModel/src/schema.swift'];
       mockGithubRequests(filesOutOfDate, changedFilesOnPr);
-      mockListCommentsWithPaths([
-        'Modules/EGSharedUI/EGSharedUI_DataModel',
-        'Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout'
-      ]);
+      mockListCommentsWithPaths(['Modules/EGSharedUI/EGSharedUI_DataModel', 'Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout']);
 
       await checkMergeSafety({
         paths: allProjectPaths,
@@ -555,7 +552,8 @@ describe('checkMergeSafety', () => {
         sha,
         state: 'failure',
         context: 'Merge Safety',
-        description: 'Branch is behind on paths from comment: Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout. Please update with main.',
+        description:
+          'Branch is behind on paths from comment: Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout. Please update with main.',
         repo: 'repo',
         owner: 'owner'
       });
@@ -566,10 +564,7 @@ describe('checkMergeSafety', () => {
       const filesOutOfDate = ['Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Trips/src/file.swift'];
       const changedFilesOnPr = ['Modules/EGSharedUI/EGSharedUI_DataModel/src/schema.swift'];
       mockGithubRequests(filesOutOfDate, changedFilesOnPr);
-      mockListCommentsWithPaths([
-        'Modules/EGSharedUI/EGSharedUI_DataModel',
-        'Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout'
-      ]);
+      mockListCommentsWithPaths(['Modules/EGSharedUI/EGSharedUI_DataModel', 'Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout']);
 
       await checkMergeSafety({
         paths: allProjectPaths,
@@ -636,10 +631,7 @@ describe('checkMergeSafety', () => {
       const filesOutOfDate = ['Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout/src/file.swift'];
       const changedFilesOnPr = ['Modules/EGSharedUI/EGSharedUI_DataModel/src/schema.swift'];
       mockGithubRequests(filesOutOfDate, changedFilesOnPr);
-      mockListCommentsWithPaths([
-        'Modules/EGSharedUI/EGSharedUI_DataModel',
-        'Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout'
-      ]);
+      mockListCommentsWithPaths(['Modules/EGSharedUI/EGSharedUI_DataModel', 'Modules/EGSharedUI/EGSharedUI_Retail/EGSharedUI_Checkout']);
 
       await checkMergeSafety({
         paths: allProjectPaths,
