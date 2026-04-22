@@ -25,12 +25,15 @@ import * as core from '@actions/core';
 const git = simpleGit();
 
 const maxBranchNameLength = 50;
+const COMMENT_PATHS_MARKER = '<!-- check-merge-safety-paths -->';
+
 export class CheckMergeSafety extends HelperInputs {
   declare context?: string;
   declare paths?: string;
   declare ignore_globs?: string;
   declare override_filter_paths?: string;
   declare override_filter_globs?: string;
+  declare match_comment_paths?: string;
 }
 
 export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
@@ -147,7 +150,7 @@ const getDiff = async (compareBase: DiffRefs, compareHead: DiffRefs, basehead: s
 
 const getMergeSafetyStateAndMessage = async (
   pullRequest: PullRequest,
-  { paths, ignore_globs, override_filter_paths, override_filter_globs }: CheckMergeSafety
+  { paths, ignore_globs, override_filter_paths, override_filter_globs, match_comment_paths }: CheckMergeSafety
 ) => {
   const {
     base: {
@@ -175,6 +178,31 @@ const getMergeSafetyStateAndMessage = async (
 
   const truncatedRef = ref.length > maxBranchNameLength ? `${ref.substring(0, maxBranchNameLength)}...` : ref;
   const truncatedBranchName = `${username}:${truncatedRef}`;
+
+  if (match_comment_paths === 'true') {
+    const commentPaths = await getPathsFromComment(pullRequest.number);
+
+    if (commentPaths.length) {
+      core.info(`Found ${commentPaths.length} paths from PR comment`);
+
+      const outdatedCommentPaths = commentPaths.filter(commentPath =>
+        fileNamesWhichBranchIsBehindOn.some(file => file.startsWith(commentPath + '/') || file === commentPath)
+      );
+
+      if (outdatedCommentPaths.length) {
+        core.error(buildErrorMessage(outdatedCommentPaths, 'comment paths', truncatedBranchName));
+        const displayPaths = outdatedCommentPaths.slice(0, 3).join(', ');
+        const suffix = outdatedCommentPaths.length > 3 ? '...' : '';
+        return {
+          state: 'failure',
+          message: `Branch is behind on paths from comment: ${displayPaths}${suffix}. Please update with ${default_branch}.`
+        } as const;
+      }
+    } else {
+      core.info('No paths found in PR comment, skipping comment path matching check');
+    }
+  }
+
   const globalFilesOutdatedOnBranch = override_filter_globs
     ? micromatch(fileNamesWhichBranchIsBehindOn, override_filter_globs.split(/[\n,]/))
     : override_filter_paths
@@ -223,7 +251,7 @@ const getMergeSafetyStateAndMessage = async (
   } as const;
 };
 
-const buildErrorMessage = (paths: string[], pathType: 'projects' | 'global files', branchName: string) =>
+const buildErrorMessage = (paths: string[], pathType: 'projects' | 'global files' | 'comment paths', branchName: string) =>
   `
 The following ${pathType} are outdated on branch ${branchName}
 
@@ -234,3 +262,27 @@ const diffErrorMessage = (basehead: string, message = '') =>
   `Failed to generate diff for ${basehead}. Please verify SHAs are valid and try again.${message ? `\nError: ${message}` : ''}`;
 
 const buildSuccessMessage = (branchName: string) => `Branch ${branchName} is safe to merge!`;
+
+const getPathsFromComment = async (pullNumber: number): Promise<string[]> => {
+  const { data: comments } = await octokit.issues.listComments({
+    ...githubContext.repo,
+    issue_number: pullNumber
+  });
+
+  const pathsComment = comments.find(c => c.body?.includes(COMMENT_PATHS_MARKER));
+  if (!pathsComment?.body) {
+    return [];
+  }
+
+  const jsonMatch = pathsComment.body.match(/```json\n([\s\S]*?)\n```/);
+  if (!jsonMatch) {
+    return [];
+  }
+
+  try {
+    return JSON.parse(jsonMatch[1]);
+  } catch {
+    core.warning(`Failed to parse paths from PR #${pullNumber} comment`);
+    return [];
+  }
+};
