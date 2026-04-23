@@ -27,6 +27,9 @@ const git = simpleGit();
 const maxBranchNameLength = 50;
 const COMMENT_PATHS_MARKER = '<!-- check-merge-safety-paths -->';
 
+const getWorkflowRunUrl = () =>
+  `${githubContext.serverUrl}/${githubContext.repo.owner}/${githubContext.repo.repo}/actions/runs/${githubContext.runId}`;
+
 export class CheckMergeSafety extends HelperInputs {
   declare context?: string;
   declare paths?: string;
@@ -50,7 +53,7 @@ export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
 };
 
 const setMergeSafetyStatus = async (pullRequest: PullRequest, { context = 'Merge Safety', ...inputs }: CheckMergeSafety) => {
-  const { state, message } = await getMergeSafetyStateAndMessage(pullRequest, inputs);
+  const { state, message, target_url } = await getMergeSafetyStateAndMessage(pullRequest, inputs);
   const hasExistingFailureStatus = await checkForExistingFailureStatus(pullRequest, context);
   if (hasExistingFailureStatus && state === 'failure') {
     const {
@@ -68,6 +71,7 @@ const setMergeSafetyStatus = async (pullRequest: PullRequest, { context = 'Merge
       state,
       context,
       description: message,
+      target_url,
       ...githubContext.repo
     });
   }
@@ -191,11 +195,10 @@ const getMergeSafetyStateAndMessage = async (
 
       if (outdatedCommentPaths.length) {
         core.error(buildErrorMessage(outdatedCommentPaths, 'comment paths', truncatedBranchName));
-        const displayPaths = outdatedCommentPaths.slice(0, 3).join(', ');
-        const suffix = outdatedCommentPaths.length > 3 ? '...' : '';
         return {
           state: 'failure',
-          message: `Branch is behind on paths from comment: ${displayPaths}${suffix}. Please update with ${default_branch}.`
+          message: `Branch is behind on ${outdatedCommentPaths.length} path(s) from comment. Please update with ${default_branch}.`,
+          target_url: getWorkflowRunUrl()
         } as const;
       }
     } else {
@@ -213,7 +216,8 @@ const getMergeSafetyStateAndMessage = async (
     core.error(buildErrorMessage(globalFilesOutdatedOnBranch, 'global files', truncatedBranchName));
     return {
       state: 'failure',
-      message: `This branch has one or more outdated global files. Please update with ${default_branch}.`
+      message: `This branch has one or more outdated global files. Please update with ${default_branch}.`,
+      target_url: getWorkflowRunUrl()
     } as const;
   }
 
@@ -239,7 +243,8 @@ const getMergeSafetyStateAndMessage = async (
     core.error(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects', truncatedBranchName));
     return {
       state: 'failure',
-      message: `This branch has one or more outdated projects. Please update with ${default_branch}.`
+      message: `This branch has one or more outdated projects. Please update with ${default_branch}.`,
+      target_url: getWorkflowRunUrl()
     } as const;
   }
 

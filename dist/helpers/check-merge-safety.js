@@ -40,6 +40,7 @@ var import_bluebird = __toESM(require_bluebird(), 1);
 var git = simpleGit();
 var maxBranchNameLength = 50;
 var COMMENT_PATHS_MARKER = "<!-- check-merge-safety-paths -->";
+var getWorkflowRunUrl = () => `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
 class CheckMergeSafety extends HelperInputs {
 }
@@ -55,7 +56,7 @@ var checkMergeSafety = async (inputs) => {
   }
 };
 var setMergeSafetyStatus = async (pullRequest, { context: context2 = "Merge Safety", ...inputs }) => {
-  const { state, message } = await getMergeSafetyStateAndMessage(pullRequest, inputs);
+  const { state, message, target_url } = await getMergeSafetyStateAndMessage(pullRequest, inputs);
   const hasExistingFailureStatus = await checkForExistingFailureStatus(pullRequest, context2);
   if (hasExistingFailureStatus && state === "failure") {
     const {
@@ -73,6 +74,7 @@ var setMergeSafetyStatus = async (pullRequest, { context: context2 = "Merge Safe
       state,
       context: context2,
       description: message,
+      target_url,
       ...context.repo
     });
   }
@@ -174,11 +176,10 @@ var getMergeSafetyStateAndMessage = async (pullRequest, { paths, ignore_globs, o
       const outdatedCommentPaths = commentPaths.filter((commentPath) => fileNamesWhichBranchIsBehindOn.some((file) => file.startsWith(commentPath + "/") || file === commentPath));
       if (outdatedCommentPaths.length) {
         error(buildErrorMessage(outdatedCommentPaths, "comment paths", truncatedBranchName));
-        const displayPaths = outdatedCommentPaths.slice(0, 3).join(", ");
-        const suffix = outdatedCommentPaths.length > 3 ? "..." : "";
         return {
           state: "failure",
-          message: `Branch is behind on paths from comment: ${displayPaths}${suffix}. Please update with ${default_branch}.`
+          message: `Branch is behind on ${outdatedCommentPaths.length} path(s) from comment. Please update with ${default_branch}.`,
+          target_url: getWorkflowRunUrl()
         };
       }
     } else {
@@ -190,7 +191,8 @@ var getMergeSafetyStateAndMessage = async (pullRequest, { paths, ignore_globs, o
     error(buildErrorMessage(globalFilesOutdatedOnBranch, "global files", truncatedBranchName));
     return {
       state: "failure",
-      message: `This branch has one or more outdated global files. Please update with ${default_branch}.`
+      message: `This branch has one or more outdated global files. Please update with ${default_branch}.`,
+      target_url: getWorkflowRunUrl()
     };
   }
   const diffAgainstDefaultBranch = `${baseOwner}:${default_branch}...${branchName}`;
@@ -210,7 +212,8 @@ var getMergeSafetyStateAndMessage = async (pullRequest, { paths, ignore_globs, o
     error(buildErrorMessage(changedProjectsOutdatedOnBranch, "projects", truncatedBranchName));
     return {
       state: "failure",
-      message: `This branch has one or more outdated projects. Please update with ${default_branch}.`
+      message: `This branch has one or more outdated projects. Please update with ${default_branch}.`,
+      target_url: getWorkflowRunUrl()
     };
   }
   const safeMessage = buildSuccessMessage(truncatedBranchName);
@@ -258,4 +261,4 @@ export {
   CheckMergeSafety
 };
 
-//# debugId=8CCB3211353B88AF64756E2164756E21
+//# debugId=6F2C36C1CFBFF07564756E2164756E21
