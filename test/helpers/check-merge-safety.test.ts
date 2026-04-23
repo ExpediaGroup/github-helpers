@@ -109,6 +109,13 @@ const allProjectPaths = ['packages/package-1/', 'packages/package-2/', 'packages
 describe('checkMergeSafety', () => {
   beforeEach(() => {
     mock.clearAllMocks();
+    context.issue.number = 123;
+    (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
+      data: {
+        base: { repo: { default_branch: defaultBranch, owner: { login: baseOwner }, html_url: baseRepoHtmlUrl }, sha: baseSha },
+        head: { sha, ref: branchName, user: { login: username }, repo: { html_url: headRepoHtmlUrl } }
+      }
+    }));
   });
 
   it('should prevent merge when branch is out of date for a changed project', async () => {
