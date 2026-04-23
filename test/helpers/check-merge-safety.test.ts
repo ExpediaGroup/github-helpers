@@ -334,7 +334,7 @@ describe('checkMergeSafety', () => {
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
     mockGithubRequests(filesOutOfDate, changedFilesOnPr);
     (octokit.repos.getCombinedStatusForRef as unknown as Mock<any>).mockResolvedValue({
-      data: { state: 'failure', statuses: [{ context: 'Merge Safety' }] }
+      data: { state: 'failure', statuses: [{ context: 'Merge Safety', state: 'failure' }] }
     });
     await checkMergeSafety({
       paths: allProjectPaths,
@@ -353,6 +353,36 @@ describe('checkMergeSafety', () => {
     });
     await checkMergeSafety({
       paths: allProjectPaths,
+      ...context.repo
+    });
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+      sha,
+      state: 'failure',
+      context: 'Merge Safety',
+      description: 'This branch has one or more outdated projects. Please update with main.',
+      target_url: 'https://github.com/owner/repo/actions/runs/123',
+      repo: 'repo',
+      owner: 'owner'
+    });
+    expect(core.setFailed).toHaveBeenCalledWith('This branch has one or more outdated projects. Please update with main.');
+  });
+
+  it('should set failure status for custom context even when another context is already failing', async () => {
+    const filesOutOfDate = ['packages/package-1/src/another-file.ts'];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
+    (octokit.repos.getCombinedStatusForRef as unknown as Mock<any>).mockResolvedValue({
+      data: {
+        state: 'failure',
+        statuses: [
+          { context: 'Merge Safety - iOS', state: 'failure' },
+          { context: 'Merge Safety', state: 'success' }
+        ]
+      }
+    });
+    await checkMergeSafety({
+      paths: allProjectPaths,
+      context: 'Merge Safety',
       ...context.repo
     });
     expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({

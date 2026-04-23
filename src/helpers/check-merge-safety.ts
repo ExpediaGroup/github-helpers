@@ -93,11 +93,8 @@ const checkForExistingFailureStatus = async (pullRequest: PullRequest, context: 
     ...githubContext.repo,
     ref: pullRequest.head.sha
   });
-  if (data.state === 'failure') {
-    const existingContext = data.statuses.find(status => status.context === context);
-    return Boolean(existingContext);
-  }
-  return false;
+  const existingContext = data.statuses.find(status => status.context === context);
+  return existingContext?.state === 'failure';
 };
 
 const fetchSha = async (repoUrl: string, sha: string) => {
