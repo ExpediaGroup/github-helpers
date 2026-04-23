@@ -114,6 +114,7 @@ export const createMockActionsGithub = (mockOctokit: ReturnType<typeof createMoc
     payload: {},
     sha: 'test-sha',
     runId: 123,
+    serverUrl: 'https://github.com',
     ...contextOverrides
   }
 });

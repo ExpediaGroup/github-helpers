@@ -40,6 +40,7 @@ var import_bluebird = __toESM(require_bluebird(), 1);
 var git = simpleGit();
 var maxBranchNameLength = 50;
 var COMMENT_PATHS_MARKER = "<!-- check-merge-safety-paths -->";
+var getWorkflowRunUrl = () => `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
 class CheckMergeSafety extends HelperInputs {
 }
@@ -74,6 +75,7 @@ var setMergeSafetyStatus = async (pullRequest, { context: context2 = "Merge Safe
       state,
       context: context2,
       description: message,
+      target_url: getWorkflowRunUrl(),
       ...context.repo
     });
   }
@@ -175,11 +177,9 @@ var getMergeSafetyStateAndMessage = async (pullRequest, { paths, ignore_globs, o
       const outdatedCommentPaths = commentPaths.filter((commentPath) => fileNamesWhichBranchIsBehindOn.some((file) => file.startsWith(commentPath + "/") || file === commentPath));
       if (outdatedCommentPaths.length) {
         error(buildErrorMessage(outdatedCommentPaths, "comment paths", truncatedBranchName));
-        const displayPaths = outdatedCommentPaths.slice(0, 3).join(", ");
-        const suffix = outdatedCommentPaths.length > 3 ? "..." : "";
         return {
           state: "failure",
-          message: `Branch is behind on paths from comment: ${displayPaths}${suffix}. Please update with ${default_branch}.`
+          message: `Branch is behind on ${outdatedCommentPaths.length} path(s) from comment. Please update with ${default_branch}.`
         };
       }
     } else {
@@ -259,4 +259,4 @@ export {
   CheckMergeSafety
 };
 
-//# debugId=F4EC41763AC4ABEC64756E2164756E21
+//# debugId=41C4FA0898BE964F64756E2164756E21
