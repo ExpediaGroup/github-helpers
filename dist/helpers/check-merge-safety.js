@@ -91,11 +91,8 @@ var checkForExistingFailureStatus = async (pullRequest, context2) => {
     ...context.repo,
     ref: pullRequest.head.sha
   });
-  if (data.state === "failure") {
-    const existingContext = data.statuses.find((status) => status.context === context2);
-    return Boolean(existingContext);
-  }
-  return false;
+  const existingContext = data.statuses.find((status) => status.context === context2);
+  return existingContext?.state === "failure";
 };
 var fetchSha = async (repoUrl, sha) => {
   try {
@@ -259,4 +256,4 @@ export {
   CheckMergeSafety
 };
 
-//# debugId=41C4FA0898BE964F64756E2164756E21
+//# debugId=7687825B6B00F97364756E2164756E21
