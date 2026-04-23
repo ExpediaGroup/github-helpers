@@ -153,6 +153,7 @@ describe('checkMergeSafety', () => {
       state: 'success',
       context: 'Merge Safety',
       description: 'Branch username:some-branch-name is safe to merge!',
+      target_url: 'https://github.com/owner/repo/actions/runs/123',
       repo: 'repo',
       owner: 'owner'
     });
@@ -177,6 +178,7 @@ describe('checkMergeSafety', () => {
       state: 'success',
       context: 'Merge Safety',
       description: 'Branch username:some-branch-name is safe to merge!',
+      target_url: 'https://github.com/owner/repo/actions/runs/123',
       repo: 'repo',
       owner: 'owner'
     });
@@ -232,6 +234,7 @@ describe('checkMergeSafety', () => {
       state: 'failure',
       context: 'Merge Safety',
       description,
+      target_url: 'https://github.com/owner/repo/actions/runs/123',
       repo: 'repo',
       owner: 'owner'
     });
@@ -279,6 +282,7 @@ describe('checkMergeSafety', () => {
       state: 'failure',
       context: 'Merge Safety',
       description,
+      target_url: 'https://github.com/owner/repo/actions/runs/123',
       repo: 'repo',
       owner: 'owner'
     });
@@ -298,6 +302,7 @@ describe('checkMergeSafety', () => {
       state: 'success',
       context: 'Merge Safety',
       description: 'Branch username:some-branch-name is safe to merge!',
+      target_url: 'https://github.com/owner/repo/actions/runs/123',
       repo: 'repo',
       owner: 'owner'
     });
@@ -318,6 +323,7 @@ describe('checkMergeSafety', () => {
       state: 'success',
       context: 'Merge Safety',
       description: 'Branch username:some-branch-name is safe to merge!',
+      target_url: 'https://github.com/owner/repo/actions/runs/123',
       repo: 'repo',
       owner: 'owner'
     });
@@ -435,6 +441,7 @@ describe('checkMergeSafety', () => {
       state: 'success',
       context: 'Merge Safety',
       description: 'Branch username:some-branch-name is safe to merge!',
+      target_url: 'https://github.com/owner/repo/actions/runs/123',
       repo: 'repo',
       owner: 'owner'
     });
@@ -461,6 +468,7 @@ describe('checkMergeSafety', () => {
       state: 'success',
       context: 'Merge Safety',
       description: `Branch username:${'x'.repeat(50)}... is safe to merge!`,
+      target_url: 'https://github.com/owner/repo/actions/runs/123',
       repo: 'repo',
       owner: 'owner'
     });
@@ -504,6 +512,7 @@ describe('checkMergeSafety', () => {
       state: 'success',
       context: 'Merge Safety',
       description: 'Branch username:some-branch-name is safe to merge!',
+      target_url: 'https://github.com/owner/repo/actions/runs/123',
       ...context.repo
     });
     expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
@@ -511,6 +520,7 @@ describe('checkMergeSafety', () => {
       state: 'success',
       context: 'Merge Safety',
       description: 'Branch username:some-branch-name is safe to merge!',
+      target_url: 'https://github.com/owner/repo/actions/runs/123',
       ...context.repo
     });
     expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
@@ -518,6 +528,7 @@ describe('checkMergeSafety', () => {
       state: 'success',
       context: 'Merge Safety',
       description: 'Branch username:some-branch-name is safe to merge!',
+      target_url: 'https://github.com/owner/repo/actions/runs/123',
       ...context.repo
     });
     expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
@@ -525,6 +536,7 @@ describe('checkMergeSafety', () => {
       state: 'success',
       context: 'Merge Safety',
       description: 'Branch username:some-branch-name is safe to merge!',
+      target_url: 'https://github.com/owner/repo/actions/runs/123',
       ...context.repo
     });
   });
@@ -590,6 +602,7 @@ describe('checkMergeSafety', () => {
         state: 'success',
         context: 'Merge Safety',
         description: 'Branch username:some-branch-name is safe to merge!',
+        target_url: 'https://github.com/owner/repo/actions/runs/123',
         repo: 'repo',
         owner: 'owner'
       });
@@ -613,6 +626,7 @@ describe('checkMergeSafety', () => {
         state: 'success',
         context: 'Merge Safety',
         description: 'Branch username:some-branch-name is safe to merge!',
+        target_url: 'https://github.com/owner/repo/actions/runs/123',
         repo: 'repo',
         owner: 'owner'
       });
@@ -635,6 +649,7 @@ describe('checkMergeSafety', () => {
         state: 'success',
         context: 'Merge Safety',
         description: 'Branch username:some-branch-name is safe to merge!',
+        target_url: 'https://github.com/owner/repo/actions/runs/123',
         repo: 'repo',
         owner: 'owner'
       });
@@ -657,6 +672,7 @@ describe('checkMergeSafety', () => {
         state: 'success',
         context: 'Merge Safety',
         description: 'Branch username:some-branch-name is safe to merge!',
+        target_url: 'https://github.com/owner/repo/actions/runs/123',
         repo: 'repo',
         owner: 'owner'
       });

@@ -53,7 +53,7 @@ export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
 };
 
 const setMergeSafetyStatus = async (pullRequest: PullRequest, { context = 'Merge Safety', ...inputs }: CheckMergeSafety) => {
-  const { state, message, target_url } = await getMergeSafetyStateAndMessage(pullRequest, inputs);
+  const { state, message } = await getMergeSafetyStateAndMessage(pullRequest, inputs);
   const hasExistingFailureStatus = await checkForExistingFailureStatus(pullRequest, context);
   if (hasExistingFailureStatus && state === 'failure') {
     const {
@@ -71,7 +71,7 @@ const setMergeSafetyStatus = async (pullRequest: PullRequest, { context = 'Merge
       state,
       context,
       description: message,
-      target_url,
+      target_url: getWorkflowRunUrl(),
       ...githubContext.repo
     });
   }
@@ -197,8 +197,7 @@ const getMergeSafetyStateAndMessage = async (
         core.error(buildErrorMessage(outdatedCommentPaths, 'comment paths', truncatedBranchName));
         return {
           state: 'failure',
-          message: `Branch is behind on ${outdatedCommentPaths.length} path(s) from comment. Please update with ${default_branch}.`,
-          target_url: getWorkflowRunUrl()
+          message: `Branch is behind on ${outdatedCommentPaths.length} path(s) from comment. Please update with ${default_branch}.`
         } as const;
       }
     } else {
@@ -216,8 +215,7 @@ const getMergeSafetyStateAndMessage = async (
     core.error(buildErrorMessage(globalFilesOutdatedOnBranch, 'global files', truncatedBranchName));
     return {
       state: 'failure',
-      message: `This branch has one or more outdated global files. Please update with ${default_branch}.`,
-      target_url: getWorkflowRunUrl()
+      message: `This branch has one or more outdated global files. Please update with ${default_branch}.`
     } as const;
   }
 
@@ -243,8 +241,7 @@ const getMergeSafetyStateAndMessage = async (
     core.error(buildErrorMessage(changedProjectsOutdatedOnBranch, 'projects', truncatedBranchName));
     return {
       state: 'failure',
-      message: `This branch has one or more outdated projects. Please update with ${default_branch}.`,
-      target_url: getWorkflowRunUrl()
+      message: `This branch has one or more outdated projects. Please update with ${default_branch}.`
     } as const;
   }
 
