@@ -44,6 +44,7 @@ var COMMENT_PATHS_MARKER = "<!-- check-merge-safety-paths -->";
 class CheckMergeSafety extends HelperInputs {
 }
 var checkMergeSafety = async (inputs) => {
+  warning("check-merge-safety is deprecated. Please use GitHub's native merge queue: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue");
   const isPrWorkflow = Boolean(context.issue.number);
   if (!isPrWorkflow) {
     return handlePushWorkflow(inputs);
@@ -258,4 +259,4 @@ export {
   CheckMergeSafety
 };
 
-//# debugId=8CCB3211353B88AF64756E2164756E21
+//# debugId=F4EC41763AC4ABEC64756E2164756E21
