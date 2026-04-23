@@ -93,7 +93,9 @@ Each of the following helpers are defined in a file of the same name in `src/hel
 - If `login` is provided, it does nothing if that user is already part of the team
 - You can also pass a `slack_webhook_url` to notify the assignees that they are assigned to the PR!
 
-### [check-merge-safety](.github/workflows/check-merge-safety.yml)
+### [~~check-merge-safety~~](.github/workflows/check-merge-safety.yml) (DEPRECATED)
+
+> **Deprecated:** This helper is deprecated. Please migrate to [GitHub's native merge queue](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue) instead.
 
 - Checks if a PR branch needs to update with the default branch prior to merging (great for monorepos!)
 - If this check succeeds for a PR, the PR is safe to merge right away!
@@ -286,7 +288,9 @@ Additionally, the following parameters can be used for additional control over t
 - Adds a &#x27;due soon&#x27; label to issues with a priority label that will become overdue in 7 days
 - Adds an &#x27;overdue&#x27; label to issues with a priority label that are overdue
 
-### [manage-merge-queue](.github/workflows/manage-merge-queue.yml)
+### [~~manage-merge-queue~~](.github/workflows/manage-merge-queue.yml) (DEPRECATED)
+
+> **Deprecated:** This helper is deprecated. Please migrate to [GitHub's native merge queue](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue) instead.
 
 - Manages a queue for PRs as follows:
     - Adding the `READY TO MERGE` label to a PR will add the PR to the "merge queue", represented by a `QUEUED FOR MERGE #X` label. Removing `READY TO MERGE` will remove this label and thus remove the PR from the queue.

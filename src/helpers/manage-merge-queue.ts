@@ -53,6 +53,9 @@ export const manageMergeQueue = async ({
   allow_only_for_maintainers,
   pattern
 }: ManageMergeQueue = {}) => {
+  core.warning(
+    "manage-merge-queue is deprecated. Please migrate to GitHub's native merge queue: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue"
+  );
   const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
   if (pullRequest.merged || !pullRequest.labels.find(label => label.name === READY_FOR_MERGE_PR_LABEL)) {
     core.info('This PR is not in the merge queue.');
