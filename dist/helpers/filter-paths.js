@@ -1,24 +1,24 @@
 import {
   getPrNumberFromMergeQueueRef
-} from "../main-kqx5tf9g.js";
+} from "../main-1j4thgyg.js";
 import {
   require_micromatch
 } from "../main-v9jqraeg.js";
-import"../main-qxfdnkb5.js";
+import"../main-wzm5rvxy.js";
 import {
   HelperInputs
 } from "../main-8h70j5cy.js";
 import {
   octokit
-} from "../main-4c5nddsb.js";
+} from "../main-4tezksf5.js";
 import {
   context
-} from "../main-6avxv4a6.js";
+} from "../main-byv6ddq4.js";
 import"../main-9m3k9gt0.js";
 import {
   error,
   info
-} from "../main-q70tmm6g.js";
+} from "../main-ebvxxjzg.js";
 import {
   __toESM
 } from "../main-wckvcay0.js";
@@ -27,36 +27,39 @@ import {
 var import_micromatch = __toESM(require_micromatch(), 1);
 class FilterPaths extends HelperInputs {
 }
-var filterPaths = async ({ paths, globs, sha, packages, merge_queue_enabled }) => {
+var filterPaths = async ({ paths, globs, sha, packages, merge_queue_enabled, pull_number }) => {
   if (!paths && !globs && !packages) {
     error("Must pass `globs` or `paths` or `packages` for filtering");
     return false;
   }
-  let pull_number;
-  if (context.eventName === "merge_group") {
-    pull_number = getPrNumberFromMergeQueueRef();
+  let pullNumber;
+  if (pull_number) {
+    pullNumber = Number(pull_number);
+  } else if (context.eventName === "merge_group") {
+    pullNumber = getPrNumberFromMergeQueueRef();
   } else if (sha && merge_queue_enabled === "true") {
     const branchesResult = sha ? await octokit.repos.listBranchesForHeadCommit({
       commit_sha: sha,
       ...context.repo
     }) : undefined;
     const branchName = branchesResult?.data[0]?.name;
-    pull_number = getPrNumberFromMergeQueueRef(branchName);
+    pullNumber = getPrNumberFromMergeQueueRef(branchName);
   } else if (sha) {
     const listPrsResult = await octokit.repos.listPullRequestsAssociatedWithCommit({
       commit_sha: sha,
       ...context.repo
     });
     const prFromSha = listPrsResult?.data.find(Boolean);
-    if (!prFromSha)
+    if (!prFromSha) {
       throw new Error(`No PR found for commit ${sha}`);
-    pull_number = prFromSha.number;
+    }
+    pullNumber = prFromSha.number;
   } else {
-    pull_number = context.issue.number;
+    pullNumber = context.issue.number;
   }
   const { data } = await octokit.pulls.listFiles({
     per_page: 100,
-    pull_number,
+    pull_number: pullNumber,
     ...context.repo
   });
   if (packages && hasRelevantPackageChanged(data, packages)) {
@@ -87,4 +90,4 @@ export {
   FilterPaths
 };
 
-//# debugId=F57369BFE892E36464756E2164756E21
+//# debugId=974DDF1916D9FA6564756E2164756E21
