@@ -18,6 +18,7 @@ setupMocks();
 
 const { checkPrTitle } = await import('../../src/helpers/check-pr-title');
 const { octokit } = await import('../../src/octokit');
+const { context } = await import('@actions/github');
 
 describe('checkPrTitle', () => {
   it('should pass as the PR title conforms to the regex', async () => {
@@ -48,5 +49,25 @@ describe('checkPrTitle', () => {
     const result = await checkPrTitle({});
 
     expect(result).toBe(false);
+  });
+
+  it('should use pull_number input when provided', async () => {
+    (octokit.pulls.get as unknown as Mock<any>).mockImplementation(async () => ({
+      data: {
+        id: 1,
+        number: 999,
+        state: 'open',
+        title: 'feat: added feature to project'
+      }
+    }));
+
+    context.issue.number = 123;
+    const result = await checkPrTitle({ pull_number: '999' });
+
+    expect(result).toBe(true);
+    expect(octokit.pulls.get).toHaveBeenCalledWith({
+      pull_number: 999,
+      ...context.repo
+    });
   });
 });
