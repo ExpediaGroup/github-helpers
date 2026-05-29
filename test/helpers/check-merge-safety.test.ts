@@ -329,6 +329,25 @@ describe('checkMergeSafety', () => {
     });
   });
 
+  it('should use pull_number input when issue number is unavailable', async () => {
+    const filesOutOfDate: string[] = [];
+    const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];
+    mockGithubRequests(filesOutOfDate, changedFilesOnPr);
+    context.issue.number = undefined as unknown as number;
+
+    await checkMergeSafety({
+      paths: allProjectPaths,
+      pull_number: '456',
+      ...context.repo
+    });
+
+    expect(octokit.pulls.get).toHaveBeenCalledWith({
+      pull_number: 456,
+      ...context.repo
+    });
+    expect(octokit.pulls.list).not.toHaveBeenCalled();
+  });
+
   it('should skip setting merge safety commit status when a PR already has the failure context set', async () => {
     const filesOutOfDate = ['packages/package-1/src/another-file.ts'];
     const changedFilesOnPr = ['packages/package-1/src/some-file.ts'];

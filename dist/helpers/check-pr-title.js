@@ -19,12 +19,13 @@ import"../main-wckvcay0.js";
 // src/helpers/check-pr-title.ts
 class CheckPrTitle extends HelperInputs {
 }
-var checkPrTitle = async ({ pattern = DEFAULT_PR_TITLE_REGEX }) => {
+var checkPrTitle = async ({ pattern = DEFAULT_PR_TITLE_REGEX, pull_number }) => {
   const regex = new RegExp(pattern);
+  const pullNumber = pull_number ? Number(pull_number) : context.issue.number;
   const {
     data: { title }
   } = await octokit.pulls.get({
-    pull_number: context.issue.number,
+    pull_number: pullNumber,
     ...context.repo
   });
   if (regex.test(title)) {
@@ -38,4 +39,4 @@ export {
   CheckPrTitle
 };
 
-//# debugId=C2025280B7E6F40964756E2164756E21
+//# debugId=9A54DF641B4B9ABB64756E2164756E21

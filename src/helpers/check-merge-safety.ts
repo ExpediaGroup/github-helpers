@@ -37,17 +37,21 @@ export class CheckMergeSafety extends HelperInputs {
   declare override_filter_paths?: string;
   declare override_filter_globs?: string;
   declare match_comment_paths?: string;
+  declare pull_number?: string;
 }
 
 export const checkMergeSafety = async (inputs: CheckMergeSafety) => {
   core.warning(
     "check-merge-safety is deprecated. Please use GitHub's native merge queue: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue"
   );
-  const isPrWorkflow = Boolean(githubContext.issue.number);
+
+  const pullNumber = inputs.pull_number ? Number(inputs.pull_number) : githubContext.issue.number;
+  const isPrWorkflow = Boolean(pullNumber);
+
   if (!isPrWorkflow) {
     return handlePushWorkflow(inputs);
   }
-  const { data: pullRequest } = await octokit.pulls.get({ pull_number: githubContext.issue.number, ...githubContext.repo });
+  const { data: pullRequest } = await octokit.pulls.get({ pull_number: pullNumber, ...githubContext.repo });
 
   const { state, message } = await setMergeSafetyStatus(pullRequest, inputs);
   if (state === 'failure') {

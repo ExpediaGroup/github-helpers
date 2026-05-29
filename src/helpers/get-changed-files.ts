@@ -20,11 +20,18 @@ export class GetChangedFiles extends HelperInputs {
   declare pattern?: string;
   declare delimiter?: string;
   declare ignore_deleted?: string;
+  declare pull_number?: string;
 }
 
-export const getChangedFiles = async ({ pattern, delimiter = ',', ignore_deleted }: GetChangedFiles) => {
-  const pullNumber = context.eventName === 'merge_group' ? getPrNumberFromMergeQueueRef() : context.issue.number;
+export const getChangedFiles = async ({ pattern, delimiter = ',', ignore_deleted, pull_number }: GetChangedFiles) => {
+  const pullNumber = pull_number
+    ? Number(pull_number)
+    : context.eventName === 'merge_group'
+      ? getPrNumberFromMergeQueueRef()
+      : context.issue.number;
+
   const filePaths = await getChangedFilepaths(pullNumber, Boolean(ignore_deleted));
   const filteredFilePaths = pattern ? filePaths.filter(fileName => fileName.match(pattern)) : filePaths;
+
   return filteredFilePaths.join(delimiter);
 };

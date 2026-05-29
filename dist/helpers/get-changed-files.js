@@ -19,8 +19,8 @@ import"../main-wckvcay0.js";
 // src/helpers/get-changed-files.ts
 class GetChangedFiles extends HelperInputs {
 }
-var getChangedFiles = async ({ pattern, delimiter = ",", ignore_deleted }) => {
-  const pullNumber = context.eventName === "merge_group" ? getPrNumberFromMergeQueueRef() : context.issue.number;
+var getChangedFiles = async ({ pattern, delimiter = ",", ignore_deleted, pull_number }) => {
+  const pullNumber = pull_number ? Number(pull_number) : context.eventName === "merge_group" ? getPrNumberFromMergeQueueRef() : context.issue.number;
   const filePaths = await getChangedFilepaths(pullNumber, Boolean(ignore_deleted));
   const filteredFilePaths = pattern ? filePaths.filter((fileName) => fileName.match(pattern)) : filePaths;
   return filteredFilePaths.join(delimiter);
@@ -30,4 +30,4 @@ export {
   GetChangedFiles
 };
 
-//# debugId=72308F916186F09B64756E2164756E21
+//# debugId=F2CE773BF74E848A64756E2164756E21
