@@ -1,6 +1,6 @@
 import {
   setCommitStatus
-} from "../main-3vz73ekb.js";
+} from "../main-tabt2mhg.js";
 import {
   require_micromatch
 } from "../main-v9jqraeg.js";
@@ -9,7 +9,7 @@ import {
 } from "../main-8cy5s7xq.js";
 import {
   paginateAllOpenPullRequests
-} from "../main-zd3p3dtn.js";
+} from "../main-4kbya0ya.js";
 import"../main-dkdfy8cx.js";
 import {
   require_bluebird
@@ -19,17 +19,17 @@ import {
 } from "../main-8h70j5cy.js";
 import {
   octokit
-} from "../main-4c5nddsb.js";
+} from "../main-4tezksf5.js";
 import {
   context
-} from "../main-6avxv4a6.js";
+} from "../main-byv6ddq4.js";
 import"../main-9m3k9gt0.js";
 import {
   error,
   info,
   setFailed,
   warning
-} from "../main-q70tmm6g.js";
+} from "../main-ebvxxjzg.js";
 import {
   __toESM
 } from "../main-wckvcay0.js";
@@ -46,11 +46,12 @@ class CheckMergeSafety extends HelperInputs {
 }
 var checkMergeSafety = async (inputs) => {
   warning("check-merge-safety is deprecated. Please use GitHub's native merge queue: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue");
-  const isPrWorkflow = Boolean(context.issue.number);
+  const pullNumber = inputs.pull_number ? Number(inputs.pull_number) : context.issue.number;
+  const isPrWorkflow = Boolean(pullNumber);
   if (!isPrWorkflow) {
     return handlePushWorkflow(inputs);
   }
-  const { data: pullRequest } = await octokit.pulls.get({ pull_number: context.issue.number, ...context.repo });
+  const { data: pullRequest } = await octokit.pulls.get({ pull_number: pullNumber, ...context.repo });
   const { state, message } = await setMergeSafetyStatus(pullRequest, inputs);
   if (state === "failure") {
     setFailed(message);
@@ -256,4 +257,4 @@ export {
   CheckMergeSafety
 };
 
-//# debugId=7687825B6B00F97364756E2164756E21
+//# debugId=B28E1D4A9818ED4864756E2164756E21

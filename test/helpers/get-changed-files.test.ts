@@ -166,4 +166,18 @@ describe('getChangedFiles', () => {
 
     expect(result).toEqual([mock_data4[0].filename, mock_data4[1].filename, mock_data4[1].previous_filename].join(','));
   });
+
+  it('should use pull_number input over merge queue pull number', async () => {
+    context.eventName = 'merge_group';
+    context.ref = 'refs/heads/gh-readonly-queue/default-branch/pr-12345-f0d9a4cb862b13cdaab6522f72d6dc17e4336b7f';
+    (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(
+      async ({ page, pull_number }: { page: number; pull_number: number }) => ({
+        data: pull_number === 456 && page === 1 ? mock_data2 : []
+      })
+    );
+
+    const result = await getChangedFiles({ pull_number: '456' });
+
+    expect(result).toEqual(mock_data2[0].filename);
+  });
 });

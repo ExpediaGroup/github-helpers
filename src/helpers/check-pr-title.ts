@@ -19,19 +19,25 @@ import { setFailed } from '@actions/core';
 
 export class CheckPrTitle extends HelperInputs {
   declare pattern?: string;
+  declare pull_number?: string;
 }
 
-export const checkPrTitle = async ({ pattern = DEFAULT_PR_TITLE_REGEX }: CheckPrTitle) => {
+export const checkPrTitle = async ({ pattern = DEFAULT_PR_TITLE_REGEX, pull_number }: CheckPrTitle) => {
   const regex = new RegExp(pattern);
+  const pullNumber = pull_number ? Number(pull_number) : context.issue.number;
+
   const {
     data: { title }
   } = await octokit.pulls.get({
-    pull_number: context.issue.number,
+    pull_number: pullNumber,
     ...context.repo
   });
+
   if (regex.test(title)) {
     return true;
   }
+
   setFailed(`Pull request title does not meet requirements. The title must match the following regex: ${pattern}`);
+
   return false;
 };
