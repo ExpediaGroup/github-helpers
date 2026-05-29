@@ -242,6 +242,51 @@ describe('filterPaths', () => {
     expect(octokit.repos.listPullRequestsAssociatedWithCommit).not.toHaveBeenCalled();
   });
 
+  it('should use pull_number input over merge queue pull number', async () => {
+    context.eventName = 'merge_group';
+    context.ref = 'refs/heads/gh-readonly-queue/default-branch/pr-12345-f0d9a4cb862b13cdaab6522f72d6dc17e4336b7f';
+
+    await filterPaths({
+      paths,
+      pull_number: '456'
+    });
+
+    expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
+      per_page: 100,
+      pull_number: 456,
+      ...context.repo
+    });
+  });
+
+  it('should use pull_number input over sha-derived pull number', async () => {
+    await filterPaths({
+      paths,
+      sha: 'sha',
+      pull_number: '456'
+    });
+
+    expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
+      per_page: 100,
+      pull_number: 456,
+      ...context.repo
+    });
+    expect(octokit.repos.listPullRequestsAssociatedWithCommit).not.toHaveBeenCalled();
+  });
+
+  it('should pass NaN pull number when pull_number input is non-numeric', async () => {
+    await filterPaths({
+      paths,
+      pull_number: 'not-a-number'
+    });
+
+    expect(octokit.pulls.listFiles).toHaveBeenCalledWith({
+      per_page: 100,
+      pull_number: Number.NaN,
+      ...context.repo
+    });
+    expect(octokit.repos.listPullRequestsAssociatedWithCommit).not.toHaveBeenCalled();
+  });
+
   it('should return false when no filtering params are passed', async () => {
     const result = await filterPaths({});
 

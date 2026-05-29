@@ -25,17 +25,21 @@ export class FilterPaths extends HelperInputs {
   declare sha?: string;
   declare packages?: string;
   declare merge_queue_enabled?: string;
+  declare pull_number?: string;
 }
 
-export const filterPaths = async ({ paths, globs, sha, packages, merge_queue_enabled }: FilterPaths) => {
+export const filterPaths = async ({ paths, globs, sha, packages, merge_queue_enabled, pull_number }: FilterPaths) => {
   if (!paths && !globs && !packages) {
     core.error('Must pass `globs` or `paths` or `packages` for filtering');
     return false;
   }
 
-  let pull_number: number;
-  if (context.eventName === 'merge_group') {
-    pull_number = getPrNumberFromMergeQueueRef();
+  let pullNumber: number;
+
+  if (pull_number) {
+    pullNumber = Number(pull_number);
+  } else if (context.eventName === 'merge_group') {
+    pullNumber = getPrNumberFromMergeQueueRef();
   } else if (sha && merge_queue_enabled === 'true') {
     const branchesResult = sha
       ? await octokit.repos.listBranchesForHeadCommit({
@@ -44,22 +48,27 @@ export const filterPaths = async ({ paths, globs, sha, packages, merge_queue_ena
         })
       : undefined;
     const branchName = branchesResult?.data[0]?.name;
-    pull_number = getPrNumberFromMergeQueueRef(branchName);
+
+    pullNumber = getPrNumberFromMergeQueueRef(branchName);
   } else if (sha) {
     const listPrsResult = await octokit.repos.listPullRequestsAssociatedWithCommit({
       commit_sha: sha,
       ...context.repo
     });
+
     const prFromSha = listPrsResult?.data.find(Boolean);
-    if (!prFromSha) throw new Error(`No PR found for commit ${sha}`);
-    pull_number = prFromSha.number;
+    if (!prFromSha) {
+      throw new Error(`No PR found for commit ${sha}`);
+    }
+
+    pullNumber = prFromSha.number;
   } else {
-    pull_number = context.issue.number;
+    pullNumber = context.issue.number;
   }
 
   const { data } = await octokit.pulls.listFiles({
     per_page: 100,
-    pull_number,
+    pull_number: pullNumber,
     ...context.repo
   });
 
