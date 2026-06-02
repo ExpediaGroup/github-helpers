@@ -1,24 +1,24 @@
 import {
   getPrNumberFromMergeQueueRef
-} from "../main-1j4thgyg.js";
+} from "../main-kqx5tf9g.js";
 import {
   require_micromatch
 } from "../main-v9jqraeg.js";
-import"../main-wzm5rvxy.js";
+import"../main-qxfdnkb5.js";
 import {
   HelperInputs
 } from "../main-8h70j5cy.js";
 import {
   octokit
-} from "../main-4tezksf5.js";
+} from "../main-4c5nddsb.js";
 import {
   context
-} from "../main-byv6ddq4.js";
+} from "../main-6avxv4a6.js";
 import"../main-9m3k9gt0.js";
 import {
   error,
   info
-} from "../main-ebvxxjzg.js";
+} from "../main-q70tmm6g.js";
 import {
   __toESM
 } from "../main-wckvcay0.js";
@@ -27,9 +27,9 @@ import {
 var import_micromatch = __toESM(require_micromatch(), 1);
 class FilterPaths extends HelperInputs {
 }
-var filterPaths = async ({ paths, globs, sha, packages, dependencies, merge_queue_enabled, pull_number }) => {
-  if (!paths && !globs && !packages && !dependencies) {
-    error("Must pass `globs` or `paths` or `packages` or `dependencies` for filtering");
+var filterPaths = async ({ paths, globs, sha, packages, merge_queue_enabled, pull_number }) => {
+  if (!paths && !globs && !packages) {
+    error("Must pass `globs` or `paths` or `packages` for filtering");
     return false;
   }
   let pullNumber;
@@ -65,9 +65,6 @@ var filterPaths = async ({ paths, globs, sha, packages, dependencies, merge_queu
   if (packages && hasRelevantPackageChanged(data, packages)) {
     return true;
   }
-  if (dependencies && hasRelevantDependencyChanged(data, dependencies)) {
-    return true;
-  }
   const fileNames = data.map((file) => file.filename);
   if (globs) {
     if (paths)
@@ -88,19 +85,9 @@ var hasRelevantPackageChanged = (files, packages) => {
   return packages.split(`
 `).some((pkg) => new RegExp(`(-|\\+)\\s*\\"${pkg}\\"`).test(packageJson.patch ?? ""));
 };
-var hasRelevantDependencyChanged = (files, dependencies) => {
-  const buildGradleKts = files.find((file) => file.filename === "build.gradle.kts");
-  const buildGradle = files.find((file) => file.filename === "build.gradle");
-  const buildFile = buildGradleKts ?? buildGradle;
-  if (!buildFile) {
-    return false;
-  }
-  return dependencies.split(`
-`).some((dep) => new RegExp(`(-|\\+)\\s*implementation\\(\\"${dep}`).test(buildFile.patch ?? ""));
-};
 export {
   filterPaths,
   FilterPaths
 };
 
-//# debugId=2F7263BBC180B17164756E2164756E21
+//# debugId=974DDF1916D9FA6564756E2164756E21

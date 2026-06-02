@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "sources": ["../src/helpers/remove-label.ts"],
+  "sourcesContent": [
+    "/*\nCopyright 2021 Expedia, Inc.\nLicensed under the Apache License, Version 2.0 (the \"License\");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\n    https://www.apache.org/licenses/LICENSE-2.0\nUnless required by applicable law or agreed to in writing, software\ndistributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\nSee the License for the specific language governing permissions and\nlimitations under the License.\n*/\n\nimport * as core from '@actions/core';\nimport { GithubError } from '../types/github';\nimport { HelperInputs } from '../types/generated';\nimport { context } from '@actions/github';\nimport { octokit } from '../octokit';\n\nexport class RemoveLabel extends HelperInputs {\n  label = '';\n}\n\nexport const removeLabel = async ({ label }: RemoveLabel) => removeLabelIfExists(label, context.issue.number);\n\nexport const removeLabelIfExists = async (labelName: string, issue_number: number) => {\n  try {\n    await octokit.issues.removeLabel({\n      name: labelName,\n      issue_number,\n      ...context.repo\n    });\n  } catch (error) {\n    if ((error as GithubError).status === 404) {\n      core.info('Label is not present on PR.');\n    }\n  }\n};\n"
+  ],
+  "mappings": ";;;;;;;;;;;;;;AAmBO,MAAM,oBAAoB,aAAa;AAAA,EAC5C,QAAQ;AACV;AAEO,IAAM,cAAc,SAAS,YAAyB,oBAAoB,OAAO,QAAQ,MAAM,MAAM;AAErG,IAAM,sBAAsB,OAAO,WAAmB,iBAAyB;AAAA,EACpF,IAAI;AAAA,IACF,MAAM,QAAQ,OAAO,YAAY;AAAA,MAC/B,MAAM;AAAA,MACN;AAAA,SACG,QAAQ;AAAA,IACb,CAAC;AAAA,IACD,OAAO,OAAO;AAAA,IACd,IAAK,MAAsB,WAAW,KAAK;AAAA,MACpC,KAAK,6BAA6B;AAAA,IACzC;AAAA;AAAA;",
+  "debugId": "7CFF3D3D62E2681064756E2164756E21",
+  "names": []
+}

@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "sources": ["../src/utils/paginate-all-branches.ts"],
+  "sourcesContent": [
+    "/*\nCopyright 2022 Expedia, Inc.\nLicensed under the Apache License, Version 2.0 (the \"License\");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\n    https://www.apache.org/licenses/LICENSE-2.0\nUnless required by applicable law or agreed to in writing, software\ndistributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\nSee the License for the specific language governing permissions and\nlimitations under the License.\n*/\n\nimport { PullRequestBranchesList } from '../types/github';\nimport { octokit } from '../octokit';\nimport { context } from '@actions/github';\n\nexport const paginateAllBranches = async ({\n  protectedBranches,\n  page = 1\n}: { protectedBranches?: boolean; page?: number } = {}): Promise<PullRequestBranchesList> => {\n  const response = await octokit.repos.listBranches({\n    protected: protectedBranches,\n    per_page: 100,\n    page,\n    ...context.repo\n  });\n  if (!response.data.length) {\n    return [];\n  }\n  return [...response.data, ...(await paginateAllBranches({ protectedBranches, page: page + 1 }))];\n};\n"
+  ],
+  "mappings": ";;;;;;;;AAiBO,IAAM,sBAAsB;AAAA,EACjC;AAAA,EACA,OAAO;AAAA,IAC2C,CAAC,MAAwC;AAAA,EAC3F,MAAM,WAAW,MAAM,QAAQ,MAAM,aAAa;AAAA,IAChD,WAAW;AAAA,IACX,UAAU;AAAA,IACV;AAAA,OACG,QAAQ;AAAA,EACb,CAAC;AAAA,EACD,IAAI,CAAC,SAAS,KAAK,QAAQ;AAAA,IACzB,OAAO,CAAC;AAAA,EACV;AAAA,EACA,OAAO,CAAC,GAAG,SAAS,MAAM,GAAI,MAAM,oBAAoB,EAAE,mBAAmB,MAAM,OAAO,EAAE,CAAC,CAAE;AAAA;",
+  "debugId": "8E93FCFE6B11DA6F64756E2164756E21",
+  "names": []
+}
