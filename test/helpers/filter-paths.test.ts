@@ -419,4 +419,142 @@ describe('filterPaths', () => {
       expect(result).toBe(false);
     });
   });
+
+  describe('tests related to dependencies paramter', () => {
+    it('should return true if one of the dependency matches a changed package in build.gradle', async () => {
+      (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async () => ({
+        data: [
+          {
+            sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
+            filename: 'build.gradle',
+            status: 'added',
+            additions: 103,
+            deletions: 21,
+            changes: 124,
+            blob_url: 'https://github.com/octocat/Hello-World/blob/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+            raw_url: 'https://github.com/octocat/Hello-World/raw/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+            contents_url:
+              'https://api.github.com/repos/octocat/Hello-World/contents/file1.txt?ref=6dcb09b5b57875f334f61aebed695e2e4193db5e',
+            patch: `
+@@ -143,7 +143,7 @@ dependencies {
+  }
+      implementation("packageA:1.0.0)
+-     implementation("packageB:3.0.0)
++     implementation("packageB:4.0.0)
+      implementation("packageC:2.0.0)
+  `
+          }
+        ]
+      }));
+
+      const result = await filterPaths({
+        globs,
+        dependencies: 'packageB'
+      });
+
+      expect(result).toBe(true);
+    });
+
+    it('should return true if one of the dependency matches a changed package in build.gradle.kts', async () => {
+      (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async () => ({
+        data: [
+          {
+            sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
+            filename: 'build.gradle.kts',
+            status: 'added',
+            additions: 103,
+            deletions: 21,
+            changes: 124,
+            blob_url: 'https://github.com/octocat/Hello-World/blob/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+            raw_url: 'https://github.com/octocat/Hello-World/raw/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+            contents_url:
+              'https://api.github.com/repos/octocat/Hello-World/contents/file1.txt?ref=6dcb09b5b57875f334f61aebed695e2e4193db5e',
+            patch: `
+@@ -143,7 +143,7 @@ dependencies {
+  }
+      implementation("packageA:1.0.0)
+-     implementation("packageB:3.0.0)
++     implementation("packageB:4.0.0)
+      implementation("packageC:2.0.0)
+  `
+          }
+        ]
+      }));
+
+      const result = await filterPaths({
+        globs,
+        dependencies: 'packageB'
+      });
+
+      expect(result).toBe(true);
+    });
+
+    it('should return false if specified dependency is not changed in build.gradle.kts', async () => {
+      (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async () => ({
+        data: [
+          {
+            sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
+            filename: 'build.gradle.kts',
+            status: 'added',
+            additions: 103,
+            deletions: 21,
+            changes: 124,
+            blob_url: 'https://github.com/octocat/Hello-World/blob/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+            raw_url: 'https://github.com/octocat/Hello-World/raw/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+            contents_url:
+              'https://api.github.com/repos/octocat/Hello-World/contents/file1.txt?ref=6dcb09b5b57875f334f61aebed695e2e4193db5e',
+            patch: `
+@@ -143,7 +143,7 @@ dependencies {
+  }
+      implementation("packageA:1.0.0)
+-     implementation("packageB:3.0.0)
++     implementation("packageB:4.0.0)
+      implementation("packageC:2.0.0)
+  `
+          }
+        ]
+      }));
+
+      const result = await filterPaths({
+        globs,
+        dependencies: 'packageD'
+      });
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false no build.gradle or build.kts file', async () => {
+      (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async () => ({
+        data: [
+          {
+            sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
+            filename: 'not-a-build-file',
+            status: 'added',
+            additions: 103,
+            deletions: 21,
+            changes: 124,
+            blob_url: 'https://github.com/octocat/Hello-World/blob/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+            raw_url: 'https://github.com/octocat/Hello-World/raw/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+            contents_url:
+              'https://api.github.com/repos/octocat/Hello-World/contents/file1.txt?ref=6dcb09b5b57875f334f61aebed695e2e4193db5e',
+            patch: `
+@@ -143,7 +143,7 @@ dependencies {
+  }
+      implementation("packageA:1.0.0)
+-     implementation("packageB:3.0.0)
++     implementation("packageB:4.0.0)
+      implementation("packageC:2.0.0)
+  `
+          }
+        ]
+      }));
+
+      const result = await filterPaths({
+        globs,
+        dependencies: 'packageB'
+      });
+
+      expect(result).toBe(false);
+    });
+  });
 });
