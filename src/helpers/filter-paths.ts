@@ -24,13 +24,14 @@ export class FilterPaths extends HelperInputs {
   declare globs?: string;
   declare sha?: string;
   declare packages?: string;
+  declare dependencies?: string;
   declare merge_queue_enabled?: string;
   declare pull_number?: string;
 }
 
-export const filterPaths = async ({ paths, globs, sha, packages, merge_queue_enabled, pull_number }: FilterPaths) => {
-  if (!paths && !globs && !packages) {
-    core.error('Must pass `globs` or `paths` or `packages` for filtering');
+export const filterPaths = async ({ paths, globs, sha, packages, dependencies, merge_queue_enabled, pull_number }: FilterPaths) => {
+  if (!paths && !globs && !packages && !dependencies) {
+    core.error('Must pass `globs` or `paths` or `packages` or `dependencies` for filtering');
     return false;
   }
 
@@ -76,6 +77,10 @@ export const filterPaths = async ({ paths, globs, sha, packages, merge_queue_ena
     return true;
   }
 
+  if (dependencies && hasRelevantDependencyChanged(data, dependencies)) {
+    return true;
+  }
+
   const fileNames = data.map(file => file.filename);
   if (globs) {
     if (paths) core.info('`paths` and `globs` inputs found, defaulting to use `globs` for filtering');
@@ -93,4 +98,16 @@ const hasRelevantPackageChanged = (files: ChangedFilesList, packages: string) =>
   }
 
   return packages.split('\n').some(pkg => new RegExp(`(-|\\+)\\s*\\"${pkg}\\"`).test(packageJson.patch ?? ''));
+};
+
+const hasRelevantDependencyChanged = (files: ChangedFilesList, dependencies: string) => {
+  const buildGradleKts = files.find(file => file.filename === 'build.gradle.kts');
+  const buildGradle = files.find(file => file.filename === 'build.gradle');
+  const buildFile = buildGradleKts ?? buildGradle;
+
+  if (!buildFile) {
+    return false;
+  }
+
+  return dependencies.split('\n').some(dep => new RegExp(`(-|\\+)\\s*implementation\\(\\"${dep}`).test(buildFile.patch ?? ''));
 };
