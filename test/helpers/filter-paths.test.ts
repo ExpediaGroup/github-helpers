@@ -556,5 +556,39 @@ describe('filterPaths', () => {
 
       expect(result).toBe(false);
     });
+
+    it('should return false if dependencies is not defined', async () => {
+      (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async () => ({
+        data: [
+          {
+            sha: 'bbcd538c8e72b8c175046e27cc8f907076331401',
+            filename: 'build.gradle',
+            status: 'added',
+            additions: 103,
+            deletions: 21,
+            changes: 124,
+            blob_url: 'https://github.com/octocat/Hello-World/blob/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+            raw_url: 'https://github.com/octocat/Hello-World/raw/6dcb09b5b57875f334f61aebed695e2e4193db5e/file1.txt',
+            contents_url:
+              'https://api.github.com/repos/octocat/Hello-World/contents/file1.txt?ref=6dcb09b5b57875f334f61aebed695e2e4193db5e',
+            patch: `
+@@ -143,7 +143,7 @@ dependencies {
+  }
+      implementation("packageA:1.0.0)
+-     implementation("packageB:3.0.0)
++     implementation("packageB:4.0.0)
+      implementation("packageC:2.0.0)
+  `
+          }
+        ]
+      }));
+
+      const result = await filterPaths({
+        globs,
+        packages: 'packageB'
+      });
+
+      expect(result).toBe(false);
+    });
   });
 });
