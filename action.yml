@@ -160,6 +160,9 @@ inputs:
   packages:
     description: 'A list of dependencies inside package.json'
     required: false
+  dependencies:
+    description: 'A list of dependencies inside build.gradle or build.gradle.kts'
+    required: false
   branch_name:
     description: 'The name of the branch to create'
     required: false
