@@ -59,7 +59,8 @@ export const createMockOctokit = () => {
         update: mock(() => ({ data: {} }))
       },
       repos: {
-        compareCommitsWithBasehead: mock(() => ({ data: {} })),
+        compareCommitsWithBasehead: mock(() => ({ data: { commits: [], files: [] } })),
+        getCommit: mock(() => ({ data: { files: [] } })),
         createCommitStatus: mock(() => ({ data: {} })),
         createDeployment: mock(() => ({ data: {} })),
         createDeploymentStatus: mock(() => ({ data: {} })),

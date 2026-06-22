@@ -1,27 +1,35 @@
 import {
   getPrNumberFromMergeQueueRef
-} from "../main-kqx5tf9g.js";
-import"../main-qxfdnkb5.js";
+} from "../main-1j4thgyg.js";
+import"../main-wzm5rvxy.js";
 import {
-  getChangedFilepaths
-} from "../main-mycz0558.js";
+  getChangedFilepaths,
+  getChangedFilepathsFromShas
+} from "../main-c27c2k68.js";
 import {
   HelperInputs
 } from "../main-8h70j5cy.js";
-import"../main-4c5nddsb.js";
+import"../main-4tezksf5.js";
 import {
   context
-} from "../main-6avxv4a6.js";
+} from "../main-byv6ddq4.js";
 import"../main-9m3k9gt0.js";
-import"../main-q70tmm6g.js";
+import"../main-ebvxxjzg.js";
 import"../main-wckvcay0.js";
 
 // src/helpers/get-changed-files.ts
 class GetChangedFiles extends HelperInputs {
 }
 var getChangedFiles = async ({ pattern, delimiter = ",", ignore_deleted, pull_number }) => {
-  const pullNumber = pull_number ? Number(pull_number) : context.eventName === "merge_group" ? getPrNumberFromMergeQueueRef() : context.issue.number;
-  const filePaths = await getChangedFilepaths(pullNumber, Boolean(ignore_deleted));
+  const ignoreDeleted = Boolean(ignore_deleted);
+  let filePaths;
+  if (context.eventName === "push") {
+    const { before, after } = context.payload;
+    filePaths = await getChangedFilepathsFromShas(before, after, ignoreDeleted);
+  } else {
+    const pullNumber = pull_number ? Number(pull_number) : context.eventName === "merge_group" ? getPrNumberFromMergeQueueRef() : context.issue.number;
+    filePaths = await getChangedFilepaths(pullNumber, ignoreDeleted);
+  }
   const filteredFilePaths = pattern ? filePaths.filter((fileName) => fileName.match(pattern)) : filePaths;
   return filteredFilePaths.join(delimiter);
 };
@@ -30,4 +38,4 @@ export {
   GetChangedFiles
 };
 
-//# debugId=F2CE773BF74E848A64756E2164756E21
+//# debugId=578144D13EA538F464756E2164756E21
