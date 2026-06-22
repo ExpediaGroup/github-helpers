@@ -12,7 +12,7 @@ import {
 } from "./main-zd3p3dtn.js";
 import {
   approvalsSatisfied
-} from "./main-bbwgztca.js";
+} from "./main-w4p22k5w.js";
 import {
   createPrComment
 } from "./main-5k5vz4h5.js";

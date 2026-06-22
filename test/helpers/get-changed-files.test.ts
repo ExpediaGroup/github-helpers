@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { describe, it, expect, Mock } from 'bun:test';
+import { describe, it, expect, Mock, beforeEach } from 'bun:test';
 import { setupMocks } from '../setup';
 
 setupMocks();
@@ -179,5 +179,129 @@ describe('getChangedFiles', () => {
     const result = await getChangedFiles({ pull_number: '456' });
 
     expect(result).toEqual(mock_data2[0].filename);
+  });
+});
+
+describe('getChangedFiles (push event)', () => {
+  const COMMIT_1 = { sha: 'commit-sha-aaa' };
+  const COMMIT_2 = { sha: 'commit-sha-bbb' };
+
+  const push_file_added = {
+    sha: 'sha1',
+    filename: 'src/feature/added.ts',
+    status: 'added',
+    additions: 10,
+    deletions: 0,
+    changes: 10,
+    blob_url: '',
+    raw_url: '',
+    contents_url: ''
+  };
+  const push_file_modified = {
+    sha: 'sha2',
+    filename: 'src/feature/modified.ts',
+    status: 'modified',
+    additions: 5,
+    deletions: 2,
+    changes: 7,
+    blob_url: '',
+    raw_url: '',
+    contents_url: ''
+  };
+  const push_file_removed = {
+    sha: 'sha3',
+    filename: 'src/old/removed.ts',
+    status: 'removed',
+    additions: 0,
+    deletions: 20,
+    changes: 20,
+    blob_url: '',
+    raw_url: '',
+    contents_url: ''
+  };
+
+  beforeEach(() => {
+    context.eventName = 'push';
+    context.payload = { before: 'before-sha', after: 'after-sha' };
+  });
+
+  it('returns files changed in a single commit', async () => {
+    (octokit.repos.compareCommitsWithBasehead as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => ({
+      data: { commits: page === 1 ? [COMMIT_1] : [] }
+    }));
+    (octokit.repos.getCommit as unknown as Mock<any>).mockImplementation(async () => ({
+      data: { files: [push_file_added, push_file_modified] }
+    }));
+
+    const result = await getChangedFiles({});
+
+    expect(result).toEqual([push_file_added.filename, push_file_modified.filename].join(','));
+  });
+
+  it('aggregates files from multiple commits', async () => {
+    (octokit.repos.compareCommitsWithBasehead as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => ({
+      data: { commits: page === 1 ? [COMMIT_1, COMMIT_2] : [] }
+    }));
+    (octokit.repos.getCommit as unknown as Mock<any>).mockImplementation(async ({ ref }: { ref: string }) => ({
+      data: { files: ref === COMMIT_1.sha ? [push_file_added] : [push_file_modified] }
+    }));
+
+    const result = await getChangedFiles({});
+
+    expect(result).toEqual([push_file_added.filename, push_file_modified.filename].join(','));
+  });
+
+  it('paginates through commits across multiple pages', async () => {
+    (octokit.repos.compareCommitsWithBasehead as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => ({
+      data: { commits: page === 1 ? [COMMIT_1] : page === 2 ? [COMMIT_2] : [] }
+    }));
+    (octokit.repos.getCommit as unknown as Mock<any>).mockImplementation(async ({ ref }: { ref: string }) => ({
+      data: { files: ref === COMMIT_1.sha ? [push_file_added] : [push_file_modified] }
+    }));
+
+    const result = await getChangedFiles({});
+
+    expect(result).toEqual([push_file_added.filename, push_file_modified.filename].join(','));
+  });
+
+  it('excludes removed files when ignore_deleted is set', async () => {
+    (octokit.repos.compareCommitsWithBasehead as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => ({
+      data: { commits: page === 1 ? [COMMIT_1] : [] }
+    }));
+    (octokit.repos.getCommit as unknown as Mock<any>).mockImplementation(async () => ({
+      data: { files: [push_file_added, push_file_removed] }
+    }));
+
+    const result = await getChangedFiles({ ignore_deleted: 'true' });
+
+    expect(result).toEqual(push_file_added.filename);
+  });
+
+  it('filters files by pattern', async () => {
+    (octokit.repos.compareCommitsWithBasehead as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => ({
+      data: { commits: page === 1 ? [COMMIT_1] : [] }
+    }));
+    (octokit.repos.getCommit as unknown as Mock<any>).mockImplementation(async () => ({
+      data: { files: [push_file_added, push_file_modified] }
+    }));
+
+    const result = await getChangedFiles({ pattern: 'added' });
+
+    expect(result).toEqual(push_file_added.filename);
+  });
+
+  it('deduplicates files across commits, keeping the last seen status', async () => {
+    const push_file_later_removed = { ...push_file_added, status: 'removed' };
+    (octokit.repos.compareCommitsWithBasehead as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => ({
+      data: { commits: page === 1 ? [COMMIT_1, COMMIT_2] : [] }
+    }));
+    (octokit.repos.getCommit as unknown as Mock<any>).mockImplementation(async ({ ref }: { ref: string }) => ({
+      data: { files: ref === COMMIT_1.sha ? [push_file_added] : [push_file_later_removed] }
+    }));
+
+    // file was added in commit 1 then removed in commit 2 — net status is removed, so excluded
+    const result = await getChangedFiles({ ignore_deleted: 'true' });
+
+    expect(result).toEqual('');
   });
 });
