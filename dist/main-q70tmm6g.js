@@ -12978,7 +12978,7 @@ var require_fetch = __commonJS((exports, module) => {
       request.cache = "no-store";
     }
     const newConnection = forceNewConnection ? "yes" : "no";
-    if (request.mode === "websocket") {}
+    if (request.mode === "websocket") {} else {}
     let requestBody = null;
     if (request.body == null && fetchParams.processRequestEndOfBody) {
       queueMicrotask(() => fetchParams.processRequestEndOfBody());
@@ -17514,4 +17514,4 @@ function info(message) {
 
 export { require_tunnel, require_undici, getInput, setOutput, setFailed, error, warning, info };
 
-//# debugId=E18F0FCEFD6D08BA64756E2164756E21
+//# debugId=EDAA7F391785278D64756E2164756E21
