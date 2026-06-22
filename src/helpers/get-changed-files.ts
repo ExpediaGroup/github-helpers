@@ -27,16 +27,21 @@ export const getChangedFiles = async ({ pattern, delimiter = ',', ignore_deleted
   const ignoreDeleted = Boolean(ignore_deleted);
   let filePaths: string[];
 
-  if (context.eventName === 'push') {
-    const { before, after } = context.payload as { before: string; after: string };
-    filePaths = await getChangedFilepathsFromShas(before, after, ignoreDeleted);
-  } else {
-    const pullNumber = pull_number
-      ? Number(pull_number)
-      : context.eventName === 'merge_group'
-        ? getPrNumberFromMergeQueueRef()
-        : context.issue.number;
-    filePaths = await getChangedFilepaths(pullNumber, ignoreDeleted);
+  switch (context.eventName) {
+    case 'push': {
+      const { before, after } = context.payload as { before: string; after: string };
+      filePaths = await getChangedFilepathsFromShas(before, after, ignoreDeleted);
+      break;
+    }
+    case 'merge_group': {
+      const pullNumber = pull_number ? Number(pull_number) : getPrNumberFromMergeQueueRef();
+      filePaths = await getChangedFilepaths(pullNumber, ignoreDeleted);
+      break;
+    }
+    default: {
+      const pullNumber = pull_number ? Number(pull_number) : context.issue.number;
+      filePaths = await getChangedFilepaths(pullNumber, ignoreDeleted);
+    }
   }
 
   const filteredFilePaths = pattern ? filePaths.filter(fileName => fileName.match(pattern)) : filePaths;
