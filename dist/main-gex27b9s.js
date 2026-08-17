@@ -1,7 +1,7 @@
 import {
   Octokit,
   restEndpointMethods
-} from "./main-9m3k9gt0.js";
+} from "./main-tntkhvke.js";
 import {
   require_tunnel,
   require_undici

@@ -1,8 +1,7 @@
 import {
   Octokit,
-  RequestError,
   restEndpointMethods
-} from "./main-9m3k9gt0.js";
+} from "./main-tntkhvke.js";
 import {
   error,
   getInput,
@@ -1334,6 +1333,35 @@ var require_light = __commonJS((exports, module) => {
 
 // node_modules/@octokit/plugin-retry/dist-bundle/index.js
 var import_light = __toESM(require_light(), 1);
+
+// node_modules/@octokit/plugin-retry/node_modules/@octokit/request-error/dist-src/index.js
+class RequestError extends Error {
+  name;
+  status;
+  request;
+  response;
+  constructor(message, statusCode, options) {
+    super(message, { cause: options.cause });
+    this.name = "HttpError";
+    this.status = Number.parseInt(statusCode);
+    if (Number.isNaN(this.status)) {
+      this.status = 0;
+    }
+    if ("response" in options) {
+      this.response = options.response;
+    }
+    const requestCopy = Object.assign({}, options.request);
+    if (options.request.headers.authorization) {
+      requestCopy.headers = Object.assign({}, options.request.headers, {
+        authorization: options.request.headers.authorization.replace(/(?<! ) .*$/, " [REDACTED]")
+      });
+    }
+    requestCopy.url = requestCopy.url.replace(/\bclient_secret=\w+/g, "client_secret=[REDACTED]").replace(/\baccess_token=\w+/g, "access_token=[REDACTED]");
+    this.request = requestCopy;
+  }
+}
+
+// node_modules/@octokit/plugin-retry/dist-bundle/index.js
 var VERSION = "0.0.0-development";
 function isRequestError(error2) {
   return error2.request !== undefined;
@@ -1426,4 +1454,4 @@ var { rest: octokit, graphql: octokitGraphql } = new OctokitWithPlugins({ auth: 
 
 export { octokit, octokitGraphql };
 
-//# debugId=C3036C32B584B3A264756E2164756E21
+//# debugId=C28B4DA26D60237364756E2164756E21

@@ -3321,6 +3321,6 @@ function legacyRestEndpointMethods(octokit) {
 }
 legacyRestEndpointMethods.VERSION = VERSION5;
 
-export { RequestError, Octokit, restEndpointMethods };
+export { Octokit, restEndpointMethods };
 
-//# debugId=EB3A24403E168E0A64756E2164756E21
+//# debugId=329C8C837CB491EF64756E2164756E21
