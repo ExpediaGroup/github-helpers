@@ -1,30 +1,30 @@
 import {
-  removeLabelIfExists
-} from "../main-mdmhazxs.js";
-import {
-  ALMOST_OVERDUE_ISSUE,
+  SECONDS_IN_A_DAY,
   OVERDUE_ISSUE,
+  ALMOST_OVERDUE_ISSUE,
   PRIORITY_LABELS,
-  PRIORITY_TO_DAYS_MAP,
-  SECONDS_IN_A_DAY
-} from "../main-9c2herm2.js";
-import {
-  require_bluebird
-} from "../main-ttmzs6m5.js";
-import {
-  HelperInputs
-} from "../main-8h70j5cy.js";
+  PRIORITY_TO_DAYS_MAP
+} from "../main-jq9kgsp8.js";
+import"../main-36vzaw22.js";
+import"../main-6sabwhac.js";
 import {
   octokit
-} from "../main-4tezksf5.js";
+} from "../main-fh8gy58w.js";
 import {
   context
-} from "../main-byv6ddq4.js";
-import"../main-9m3k9gt0.js";
-import"../main-ebvxxjzg.js";
+} from "../main-nnwtk8w8.js";
+import {
+  removeLabelIfExists2
+} from "../main-b3a18pad.js";
+import {
+  require_bluebird
+} from "../main-es051p88.js";
+import {
+  HelperInputs
+} from "../main-d5wrnkmf.js";
 import {
   __toESM
-} from "../main-wckvcay0.js";
+} from "../main-syahy8j8.js";
 
 // src/utils/paginate-prioritized-issues.ts
 var import_bluebird = __toESM(require_bluebird(), 1);
@@ -119,7 +119,7 @@ var manageIssueDueDates = async ({ days = "7" }) => {
         await pingAssigneesForDueDate(assignees, labelToAdd, issue_number);
       }
       if (labelToAdd === OVERDUE_ISSUE) {
-        await removeLabelIfExists(ALMOST_OVERDUE_ISSUE, issue_number);
+        await removeLabelIfExists2(ALMOST_OVERDUE_ISSUE, issue_number);
       }
       await octokit.issues.addLabels({
         labels: [labelToAdd],
@@ -130,8 +130,8 @@ var manageIssueDueDates = async ({ days = "7" }) => {
   });
 };
 export {
-  manageIssueDueDates,
-  ManageIssueDueDates
+  ManageIssueDueDates,
+  manageIssueDueDates
 };
 
-//# debugId=D92320313AE4171864756E2164756E21
+//# debugId=95685D44C02A21DD64756E2164756E21

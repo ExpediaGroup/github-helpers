@@ -1,37 +1,36 @@
 import {
-  notifyUser
-} from "../main-g3pj8478.js";
-import"../main-20bkpkj4.js";
-import"../main-dkdfy8cx.js";
-import {
-  CORE_APPROVED_PR_LABEL
-} from "../main-9c2herm2.js";
-import {
-  getCoreMemberLogins
-} from "../main-0p7ddbnm.js";
-import"../main-c27c2k68.js";
-import {
-  require_lodash
-} from "../main-pet5htdh.js";
-import {
-  require_bluebird
-} from "../main-ttmzs6m5.js";
-import {
-  HelperInputs
-} from "../main-8h70j5cy.js";
-import {
-  octokit
-} from "../main-4tezksf5.js";
+  info
+} from "../main-36vzaw22.js";
 import {
   context
-} from "../main-byv6ddq4.js";
-import"../main-9m3k9gt0.js";
+} from "../main-nnwtk8w8.js";
+import"../main-6sabwhac.js";
 import {
-  info
-} from "../main-ebvxxjzg.js";
+  octokit
+} from "../main-fh8gy58w.js";
+import {
+  getCoreMemberLogins
+} from "../main-33hyq3fg.js";
+import {
+  notifyUser
+} from "../main-c2rt2anc.js";
+import"../main-hbnqs8ps.js";
+import {
+  CORE_APPROVED_PR_LABEL
+} from "../main-jq9kgsp8.js";
+import"../main-8fvwf10s.js";
+import {
+  require_lodash
+} from "../main-t2wes6yn.js";
+import {
+  require_bluebird
+} from "../main-es051p88.js";
+import {
+  HelperInputs
+} from "../main-d5wrnkmf.js";
 import {
   __toESM
-} from "../main-wckvcay0.js";
+} from "../main-syahy8j8.js";
 
 // src/helpers/assign-pr-reviewers.ts
 var import_bluebird = __toESM(require_bluebird(), 1);
@@ -75,8 +74,8 @@ var assignPrReviewers = async ({
   }
 };
 export {
-  assignPrReviewers,
-  AssignPrReviewer
+  AssignPrReviewer,
+  assignPrReviewers
 };
 
-//# debugId=5374D441971C908864756E2164756E21
+//# debugId=100E63B1708C746D64756E2164756E21
