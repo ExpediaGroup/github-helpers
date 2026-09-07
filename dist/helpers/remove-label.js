@@ -1,18 +1,16 @@
 import {
-  RemoveLabel,
-  removeLabel,
-  removeLabelIfExists
-} from "../main-mdmhazxs.js";
-import"../main-8h70j5cy.js";
-import"../main-4tezksf5.js";
-import"../main-byv6ddq4.js";
-import"../main-9m3k9gt0.js";
-import"../main-ebvxxjzg.js";
-import"../main-wckvcay0.js";
+  RemoveLabel2,
+  removeLabel2,
+  removeLabelIfExists2
+} from "../main-0xw4edhh.js";
+import"../main-e3smtmr1.js";
+import"../main-agjmamh8.js";
+import"../main-5k5kzfdy.js";
+import"../main-36vzaw22.js";
 export {
-  removeLabelIfExists,
-  removeLabel,
-  RemoveLabel
+  RemoveLabel2 as RemoveLabel,
+  removeLabel2 as removeLabel,
+  removeLabelIfExists2 as removeLabelIfExists
 };
 
-//# debugId=D97838AE6ACBDB9764756E2164756E21
+//# debugId=B687293B158CA85F64756E2164756E21

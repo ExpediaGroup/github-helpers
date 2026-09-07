@@ -1,14 +1,14 @@
 import {
-  require_lodash
-} from "./main-pet5htdh.js";
-import {
   getInput,
-  setFailed,
-  setOutput
-} from "./main-ebvxxjzg.js";
+  setOutput,
+  setFailed
+} from "./main-36vzaw22.js";
+import {
+  require_lodash
+} from "./main-t2wes6yn.js";
 import {
   __toESM
-} from "./main-wckvcay0.js";
+} from "./main-syahy8j8.js";
 
 // src/main.ts
 var import_lodash2 = __toESM(require_lodash(), 1);
@@ -381,8 +381,8 @@ function resolveYamlFloat$1(source, isExplicit) {
       return sign === 1 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
     if (value === ".nan")
       return NaN;
-    const result2 = sign * parseFloat(value);
-    return Number.isFinite(result2) ? result2 : NOT_RESOLVED;
+    const result = sign * parseFloat(value);
+    return Number.isFinite(result) ? result : NOT_RESOLVED;
   }
   if (!YAML_FLOAT_IMPLICIT_PATTERN.test(source))
     return NOT_RESOLVED;
@@ -501,10 +501,10 @@ function resolveYamlTimestamp(source) {
   const month = +match[2] - 1;
   const day = +match[3];
   if (!match[4]) {
-    const date2 = new Date(Date.UTC(year, month, day));
-    if (date2.getUTCFullYear() !== year || date2.getUTCMonth() !== month || date2.getUTCDate() !== day)
+    const date = new Date(Date.UTC(year, month, day));
+    if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month || date.getUTCDate() !== day)
       return NOT_RESOLVED;
-    return date2;
+    return date;
   }
   const hour = +match[4];
   const minute = +match[5];
@@ -673,7 +673,7 @@ function compileTags(tags) {
   }
   return result;
 }
-var Schema = class Schema2 {
+var Schema = class Schema {
   tags;
   implicitScalarTags;
   implicitScalarByFirstChar;
@@ -741,7 +741,7 @@ var Schema = class Schema2 {
     let flatTags = [];
     for (const tag of tags)
       flatTags = flatTags.concat(tag);
-    return new Schema2([...this.tags, ...flatTags]);
+    return new Schema([...this.tags, ...flatTags]);
   }
 };
 var FAILSAFE_SCHEMA = new Schema([
@@ -894,8 +894,8 @@ function makeSnippet(mark, options) {
   for (let i = 1;i <= opts.linesBefore; i++) {
     if (foundLineNo - i < 0)
       break;
-    const line2 = getLine(mark.buffer, lineStarts[foundLineNo - i], lineEnds[foundLineNo - i], mark.position - (lineStarts[foundLineNo] - lineStarts[foundLineNo - i]), maxLineLength);
-    result = `${" ".repeat(opts.indent)}${padStart((mark.line - i + 1).toString(), lineNoLength)} | ${line2.str}
+    const line = getLine(mark.buffer, lineStarts[foundLineNo - i], lineEnds[foundLineNo - i], mark.position - (lineStarts[foundLineNo] - lineStarts[foundLineNo - i]), maxLineLength);
+    result = `${" ".repeat(opts.indent)}${padStart((mark.line - i + 1).toString(), lineNoLength)} | ${line.str}
 ${result}`;
   }
   const line = getLine(mark.buffer, lineStarts[foundLineNo], lineEnds[foundLineNo], mark.position, maxLineLength);
@@ -906,8 +906,8 @@ ${result}`;
   for (let i = 1;i <= opts.linesAfter; i++) {
     if (foundLineNo + i >= lineEnds.length)
       break;
-    const line2 = getLine(mark.buffer, lineStarts[foundLineNo + i], lineEnds[foundLineNo + i], mark.position - (lineStarts[foundLineNo] - lineStarts[foundLineNo + i]), maxLineLength);
-    result += `${" ".repeat(opts.indent)}${padStart((mark.line + i + 1).toString(), lineNoLength)} | ${line2.str}
+    const line = getLine(mark.buffer, lineStarts[foundLineNo + i], lineEnds[foundLineNo + i], mark.position - (lineStarts[foundLineNo] - lineStarts[foundLineNo + i]), maxLineLength);
+    result += `${" ".repeat(opts.indent)}${padStart((mark.line + i + 1).toString(), lineNoLength)} | ${line.str}
 `;
   }
   return result.replace(/\n$/, "");
@@ -1268,12 +1268,12 @@ function findExplicitTag(state, exact, prefix, tagName, nodeKind) {
 function constructScalar(state, event) {
   const source = getScalarValue(state.source, event);
   const rawTag = event.tagStart === NO_RANGE$2 ? "" : state.source.slice(event.tagStart, event.tagEnd);
-  const strTag2 = state.schema.defaultScalarTag;
+  const strTag = state.schema.defaultScalarTag;
   if (rawTag !== "") {
     if (rawTag === "!")
       return {
         value: source,
-        tag: strTag2
+        tag: strTag
       };
     const tagName = tagNameFull(rawTag, state.tagHandlers);
     const scalarTag = lookupTag(state.schema.exact.scalar, state.schema.prefix.scalar, tagName);
@@ -1309,8 +1309,8 @@ function constructScalar(state, event) {
     }
   }
   return {
-    value: strTag2.resolve(source, false, strTag2.tagName),
-    tag: strTag2
+    value: strTag.resolve(source, false, strTag.tagName),
+    tag: strTag
   };
 }
 function collectionTag(state, event, exact, prefix, defaultTagName, nodeKind) {
@@ -2019,18 +2019,18 @@ function readFlowCollection(state, nodeIndent, props) {
   state.position++;
   while (state.input.charCodeAt(state.position) !== 0) {
     skipFlowSeparationSpace(state, nodeIndent);
-    let ch2 = state.input.charCodeAt(state.position);
-    if (ch2 === terminator) {
+    let ch = state.input.charCodeAt(state.position);
+    if (ch === terminator) {
       state.position++;
       addPopEvent(state);
       return true;
     } else if (!readNext)
       throwError(state, "missed comma between flow collection entries");
-    else if (ch2 === 44)
+    else if (ch === 44)
       throwError(state, "expected the node content, but found ','");
     let isPair = false;
     let isExplicitPair = false;
-    if (ch2 === 63 && isWsOrEol(state.input.charCodeAt(state.position + 1))) {
+    if (ch === 63 && isWsOrEol(state.input.charCodeAt(state.position + 1))) {
       isPair = isExplicitPair = true;
       state.position += 1;
       skipFlowSeparationSpace(state, nodeIndent);
@@ -2039,8 +2039,8 @@ function readFlowCollection(state, nodeIndent, props) {
     const entryStart = snapshotState(state);
     const keyWasRead = parseNode(state, nodeIndent, CONTEXT_FLOW_IN, false, true);
     skipFlowSeparationSpace(state, nodeIndent);
-    ch2 = state.input.charCodeAt(state.position);
-    if ((isMapping || isExplicitPair || state.line === entryLine) && ch2 === 58) {
+    ch = state.input.charCodeAt(state.position);
+    if ((isMapping || isExplicitPair || state.line === entryLine) && ch === 58) {
       isPair = true;
       state.position++;
       skipFlowSeparationSpace(state, nodeIndent);
@@ -2072,8 +2072,8 @@ function readFlowCollection(state, nodeIndent, props) {
       addEmptyScalarEvent(state);
       addPopEvent(state);
     }
-    ch2 = state.input.charCodeAt(state.position);
-    if (ch2 === 44) {
+    ch = state.input.charCodeAt(state.position);
+    if (ch === 44) {
       readNext = true;
       state.position++;
     } else
@@ -2558,4 +2558,4 @@ export {
   run
 };
 
-//# debugId=3D7A77883E92733064756E2164756E21
+//# debugId=AAB4412B6B0DB1F064756E2164756E21

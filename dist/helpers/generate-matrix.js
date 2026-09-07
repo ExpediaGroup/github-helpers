@@ -1,12 +1,12 @@
 import {
   require_lodash
-} from "../main-pet5htdh.js";
+} from "../main-t2wes6yn.js";
 import {
   HelperInputs
-} from "../main-8h70j5cy.js";
+} from "../main-d5wrnkmf.js";
 import {
   __toESM
-} from "../main-wckvcay0.js";
+} from "../main-syahy8j8.js";
 
 // src/helpers/generate-matrix.ts
 var import_lodash = __toESM(require_lodash(), 1);
@@ -24,11 +24,11 @@ var generateMatrix = ({
   const batches = Number(_batches);
   let result;
   if (!load_balancing_sizes || matrixValues.length <= batches) {
-    const chunkedList = import_lodash.chunk(matrixValues, Math.ceil(matrixValues.length / batches)).map((chunk2) => chunk2.join(","));
+    const chunkedList = import_lodash.chunk(matrixValues, Math.ceil(matrixValues.length / batches)).map((chunk) => chunk.join(","));
     if (use_basic_matrix_configuration === "true")
       result = { path: chunkedList };
     else
-      result = { include: chunkedList.map((chunk2) => ({ path: chunk2 })) };
+      result = { include: chunkedList.map((chunk) => ({ path: chunk })) };
   } else {
     const loadBalancingSizes = load_balancing_sizes.split(/[\n,]/).map((size) => Number(size));
     if (loadBalancingSizes.length !== matrixValues.length)
@@ -66,8 +66,8 @@ var generateMatrix = ({
   return result;
 };
 export {
-  generateMatrix,
-  GenerateMatrix
+  GenerateMatrix,
+  generateMatrix
 };
 
-//# debugId=B998F5D888A9CA8E64756E2164756E21
+//# debugId=DF1E8AC2B64DE6AE64756E2164756E21

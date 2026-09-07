@@ -1,27 +1,27 @@
 import {
-  getMergeQueueCommitHashes
-} from "../main-1j4thgyg.js";
-import"../main-wzm5rvxy.js";
-import {
   DEFAULT_PIPELINE_STATUS
-} from "../main-9c2herm2.js";
-import {
-  require_bluebird
-} from "../main-ttmzs6m5.js";
-import {
-  HelperInputs
-} from "../main-8h70j5cy.js";
-import {
-  octokit
-} from "../main-4tezksf5.js";
+} from "../main-jq9kgsp8.js";
 import {
   context
-} from "../main-byv6ddq4.js";
-import"../main-9m3k9gt0.js";
-import"../main-ebvxxjzg.js";
+} from "../main-agjmamh8.js";
+import"../main-5k5kzfdy.js";
+import"../main-36vzaw22.js";
+import {
+  octokit
+} from "../main-e3smtmr1.js";
+import {
+  getMergeQueueCommitHashes
+} from "../main-we9k256r.js";
+import"../main-9fzkbq68.js";
+import {
+  require_bluebird
+} from "../main-es051p88.js";
+import {
+  HelperInputs
+} from "../main-d5wrnkmf.js";
 import {
   __toESM
-} from "../main-wckvcay0.js";
+} from "../main-syahy8j8.js";
 
 // src/helpers/initiate-deployment.ts
 var import_bluebird = __toESM(require_bluebird(), 1);
@@ -60,8 +60,8 @@ var initiateDeployment = async ({
   });
   if (merge_queue_enabled === "true") {
     const mergeQueueCommitHashes = await getMergeQueueCommitHashes();
-    return import_bluebird.map(mergeQueueCommitHashes, async (sha2) => octokit.repos.createCommitStatus({
-      sha: sha2,
+    return import_bluebird.map(mergeQueueCommitHashes, async (sha) => octokit.repos.createCommitStatus({
+      sha,
       context: context2,
       state: "pending",
       description,
@@ -71,8 +71,8 @@ var initiateDeployment = async ({
   }
 };
 export {
-  initiateDeployment,
-  InitiateDeployment
+  InitiateDeployment,
+  initiateDeployment
 };
 
-//# debugId=79829AEA9D0F2D7164756E2164756E21
+//# debugId=202D8C8651E7297864756E2164756E21
