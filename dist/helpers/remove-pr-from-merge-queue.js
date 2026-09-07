@@ -1,33 +1,33 @@
 import {
-  removeLabelIfExists
-} from "../main-mdmhazxs.js";
+  info
+} from "../main-36vzaw22.js";
 import {
-  FIRST_QUEUED_PR_LABEL,
+  READY_FOR_MERGE_PR_LABEL,
   QUEUED_FOR_MERGE_PREFIX,
-  READY_FOR_MERGE_PR_LABEL
-} from "../main-9c2herm2.js";
-import {
-  require_lodash
-} from "../main-pet5htdh.js";
-import {
-  require_bluebird
-} from "../main-ttmzs6m5.js";
-import {
-  HelperInputs
-} from "../main-8h70j5cy.js";
-import {
-  octokit
-} from "../main-4tezksf5.js";
+  FIRST_QUEUED_PR_LABEL
+} from "../main-jq9kgsp8.js";
 import {
   context
-} from "../main-byv6ddq4.js";
-import"../main-9m3k9gt0.js";
+} from "../main-nnwtk8w8.js";
+import"../main-6sabwhac.js";
 import {
-  info
-} from "../main-ebvxxjzg.js";
+  octokit
+} from "../main-fh8gy58w.js";
+import {
+  removeLabelIfExists2
+} from "../main-b3a18pad.js";
+import {
+  require_lodash
+} from "../main-t2wes6yn.js";
+import {
+  require_bluebird
+} from "../main-es051p88.js";
+import {
+  HelperInputs
+} from "../main-d5wrnkmf.js";
 import {
   __toESM
-} from "../main-wckvcay0.js";
+} from "../main-syahy8j8.js";
 
 // src/helpers/remove-pr-from-merge-queue.ts
 var import_lodash = __toESM(require_lodash(), 1);
@@ -50,9 +50,9 @@ var removePrFromMergeQueue = async ({ seconds }) => {
       const queueLabel = pr.labels.find((label) => label.name.startsWith(QUEUED_FOR_MERGE_PREFIX));
       if (readyForMergeLabel || queueLabel) {
         info(`Cleaning up queued PR #${pr.number}...`);
-        await removeLabelIfExists(READY_FOR_MERGE_PR_LABEL, pr.number);
+        await removeLabelIfExists2(READY_FOR_MERGE_PR_LABEL, pr.number);
         if (queueLabel) {
-          await removeLabelIfExists(queueLabel.name, pr.number);
+          await removeLabelIfExists2(queueLabel.name, pr.number);
         }
       }
     });
@@ -67,8 +67,8 @@ var removePrFromMergeQueue = async ({ seconds }) => {
   });
   const statusesPerContext = import_lodash.groupBy(data, "context");
   const someContextHasLatestStatusPending = Object.keys(statusesPerContext).some((context2) => {
-    const mostRecentStatus2 = import_lodash.orderBy(statusesPerContext[context2], "created_at", "desc")[0];
-    return mostRecentStatus2?.state === "pending";
+    const mostRecentStatus = import_lodash.orderBy(statusesPerContext[context2], "created_at", "desc")[0];
+    return mostRecentStatus?.state === "pending";
   });
   if (someContextHasLatestStatusPending) {
     return;
@@ -76,7 +76,7 @@ var removePrFromMergeQueue = async ({ seconds }) => {
   const mostRecentStatus = import_lodash.orderBy(data, "created_at", "desc")[0];
   if (mostRecentStatus && timestampIsStale(mostRecentStatus.created_at, seconds)) {
     info("Removing stale PR from first queued position...");
-    return Promise.all([removeLabelIfExists(READY_FOR_MERGE_PR_LABEL, number), removeLabelIfExists(FIRST_QUEUED_PR_LABEL, number)]);
+    return Promise.all([removeLabelIfExists2(READY_FOR_MERGE_PR_LABEL, number), removeLabelIfExists2(FIRST_QUEUED_PR_LABEL, number)]);
   }
 };
 var timestampIsStale = (timestamp, seconds) => {
@@ -85,8 +85,8 @@ var timestampIsStale = (timestamp, seconds) => {
   return ageOfTimestampInMiliseconds > milisecondsConsideredStale;
 };
 export {
-  removePrFromMergeQueue,
-  RemovePrFromMergeQueue
+  RemovePrFromMergeQueue,
+  removePrFromMergeQueue
 };
 
-//# debugId=A087696D68A8A73A64756E2164756E21
+//# debugId=09D5EB7DC9F4D23E64756E2164756E21

@@ -1,22 +1,20 @@
 import {
-  esm_default
-} from "../main-8cy5s7xq.js";
-import {
-  getDefaultBranch
-} from "../main-je9y666s.js";
-import"../main-dkdfy8cx.js";
-import {
-  HelperInputs
-} from "../main-8h70j5cy.js";
+  context
+} from "../main-nnwtk8w8.js";
+import"../main-6sabwhac.js";
+import"../main-36vzaw22.js";
 import {
   octokit
-} from "../main-4tezksf5.js";
+} from "../main-fh8gy58w.js";
 import {
-  context
-} from "../main-byv6ddq4.js";
-import"../main-9m3k9gt0.js";
-import"../main-ebvxxjzg.js";
-import"../main-wckvcay0.js";
+  esm_default
+} from "../main-vsxf8dq8.js";
+import {
+  getDefaultBranch
+} from "../main-b4p3j9mh.js";
+import {
+  HelperInputs
+} from "../main-d5wrnkmf.js";
 
 // src/helpers/create-pr.ts
 class CreatePR extends HelperInputs {
@@ -56,8 +54,8 @@ var updateHeadWithBaseBranch = (base, head) => octokit.repos.merge({
   ...context.repo
 });
 export {
-  createPr,
-  CreatePR
+  CreatePR,
+  createPr
 };
 
-//# debugId=479223F3A342C37B64756E2164756E21
+//# debugId=BBC48B370CF149C464756E2164756E21
