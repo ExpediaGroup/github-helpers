@@ -1,20 +1,19 @@
 import {
   DEFAULT_PR_TITLE_REGEX
-} from "../main-9c2herm2.js";
-import {
-  HelperInputs
-} from "../main-8h70j5cy.js";
-import {
-  octokit
-} from "../main-4tezksf5.js";
+} from "../main-jq9kgsp8.js";
 import {
   context
-} from "../main-byv6ddq4.js";
-import"../main-9m3k9gt0.js";
+} from "../main-nnwtk8w8.js";
+import"../main-6sabwhac.js";
 import {
   setFailed
-} from "../main-ebvxxjzg.js";
-import"../main-wckvcay0.js";
+} from "../main-36vzaw22.js";
+import {
+  octokit
+} from "../main-fh8gy58w.js";
+import {
+  HelperInputs
+} from "../main-d5wrnkmf.js";
 
 // src/helpers/check-pr-title.ts
 class CheckPrTitle extends HelperInputs {
@@ -35,8 +34,8 @@ var checkPrTitle = async ({ pattern = DEFAULT_PR_TITLE_REGEX, pull_number }) => 
   return false;
 };
 export {
-  checkPrTitle,
-  CheckPrTitle
+  CheckPrTitle,
+  checkPrTitle
 };
 
-//# debugId=9A54DF641B4B9ABB64756E2164756E21
+//# debugId=F8990F94AD5C57DD64756E2164756E21

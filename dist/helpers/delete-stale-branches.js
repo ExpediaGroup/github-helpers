@@ -1,34 +1,34 @@
 import {
-  paginateAllBranches
-} from "../main-wzm5rvxy.js";
-import {
-  getDefaultBranch
-} from "../main-je9y666s.js";
-import {
-  paginateAllOpenPullRequests
-} from "../main-4kbya0ya.js";
-import {
-  SECONDS_IN_A_DAY
-} from "../main-9c2herm2.js";
-import {
-  require_bluebird
-} from "../main-ttmzs6m5.js";
-import {
-  HelperInputs
-} from "../main-8h70j5cy.js";
-import {
-  octokit
-} from "../main-4tezksf5.js";
-import {
   context
-} from "../main-byv6ddq4.js";
-import"../main-9m3k9gt0.js";
+} from "../main-nnwtk8w8.js";
+import"../main-6sabwhac.js";
 import {
   info
-} from "../main-ebvxxjzg.js";
+} from "../main-36vzaw22.js";
+import {
+  octokit
+} from "../main-fh8gy58w.js";
+import {
+  SECONDS_IN_A_DAY
+} from "../main-jq9kgsp8.js";
+import {
+  paginateAllBranches
+} from "../main-00tcd9f5.js";
+import {
+  getDefaultBranch
+} from "../main-b4p3j9mh.js";
+import {
+  paginateAllOpenPullRequests
+} from "../main-j2vhxcaz.js";
+import {
+  require_bluebird
+} from "../main-es051p88.js";
+import {
+  HelperInputs
+} from "../main-d5wrnkmf.js";
 import {
   __toESM
-} from "../main-wckvcay0.js";
+} from "../main-syahy8j8.js";
 
 // src/helpers/delete-stale-branches.ts
 var import_bluebird = __toESM(require_bluebird(), 1);
@@ -71,8 +71,8 @@ var branchIsTooOld = (dateLastUpdated, daysThreshold) => {
   return timeSinceLastUpdated > threshold;
 };
 export {
-  deleteStaleBranches,
-  DeleteStaleBranches
+  DeleteStaleBranches,
+  deleteStaleBranches
 };
 
-//# debugId=1F67AFDE1629D57364756E2164756E21
+//# debugId=3F7EC27DA27ABFD064756E2164756E21

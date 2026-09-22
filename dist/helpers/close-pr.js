@@ -1,18 +1,17 @@
 import {
-  createPrComment
-} from "../main-x7kxctck.js";
-import {
-  HelperInputs
-} from "../main-8h70j5cy.js";
+  context
+} from "../main-nnwtk8w8.js";
+import"../main-6sabwhac.js";
+import"../main-36vzaw22.js";
 import {
   octokit
-} from "../main-4tezksf5.js";
+} from "../main-fh8gy58w.js";
 import {
-  context
-} from "../main-byv6ddq4.js";
-import"../main-9m3k9gt0.js";
-import"../main-ebvxxjzg.js";
-import"../main-wckvcay0.js";
+  createPrComment2
+} from "../main-hwzwrqja.js";
+import {
+  HelperInputs
+} from "../main-d5wrnkmf.js";
 
 // src/helpers/close-pr.ts
 class ClosePr extends HelperInputs {
@@ -22,7 +21,7 @@ var closePr = async ({ body, pull_number, repo_name, repo_owner_name } = {}) => 
     throw new Error("pull_number is required when repo_name or repo_owner_name is provided");
   }
   if (body) {
-    await createPrComment({ body, pull_number, repo_name, repo_owner_name });
+    await createPrComment2({ body, pull_number, repo_name, repo_owner_name });
   }
   return octokit.pulls.update({
     pull_number: pull_number ? Number(pull_number) : context.issue.number,
@@ -32,8 +31,8 @@ var closePr = async ({ body, pull_number, repo_name, repo_owner_name } = {}) => 
   });
 };
 export {
-  closePr,
-  ClosePr
+  ClosePr,
+  closePr
 };
 
-//# debugId=10A40351AA5951D964756E2164756E21
+//# debugId=A515656405E32F4E64756E2164756E21

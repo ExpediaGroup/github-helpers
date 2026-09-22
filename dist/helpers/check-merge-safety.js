@@ -1,38 +1,37 @@
 import {
-  setCommitStatus
-} from "../main-tabt2mhg.js";
-import {
-  require_micromatch
-} from "../main-v9jqraeg.js";
+  context
+} from "../main-nnwtk8w8.js";
+import"../main-6sabwhac.js";
 import {
   simpleGit
-} from "../main-8cy5s7xq.js";
+} from "../main-vsxf8dq8.js";
 import {
-  paginateAllOpenPullRequests
-} from "../main-4kbya0ya.js";
-import"../main-dkdfy8cx.js";
-import {
-  require_bluebird
-} from "../main-ttmzs6m5.js";
-import {
-  HelperInputs
-} from "../main-8h70j5cy.js";
+  setFailed,
+  error,
+  warning,
+  info
+} from "../main-36vzaw22.js";
 import {
   octokit
-} from "../main-4tezksf5.js";
+} from "../main-fh8gy58w.js";
 import {
-  context
-} from "../main-byv6ddq4.js";
-import"../main-9m3k9gt0.js";
+  setCommitStatus2
+} from "../main-en73eexx.js";
 import {
-  error,
-  info,
-  setFailed,
-  warning
-} from "../main-ebvxxjzg.js";
+  require_micromatch
+} from "../main-hatr91y7.js";
+import {
+  paginateAllOpenPullRequests
+} from "../main-j2vhxcaz.js";
+import {
+  require_bluebird
+} from "../main-es051p88.js";
+import {
+  HelperInputs
+} from "../main-d5wrnkmf.js";
 import {
   __toESM
-} from "../main-wckvcay0.js";
+} from "../main-syahy8j8.js";
 
 // src/helpers/check-merge-safety.ts
 var import_micromatch = __toESM(require_micromatch(), 1);
@@ -71,7 +70,7 @@ var setMergeSafetyStatus = async (pullRequest, { context: context2 = "Merge Safe
     const truncatedBranchName = `${username}:${truncatedRef}`;
     info(`Found existing failure status for ${truncatedBranchName}, skipping setting new status`);
   } else {
-    await setCommitStatus({
+    await setCommitStatus2({
       sha: pullRequest.head.sha,
       state,
       context: context2,
@@ -253,8 +252,8 @@ var getPathsFromComment = async (pullNumber) => {
   }
 };
 export {
-  checkMergeSafety,
-  CheckMergeSafety
+  CheckMergeSafety,
+  checkMergeSafety
 };
 
-//# debugId=B28E1D4A9818ED4864756E2164756E21
+//# debugId=1435774B6B069A2464756E2164756E21
