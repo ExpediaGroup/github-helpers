@@ -13,7 +13,9 @@ limitations under the License.
 
 import { context } from '@actions/github';
 import { error } from '@actions/core';
-import { PushEvent } from '@octokit/webhooks-types';
+import { components } from '@octokit/openapi-webhooks-types';
+
+type PushEvent = components['schemas']['webhook-push'];
 
 export const createBatchedCommitMessage = () => {
   const eventPayload = context.payload as PushEvent;
