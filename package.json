@@ -11,7 +11,7 @@
     "axios": "1.20.0",
     "bluebird": "3.7.2",
     "codeowners-utils": "1.0.2",
-    "js-yaml": "5.4.1",
+    "js-yaml": "5.4.2",
     "lodash": "4.18.1",
     "micromatch": "4.0.8",
     "simple-git": "3.36.0"
@@ -20,7 +20,7 @@
     "@octokit/openapi-webhooks-types": "12.1.0",
     "@total-typescript/ts-reset": "0.6.1",
     "@types/bluebird": "3.5.42",
-    "@types/bun": "1.4.1",
+    "@types/bun": "1.4.2",
     "@types/js-yaml": "4.0.9",
     "@types/lodash.camelcase": "4.3.9",
     "@types/lodash.chunk": "4.2.9",
@@ -28,12 +28,12 @@
     "@types/lodash.union": "4.6.9",
     "@types/lodash.uniq": "4.5.9",
     "@types/micromatch": "4.0.10",
-    "eslint": "10.10.0",
+    "eslint": "10.11.0",
     "husky": "9.1.7",
     "plop": "4.0.5",
-    "prettier": "3.9.6",
+    "prettier": "3.9.9",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.69.0"
+    "typescript-eslint": "8.70.1"
   },
   "scripts": {
     "create-helper": "plop helper --force",

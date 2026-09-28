@@ -14,7 +14,7 @@ import {
 var import_lodash2 = __toESM(require_lodash(), 1);
 
 // node_modules/js-yaml/dist/js-yaml.mjs
-/*! js-yaml 5.4.1 https://github.com/nodeca/js-yaml @license MIT */
+/*! js-yaml 5.4.2 https://github.com/nodeca/js-yaml @license MIT */
 var NOT_RESOLVED = Symbol("NOT_RESOLVED");
 function defineScalarTag(tagName, options) {
   return {
@@ -2661,6 +2661,8 @@ function applyForceQuotesOption(layout) {
     return;
   if (layout.isKey || layout.style !== SCALAR_STYLE.PLAIN)
     return;
+  if (layout.node.tag !== layout.presenterOptions.schema.defaultScalarTag.tagName)
+    return;
   layout.style = layout.node.value.includes(`
 `) ? SCALAR_STYLE.DOUBLE_QUOTED : _preferredQuotedStyle(layout);
 }
@@ -2819,4 +2821,4 @@ export {
   run
 };
 
-//# debugId=62CB87267DCA860D64756E2164756E21
+//# debugId=74DAFF839B84B7EC64756E2164756E21
