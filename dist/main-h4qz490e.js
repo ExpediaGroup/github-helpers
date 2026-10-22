@@ -25,8 +25,11 @@ var getChangedFilepathsFromShas = async (before, after, ignore_deleted) => {
   return extractFilepaths(Array.from(fileMap.values()), ignore_deleted);
 };
 var extractFilepaths = (changedFiles, ignore_deleted) => {
-  const renamedPreviousFilenames = changedFiles.filter(({ status }) => status === "renamed").map(({ previous_filename }) => previous_filename).filter(Boolean);
   const processedFilenames = (ignore_deleted ? changedFiles.filter(({ status }) => status !== "removed") : changedFiles).map(({ filename }) => filename);
+  if (ignore_deleted) {
+    return processedFilenames;
+  }
+  const renamedPreviousFilenames = changedFiles.filter(({ status }) => status === "renamed").map(({ previous_filename }) => previous_filename).filter(Boolean);
   return processedFilenames.concat(renamedPreviousFilenames);
 };
 var paginateAllCommitsInRange = async (before, after, page = 1) => {
@@ -56,4 +59,4 @@ var paginateAllChangedFilepaths = async (pull_number, page = 1) => {
 
 export { getChangedFilepaths, getChangedFilepathsFromShas };
 
-//# debugId=BC6FAEACD395161564756E2164756E21
+//# debugId=6C9A16D8E7B2F99F64756E2164756E21

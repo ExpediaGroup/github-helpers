@@ -38,13 +38,16 @@ export const getChangedFilepathsFromShas = async (before: string, after: string,
 };
 
 const extractFilepaths = (changedFiles: ChangedFilesList, ignore_deleted?: boolean) => {
+  const processedFilenames = (ignore_deleted ? changedFiles.filter(({ status }) => status !== 'removed') : changedFiles).map(
+    ({ filename }) => filename
+  );
+  if (ignore_deleted) {
+    return processedFilenames;
+  }
   const renamedPreviousFilenames = changedFiles
     .filter(({ status }) => status === 'renamed')
     .map(({ previous_filename }) => previous_filename)
     .filter(Boolean); // GitHub should always include previous_filename for renamed files, but just in case
-  const processedFilenames = (ignore_deleted ? changedFiles.filter(({ status }) => status !== 'removed') : changedFiles).map(
-    ({ filename }) => filename
-  );
   return processedFilenames.concat(renamedPreviousFilenames);
 };
 

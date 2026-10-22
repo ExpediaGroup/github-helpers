@@ -10,7 +10,7 @@ import {
 } from "../main-fh8gy58w.js";
 import {
   getCoreMemberLogins
-} from "../main-33hyq3fg.js";
+} from "../main-zdktbbwp.js";
 import {
   notifyUser
 } from "../main-c2rt2anc.js";
@@ -18,7 +18,7 @@ import"../main-hbnqs8ps.js";
 import {
   CORE_APPROVED_PR_LABEL
 } from "../main-jq9kgsp8.js";
-import"../main-8fvwf10s.js";
+import"../main-h4qz490e.js";
 import {
   require_lodash
 } from "../main-t2wes6yn.js";
