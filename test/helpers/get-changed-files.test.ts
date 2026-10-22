@@ -149,9 +149,18 @@ describe('getChangedFiles', () => {
     (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => ({
       data: page === 1 ? mock_data4 : []
     }));
-    const result = await getChangedFiles({ ignore_deleted: 'true' });
+    const result = await getChangedFiles({});
 
     expect(result).toEqual([mock_data4[0].filename, mock_data4[1].filename, mock_data4[1].previous_filename].join(','));
+  });
+
+  it('should exclude original location of renamed files when ignore_deleted input is provided', async () => {
+    (octokit.pulls.listFiles as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) => ({
+      data: page === 1 ? mock_data4 : []
+    }));
+    const result = await getChangedFiles({ ignore_deleted: 'true' });
+
+    expect(result).toEqual([mock_data4[0].filename, mock_data4[1].filename].join(','));
   });
 
   it('should handle merge queue case', async () => {

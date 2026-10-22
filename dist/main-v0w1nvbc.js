@@ -15,12 +15,12 @@ import {
   context
 } from "./main-nnwtk8w8.js";
 import {
+  notifyUser
+} from "./main-cpz0em1f.js";
+import {
   octokit,
   octokitGraphql
 } from "./main-fh8gy58w.js";
-import {
-  notifyUser
-} from "./main-c2rt2anc.js";
 import {
   getEmailOnUserProfile2
 } from "./main-hbnqs8ps.js";
@@ -35,7 +35,7 @@ import {
 } from "./main-hwzwrqja.js";
 import {
   approvalsSatisfied2
-} from "./main-xtctj82v.js";
+} from "./main-239jb9xg.js";
 import {
   isUserInTeam2
 } from "./main-d50gcstv.js";
@@ -54,6 +54,58 @@ import {
 
 // src/utils/update-merge-queue.ts
 var import_bluebird = __toESM(require_bluebird(), 1);
+
+// src/helpers/prepare-queued-pr-for-merge.ts
+var prepareQueuedPrForMerge2 = async () => {
+  const { data } = await octokit.pulls.list({
+    state: "open",
+    per_page: 100,
+    ...context.repo
+  });
+  const pullRequest = findNextPrToMerge(data);
+  if (pullRequest) {
+    return updatePrWithDefaultBranch2(pullRequest);
+  }
+};
+var findNextPrToMerge = (pullRequests) => pullRequests.find((pr) => hasRequiredLabels(pr, [READY_FOR_MERGE_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL])) ?? pullRequests.find((pr) => hasRequiredLabels(pr, [READY_FOR_MERGE_PR_LABEL, FIRST_QUEUED_PR_LABEL]));
+var hasRequiredLabels = (pr, requiredLabels) => requiredLabels.every((mergeQueueLabel) => pr.labels.some((label) => label.name === mergeQueueLabel));
+var updatePrWithDefaultBranch2 = async (pullRequest) => {
+  if (pullRequest.head.user?.login && pullRequest.base.user?.login && pullRequest.head.user?.login !== pullRequest.base.user?.login) {
+    try {
+      await octokit.repos.mergeUpstream({
+        ...context.repo,
+        branch: pullRequest.base.repo.default_branch
+      });
+    } catch (error) {
+      if (error.status === 409) {
+        setFailed("Attempt to update fork branch with upstream failed; conflict on default branch between fork and upstream.");
+      } else
+        setFailed(error.message);
+    }
+  }
+  try {
+    await octokit.repos.merge({
+      base: pullRequest.head.ref,
+      head: "HEAD",
+      ...context.repo
+    });
+  } catch (error) {
+    const noEvictUponConflict = getInput("no_evict_upon_conflict");
+    const githubError = error;
+    if (githubError.status !== 409) {
+      setFailed(githubError.message);
+      return;
+    }
+    if (noEvictUponConflict === "true") {
+      info("The first PR in the queue has a merge conflict. PR was not removed from the queue due to no_evict_upon_conflict input.");
+      return;
+    }
+    await removePrFromQueue2(pullRequest);
+    setFailed("The first PR in the queue has a merge conflict, and it was removed from the queue.");
+  }
+};
+
+// src/utils/update-merge-queue.ts
 var updateMergeQueue = (queuedPrs) => {
   const sortedPrs = sortPrsByQueuePosition(queuedPrs);
   return import_bluebird.map(sortedPrs, updateQueuePosition);
@@ -253,56 +305,6 @@ var enableAutoMerge2 = async (pullRequestId, mergeMethod = "SQUASH") => {
 };
 var githubEmailDocsLink = "https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/changing-your-primary-email-address";
 
-// src/helpers/prepare-queued-pr-for-merge.ts
-var prepareQueuedPrForMerge2 = async () => {
-  const { data } = await octokit.pulls.list({
-    state: "open",
-    per_page: 100,
-    ...context.repo
-  });
-  const pullRequest = findNextPrToMerge(data);
-  if (pullRequest) {
-    return updatePrWithDefaultBranch2(pullRequest);
-  }
-};
-var findNextPrToMerge = (pullRequests) => pullRequests.find((pr) => hasRequiredLabels(pr, [READY_FOR_MERGE_PR_LABEL, JUMP_THE_QUEUE_PR_LABEL])) ?? pullRequests.find((pr) => hasRequiredLabels(pr, [READY_FOR_MERGE_PR_LABEL, FIRST_QUEUED_PR_LABEL]));
-var hasRequiredLabels = (pr, requiredLabels) => requiredLabels.every((mergeQueueLabel) => pr.labels.some((label) => label.name === mergeQueueLabel));
-var updatePrWithDefaultBranch2 = async (pullRequest) => {
-  if (pullRequest.head.user?.login && pullRequest.base.user?.login && pullRequest.head.user?.login !== pullRequest.base.user?.login) {
-    try {
-      await octokit.repos.mergeUpstream({
-        ...context.repo,
-        branch: pullRequest.base.repo.default_branch
-      });
-    } catch (error) {
-      if (error.status === 409) {
-        setFailed("Attempt to update fork branch with upstream failed; conflict on default branch between fork and upstream.");
-      } else
-        setFailed(error.message);
-    }
-  }
-  try {
-    await octokit.repos.merge({
-      base: pullRequest.head.ref,
-      head: "HEAD",
-      ...context.repo
-    });
-  } catch (error) {
-    const noEvictUponConflict = getInput("no_evict_upon_conflict");
-    const githubError = error;
-    if (githubError.status !== 409) {
-      setFailed(githubError.message);
-      return;
-    }
-    if (noEvictUponConflict === "true") {
-      info("The first PR in the queue has a merge conflict. PR was not removed from the queue due to no_evict_upon_conflict input.");
-      return;
-    }
-    await removePrFromQueue2(pullRequest);
-    setFailed("The first PR in the queue has a merge conflict, and it was removed from the queue.");
-  }
-};
-
 export { prepareQueuedPrForMerge2, updatePrWithDefaultBranch2, ManageMergeQueue2, manageMergeQueue2, removePrFromQueue2, enableAutoMerge2 };
 
-//# debugId=702EA2B1F781866B64756E2164756E21
+//# debugId=F58BF708A914383C64756E2164756E21
