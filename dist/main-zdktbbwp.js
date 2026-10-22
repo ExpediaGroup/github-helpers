@@ -2,17 +2,17 @@ import {
   setFailed
 } from "./main-36vzaw22.js";
 import {
-  context
-} from "./main-nnwtk8w8.js";
-import {
   octokit
 } from "./main-fh8gy58w.js";
+import {
+  context
+} from "./main-nnwtk8w8.js";
 import {
   getChangedFilepaths
 } from "./main-h4qz490e.js";
 import {
   require_lodash
-} from "./main-a73vpqj8.js";
+} from "./main-t2wes6yn.js";
 import {
   require_bluebird
 } from "./main-es051p88.js";
@@ -1088,11 +1088,6 @@ var require_codeowners_utils = __commonJS(function(exports) {
   exports.findUnmatchedFiles = findUnmatchedFiles;
 });
 
-// src/utils/get-core-member-logins.ts
-var import_codeowners_utils = __toESM(require_codeowners_utils(), 1);
-var import_lodash = __toESM(require_lodash(), 1);
-var import_bluebird = __toESM(require_bluebird(), 1);
-
 // src/utils/convert-to-team-slug.ts
 var convertToTeamSlug = (codeOwner) => codeOwner.substring(codeOwner.indexOf("/") + 1);
 
@@ -1114,6 +1109,9 @@ var paginateMembersInOrg = async (team, page = 1) => {
 };
 
 // src/utils/get-core-member-logins.ts
+var import_codeowners_utils = __toESM(require_codeowners_utils(), 1);
+var import_lodash = __toESM(require_lodash(), 1);
+var import_bluebird = __toESM(require_bluebird(), 1);
 var getCoreMemberLogins = async (params) => {
   const { pull_number, teams, codeowners_overrides } = params;
   const codeOwners = teams ?? getCodeOwnersFromEntries(await getRequiredCodeOwnersEntries(pull_number, codeowners_overrides));
@@ -1160,4 +1158,4 @@ var getCodeOwnersFromEntries = (codeOwnersEntries) => {
 
 export { paginateMembersInOrg, getCoreMemberLogins, getRequiredCodeOwnersEntries };
 
-//# debugId=CCCBF9DB71D447FE64756E2164756E21
+//# debugId=54BF36FC805E46C864756E2164756E21
