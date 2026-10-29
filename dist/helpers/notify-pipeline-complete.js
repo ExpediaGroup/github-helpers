@@ -34,9 +34,12 @@ var notifyPipelineComplete = async ({
   description = DEFAULT_PIPELINE_DESCRIPTION,
   environment = PRODUCTION_ENVIRONMENT,
   target_url,
-  merge_queue_enabled
+  merge_queue_enabled,
+  state = "success",
+  sha
 }) => {
   const { data: deployments } = await octokit.repos.listDeployments({
+    sha,
     environment,
     ...context.repo
   });
@@ -46,7 +49,7 @@ var notifyPipelineComplete = async ({
   await octokit.repos.createDeploymentStatus({
     environment,
     deployment_id,
-    state: "success",
+    state,
     description,
     target_url,
     ...context.repo
@@ -56,7 +59,7 @@ var notifyPipelineComplete = async ({
     return import_bluebird.map(mergeQueueCommitHashes, async (sha) => octokit.repos.createCommitStatus({
       sha,
       context: context2,
-      state: "success",
+      state,
       description,
       target_url,
       ...context.repo
@@ -71,7 +74,7 @@ var notifyPipelineComplete = async ({
   return import_bluebird.map(commitHashesForOpenPullRequests, async (sha) => octokit.repos.createCommitStatus({
     sha,
     context: context2,
-    state: "success",
+    state,
     description,
     target_url,
     ...context.repo
@@ -82,4 +85,4 @@ export {
   notifyPipelineComplete
 };
 
-//# debugId=3D89CC9C798FA26064756E2164756E21
+//# debugId=3185D1B530D6728564756E2164756E21

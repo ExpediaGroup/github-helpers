@@ -152,4 +152,136 @@ describe('notify-pipeline-complete', () => {
       ...context.repo
     });
   });
+
+  it('should notify with the provided state for open pull requests', async () => {
+    await notifyPipelineComplete({ state: 'failure' });
+
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledTimes(3);
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+      sha: 'sha 1',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'failure',
+      description,
+      ...context.repo
+    });
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+      sha: 'sha 2',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'failure',
+      description,
+      ...context.repo
+    });
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+      sha: 'sha 3',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'failure',
+      description,
+      ...context.repo
+    });
+
+    expect(octokit.repos.createDeploymentStatus).toHaveBeenCalledWith({
+      state: 'failure',
+      environment: PRODUCTION_ENVIRONMENT,
+      deployment_id: 123,
+      description,
+      ...context.repo
+    });
+  });
+
+  it('should notify with the provided state when merge queue is enabled', async () => {
+    (octokit.repos.listBranches as unknown as Mock<any>).mockImplementation(async ({ page }: { page: number }) =>
+      page > 1
+        ? { data: [] }
+        : {
+            data: [
+              {
+                name: 'some-branch',
+                commit: { sha: 'normal sha 1' }
+              },
+              {
+                name: 'gh-readonly-queue/default-branch/pr-123-79a5ad2b1a46f6b5d77e02573937667979635f27',
+                commit: { sha: 'merge queue sha 1' }
+              },
+              {
+                name: 'gh-readonly-queue/default-branch/pr-456-79a5ad2b1a46f6b5d77e02573937667979635f27',
+                commit: { sha: 'merge queue sha 2' }
+              }
+            ]
+          }
+    );
+    await notifyPipelineComplete({ merge_queue_enabled: 'true', state: 'failure' });
+
+    expect(octokit.pulls.list).not.toHaveBeenCalled();
+
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledTimes(2);
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+      sha: 'merge queue sha 1',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'failure',
+      description,
+      ...context.repo
+    });
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+      sha: 'merge queue sha 2',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'failure',
+      description,
+      ...context.repo
+    });
+
+    expect(octokit.repos.createDeploymentStatus).toHaveBeenCalledWith({
+      state: 'failure',
+      environment: PRODUCTION_ENVIRONMENT,
+      deployment_id: 123,
+      description,
+      ...context.repo
+    });
+  });
+
+  it('should list deployments without a sha when none is provided', async () => {
+    await notifyPipelineComplete({});
+
+    expect(octokit.repos.listDeployments).toHaveBeenCalledWith({
+      environment: PRODUCTION_ENVIRONMENT,
+      ...context.repo
+    });
+    expect(octokit.repos.listDeployments).not.toHaveBeenCalledWith(expect.objectContaining({ sha: expect.anything() }));
+  });
+
+  it('should mark the deployment for the provided sha', async () => {
+    (octokit.repos.listDeployments as unknown as Mock<any>).mockImplementationOnce(async () => ({
+      data: [{ id: 456, environment: 'production' }]
+    }));
+    await notifyPipelineComplete({ sha: 'target sha', state: 'failure' });
+
+    expect(octokit.repos.listDeployments).toHaveBeenCalledWith({
+      sha: 'target sha',
+      environment: PRODUCTION_ENVIRONMENT,
+      ...context.repo
+    });
+
+    expect(octokit.repos.createDeploymentStatus).toHaveBeenCalledWith({
+      state: 'failure',
+      environment: PRODUCTION_ENVIRONMENT,
+      deployment_id: 456,
+      description,
+      ...context.repo
+    });
+
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledTimes(3);
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+      sha: 'sha 1',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'failure',
+      description,
+      ...context.repo
+    });
+    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
+      sha: 'target sha',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'failure',
+      description,
+      ...context.repo
+    });
+  });
 });
