@@ -12,6 +12,7 @@ limitations under the License.
 */
 
 import { DEFAULT_PIPELINE_DESCRIPTION, DEFAULT_PIPELINE_STATUS, PRODUCTION_ENVIRONMENT } from '../constants';
+import { DeploymentState, PipelineState } from '../types/github';
 import { HelperInputs } from '../types/generated';
 import { context as githubContext } from '@actions/github';
 import { map } from 'bluebird';
@@ -24,6 +25,7 @@ export class NotifyPipelineComplete extends HelperInputs {
   declare environment?: string;
   declare target_url?: string;
   declare merge_queue_enabled?: string;
+  declare state?: string;
 }
 
 export const notifyPipelineComplete = async ({
@@ -31,7 +33,8 @@ export const notifyPipelineComplete = async ({
   description = DEFAULT_PIPELINE_DESCRIPTION,
   environment = PRODUCTION_ENVIRONMENT,
   target_url,
-  merge_queue_enabled
+  merge_queue_enabled,
+  state = 'success'
 }: NotifyPipelineComplete) => {
   const { data: deployments } = await octokit.repos.listDeployments({
     environment,
@@ -42,7 +45,7 @@ export const notifyPipelineComplete = async ({
   await octokit.repos.createDeploymentStatus({
     environment,
     deployment_id,
-    state: 'success',
+    state: state as DeploymentState,
     description,
     target_url,
     ...githubContext.repo
@@ -54,7 +57,7 @@ export const notifyPipelineComplete = async ({
       octokit.repos.createCommitStatus({
         sha,
         context,
-        state: 'success',
+        state: state as PipelineState,
         description,
         target_url,
         ...githubContext.repo
@@ -72,7 +75,7 @@ export const notifyPipelineComplete = async ({
     octokit.repos.createCommitStatus({
       sha,
       context,
-      state: 'success',
+      state: state as PipelineState,
       description,
       target_url,
       ...githubContext.repo

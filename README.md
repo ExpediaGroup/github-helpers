@@ -304,6 +304,7 @@ Additionally, the following parameters can be used for additional control over t
 ### [notify-pipeline-complete](.github/workflows/notify-pipeline-complete.yml)
 
 - Sets a "pipeline" commit status to green for all open PRs
+- Pass `state` (e.g. `failure`) to report a state other than `success` on the deployment and commit statuses. Defaults to `success`.
 
 ### [prepare-queued-pr-for-merge](.github/workflows/prepare-queued-pr-for-merge.yml)
 
