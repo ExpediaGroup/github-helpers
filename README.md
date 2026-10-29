@@ -305,6 +305,7 @@ Additionally, the following parameters can be used for additional control over t
 
 - Sets a "pipeline" commit status to green for all open PRs
 - Pass `state` (e.g. `failure`) to report a state other than `success` on the deployment and commit statuses. Defaults to `success`.
+- Pass `sha` to mark the deployment for that commit instead of the newest deployment in the environment. Commit statuses are still set on open PRs (or merge queue commits when `merge_queue_enabled` is `true`).
 
 ### [prepare-queued-pr-for-merge](.github/workflows/prepare-queued-pr-for-merge.yml)
 

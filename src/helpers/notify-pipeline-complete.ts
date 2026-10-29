@@ -26,6 +26,7 @@ export class NotifyPipelineComplete extends HelperInputs {
   declare target_url?: string;
   declare merge_queue_enabled?: string;
   declare state?: string;
+  declare sha?: string;
 }
 
 export const notifyPipelineComplete = async ({
@@ -34,9 +35,11 @@ export const notifyPipelineComplete = async ({
   environment = PRODUCTION_ENVIRONMENT,
   target_url,
   merge_queue_enabled,
-  state = 'success'
+  state = 'success',
+  sha
 }: NotifyPipelineComplete) => {
   const { data: deployments } = await octokit.repos.listDeployments({
+    sha,
     environment,
     ...githubContext.repo
   });

@@ -35,9 +35,11 @@ var notifyPipelineComplete = async ({
   environment = PRODUCTION_ENVIRONMENT,
   target_url,
   merge_queue_enabled,
-  state = "success"
+  state = "success",
+  sha
 }) => {
   const { data: deployments } = await octokit.repos.listDeployments({
+    sha,
     environment,
     ...context.repo
   });
@@ -83,4 +85,4 @@ export {
   notifyPipelineComplete
 };
 
-//# debugId=E4CDF0CE576E1DBD64756E2164756E21
+//# debugId=3185D1B530D6728564756E2164756E21

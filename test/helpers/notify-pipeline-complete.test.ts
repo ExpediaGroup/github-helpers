@@ -237,4 +237,51 @@ describe('notify-pipeline-complete', () => {
       ...context.repo
     });
   });
+
+  it('should list deployments without a sha when none is provided', async () => {
+    await notifyPipelineComplete({});
+
+    expect(octokit.repos.listDeployments).toHaveBeenCalledWith({
+      environment: PRODUCTION_ENVIRONMENT,
+      ...context.repo
+    });
+    expect(octokit.repos.listDeployments).not.toHaveBeenCalledWith(expect.objectContaining({ sha: expect.anything() }));
+  });
+
+  it('should mark the deployment for the provided sha', async () => {
+    (octokit.repos.listDeployments as unknown as Mock<any>).mockImplementationOnce(async () => ({
+      data: [{ id: 456, environment: 'production' }]
+    }));
+    await notifyPipelineComplete({ sha: 'target sha', state: 'failure' });
+
+    expect(octokit.repos.listDeployments).toHaveBeenCalledWith({
+      sha: 'target sha',
+      environment: PRODUCTION_ENVIRONMENT,
+      ...context.repo
+    });
+
+    expect(octokit.repos.createDeploymentStatus).toHaveBeenCalledWith({
+      state: 'failure',
+      environment: PRODUCTION_ENVIRONMENT,
+      deployment_id: 456,
+      description,
+      ...context.repo
+    });
+
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledTimes(3);
+    expect(octokit.repos.createCommitStatus).toHaveBeenCalledWith({
+      sha: 'sha 1',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'failure',
+      description,
+      ...context.repo
+    });
+    expect(octokit.repos.createCommitStatus).not.toHaveBeenCalledWith({
+      sha: 'target sha',
+      context: DEFAULT_PIPELINE_STATUS,
+      state: 'failure',
+      description,
+      ...context.repo
+    });
+  });
 });
