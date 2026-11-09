@@ -13,7 +13,7 @@ import {
 } from "../main-bxmmkx3a.js";
 import {
   notifyUser
-} from "../main-cpz0em1f.js";
+} from "../main-5b38fhdc.js";
 import"../main-hbnqs8ps.js";
 import {
   CORE_APPROVED_PR_LABEL
